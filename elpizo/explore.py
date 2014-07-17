@@ -14,7 +14,7 @@ class NearbyHandler(RequestHandler):
       "y": 64,
       "realm": "Wyrm Vale",
       "creatures": [
-        {"name": "Wyrm", "id": 10}
+        {"name": "Droyer", "id": 10, "kind": "wyrm", "level": 10}
       ],
       "buildings": [],
       "items": [],

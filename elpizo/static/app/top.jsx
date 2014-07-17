@@ -1,5 +1,7 @@
 "use strict";
 
+var lexicon = require("./lexicon");
+
 var Icon = require("./parts/icon.jsx");
 
 module.exports = React.createClass({
@@ -11,11 +13,11 @@ module.exports = React.createClass({
     return <div className="row top">
       <div className="col">
         <div className="left">
-          <Icon taxonomy="creature" kind="human" variant="1" size="big" />
+          <Icon taxonomy="creature" kind={this.props.kind} variant="1" size="big" />
         </div>
         <div className="stats left">
           <div className="name left">
-            {this.props.title} <small>{this.props.subtitle}</small>
+            {this.props.name} <small>{lexicon.creature[this.props.kind]} {this.props.level}</small>
           </div>
           <div className="right">{this.state.time}</div>
           <div className="bars clear">

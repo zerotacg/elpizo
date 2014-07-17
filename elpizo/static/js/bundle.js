@@ -30,77 +30,53 @@ module.exports = {
   openChat: openProto.bind(null, "chat")
 };
 
-},{"./net":5}],2:[function(require,module,exports){
+},{"./net":7}],2:[function(require,module,exports){
 /** @jsx React.DOM */"use strict";
 
 var api = require("./api");
 
 var Top = require("./top.jsx");
+var Middle = require("./middle.jsx");
 var Chat = require("./chat.jsx");
 
 var ExploreTab = require("./tabs/explore.jsx");
 var InventoryTab = require("./tabs/inventory.jsx");
 
-var Sidebar = React.createClass({displayName: 'Sidebar',
-  render: function () {
-    var tabs = this.props.tabs.map(function (item) {
-      return React.DOM.li( {className:item.id === this.props.activeTab ? "active" : "",
-                 id:"sidebar-" + item.id,
-                 key:item.id}, 
-        React.DOM.a( {onClick:this.onClick.bind(this, item.id), href:"#"}),
-        React.DOM.div( {className:"tooltip"}, 
-          React.DOM.div( {className:"name"}, item.name)
-        )
-      );
-    }.bind(this));
-
-    return React.DOM.ul( {className:"col sidebar"}, tabs);
-  },
-
-  onClick: function (id) {
-    this.props.onTabClick(id);
-  }
-});
-
-var Middle = React.createClass({displayName: 'Middle',
-  getInitialState: function () {
-    return {
-      activeTab: "explore"
-    };
-  },
-
-  render: function () {
-    var tabs = this.props.tabs.map(function (tab) {
-      return React.DOM.div( {className:"tab " + (this.state.activeTab == tab.id ? "active" : "hidden"),
-                  key:tab.id}, 
-        tab.element
-      );
-    }.bind(this));
-
-    return React.DOM.div( {className:"row middle"}, 
-      Sidebar( {tabs:this.props.tabs,
-               activeTab:this.state.activeTab,
-               onTabClick:this.handleSidebarTabClick} ),
-      React.DOM.div( {className:"col main"}, tabs)
-    );
-  },
-
-  handleSidebarTabClick: function (itemId) {
-    this.setState({activeTab: itemId});
-  }
-});
-
 var App = React.createClass({displayName: 'App',
   getInitialState: function () {
     return {
-      playerName: "???"
+      player: {
+        name: "???",
+        playerKind: "unknown",
+        playerLevel: -1,
+        hp: -1,
+        mp: -1,
+        xp: -1,
+        maxHp: -1,
+        maxMp: -1,
+        maxXp: -1
+      }
     };
   },
 
   componentWillMount: function () {
+    this.updateFromPlayer();
+  },
+
+  updateFromPlayer: function () {
     api.getPlayer().then(function (resp) {
       this.setState({
-        playerName: resp.name
+        player: {
+          name: resp.name,
+          kind: resp.kind,
+          level: resp.level,
+          hp: 50,
+          mp: 50,
+          xp: 50,
+          maxHp: 100,
+          maxMp: 100,
+          maxXp: 100
+        }
       });
     }.bind(this));
   },
@@ -109,10 +85,7 @@ var App = React.createClass({displayName: 'App',
     var activeTab = this.state.activeTab;
 
     return React.DOM.div(null, 
-      Top( {hp:50, maxHp:100,
-           mp:50, maxMp:100,
-           xp:50, maxXp:100,
-           title:this.state.playerName, subtitle:"Mayor 10"} ),
+      Top(this.state.player),
 
       Middle(
           {tabs:[
@@ -148,7 +121,7 @@ var App = React.createClass({displayName: 'App',
               }
           ]} ),
 
-      Chat( {playerName:this.state.playerName,
+      Chat( {playerName:this.state.player.name,
             transport:this.props.transport} )
     );
   },
@@ -156,7 +129,7 @@ var App = React.createClass({displayName: 'App',
 
 module.exports = App;
 
-},{"./api":1,"./chat.jsx":3,"./tabs/explore.jsx":9,"./tabs/inventory.jsx":10,"./top.jsx":11}],3:[function(require,module,exports){
+},{"./api":1,"./chat.jsx":3,"./middle.jsx":6,"./tabs/explore.jsx":11,"./tabs/inventory.jsx":12,"./top.jsx":13}],3:[function(require,module,exports){
 /** @jsx React.DOM */"use strict";
 
 var api = require("./api");
@@ -290,6 +263,16 @@ var Chat = React.createClass({displayName: 'Chat',
 module.exports = Chat;
 
 },{"./api":1}],4:[function(require,module,exports){
+"use strict";
+
+module.exports = {
+  creature: {
+    human: "Human",
+    wyrm: "Wyrm"
+  }
+};
+
+},{}],5:[function(require,module,exports){
 /** @jsx React.DOM */"use strict";
 
 var net = require("./net");
@@ -300,7 +283,62 @@ React.renderComponent(
     App( {transport:new net.Transport("/events")} ),
     document.getElementById("elpizo"));
 
-},{"./app.jsx":2,"./net":5}],5:[function(require,module,exports){
+},{"./app.jsx":2,"./net":7}],6:[function(require,module,exports){
+/** @jsx React.DOM */"use strict";
+
+var Sidebar = React.createClass({displayName: 'Sidebar',
+  render: function () {
+    var tabs = this.props.tabs.map(function (item) {
+      return React.DOM.li( {className:item.id === this.props.activeTab ? "active" : "",
+                 id:"sidebar-" + item.id,
+                 key:item.id}, 
+        React.DOM.a( {onClick:this.onClick.bind(this, item.id), href:"#"}),
+        React.DOM.div( {className:"tooltip"}, 
+          React.DOM.div( {className:"name"}, item.name)
+        )
+      );
+    }.bind(this));
+
+    return React.DOM.ul( {className:"col sidebar"}, tabs);
+  },
+
+  onClick: function (id) {
+    this.props.onTabClick(id);
+  }
+});
+
+var Middle = React.createClass({displayName: 'Middle',
+  getInitialState: function () {
+    return {
+      activeTab: "explore"
+    };
+  },
+
+  render: function () {
+    var tabs = this.props.tabs.map(function (tab) {
+      return React.DOM.div( {className:"tab " + (this.state.activeTab == tab.id ?
+                             "active" : "hidden"),
+                  key:tab.id}, 
+        tab.element
+      );
+    }.bind(this));
+
+    return React.DOM.div( {className:"row middle"}, 
+      Sidebar( {tabs:this.props.tabs,
+               activeTab:this.state.activeTab,
+               onTabClick:this.handleSidebarTabClick} ),
+      React.DOM.div( {className:"col main"}, tabs)
+    );
+  },
+
+  handleSidebarTabClick: function (itemId) {
+    this.setState({activeTab: itemId});
+  }
+});
+
+module.exports = Middle;
+
+},{}],7:[function(require,module,exports){
 "use strict";
 
 var util = require("./util");
@@ -377,7 +415,7 @@ module.exports = {
   Protocol: Protocol
 };
 
-},{"./util":12}],6:[function(require,module,exports){
+},{"./util":14}],8:[function(require,module,exports){
 /** @jsx React.DOM */"use strict;"
 
 var Icon = React.createClass({displayName: 'Icon',
@@ -391,10 +429,12 @@ var Icon = React.createClass({displayName: 'Icon',
 
 module.exports = Icon;
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 /** @jsx React.DOM */"use strict;"
 
 var Menu = require("./menu.jsx");
+
+var util = require("../util");
 
 var Square = React.createClass({displayName: 'Square',
   getInitialState: function () {
@@ -411,10 +451,7 @@ var Square = React.createClass({displayName: 'Square',
           React.DOM.div( {className:"name"}, 
             this.props.title, " ", React.DOM.small(null, this.props.subtitle)
           ),
-          Menu( {items:[
-            {title: "Pick up", subtitle: "", id: "pickUp"},
-            {title: "Info", subtitle: "", id: "info"}
-          ]} )
+          this.props.menu
         )
       )
     );
@@ -447,6 +484,7 @@ var Card = React.createClass({displayName: 'Card',
       ),
       React.DOM.div( {className:"row"}, 
         React.DOM.div( {className:"col full"}, 
+          this.props.menu,
           Menu( {items:[
             {title: "Talk", subtitle: "", id: "talk"},
             {title: "Tame", subtitle: "Beastmastery 100", id: "tame"},
@@ -474,9 +512,8 @@ var List = React.createClass({displayName: 'List',
     var ListItem = this.getFactory();
 
     var items = this.props.items.map(function (item) {
-      return ListItem( {title:item.title, subtitle:item.subtitle,
-                       key:item.id, icon:item.icon} );
-    }.bind(this));
+      return ListItem(util.extend({key: item.id}, item));
+    });
 
     return React.DOM.ul( {className:"list"}, items);
   }
@@ -484,7 +521,7 @@ var List = React.createClass({displayName: 'List',
 
 module.exports = List;
 
-},{"./menu.jsx":8}],8:[function(require,module,exports){
+},{"../util":14,"./menu.jsx":10}],10:[function(require,module,exports){
 /** @jsx React.DOM */"use strict";
 
 var Menu = React.createClass({displayName: 'Menu',
@@ -506,20 +543,27 @@ var Menu = React.createClass({displayName: 'Menu',
 
 module.exports = Menu;
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 /** @jsx React.DOM */"use strict";
 
 var api = require("../api");
+var lexicon = require("../lexicon");
 
 var Icon = require("../parts/icon.jsx");
 var List = require("../parts/list.jsx");
+var Menu = require("../parts/menu.jsx");
 
-function showEntity(entity) {
+function showEntity(taxonomy, entity) {
   return {
       id: entity.id,
       title: entity.name,
-      subtitle: "Foo",
-      icon: Icon( {taxonomy:"facility", kind:"chest", variant:"1", size:"big"} )
+      subtitle: lexicon[taxonomy][entity.kind] + " " + entity.level,
+      icon: Icon( {taxonomy:taxonomy, kind:entity.kind, variant:"1", size:"big"} ),
+      menu: Menu( {items:[
+        {title: "Talk", subtitle: "", id: "talk"},
+        {title: "Tame", subtitle: "Beastmastery 100", id: "tame"},
+        {title: "Info", subtitle: "", id: "info"}
+      ]} )
   };
 }
 
@@ -549,10 +593,10 @@ var Explore = React.createClass({displayName: 'Explore',
           x: nearby.x,
           y: nearby.y,
           realm: nearby.realm,
-          creatures: nearby.creatures.map(showEntity),
-          buildings: nearby.buildings.map(showEntity),
-          items: nearby.items.map(showEntity),
-          facilities: nearby.facilities.map(showEntity)
+          creatures: nearby.creatures.map(showEntity.bind(null, "creature")),
+          buildings: nearby.buildings.map(showEntity.bind(null, "building")),
+          items: nearby.items.map(showEntity.bind(null, "item")),
+          facilities: nearby.facilities.map(showEntity.bind(null, "facility"))
       });
     }.bind(this));
   },
@@ -602,7 +646,7 @@ var Explore = React.createClass({displayName: 'Explore',
 
 module.exports = Explore;
 
-},{"../api":1,"../parts/icon.jsx":6,"../parts/list.jsx":7}],10:[function(require,module,exports){
+},{"../api":1,"../lexicon":4,"../parts/icon.jsx":8,"../parts/list.jsx":9,"../parts/menu.jsx":10}],12:[function(require,module,exports){
 /** @jsx React.DOM */"use strict";
 
 var Inventory = React.createClass({displayName: 'Inventory',
@@ -623,8 +667,10 @@ var Inventory = React.createClass({displayName: 'Inventory',
 
 module.exports = Inventory;
 
-},{}],11:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 /** @jsx React.DOM */"use strict";
+
+var lexicon = require("./lexicon");
 
 var Icon = require("./parts/icon.jsx");
 
@@ -637,11 +683,11 @@ module.exports = React.createClass({displayName: 'exports',
     return React.DOM.div( {className:"row top"}, 
       React.DOM.div( {className:"col"}, 
         React.DOM.div( {className:"left"}, 
-          Icon( {taxonomy:"creature", kind:"human", variant:"1", size:"big"} )
+          Icon( {taxonomy:"creature", kind:this.props.kind, variant:"1", size:"big"} )
         ),
         React.DOM.div( {className:"stats left"}, 
           React.DOM.div( {className:"name left"}, 
-            this.props.title, " ", React.DOM.small(null, this.props.subtitle)
+            this.props.name, " ", React.DOM.small(null, lexicon.creature[this.props.kind], " ", this.props.level)
           ),
           React.DOM.div( {className:"right"}, this.state.time),
           React.DOM.div( {className:"bars clear"}, 
@@ -664,8 +710,10 @@ module.exports = React.createClass({displayName: 'exports',
   }
 });
 
-},{"./parts/icon.jsx":6}],12:[function(require,module,exports){
+},{"./lexicon":4,"./parts/icon.jsx":8}],14:[function(require,module,exports){
 "use strict";
+
+var hasOwnProp = Object.prototype.hasOwnProperty;
 
 function EventEmitter() {
   this._handlers = {};
@@ -701,8 +749,21 @@ EventEmitter.prototype.emit = function (name) {
   }.bind(this));
 };
 
+function extend(dest, src) {
+  for (var k in src) {
+    if (!hasOwnProp.call(src, k)) {
+      continue;
+    }
+
+    dest[k] = src[k];
+  }
+
+  return dest;
+}
+
 module.exports = {
-  EventEmitter: EventEmitter
+  EventEmitter: EventEmitter,
+  extend: extend
 };
 
-},{}]},{},[4])
+},{}]},{},[5])

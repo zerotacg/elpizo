@@ -1,5 +1,7 @@
 "use strict";
 
+var hasOwnProp = Object.prototype.hasOwnProperty;
+
 function EventEmitter() {
   this._handlers = {};
 }
@@ -34,6 +36,19 @@ EventEmitter.prototype.emit = function (name) {
   }.bind(this));
 };
 
+function extend(dest, src) {
+  for (var k in src) {
+    if (!hasOwnProp.call(src, k)) {
+      continue;
+    }
+
+    dest[k] = src[k];
+  }
+
+  return dest;
+}
+
 module.exports = {
-  EventEmitter: EventEmitter
+  EventEmitter: EventEmitter,
+  extend: extend
 };

@@ -2,6 +2,8 @@
 
 var Menu = require("./menu.jsx");
 
+var util = require("../util");
+
 var Square = React.createClass({
   getInitialState: function () {
     return {
@@ -17,10 +19,7 @@ var Square = React.createClass({
           <div className="name">
             {this.props.title} <small>{this.props.subtitle}</small>
           </div>
-          <Menu items={[
-            {title: "Pick up", subtitle: "", id: "pickUp"},
-            {title: "Info", subtitle: "", id: "info"}
-          ]} />
+          {this.props.menu}
         </div>
       </div>
     </li>;
@@ -53,6 +52,7 @@ var Card = React.createClass({
       </div>
       <div className="row">
         <div className="col full">
+          {this.props.menu}
           <Menu items={[
             {title: "Talk", subtitle: "", id: "talk"},
             {title: "Tame", subtitle: "Beastmastery 100", id: "tame"},
@@ -80,9 +80,8 @@ var List = React.createClass({
     var ListItem = this.getFactory();
 
     var items = this.props.items.map(function (item) {
-      return <ListItem title={item.title} subtitle={item.subtitle}
-                       key={item.id} icon={item.icon} />;
-    }.bind(this));
+      return ListItem(util.extend({key: item.id}, item));
+    });
 
     return <ul className="list">{items}</ul>;
   }

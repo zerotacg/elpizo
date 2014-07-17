@@ -1,16 +1,23 @@
 "use strict";
 
 var api = require("../api");
+var lexicon = require("../lexicon");
 
 var Icon = require("../parts/icon.jsx");
 var List = require("../parts/list.jsx");
+var Menu = require("../parts/menu.jsx");
 
-function showEntity(entity) {
+function showEntity(taxonomy, entity) {
   return {
       id: entity.id,
       title: entity.name,
-      subtitle: "Foo",
-      icon: <Icon taxonomy="facility" kind="chest" variant="1" size="big" />
+      subtitle: lexicon[taxonomy][entity.kind] + " " + entity.level,
+      icon: <Icon taxonomy={taxonomy} kind={entity.kind} variant="1" size="big" />,
+      menu: <Menu items={[
+        {title: "Talk", subtitle: "", id: "talk"},
+        {title: "Tame", subtitle: "Beastmastery 100", id: "tame"},
+        {title: "Info", subtitle: "", id: "info"}
+      ]} />
   };
 }
 
@@ -40,10 +47,10 @@ var Explore = React.createClass({
           x: nearby.x,
           y: nearby.y,
           realm: nearby.realm,
-          creatures: nearby.creatures.map(showEntity),
-          buildings: nearby.buildings.map(showEntity),
-          items: nearby.items.map(showEntity),
-          facilities: nearby.facilities.map(showEntity)
+          creatures: nearby.creatures.map(showEntity.bind(null, "creature")),
+          buildings: nearby.buildings.map(showEntity.bind(null, "building")),
+          items: nearby.items.map(showEntity.bind(null, "item")),
+          facilities: nearby.facilities.map(showEntity.bind(null, "facility"))
       });
     }.bind(this));
   },
