@@ -16,7 +16,9 @@ class NearbyHandler(RequestHandler):
       "creatures": [
         {"name": "Droyer", "id": 10, "kind": "wyrm", "level": 10}
       ],
-      "buildings": [],
+      "buildings": [
+        {"name": "Spooky Mill", "id": 11, "kind": "windmill"}
+      ],
       "items": [],
       "facilities": []
     })

@@ -3,7 +3,24 @@
   "version": "0.0.0",
   "dependencies": {
     "browserify": "^4.2.1",
-    "reactify": "^0.13.1",
+    "debowerify": "^0.8.1",
+    "es6-module-jstransform": "^0.1.4",
+    "gulp": "^3.8.6",
+    "gulp-buffer": "0.0.2",
+    "gulp-duration": "0.0.0",
+    "gulp-less": "^1.3.1",
+    "gulp-sourcemaps": "^1.1.0",
+    "gulp-uglify": "^0.3.1",
+    "gulp-util": "^2.2.20",
+    "jstransform": "^6.0.1",
+    "less": "^1.7.3",
+    "react-tools": "^0.11.0",
+    "through": "^2.3.4",
+    "vinyl-source-stream": "^0.1.1",
     "watchify": "^0.10.2"
+  },
+  "main": "./client/main.jsx",
+  "browser": {
+    "sockjs": "sockjs-client/lib/sockjs.js"
   }
 }

@@ -1,0 +1,492 @@
+@import (css) "//fonts.googleapis.com/css?family=Roboto+Slab";
+
+@hilight: rgba(255, 255, 255, 0.25);
+@transition: 0.1s ease-in;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: black;
+  font-size: 14px;
+  font-family: "Roboto Slab", sans-serif;
+}
+
+small {
+  font-size: 12px;
+}
+
+.app {
+  width: 1024px;
+  height: 768px;
+
+  position: absolute;
+  margin: auto;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.map {
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 100%;
+
+  background: url("../img/map-test.png");
+}
+
+.ui {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+
+  width: 992px;
+  height: 736px;
+}
+
+.overlay {
+  background: rgba(0, 0, 0, 0.5);
+  padding: 16px;
+  text-shadow: 0 0 2px #000000;
+}
+
+.player-info {
+  .overlay;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  width: 100%;
+  height: 80px;
+
+  .icon {
+    float: left;
+  }
+
+  .stats {
+    float: left;
+    margin-left: 16px;
+  }
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.clear {
+  clear: both;
+}
+
+.switcher {
+  position: absolute;
+  left: 0;
+  top: 96px;
+
+  width: 992px;
+  height: 640px;
+}
+
+.sidebar {
+  .overlay;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 1;
+
+  padding: 8px 0;
+  margin: 0;
+
+  list-style: none;
+
+  li {
+    padding: 8px;
+
+    a {
+      position: relative;
+      display: block;
+      padding-left: 32px;
+      height: 32px;
+
+      background-repeat: no-repeat;
+      background-size: 32px 32px;
+      opacity: 0.25;
+
+      &:after {
+        .overlay;
+
+        position: absolute;
+        left: 40px;
+        top: 0;
+
+        padding: 0 8px 0 0;
+
+        content: attr(data-caption);
+
+        height: 32px;
+        line-height: 32px;
+
+        color: #fff;
+        opacity: 0;
+
+        visibility: hidden;
+        transition: @transition all;
+      }
+
+      transition: @transition opacity;
+    }
+
+    &.active a, a:hover {
+      opacity: 1;
+    }
+
+    a:hover:after {
+      visibility: visible;
+      opacity: 1;
+    }
+  }
+}
+
+.ui {
+  input {
+    width: 100%;
+    height: 32px;
+    border: none;
+
+    background: rgba(0, 0, 0, 0.5);
+    outline: 0;
+    color: inherit;
+    font: inherit;
+    padding: 0 8px;
+  }
+
+  a {
+    color: #ccc;
+    text-decoration: none;
+  }
+
+  color: #fff;
+}
+
+.chat {
+  .overlay;
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
+
+  width: 464px;
+  height: 240px;
+
+  .backlog {
+    width: 368px;
+    height: 160px;
+    margin-bottom: 16px;
+
+    overflow: auto;
+
+    td, th {
+      vertical-align: top;
+    }
+
+    th {
+      font-weight: normal;
+      color: #00ccff;
+      width: 72px;
+      padding-right: 8px;
+    }
+
+    .info {
+      color: #b3b3b3;
+    }
+  }
+}
+
+.list {
+  overflow: auto;
+
+  .items {
+    list-style: none;
+
+    margin: 0;
+    padding: 0;
+
+    > li {
+      .item-header {
+        display: block;
+        width: 100%;
+        color: #ffffff;
+
+        transition: @transition background;
+      }
+
+      &.active .item-header, .item-header:hover {
+        background: @hilight;
+      }
+    }
+  }
+}
+
+.avatar {
+  display: block;
+
+  position: absolute;
+  width: 32px;
+  height: 64px;
+
+  left: 248px;
+  top: 256px;
+
+  background: url("../img/avatar.png");
+}
+
+.nearby {
+  .overlay;
+
+  position: absolute;
+  right: 0;
+  top: 0;
+
+  width: 512px;
+  height: 640px;
+
+  .long {
+    height: 512px;
+    margin-bottom: 16px;
+
+    .list {
+      float: left;
+
+      width: 50%;
+      height: 100%;
+
+      .items {
+        width: 100%;
+        height: 100%;
+
+        margin-top: -16px;
+
+        > li {
+          margin-top: 16px;
+
+          .item-header {
+            .icon {
+              float: left;
+            }
+
+            .name {
+              padding-left: 16px;
+              height: 48px;
+              line-height: 48px;
+            }
+          }
+
+          &.active .menu {
+            > li {
+              opacity: 1;
+              height: 28px;
+              overflow: hidden;
+            }
+          }
+
+          .menu {
+            overflow: hidden;
+
+            > li {
+              margin-left: 48px;
+              height: 0;
+              opacity: 0;
+
+              transition: @transition all;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .short {
+    height: 48px;
+
+    .items > li {
+      float: left;
+
+      .item-header {
+        .name {
+          display: none;
+        }
+      }
+    }
+  }
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  li a {
+    display: block;
+    width: 100%;
+
+    padding: 4px 16px;
+
+    transition: @transition background;
+
+    &:hover {
+      background: @hilight;
+    }
+  }
+}
+
+.name {
+  font-size: 16px;
+  height: 32px;
+
+  small {
+    font-size: 12px;
+  }
+}
+
+.tab {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+
+  width: 100%;
+  height: 100%;
+
+  visibility: hidden;
+  opacity: 0;
+
+  transition: @transition all;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+#sidebar-explore {
+  background-image: url("../img/icons/explore.svg");
+}
+
+#sidebar-inventory {
+  background-image: url("../img/icons/inventory.svg");
+}
+
+#sidebar-quests {
+  background-image: url("../img/icons/quests.svg");
+}
+
+#sidebar-skills {
+  background-image: url("../img/icons/skills.svg");
+}
+
+#sidebar-guild {
+  background-image: url("../img/icons/guild.svg");
+}
+
+#sidebar-property {
+  background-image: url("../img/icons/property.svg");
+}
+
+.bars {
+  .bar {
+    width: 288px;
+    float: left;
+    margin-left: 16px;
+
+    text-shadow: none;
+  }
+
+  margin-left: -16px;
+}
+
+.bar {
+  height: 16px;
+  position: relative;
+
+  .fill {
+    position: absolute;
+    height: 100%;
+  }
+
+  .caption {
+    position: absolute;
+    font-size: 12px;
+
+    height: 100%;
+    width: 100%;
+    text-align: center;
+  }
+
+  &.hp {
+    background: #ffd5d5;
+
+    .fill {
+      background: #ff2a2a;
+    }
+
+    .caption {
+      color: #550000;
+    }
+  }
+
+  &.mp {
+    background: #d5f6ff;
+
+    .fill {
+      background: #00ccff;
+    }
+
+    .caption {
+      color: #004455;
+    }
+  }
+
+  &.xp {
+    background: #fff6d5;
+
+    .fill {
+      background: #ffcc00;
+    }
+
+    .caption {
+      color: #554400;
+    }
+  }
+}
+
+.icon {
+  display: block;
+  width: 48px;
+  height: 48px;
+
+  &.taxonomy-creature.kind-human.variant-1 {
+    background: url("../img/face.png");
+  }
+}
+
+.spread {
+  .overlay;
+
+  position: absolute;
+  right: 0;
+  top: 0;
+
+  width: 944px;
+  height: 100%;
+}
+

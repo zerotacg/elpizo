@@ -34,7 +34,25 @@ class ChannelSession(session.BaseSession):
 
 def makeMultiplexConnection(channels):
   class MultiplexConnection(conn.SockJSConnection):
+    @property
+    def application(self):
+      return self.session.server.application
+
     def on_open(self, info):
+      if info.get_cookie("elpizo_user") is None:
+        self.close()
+        return
+
+      user_id = int(decode_signed_value(
+          self.application.settings["cookie_secret"],
+          name="elpizo_user",
+          value=info.get_cookie("elpizo_user").value))
+
+      self.player = self.application.sqla_session.query(Player) \
+          .filter((User.current_player_id == Player.id) &
+                  (User.id == user_id)) \
+          .one()
+
       self.endpoints = {}
 
       for chan, Chan in self.channels.items():
@@ -64,20 +82,14 @@ class Protocol(conn.SockJSConnection):
   def application(self):
     return self.session.server.application
 
+  @property
+  def player(self):
+    return self.session.base.player
+
   def send(self, message):
     super().send(json.dumps(message))
 
   def on_open(self, info):
-    user_id = int(decode_signed_value(
-        self.application.settings["cookie_secret"],
-        name="elpizo_user",
-        value=info.get_cookie("elpizo_user").value))
-
-    self.player = self.application.sqla_session.query(Player) \
-        .filter((User.current_player_id == Player.id) &
-                (User.id == user_id)) \
-        .one()
-
     self.on_authed_open(info)
 
   def on_message(self, msg):

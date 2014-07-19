@@ -5,7 +5,7 @@ from tornado.gen import Task, engine
 from .net import Protocol
 
 
-class ChatConnection(Protocol):
+class ChatProtocol(Protocol):
   @staticmethod
   def get_room_exchange_name(target):
     return "chat:room:{}".format(target)
@@ -63,5 +63,5 @@ class ChatConnection(Protocol):
 
 
 CHANNELS = {
-  "chat": ChatConnection
+  "chat": ChatProtocol
 }
