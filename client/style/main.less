@@ -38,6 +38,8 @@ small {
   height: 100%;
 
   background: url("../img/map-test.png");
+
+  cursor: pointer;
 }
 
 .ui {
@@ -53,6 +55,7 @@ small {
   background: rgba(0, 0, 0, 0.5);
   padding: 16px;
   text-shadow: 0 0 2px #000000;
+  pointer-events: all;
 }
 
 .player-info {
@@ -104,53 +107,58 @@ small {
   top: 0;
   z-index: 1;
 
-  padding: 8px 0;
+  padding: 0;
   margin: 0;
 
   list-style: none;
 
   li {
-    padding: 8px;
+    position: relative;
 
     a {
       position: relative;
+
       display: block;
-      padding-left: 32px;
-      height: 32px;
+      padding: 8px;
+      width: 48px;
+      height: 48px;
 
       background-repeat: no-repeat;
       background-size: 32px 32px;
+      background-position: 8px 8px;
       opacity: 0.25;
-
-      &:after {
-        .overlay;
-
-        position: absolute;
-        left: 40px;
-        top: 0;
-
-        padding: 0 8px 0 0;
-
-        content: attr(data-caption);
-
-        height: 32px;
-        line-height: 32px;
-
-        color: #fff;
-        opacity: 0;
-
-        visibility: hidden;
-        transition: @transition all;
-      }
-
       transition: @transition opacity;
     }
 
-    &.active a, a:hover {
+    &:after {
+      .overlay;
+
+      font-size: 16px;
+
+      position: absolute;
+      left: 48px;
+      top: 0;
+
+      padding: 0 8px;
+
+      content: attr(data-caption);
+
+      height: 48px;
+      line-height: 48px;
+
+      color: #fff;
+      opacity: 0;
+
+      visibility: hidden;
+      transition: @transition all;
+    }
+
+
+    &.active a, &:hover a {
       opacity: 1;
     }
 
-    a:hover:after {
+    &:hover:after {
       visibility: visible;
       opacity: 1;
     }
@@ -158,6 +166,8 @@ small {
 }
 
 .ui {
+  pointer-events: none;
+
   input {
     width: 100%;
     height: 32px;
@@ -189,7 +199,6 @@ small {
   height: 240px;
 
   .backlog {
-    width: 368px;
     height: 160px;
     margin-bottom: 16px;
 
@@ -203,7 +212,11 @@ small {
       font-weight: normal;
       color: #00ccff;
       width: 72px;
-      padding-right: 8px;
+      text-align: left;
+    }
+
+    td {
+      word-break: break-all;
     }
 
     .info {
@@ -285,47 +298,102 @@ small {
             }
 
             .name {
-              padding-left: 16px;
+              padding-left: 8px;
               height: 48px;
               line-height: 48px;
             }
           }
-
-          &.active .menu {
-            > li {
-              opacity: 1;
-              height: 28px;
-              overflow: hidden;
-            }
-          }
-
-          .menu {
-            overflow: hidden;
-
-            > li {
-              margin-left: 48px;
-              height: 0;
-              opacity: 0;
-
-              transition: @transition all;
-            }
-          }
         }
       }
+    }
+
+    .menu li {
+      padding-left: 40px;
     }
   }
 
   .short {
     height: 48px;
 
+    .left .list {
+      .name, .menu {
+        left: 16px;
+        text-align: left;
+      }
+    }
+
+    .right .list {
+      .name, .menu {
+        right: 16px;
+        text-align: right;
+      }
+    }
+
+    .list {
+      overflow: visible;
+    }
+
     .items > li {
       float: left;
 
-      .item-header {
-        .name {
-          display: none;
+      .item-header .name {
+        position: absolute;
+        visibility: hidden;
+        opacity: 0;
+
+        white-space: nowrap;
+
+        background: @hilight;
+
+        width: 240px;
+        height: 48px;
+
+        line-height: 48px;
+
+        padding: 0 16px;
+
+        bottom: 64px;
+
+        transition: @transition all;
+      }
+
+      &:hover, &.active {
+        .item-header .name {
+          visibility: visible;
+          opacity: 1;
         }
       }
+
+      &.active {
+        .menu {
+          visibility: visible;
+        }
+      }
+    }
+
+    .menu {
+      position: absolute;
+      bottom: 112px;
+      width: 240px;
+    }
+  }
+
+  .menu {
+    overflow: hidden;
+
+    > li {
+      height: 0;
+
+      background: @hilight;
+
+      transition: @transition height;
+    }
+  }
+
+  .items > li.active .menu {
+    > li {
+      height: 28px;
+      overflow: hidden;
     }
   }
 }
@@ -335,16 +403,20 @@ small {
   padding: 0;
   margin: 0;
 
-  li a {
-    display: block;
-    width: 100%;
+  > li {
+    transition: @transition all;
 
-    padding: 4px 16px;
+    a {
+      display: block;
+      width: 100%;
 
-    transition: @transition background;
+      padding: 4px 16px;
 
-    &:hover {
-      background: @hilight;
+      transition: @transition all;
+
+      &:hover {
+        background: @hilight;
+      }
     }
   }
 }
@@ -379,27 +451,27 @@ small {
 }
 
 #sidebar-explore {
-  background-image: url("../img/icons/explore.svg");
+  &, &:before { background-image: url("../img/icons/explore.svg"); }
 }
 
 #sidebar-inventory {
-  background-image: url("../img/icons/inventory.svg");
+  &, &:before {  background-image: url("../img/icons/inventory.svg"); }
 }
 
 #sidebar-quests {
-  background-image: url("../img/icons/quests.svg");
+  &, &:before {  background-image: url("../img/icons/quests.svg"); }
 }
 
 #sidebar-skills {
-  background-image: url("../img/icons/skills.svg");
+  &, &:before {  background-image: url("../img/icons/skills.svg"); }
 }
 
 #sidebar-guild {
-  background-image: url("../img/icons/guild.svg");
+  &, &:before {  background-image: url("../img/icons/guild.svg"); }
 }
 
 #sidebar-property {
-  background-image: url("../img/icons/property.svg");
+  &, &:before {  background-image: url("../img/icons/property.svg"); }
 }
 
 .bars {

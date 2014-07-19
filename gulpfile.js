@@ -33,6 +33,7 @@ function rebundle(bundler) {
       e.toString().split("\n").forEach(function (line) {
         gutil.log(gutil.colors.red(line));
       });
+      this.emit("end");
     })
     .pipe(source("bundle.js"))
     .pipe(buffer())
@@ -103,6 +104,12 @@ gulp.task("styles", function () {
         paths: [path.join(__dirname, "client", "style")],
         compress: true
     }))
+    .on("error", function (e) {
+      e.toString().split("\n").forEach(function (line) {
+        gutil.log(gutil.colors.red(line));
+      });
+      this.emit("end");
+    })
     .pipe(sourcemaps.write("../maps"))
     .pipe(gulp.dest("elpizo/static/css"));
 });

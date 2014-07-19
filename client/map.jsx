@@ -11,9 +11,13 @@ var Avatar = React.createClass(_Avatar.prototype);
 
 class _Map {
   render() {
-    return <div className="map">
+    return <div className="map" onClick={this.onClick}>
       <Avatar />
     </div>;
+  }
+
+  onClick(e) {
+    this.props.onMapClick(e);
   }
 }
 var Map = React.createClass(_Map.prototype);

@@ -14,7 +14,7 @@ class _Icon {
     classes["kind-" + this.props.kind] = true;
     classes["variant-" + this.props.variant] = true;
 
-    return <i className={classSet(classes)} />;
+    return <span className={classSet(classes)} />;
   }
 }
 

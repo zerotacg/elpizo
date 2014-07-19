@@ -13,40 +13,62 @@ module SkillsTab from "./tabs/skills.jsx";
 module GuildTab from "./tabs/guild.jsx";
 module PropertyTab from "./tabs/property.jsx";
 
-module api from "./api";
+import {getPlayer, getExploreNearby, openExplore, postExploreMove} from "./api";
 
 class _App {
   getInitialState() {
     return {
-      player: {
-          name: "???",
-          playerKind: "unknown",
-          playerLevel: -1,
-          hp: -1,
-          mp: -1,
-          xp: -1,
-          maxHp: -1,
-          maxMp: -1,
-          maxXp: -1
-      }
+        player: {
+            name: "Unknown Player",
+            playerKind: "unknown",
+            playerLevel: -1,
+            hp: -1,
+            mp: -1,
+            xp: -1,
+            maxHp: -1,
+            maxMp: -1,
+            maxXp: -1
+        },
+
+        nearby: {
+          x: -1,
+          y: -1,
+          realm: "Unknown Realm",
+          name: "The Void",
+          creatures: [],
+          buildings: [],
+          items: [],
+          facilities: []
+        }
     };
   }
 
-  updatePlayerFromApi() {
-    api.getPlayer().then((player) => {
+  updatePlayer(promise) {
+    promise.then((player) => {
       this.setState({
           player: player
       });
     });
   }
 
+  updateNearby(promise) {
+    promise.then((nearby) => {
+      this.setState({
+        nearby: nearby
+      });
+    });
+  }
+
   componentWillMount() {
-    this.updatePlayerFromApi();
+    this.explore = openExplore(this.props.transport);
+
+    this.updatePlayer(getPlayer());
+    this.updateNearby(getExploreNearby());
   }
 
   render() {
     return <div>
-      <Map />
+      <Map onMapClick={this.onMove} />
 
       <div className="ui">
         <PlayerInfo name="Valjean" kind="human" level={10}
@@ -56,7 +78,8 @@ class _App {
         <Switcher tabs={[
             {name: "Explore", id: "explore", element: <ExploreTab
                 transport={this.props.transport}
-                playerName={this.state.player.name} />},
+                playerName={this.state.player.name}
+                nearby={this.state.nearby} />},
             {name: "Inventory", id: "inventory", element: <InventoryTab
                 playerName={this.state.player.name} />},
             {name: "Quests", id: "quests", element: <QuestsTab
@@ -70,6 +93,12 @@ class _App {
         ]} />
       </div>
     </div>;
+  }
+
+  onMove(e) {
+    this.updateNearby(postExploreMove({
+      x: e.clientX, y: e.clientY
+    }));
   }
 }
 

@@ -1,3 +1,3 @@
 import "sockjs";
-export default = SockJS;
+export default = window.SockJS;
 delete window.SockJS;

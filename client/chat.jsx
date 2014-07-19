@@ -2,7 +2,7 @@
 
 module React from "react";
 
-module api from "./api";
+import {openChat} from "./api";
 
 import {nextMonotonicId} from "./util/objects";
 
@@ -16,7 +16,7 @@ class _Chat {
   }
 
   componentWillMount() {
-    this.chat = api.openChat(this.props.transport);
+    this.chat = openChat(this.props.transport);
 
     this.chat.on("open", this.onChatOpen);
     this.chat.on("message", this.onChatMessage);

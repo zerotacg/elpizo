@@ -20855,12 +20855,11 @@ function openProto(channel, transport) {
   return new net.Protocol(channel, transport);
 }
 
-module.exports = {
-  getPlayer: httpJson.bind(null, "/player", "GET"),
-  getExploreNearby: httpJson.bind(null, "/explore/nearby", "GET"),
-  openExplore: openProto.bind(null, "explore"),
-  openChat: openProto.bind(null, "chat")
-};
+var getPlayer = module.exports.getPlayer = httpJson.bind(null, "/player", "GET");
+var getExploreNearby = module.exports.getExploreNearby = httpJson.bind(null, "/explore/nearby", "GET");
+var postExploreMove = module.exports.postExploreMove = httpJson.bind(null, "/explore/move", "POST");
+var openExplore = module.exports.openExplore = openProto.bind(null, "explore");
+var openChat = module.exports.openChat = openProto.bind(null, "chat");
 
 
 },{"./net":9}],4:[function(require,module,exports){
@@ -20879,40 +20878,62 @@ var SkillsTab = require("./tabs/skills.jsx");
 var GuildTab = require("./tabs/guild.jsx");
 var PropertyTab = require("./tabs/property.jsx");
 
-var api = require("./api");
+var mod$17 = require("./api");var getPlayer = mod$17.getPlayer;var getExploreNearby = mod$17.getExploreNearby;var openExplore = mod$17.openExplore;var postExploreMove = mod$17.postExploreMove;
 
 function _App(){"use strict";}
   _App.prototype.getInitialState=function() {"use strict";
     return {
-      player: {
-          name: "???",
-          playerKind: "unknown",
-          playerLevel: -1,
-          hp: -1,
-          mp: -1,
-          xp: -1,
-          maxHp: -1,
-          maxMp: -1,
-          maxXp: -1
-      }
+        player: {
+            name: "Unknown Player",
+            playerKind: "unknown",
+            playerLevel: -1,
+            hp: -1,
+            mp: -1,
+            xp: -1,
+            maxHp: -1,
+            maxMp: -1,
+            maxXp: -1
+        },
+
+        nearby: {
+          x: -1,
+          y: -1,
+          realm: "Unknown Realm",
+          name: "The Void",
+          creatures: [],
+          buildings: [],
+          items: [],
+          facilities: []
+        }
     };
   };
 
-  _App.prototype.updatePlayerFromApi=function() {"use strict";
-    api.getPlayer().then(function(player)  {
+  _App.prototype.updatePlayer=function(promise) {"use strict";
+    promise.then(function(player)  {
       this.setState({
           player: player
       });
     }.bind(this));
   };
 
+  _App.prototype.updateNearby=function(promise) {"use strict";
+    promise.then(function(nearby)  {
+      this.setState({
+        nearby: nearby
+      });
+    }.bind(this));
+  };
+
   _App.prototype.componentWillMount=function() {"use strict";
-    this.updatePlayerFromApi();
+    this.explore = openExplore(this.props.transport);
+
+    this.updatePlayer(getPlayer());
+    this.updateNearby(getExploreNearby());
   };
 
   _App.prototype.render=function() {"use strict";
     return React.DOM.div(null, 
-      Map(null), 
+      Map({onMapClick: this.onMove}), 
 
       React.DOM.div({className: "ui"}, 
         PlayerInfo({name: "Valjean", kind: "human", level: 10, 
@@ -20922,7 +20943,8 @@ function _App(){"use strict";}
         Switcher({tabs: [
             {name: "Explore", id: "explore", element: ExploreTab({
                 transport: this.props.transport, 
-                playerName: this.state.player.name})},
+                playerName: this.state.player.name, 
+                nearby: this.state.nearby})},
             {name: "Inventory", id: "inventory", element: InventoryTab({
                 playerName: this.state.player.name})},
             {name: "Quests", id: "quests", element: QuestsTab({
@@ -20938,17 +20960,23 @@ function _App(){"use strict";}
     );
   };
 
+  _App.prototype.onMove=function(e) {"use strict";
+    this.updateNearby(postExploreMove({
+      x: e.clientX, y: e.clientY
+    }));
+  };
+
 
 var App = React.createClass(_App.prototype);
 module.exports = App;
 
 
-},{"./../bower_components/react/react.js":1,"./api":3,"./map.jsx":8,"./player-info.jsx":13,"./switcher.jsx":14,"./tabs/explore.jsx":15,"./tabs/guild.jsx":16,"./tabs/inventory.jsx":17,"./tabs/property.jsx":18,"./tabs/quests.jsx":19,"./tabs/skills.jsx":20}],5:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./api":3,"./map.jsx":8,"./player-info.jsx":14,"./switcher.jsx":15,"./tabs/explore.jsx":16,"./tabs/guild.jsx":17,"./tabs/inventory.jsx":18,"./tabs/property.jsx":19,"./tabs/quests.jsx":20,"./tabs/skills.jsx":21}],5:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../bower_components/react/react.js");
 
-var api = require("./api");
+var openChat = require("./api").openChat;
 
 var nextMonotonicId = require("./util/objects").nextMonotonicId;
 
@@ -20962,7 +20990,7 @@ function _Chat(){"use strict";}
   };
 
   _Chat.prototype.componentWillMount=function() {"use strict";
-    this.chat = api.openChat(this.props.transport);
+    this.chat = openChat(this.props.transport);
 
     this.chat.on("open", this.onChatOpen);
     this.chat.on("message", this.onChatMessage);
@@ -21070,7 +21098,7 @@ var Chat = React.createClass(_Chat.prototype);
 module.exports = Chat;
 
 
-},{"./../bower_components/react/react.js":1,"./api":3,"./util/objects":22}],6:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./api":3,"./util/objects":23}],6:[function(require,module,exports){
 module.exports = {
     creature: {
         human: "Human",
@@ -21115,9 +21143,13 @@ var Avatar = React.createClass(_Avatar.prototype);
 
 function _Map(){"use strict";}
   _Map.prototype.render=function() {"use strict";
-    return React.DOM.div({className: "map"}, 
+    return React.DOM.div({className: "map", onClick: this.onClick}, 
       Avatar(null)
     );
+  };
+
+  _Map.prototype.onClick=function(e) {"use strict";
+    this.props.onMapClick(e);
   };
 
 var Map = React.createClass(_Map.prototype);
@@ -21199,7 +21231,7 @@ for(EventEmitter____Key in EventEmitter){if(EventEmitter.hasOwnProperty(EventEmi
 module.exports.Protocol = Protocol;
 
 
-},{"./util/events":21,"./util/sockjs-shim":24}],10:[function(require,module,exports){
+},{"./util/events":22,"./util/sockjs-shim":25}],10:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21225,7 +21257,7 @@ var Bar = React.createClass(_Bar.prototype);
 module.exports = Bar;
 
 
-},{"../util/react":23,"./../../bower_components/react/react.js":1}],11:[function(require,module,exports){
+},{"../util/react":24,"./../../bower_components/react/react.js":1}],11:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21242,7 +21274,7 @@ function _Icon(){"use strict";}
     classes["kind-" + this.props.kind] = true;
     classes["variant-" + this.props.variant] = true;
 
-    return React.DOM.i({className: classSet(classes)});
+    return React.DOM.span({className: classSet(classes)});
   };
 
 
@@ -21250,7 +21282,7 @@ var Icon = React.createClass(_Icon.prototype);
 module.exports = Icon;
 
 
-},{"../util/react":23,"./../../bower_components/react/react.js":1}],12:[function(require,module,exports){
+},{"../util/react":24,"./../../bower_components/react/react.js":1}],12:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21269,6 +21301,32 @@ module.exports = List;
 },{"./../../bower_components/react/react.js":1}],13:[function(require,module,exports){
 /** @jsx React.DOM */
 
+var React = require("./../../bower_components/react/react.js");
+
+function _Menu(){"use strict";}
+  _Menu.prototype.render=function() {"use strict";
+    var items = this.props.items.map(function (item) {
+      return React.DOM.li({key: item.id}, React.DOM.a({href: "#", 
+                                  onClick: this.onClick.bind(this, item.id)}, 
+        item.title, " ", React.DOM.small(null, item.subtitle))
+      );
+    }.bind(this));
+
+    return React.DOM.ul({className: "menu"}, items);
+  };
+
+  _Menu.prototype.onClick=function(id, e) {"use strict";
+    e.preventDefault();
+    this.props.onItemClick(id);
+  };
+
+var Menu = React.createClass(_Menu.prototype);
+module.exports = Menu;
+
+
+},{"./../../bower_components/react/react.js":1}],14:[function(require,module,exports){
+/** @jsx React.DOM */
+
 var React = require("./../bower_components/react/react.js");
 
 var lexicon = require("./lexicon");
@@ -21279,7 +21337,7 @@ var Icon = require("./parts/icon.jsx");
 function _PlayerInfo(){"use strict";}
   _PlayerInfo.prototype.getInitialState=function() {"use strict";
     return {
-        time: "Time goes here"
+        time: "First day of the Dawnstar"
     };
   };
 
@@ -21305,7 +21363,7 @@ var PlayerInfo = React.createClass(_PlayerInfo.prototype);
 module.exports = PlayerInfo;
 
 
-},{"./../bower_components/react/react.js":1,"./lexicon":6,"./parts/bar.jsx":10,"./parts/icon.jsx":11}],14:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./lexicon":6,"./parts/bar.jsx":10,"./parts/icon.jsx":11}],15:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../bower_components/react/react.js");
@@ -21319,8 +21377,8 @@ function _Sidebar(){"use strict";}
         active: this.props.activeTab === tab.id
       };
 
-      return React.DOM.li({className: classSet(classes), key: tab.id}, 
-        React.DOM.a({id: "sidebar-" + tab.id, href: "#", 'data-caption': tab.name, 
+      return React.DOM.li({className: classSet(classes), key: tab.id, 'data-caption': tab.name}, 
+        React.DOM.a({id: "sidebar-" + tab.id, href: "#", 
            onClick: this.onClick.bind(this, tab.id)})
       );
     }.bind(this));
@@ -21370,16 +21428,16 @@ var Switcher = React.createClass(_Switcher.prototype);
 module.exports = Switcher;
 
 
-},{"./../bower_components/react/react.js":1,"./util/react":23}],15:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./util/react":24}],16:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
 
-var api = require("../api");
 var lexicon = require("../lexicon");
 
 var Icon = require("../parts/icon.jsx");
 var List = require("../parts/list.jsx");
+var Menu = require("../parts/menu.jsx");
 
 var Chat = require("../chat.jsx");
 
@@ -21405,10 +21463,10 @@ function _EntityItem(){"use strict";}
           this.props.name, " ", React.DOM.small(null, lexicon[this.props.taxonomy][this.props.kind], " ", this.props.level)
         )
       ), 
-      React.DOM.ul({className: "menu"}, 
-        React.DOM.li(null, React.DOM.a({href: "#"}, "Talk")), 
-        React.DOM.li(null, React.DOM.a({href: "#"}, "Info"))
-      )
+      Menu({items: [
+          {id: "talk", title: "Talk"},
+          {id: "info", title: "Info"}
+      ]})
     );
   };
 
@@ -21422,45 +21480,37 @@ function _EntityItem(){"use strict";}
 var EntityItem = React.createClass(_EntityItem.prototype);
 
 function _ExploreTab(){"use strict";}
-  _ExploreTab.prototype.getInitialState=function() {"use strict";
-    return {
-        name: "Unknown",
-        x: -1,
-        y: -1,
-        realm: "The Ether",
-        creatures: [],
-        buildings: [],
-        items: [],
-        facilities: []
-    };
+  _ExploreTab.prototype.createEntityItem=function(taxonomy, entity) {"use strict";
+    return EntityItem({name: entity.name, taxonomy: taxonomy, 
+                       kind: entity.kind, variant: entity.variant, 
+                       level: entity.level, 
+                       key: entity.id});
   };
 
   _ExploreTab.prototype.render=function() {"use strict";
+    var nearby = this.props.nearby;
+
     return React.DOM.div({id: "explore"}, 
       Chat({transport: this.props.transport, 
             playerName: this.props.playerName}), 
 
       React.DOM.div({className: "nearby"}, 
-        React.DOM.div({className: "name"}, "Tall Grass ", React.DOM.small(null, "31, 58 Wyrm Vale")), 
+        React.DOM.div({className: "name"}, 
+          nearby.name, " ", React.DOM.small(null, nearby.x, ", ", nearby.y, " ", nearby.realm)
+        ), 
 
         React.DOM.div({className: "long"}, 
-          List({items: [
-            EntityItem({name: "Thénardier", taxonomy: "creature", kind: "human", 
-                        variant: "1", level: 100, key: "1"})
-          ]}), 
-          List({items: [
-            EntityItem({name: "Aubrey", taxonomy: "creature", kind: "human", 
-                        variant: "1", level: 100, key: "2"})
-          ]})
+          List({items: nearby.creatures.map(this.createEntityItem.bind(null, "creature"))}), 
+          List({items: nearby.buildings.map(this.createEntityItem.bind(null, "building"))})
         ), 
 
         React.DOM.div({className: "short"}, 
           React.DOM.div({className: "left"}, 
-            List(null)
+            List({items: nearby.items.map(this.createEntityItem.bind(null, "item"))})
           ), 
 
           React.DOM.div({className: "right"}, 
-            List(null)
+            List({items: nearby.facilities.map(this.createEntityItem.bind(null, "facility"))})
           )
         )
       )
@@ -21470,75 +21520,8 @@ function _ExploreTab(){"use strict";}
 var ExploreTab = React.createClass(_ExploreTab.prototype);
 module.exports = ExploreTab;
 
-var Explore = React.createClass({displayName: 'Explore',
-  getInitialState: function () {
-  },
 
-  componentWillMount: function () {
-    this.updateFromNearby();
-    this.explore = api.openExplore(this.props.transport);
-  },
-
-  updateFromNearby: function () {
-    api.getExploreNearby().then(function (nearby) {
-      this.setState({
-          name: nearby.name,
-          x: nearby.x,
-          y: nearby.y,
-          realm: nearby.realm,
-          creatures: nearby.creatures.map(showCreature),
-          buildings: nearby.buildings.map(showBuilding),
-          items: nearby.items.map(showItem),
-          facilities: nearby.facilities.map(showFacility)
-      });
-    }.bind(this));
-  },
-
-  render: function () {
-    return React.DOM.div({className: "explore"}, 
-      React.DOM.div({className: "row"}, 
-        React.DOM.div({className: "col primary"}, 
-          React.DOM.div({className: "map"})
-        ), 
-        React.DOM.div({className: "col secondary"}, 
-          React.DOM.div({className: "name"}, 
-            this.state.name, " ", React.DOM.small(null, this.state.x, ", ", this.state.y, " ", this.state.realm)
-          ), 
-
-          React.DOM.div({className: "row columns"}, 
-            React.DOM.div({className: "col"}, 
-              React.DOM.div({className: "well"}, 
-                List({type: "card", items: this.state.creatures})
-              )
-            ), 
-            React.DOM.div({className: "col"}, 
-              React.DOM.div({className: "well"}, 
-                List({type: "card", items: this.state.buildings})
-              )
-            )
-          ), 
-
-          React.DOM.div({className: "row"}, 
-            React.DOM.div({className: "col"}, 
-              React.DOM.div({className: "well entities"}, 
-                React.DOM.div({className: "left"}, 
-                  List({type: "square", items: this.state.items})
-                ), 
-
-                React.DOM.div({className: "right"}, 
-                  List({type: "square", items: this.state.facilities})
-                )
-              )
-            )
-          )
-        )
-      )
-    );
-  }
-});
-
-
-},{"../api":3,"../chat.jsx":5,"../lexicon":6,"../parts/icon.jsx":11,"../parts/list.jsx":12,"../util/react":23,"./../../bower_components/react/react.js":1}],16:[function(require,module,exports){
+},{"../chat.jsx":5,"../lexicon":6,"../parts/icon.jsx":11,"../parts/list.jsx":12,"../parts/menu.jsx":13,"../util/react":24,"./../../bower_components/react/react.js":1}],17:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21556,7 +21539,7 @@ var GuildsTab = React.createClass(_GuildsTab.prototype);
 module.exports = GuildsTab;
 
 
-},{"./../../bower_components/react/react.js":1}],17:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],18:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21574,7 +21557,7 @@ var InventoryTab = React.createClass(_InventoryTab.prototype);
 module.exports = InventoryTab;
 
 
-},{"./../../bower_components/react/react.js":1}],18:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],19:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21592,7 +21575,7 @@ var PropertyTab = React.createClass(_PropertyTab.prototype);
 module.exports = PropertyTab;
 
 
-},{"./../../bower_components/react/react.js":1}],19:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],20:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21610,7 +21593,7 @@ var QuestsTab = React.createClass(_QuestsTab.prototype);
 module.exports = QuestsTab;
 
 
-},{"./../../bower_components/react/react.js":1}],20:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],21:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21628,7 +21611,7 @@ var SkillsTab = React.createClass(_SkillsTab.prototype);
 module.exports = SkillsTab;
 
 
-},{"./../../bower_components/react/react.js":1}],21:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],22:[function(require,module,exports){
 var hasOwnProp = require("./objects").hasOwnProp;
 
 
@@ -21667,7 +21650,7 @@ var hasOwnProp = require("./objects").hasOwnProp;
 module.exports.EventEmitter = EventEmitter;
 
 
-},{"./objects":22}],22:[function(require,module,exports){
+},{"./objects":23}],23:[function(require,module,exports){
 var hasOwnProp = module.exports.hasOwnProp = Object.prototype.hasOwnProperty;
 
 function extend(dest, src) {
@@ -21693,7 +21676,7 @@ var nextMonotonicId = module.exports.nextMonotonicId = (function () {
 })();
 
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 function classSet(classes) {
   return Object.keys(classes).filter(function (k) {
     return classes[k];
@@ -21701,9 +21684,9 @@ function classSet(classes) {
 } module.exports.classSet = classSet;
 
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 require("./../../bower_components/sockjs/sockjs.js");
-module.exports = SockJS;
+module.exports = window.SockJS;
 delete window.SockJS;
 
 

@@ -25,9 +25,8 @@ function openProto(channel, transport) {
   return new net.Protocol(channel, transport);
 }
 
-export default = {
-  getPlayer: httpJson.bind(null, "/player", "GET"),
-  getExploreNearby: httpJson.bind(null, "/explore/nearby", "GET"),
-  openExplore: openProto.bind(null, "explore"),
-  openChat: openProto.bind(null, "chat")
-};
+export var getPlayer = httpJson.bind(null, "/player", "GET");
+export var getExploreNearby = httpJson.bind(null, "/explore/nearby", "GET");
+export var postExploreMove = httpJson.bind(null, "/explore/move", "POST");
+export var openExplore = openProto.bind(null, "explore");
+export var openChat = openProto.bind(null, "chat");

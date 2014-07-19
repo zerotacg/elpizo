@@ -11,8 +11,8 @@ class _Sidebar {
         active: this.props.activeTab === tab.id
       };
 
-      return <li className={classSet(classes)} key={tab.id}>
-        <a id={"sidebar-" + tab.id} href="#" data-caption={tab.name}
+      return <li className={classSet(classes)} key={tab.id} data-caption={tab.name}>
+        <a id={"sidebar-" + tab.id} href="#"
            onClick={this.onClick.bind(this, tab.id)}></a>
       </li>;
     });
