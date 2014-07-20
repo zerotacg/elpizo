@@ -2,6 +2,7 @@ import json
 
 from sockjs.tornado import conn, session
 from sockjs.tornado.transports import base
+from sqlalchemy.orm.exc import NoResultFound
 from tornado.web import decode_signed_value
 
 from .models import User, Player
@@ -38,20 +39,28 @@ def makeMultiplexConnection(channels):
     def application(self):
       return self.session.server.application
 
+    def get_player(self):
+      try:
+        return self.application.sqla_session.query(Player) \
+            .filter((Player.id == User.current_player_id) &
+                    (User.id == self.user_id)) \
+            .one()
+      except NoResultFound:
+        return None
+
     def on_open(self, info):
       if info.get_cookie("elpizo_user") is None:
         self.close()
         return
 
-      user_id = int(decode_signed_value(
+      self.user_id = int(decode_signed_value(
           self.application.settings["cookie_secret"],
           name="elpizo_user",
           value=info.get_cookie("elpizo_user").value))
 
-      self.player = self.application.sqla_session.query(Player) \
-          .filter((User.current_player_id == Player.id) &
-                  (User.id == user_id)) \
-          .one()
+      if self.get_player() is None:
+        self.close()
+        return
 
       self.endpoints = {}
 
@@ -82,9 +91,8 @@ class Protocol(conn.SockJSConnection):
   def application(self):
     return self.session.server.application
 
-  @property
-  def player(self):
-    return self.session.base.player
+  def get_player(self):
+    return self.session.base.get_player()
 
   def send(self, message):
     super().send(json.dumps(message))

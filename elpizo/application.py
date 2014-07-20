@@ -15,6 +15,7 @@ from .chat import CHANNELS as CHAT_CHANNELS
 from .explore import CHANNELS as EXPLORE_CHANNELS, \
                      ROUTES as EXPLORE_ROUTES
 from .player import ROUTES as PLAYER_ROUTES
+from .names import ROUTES as NAMES_ROUTES
 
 
 class SockJSRouter(SockJSRouter):
@@ -62,6 +63,7 @@ class Application(Application):
 
     routes += PLAYER_ROUTES
     routes += EXPLORE_ROUTES
+    routes += NAMES_ROUTES
 
     routes += SockJSRouter(self, makeMultiplexConnection(channels),
                            "/events").urls

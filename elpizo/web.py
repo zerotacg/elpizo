@@ -1,6 +1,7 @@
 import json
 import traceback
 
+from sqlalchemy.orm.exc import NoResultFound
 from tornado.web import RequestHandler
 
 from .models import User, Player
@@ -13,6 +14,10 @@ class RequestHandler(RequestHandler):
       return
 
     self.user_id = int(self.get_secure_cookie("elpizo_user"))
+    if self.get_player() is None:
+      self.send_error(403)
+      return
+
     self.body = json.loads(self.request.body.decode("utf-8")) \
                 if self.request.body else None
 
@@ -24,12 +29,14 @@ class RequestHandler(RequestHandler):
 
     self.finish(payload)
 
-  @property
-  def player(self):
-    return self.application.sqla_session.query(Player) \
-        .filter((Player.id == User.current_player_id) &
-                (User.id == self.user_id)) \
-        .one()
+  def get_player(self):
+    try:
+      return self.application.sqla_session.query(Player) \
+          .filter((Player.id == User.current_player_id) &
+                  (User.id == self.user_id)) \
+          .one()
+    except NoResultFound:
+      return None
 
 def _make_handler(name, methods):
   return type(name, (RequestHandler,), methods)

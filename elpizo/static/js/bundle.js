@@ -20856,6 +20856,7 @@ function openProto(channel, transport) {
 }
 
 var getPlayer = module.exports.getPlayer = httpJson.bind(null, "/player", "GET");
+var getExploreMap = module.exports.getExploreMap = httpJson.bind(null, "/explore/map", "GET");
 var getExploreNearby = module.exports.getExploreNearby = httpJson.bind(null, "/explore/nearby", "GET");
 var postExploreMove = module.exports.postExploreMove = httpJson.bind(null, "/explore/move", "POST");
 var openExplore = module.exports.openExplore = openProto.bind(null, "explore");
@@ -20878,15 +20879,16 @@ var SkillsTab = require("./tabs/skills.jsx");
 var GuildTab = require("./tabs/guild.jsx");
 var PropertyTab = require("./tabs/property.jsx");
 
-var mod$17 = require("./api");var getPlayer = mod$17.getPlayer;var getExploreNearby = mod$17.getExploreNearby;var openExplore = mod$17.openExplore;var postExploreMove = mod$17.postExploreMove;
+var mod$2 = require("./api");var getPlayer = mod$2.getPlayer;var getExploreNearby = mod$2.getExploreNearby;var getExploreMap = mod$2.getExploreMap;var openExplore = mod$2.openExplore;var postExploreMove = mod$2.postExploreMove;
 
 function _App(){"use strict";}
   _App.prototype.getInitialState=function() {"use strict";
     return {
         player: {
             name: "Unknown Player",
-            playerKind: "unknown",
-            playerLevel: -1,
+            kind: -1,
+            variant: -1,
+            level: -1,
             hp: -1,
             mp: -1,
             xp: -1,
@@ -20899,11 +20901,19 @@ function _App(){"use strict";}
           x: -1,
           y: -1,
           realm: "Unknown Realm",
-          name: "The Void",
+          terrains: [],
           creatures: [],
           buildings: [],
           items: [],
           facilities: []
+        },
+
+        map: {
+          x: -1,
+          y: -1,
+          w: 0,
+          h: 0,
+          corners: []
         }
     };
   };
@@ -20924,37 +20934,51 @@ function _App(){"use strict";}
     }.bind(this));
   };
 
+  _App.prototype.updateMap=function(promise) {"use strict";
+    promise.then(function(map)  {
+      this.setState({
+        map: map
+      });
+    }.bind(this));
+  };
+
   _App.prototype.componentWillMount=function() {"use strict";
     this.explore = openExplore(this.props.transport);
 
     this.updatePlayer(getPlayer());
     this.updateNearby(getExploreNearby());
+    this.updateMap(getExploreMap());
   };
 
   _App.prototype.render=function() {"use strict";
     return React.DOM.div(null, 
-      Map({onMapClick: this.onMove}), 
+      Map({onMapClick: this.onMove, map: this.state.map, 
+           resources: this.props.resources, 
+           playerX: this.state.nearby.x, playerY: this.state.nearby.y}), 
 
       React.DOM.div({className: "ui"}, 
-        PlayerInfo({name: "Valjean", kind: "human", level: 10, 
-                    hp: 50, maxHp: 100, 
-                    mp: 50, maxMp: 100, 
-                    xp: 50, maxXp: 100}), 
+        PlayerInfo(this.state.player), 
         Switcher({tabs: [
             {name: "Explore", id: "explore", element: ExploreTab({
                 transport: this.props.transport, 
                 playerName: this.state.player.name, 
-                nearby: this.state.nearby})},
+                nearby: this.state.nearby}
+            )},
             {name: "Inventory", id: "inventory", element: InventoryTab({
-                playerName: this.state.player.name})},
+                playerName: this.state.player.name}
+            )},
             {name: "Quests", id: "quests", element: QuestsTab({
-                playerName: this.state.player.name})},
+                playerName: this.state.player.name}
+            )},
             {name: "Skills", id: "skills", element: SkillsTab({
-                playerName: this.state.player.name})},
+                playerName: this.state.player.name}
+            )},
             {name: "Guild", id: "guild", element: GuildTab({
-                playerName: this.state.player.name})},
+                playerName: this.state.player.name}
+            )},
             {name: "Property", id: "property", element: PropertyTab({
-                playerName: this.state.player.name})}
+                playerName: this.state.player.name}
+            )}
         ]})
       )
     );
@@ -20962,7 +20986,8 @@ function _App(){"use strict";}
 
   _App.prototype.onMove=function(e) {"use strict";
     this.updateNearby(postExploreMove({
-      x: e.clientX, y: e.clientY
+        x: e.x,
+        y: e.y
     }));
   };
 
@@ -20971,7 +20996,7 @@ var App = React.createClass(_App.prototype);
 module.exports = App;
 
 
-},{"./../bower_components/react/react.js":1,"./api":3,"./map.jsx":8,"./player-info.jsx":14,"./switcher.jsx":15,"./tabs/explore.jsx":16,"./tabs/guild.jsx":17,"./tabs/inventory.jsx":18,"./tabs/property.jsx":19,"./tabs/quests.jsx":20,"./tabs/skills.jsx":21}],5:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./api":3,"./map.jsx":7,"./player-info.jsx":14,"./switcher.jsx":16,"./tabs/explore.jsx":17,"./tabs/guild.jsx":18,"./tabs/inventory.jsx":19,"./tabs/property.jsx":20,"./tabs/quests.jsx":21,"./tabs/skills.jsx":22}],5:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../bower_components/react/react.js");
@@ -21098,66 +21123,231 @@ var Chat = React.createClass(_Chat.prototype);
 module.exports = Chat;
 
 
-},{"./../bower_components/react/react.js":1,"./api":3,"./util/objects":23}],6:[function(require,module,exports){
-module.exports = {
-    creature: {
-        human: "Human",
-        wyrm: "Wyrm"
-    },
-
-    building: {
-        house: "House",
-        windmill: "Windmill"
-    },
-
-    item: {},
-
-    facility: {}
-}
-
-
-},{}],7:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./api":3,"./util/objects":26}],6:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var Transport = require("./net").Transport;
+var mod$3 = require("./resources");var Resources = mod$3.Resources;var loadImage = mod$3.loadImage;
 
 var React = require("./../bower_components/react/react.js");
 
 var App = require("./app.jsx");
-React.renderComponent(App({
-    transport: new Transport("/events")}
-), document.getElementById("elpizo"));
+
+var resources = new Resources();
+
+resources.loadBundle({
+    "tiles/water": loadImage("img/tiles/water.png"),
+    "tiles/dirt": loadImage("img/tiles/dirt.png"),
+    "tiles/grass": loadImage("img/tiles/grass.png")
+}).then(function(r)  {
+  React.renderComponent(App({
+      transport: new Transport("/events"), 
+      resources: resources}
+  ), document.getElementById("elpizo"));
+});
 
 
-},{"./../bower_components/react/react.js":1,"./app.jsx":4,"./net":9}],8:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./app.jsx":4,"./net":9,"./resources":15}],7:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../bower_components/react/react.js");
 
+var nubStrings = require("./util/collections").nubStrings;
+var names = require("./names");
+
+var TEX_COORDS = {
+    0x1: [28, 29, 34, 35], // ne convex corner
+    0x2: [24, 25, 30, 31], // nw convex corner
+    0x3: [26, 27, 32, 32], // going n
+    0x4: [48, 49, 54, 55], // sw convex corner
+    0x5: [16,  3, 22,  9], // saddle ne->sw
+    0x6: [36, 37, 42, 43], // going w
+    0x7: [16, 17, 22, 23], // nw concave corner
+    0x8: [52, 53, 58, 59], // se convex corner
+    0x9: [40, 41, 46, 47], // going e
+    0xa: [ 4, 15, 10, 21], // saddle nw->se
+    0xb: [14, 15, 20, 21], // ne concave corner
+    0xc: [50, 51, 56, 57], // going s
+    0xd: [ 2,  3,  8,  9], // se concave corner
+    0xe: [ 4,  5, 10, 11], // sw concave corner
+    0xf: [38, 39, 44, 45], // all
+};
+
+function computeTiles(corners, width, height, precedence) {
+  var tiles = [];
+
+  for (var j = 0; j < height; ++j) {
+    for (var i = 0; i < width; ++i) {
+      var layers = [];
+
+      var nw = corners[(j + 0) * (width + 1) + (i + 0)];
+      var ne = corners[(j + 0) * (width + 1) + (i + 1)];
+      var sw = corners[(j + 1) * (width + 1) + (i + 0)];
+      var se = corners[(j + 1) * (width + 1) + (i + 1)];
+
+      var types = nubStrings([nw, ne, sw, se]
+        .sort(function(x, y)  {
+          var a = precedence.indexOf(x);
+          var b = precedence.indexOf(y);
+          return (a > b) - (a < b);
+        }));
+
+      types.forEach(function(name, i)  {
+        var above = types.slice(i);
+
+        var variant = ((above.indexOf(nw) !== -1) << 3) |
+                      ((above.indexOf(ne) !== -1) << 2) |
+                      ((above.indexOf(se) !== -1) << 1) |
+                      ((above.indexOf(sw) !== -1) << 0);
+        layers.push({
+          name: name,
+          variant: variant
+        });
+      });
+
+      tiles.push(layers);
+    }
+  }
+  return tiles;
+}
+
 function _Avatar(){"use strict";}
   _Avatar.prototype.render=function() {"use strict";
-    return React.DOM.i({className: "avatar"});
+    return React.DOM.span({className: "avatar", style: {
+        left: this.props.x * TILE_SIZE,
+        top: (this.props.y - 1) * TILE_SIZE,
+    }});
   };
 
 var Avatar = React.createClass(_Avatar.prototype);
 
+var TILE_PRECEDENCE = ["grass", "dirt", "water"];
+var TILE_MAPPINGS = {
+    "beach": "dirt",
+    "river": "water",
+    "ocean": "water",
+    "lakeshore": "water"
+};
+var TILE_SIZE = 32;
+
 function _Map(){"use strict";}
+  _Map.prototype.getInitialState=function() {"use strict";
+    return {
+        width: 1024,
+        height: 768,
+        avatarX: 8,
+        avatarY: 9,
+        cursorX: -1,
+        cursorY: -1
+    };
+  };
+
+  _Map.prototype.componentDidUpdate=function() {"use strict";
+    this.draw();
+  };
+
+  _Map.prototype.getTilesCanvasContext=function() {"use strict";
+    return this.getDOMNode().querySelector("canvas.tiles").getContext("2d");
+  };
+
+  _Map.prototype.getHighlightCanvasContext=function() {"use strict";
+    return this.getDOMNode().querySelector("canvas.highlight").getContext("2d");
+  };
+
+  _Map.prototype.draw=function() {"use strict";
+    var ctx = this.getTilesCanvasContext();
+
+    ctx.clearRect(0, 0, this.state.width, this.state.height);
+    if (this.props.map.corners.length === 0) {
+      return;
+    }
+
+    // TODO: || "grass" isn't an acceptable substitute
+    var tiles = computeTiles(this.props.map.corners
+                                 .map(function(id)  {return TILE_MAPPINGS[names.terrain[id]] || "grass";}),
+                             this.props.map.w, this.props.map.h,
+                             TILE_PRECEDENCE);
+
+    for (var sy = 0; sy < Math.floor(this.state.height / TILE_SIZE); ++sy) {
+      for (var sx = 0; sx < Math.floor(this.state.width / TILE_SIZE); ++sx) {
+        var xy = this.convertScreenSpaceToWorldSpace(sx, sy);
+        var i = xy.x - this.props.map.x;
+        var j = xy.y - this.props.map.y;
+
+        if (i < 0 || j < 0 ||
+            i >= this.props.map.w ||
+            j >= this.props.map.h) {
+          continue;
+        }
+
+        tiles[j * this.props.map.w + i].forEach(function(tile)  {
+          TEX_COORDS[tile.variant].forEach(function(ti, w)  {
+            var u = ti % 6;
+            var v = Math.floor(ti / 6);
+
+            var di = [0, 1, 0, 1][w];
+            var dj = [0, 0, 1, 1][w];
+
+            ctx.drawImage(this.props.resources.get("tiles/" + tile.name),
+                          u * TILE_SIZE / 2, v * TILE_SIZE / 2,
+                          TILE_SIZE / 2, TILE_SIZE / 2,
+                          sx * TILE_SIZE + di * TILE_SIZE / 2,
+                          sy * TILE_SIZE + dj * TILE_SIZE / 2,
+                          TILE_SIZE / 2, TILE_SIZE / 2);
+          }.bind(this));
+        }.bind(this));
+      }
+    }
+  };
+
+  _Map.prototype.convertScreenSpaceToWorldSpace=function(sx, sy) {"use strict";
+    return {
+        x: this.props.playerX + sx - this.state.avatarX,
+        y: this.props.playerY + sy - this.state.avatarY
+    };
+  };
+
   _Map.prototype.render=function() {"use strict";
-    return React.DOM.div({className: "map", onClick: this.onClick}, 
-      Avatar(null)
+    return React.DOM.div({className: "map", onClick: this.onClick, 
+                onMouseMove: this.onMouseMove}, 
+      Avatar({x: this.state.avatarX, y: this.state.avatarY}), 
+      React.DOM.canvas({width: this.state.width, height: this.state.height, 
+              className: "highlight"}), 
+      React.DOM.canvas({width: this.state.width, height: this.state.height, 
+              className: "tiles"})
     );
   };
 
   _Map.prototype.onClick=function(e) {"use strict";
-    this.props.onMapClick(e);
+    var rect = this.getDOMNode().getBoundingClientRect();
+    var sx = Math.floor((e.pageX - rect.left) / TILE_SIZE);
+    var sy = Math.floor((e.pageY - rect.top) / TILE_SIZE);
+
+    this.props.onMapClick(this.convertScreenSpaceToWorldSpace(sx, sy));
+  };
+
+  _Map.prototype.onMouseMove=function(e) {"use strict";
+    var rect = this.getDOMNode().getBoundingClientRect();
+    var sx = Math.floor((e.pageX - rect.left) / TILE_SIZE);
+    var sy = Math.floor((e.pageY - rect.top) / TILE_SIZE);
+
+    var ctx = this.getHighlightCanvasContext();
+    ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+    ctx.clearRect(0, 0, this.state.width, this.state.height);
+    ctx.fillRect(sx * TILE_SIZE, sy * TILE_SIZE, TILE_SIZE, TILE_SIZE);
   };
 
 var Map = React.createClass(_Map.prototype);
 
-module.exports = Map;
+module.exports =Map;
 
 
-},{"./../bower_components/react/react.js":1}],9:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./names":8,"./util/collections":24}],8:[function(require,module,exports){
+module.exports = window._names;
+delete window._names;
+
+
+},{}],9:[function(require,module,exports){
 var SockJS = require("./util/sockjs-shim");
 
 var EventEmitter = require("./util/events").EventEmitter;
@@ -21231,7 +21421,7 @@ for(EventEmitter____Key in EventEmitter){if(EventEmitter.hasOwnProperty(EventEmi
 module.exports.Protocol = Protocol;
 
 
-},{"./util/events":22,"./util/sockjs-shim":25}],10:[function(require,module,exports){
+},{"./util/events":25,"./util/sockjs-shim":28}],10:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21257,12 +21447,13 @@ var Bar = React.createClass(_Bar.prototype);
 module.exports = Bar;
 
 
-},{"../util/react":24,"./../../bower_components/react/react.js":1}],11:[function(require,module,exports){
+},{"../util/react":27,"./../../bower_components/react/react.js":1}],11:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
 
 var classSet = require("../util/react").classSet;
+var names = require("../names");
 
 function _Icon(){"use strict";}
   _Icon.prototype.render=function() {"use strict";
@@ -21271,7 +21462,7 @@ function _Icon(){"use strict";}
     };
 
     classes["taxonomy-" + this.props.taxonomy] = true;
-    classes["kind-" + this.props.kind] = true;
+    classes["kind-" + names[this.props.taxonomy][this.props.kind]] = true;
     classes["variant-" + this.props.variant] = true;
 
     return React.DOM.span({className: classSet(classes)});
@@ -21282,7 +21473,7 @@ var Icon = React.createClass(_Icon.prototype);
 module.exports = Icon;
 
 
-},{"../util/react":24,"./../../bower_components/react/react.js":1}],12:[function(require,module,exports){
+},{"../names":8,"../util/react":27,"./../../bower_components/react/react.js":1}],12:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21329,7 +21520,8 @@ module.exports = Menu;
 
 var React = require("./../bower_components/react/react.js");
 
-var lexicon = require("./lexicon");
+var titles = require("./titles");
+var names = require("./names");
 
 var Bar = require("./parts/bar.jsx");
 var Icon = require("./parts/icon.jsx");
@@ -21343,10 +21535,10 @@ function _PlayerInfo(){"use strict";}
 
   _PlayerInfo.prototype.render=function() {"use strict";
     return React.DOM.div({className: "player-info"}, 
-      Icon({taxonomy: "creature", kind: "human", variant: "1"}), 
+      Icon({taxonomy: "creature", kind: this.props.kind, variant: this.props.variant}), 
       React.DOM.div({className: "stats"}, 
         React.DOM.div({className: "name left"}, 
-          this.props.name, " ", React.DOM.small(null, lexicon.creature[this.props.kind], " ", this.props.level)
+          this.props.name, " ", React.DOM.small(null, titles.creature[names.creature[this.props.kind]], " ", this.props.level)
         ), 
         React.DOM.div({className: "right"}, this.state.time), 
         React.DOM.div({className: "bars clear"}, 
@@ -21363,7 +21555,41 @@ var PlayerInfo = React.createClass(_PlayerInfo.prototype);
 module.exports = PlayerInfo;
 
 
-},{"./../bower_components/react/react.js":1,"./lexicon":6,"./parts/bar.jsx":10,"./parts/icon.jsx":11}],15:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./names":8,"./parts/bar.jsx":10,"./parts/icon.jsx":11,"./titles":23}],15:[function(require,module,exports){
+function loadImage(src) {
+  return new Promise(function(resolve, reject)  {
+    var img = new Image();
+    img.src = src;
+    img.onload = function()  {return resolve(img);};
+    img.onerror = function(err)  {return reject(new Error(err));};
+    return img;
+  });
+} module.exports.loadImage = loadImage;
+
+
+  function Resources() {"use strict";
+    this.$Resources_resources = {};
+  }
+
+  Resources.prototype.load=function(name, promise) {"use strict";
+    return promise.then(function(resource)  {
+      this.$Resources_resources[name] = resource;
+      return resource;
+    }.bind(this));
+  };
+
+  Resources.prototype.loadBundle=function(bundle) {"use strict";
+    var keys = Object.keys(bundle);
+    return Promise.all(keys.map(function(key)  {return this.load(key, bundle[key]);}.bind(this)));
+  };
+
+  Resources.prototype.get=function(name) {"use strict";
+    return this.$Resources_resources[name] || null;
+  };
+module.exports.Resources = Resources;
+
+
+},{}],16:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../bower_components/react/react.js");
@@ -21428,12 +21654,13 @@ var Switcher = React.createClass(_Switcher.prototype);
 module.exports = Switcher;
 
 
-},{"./../bower_components/react/react.js":1,"./util/react":24}],16:[function(require,module,exports){
+},{"./../bower_components/react/react.js":1,"./util/react":27}],17:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
 
-var lexicon = require("../lexicon");
+var names = require("../names");
+var titles = require("../titles");
 
 var Icon = require("../parts/icon.jsx");
 var List = require("../parts/list.jsx");
@@ -21460,7 +21687,7 @@ function _EntityItem(){"use strict";}
         Icon({taxonomy: this.props.taxonomy, kind: this.props.kind, 
               variant: this.props.variant}), 
         React.DOM.span({className: "name"}, 
-          this.props.name, " ", React.DOM.small(null, lexicon[this.props.taxonomy][this.props.kind], " ", this.props.level)
+          this.props.name, " ", React.DOM.small(null, titles[this.props.taxonomy][names[this.props.taxonomy][this.props.kind]], " ", this.props.level)
         )
       ), 
       Menu({items: [
@@ -21489,6 +21716,9 @@ function _ExploreTab(){"use strict";}
 
   _ExploreTab.prototype.render=function() {"use strict";
     var nearby = this.props.nearby;
+    var terrains = nearby.terrains
+        .map(function(terrain)  {return titles.terrain[names.terrain[terrain]];})
+        .join("/");
 
     return React.DOM.div({id: "explore"}, 
       Chat({transport: this.props.transport, 
@@ -21496,7 +21726,7 @@ function _ExploreTab(){"use strict";}
 
       React.DOM.div({className: "nearby"}, 
         React.DOM.div({className: "name"}, 
-          nearby.name, " ", React.DOM.small(null, nearby.x, ", ", nearby.y, " ", nearby.realm)
+          terrains, " ", React.DOM.small(null, nearby.x, ", ", nearby.y, " ", nearby.realm)
         ), 
 
         React.DOM.div({className: "long"}, 
@@ -21521,7 +21751,7 @@ var ExploreTab = React.createClass(_ExploreTab.prototype);
 module.exports = ExploreTab;
 
 
-},{"../chat.jsx":5,"../lexicon":6,"../parts/icon.jsx":11,"../parts/list.jsx":12,"../parts/menu.jsx":13,"../util/react":24,"./../../bower_components/react/react.js":1}],17:[function(require,module,exports){
+},{"../chat.jsx":5,"../names":8,"../parts/icon.jsx":11,"../parts/list.jsx":12,"../parts/menu.jsx":13,"../titles":23,"../util/react":27,"./../../bower_components/react/react.js":1}],18:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21539,7 +21769,7 @@ var GuildsTab = React.createClass(_GuildsTab.prototype);
 module.exports = GuildsTab;
 
 
-},{"./../../bower_components/react/react.js":1}],18:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],19:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21557,7 +21787,7 @@ var InventoryTab = React.createClass(_InventoryTab.prototype);
 module.exports = InventoryTab;
 
 
-},{"./../../bower_components/react/react.js":1}],19:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],20:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21575,7 +21805,7 @@ var PropertyTab = React.createClass(_PropertyTab.prototype);
 module.exports = PropertyTab;
 
 
-},{"./../../bower_components/react/react.js":1}],20:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],21:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21593,7 +21823,7 @@ var QuestsTab = React.createClass(_QuestsTab.prototype);
 module.exports = QuestsTab;
 
 
-},{"./../../bower_components/react/react.js":1}],21:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],22:[function(require,module,exports){
 /** @jsx React.DOM */
 
 var React = require("./../../bower_components/react/react.js");
@@ -21611,7 +21841,65 @@ var SkillsTab = React.createClass(_SkillsTab.prototype);
 module.exports = SkillsTab;
 
 
-},{"./../../bower_components/react/react.js":1}],22:[function(require,module,exports){
+},{"./../../bower_components/react/react.js":1}],23:[function(require,module,exports){
+var creature = module.exports.creature = {
+    "human": "Human",
+    "wyrm": "Wyrm"
+};
+
+var building = module.exports.building = {
+    "house": "House",
+    "windmill": "Windmill"
+};
+
+var item = module.exports.item = {
+};
+
+var facility = module.exports.facility = {
+};
+
+var terrain = module.exports.terrain = {
+    "ocean": "Ocean",
+    "coast": "Coast",
+    "lakeshore": "Lakeshore",
+    "lake": "Lake",
+    "river": "River",
+    "marsh": "Marsh",
+    "ice": "Ice",
+    "beach": "Beach",
+    "bridge": "Bridge",
+    "lava": "Lave",
+    "snow": "Snow",
+    "tundra": "Tundra",
+    "bare": "Bare",
+    "scorched": "Scorched",
+    "taiga": "Taiga",
+    "shrubland": "Shrubland",
+    "temperate_desert": "Temperate Desert",
+    "temperate_rain_forest": "Temperate Rainforest",
+    "temperate_deciduous_forest": "Deciduous Forest",
+    "grassland": "Grassland",
+    "subtropical_desert": "Subtropical Desert",
+    "tropical_rain_forest": "Tropical Rainforest",
+    "tropical_seasonal_forest": "Savanna"
+};
+
+
+},{}],24:[function(require,module,exports){
+function nubStrings(xs) {
+  var seen = {};
+  var ys = [];
+  xs.forEach(function (x) {
+    if (!seen[x]) {
+      ys.push(x);
+      seen[x] = true;
+    }
+  });
+  return ys;
+} module.exports.nubStrings = nubStrings;
+
+
+},{}],25:[function(require,module,exports){
 var hasOwnProp = require("./objects").hasOwnProp;
 
 
@@ -21650,7 +21938,7 @@ var hasOwnProp = require("./objects").hasOwnProp;
 module.exports.EventEmitter = EventEmitter;
 
 
-},{"./objects":23}],23:[function(require,module,exports){
+},{"./objects":26}],26:[function(require,module,exports){
 var hasOwnProp = module.exports.hasOwnProp = Object.prototype.hasOwnProperty;
 
 function extend(dest, src) {
@@ -21676,7 +21964,7 @@ var nextMonotonicId = module.exports.nextMonotonicId = (function () {
 })();
 
 
-},{}],24:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 function classSet(classes) {
   return Object.keys(classes).filter(function (k) {
     return classes[k];
@@ -21684,13 +21972,13 @@ function classSet(classes) {
 } module.exports.classSet = classSet;
 
 
-},{}],25:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 require("./../../bower_components/sockjs/sockjs.js");
 module.exports = window.SockJS;
 delete window.SockJS;
 
 
-},{"./../../bower_components/sockjs/sockjs.js":2}]},{},[7])
+},{"./../../bower_components/sockjs/sockjs.js":2}]},{},[6])
 
 
 //# sourceMappingURL=../maps/bundle.js.map

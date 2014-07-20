@@ -16,6 +16,8 @@ class ChatProtocol(Protocol):
 
   @engine
   def on_authed_open(self, info):
+    player = self.get_player()
+
     self.channel = \
         yield Task(lambda callback: self.application.amqp.channel(callback))
 
@@ -23,7 +25,7 @@ class ChatProtocol(Protocol):
                exchange=self.get_room_exchange_name("global"),
                type="fanout")
     yield Task(self.channel.exchange_declare,
-               exchange=self.get_player_exchange_name(self.player.id),
+               exchange=self.get_player_exchange_name(player.id),
                type="fanout")
 
     self.chat_queue = (
@@ -33,13 +35,14 @@ class ChatProtocol(Protocol):
                exchange=self.get_room_exchange_name("global"),
                queue=self.chat_queue)
     yield Task(self.channel.queue_bind,
-               exchange=self.get_player_exchange_name(self.player.id),
+               exchange=self.get_player_exchange_name(player.id),
                queue=self.chat_queue)
 
     self.channel.basic_consume(self.on_chat_queue_consume,
                                queue=self.chat_queue, no_ack=True)
 
   def on_parsed_message(self, message):
+    player = self.get_player()
     target = message["target"]
 
     if target[0] == "#":
@@ -53,7 +56,7 @@ class ChatProtocol(Protocol):
     self.channel.basic_publish(exchange=exchange,
                                routing_key="",
                                body=json.dumps({
-                                   "origin": self.player.name,
+                                   "origin": player.name,
                                    "target": message["target"],
                                    "text": message["text"]
                                }))

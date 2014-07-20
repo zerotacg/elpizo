@@ -3,10 +3,13 @@ from .web import RequestHandler
 
 class PlayerHandler(RequestHandler):
   def get(self):
+    player = self.get_player()
+
     self.finish({
-        "id": self.player.id,
-        "name": self.player.name,
-        "kind": "human",
+        "id": player.id,
+        "name": player.name,
+        "kind": 1,
+        "variant": 1,
         "level": 10
     })
 

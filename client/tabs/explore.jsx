@@ -2,7 +2,8 @@
 
 module React from "react";
 
-module lexicon from "../lexicon";
+module names from "../names";
+module titles from "../titles";
 
 module Icon from "../parts/icon.jsx";
 module List from "../parts/list.jsx";
@@ -29,7 +30,7 @@ class _EntityItem {
         <Icon taxonomy={this.props.taxonomy} kind={this.props.kind}
               variant={this.props.variant} />
         <span className="name">
-          {this.props.name} <small>{lexicon[this.props.taxonomy][this.props.kind]} {this.props.level}</small>
+          {this.props.name} <small>{titles[this.props.taxonomy][names[this.props.taxonomy][this.props.kind]]} {this.props.level}</small>
         </span>
       </a>
       <Menu items={[
@@ -58,6 +59,9 @@ class _ExploreTab {
 
   render() {
     var nearby = this.props.nearby;
+    var terrains = nearby.terrains
+        .map((terrain) => titles.terrain[names.terrain[terrain]])
+        .join("/");
 
     return <div id="explore">
       <Chat transport={this.props.transport}
@@ -65,7 +69,7 @@ class _ExploreTab {
 
       <div className="nearby">
         <div className="name">
-          {nearby.name} <small>{nearby.x}, {nearby.y} {nearby.realm}</small>
+          {terrains} <small>{nearby.x}, {nearby.y} {nearby.realm}</small>
         </div>
 
         <div className="long">

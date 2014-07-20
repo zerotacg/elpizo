@@ -3,6 +3,7 @@
 module React from "react";
 
 import {classSet} from "../util/react";
+module names from "../names";
 
 class _Icon {
   render() {
@@ -11,7 +12,7 @@ class _Icon {
     };
 
     classes["taxonomy-" + this.props.taxonomy] = true;
-    classes["kind-" + this.props.kind] = true;
+    classes["kind-" + names[this.props.taxonomy][this.props.kind]] = true;
     classes["variant-" + this.props.variant] = true;
 
     return <span className={classSet(classes)} />;
