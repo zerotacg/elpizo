@@ -63,7 +63,7 @@ def nearby(handler):
     "y": tile.y,
     "realm": tile.realm.name,
     "creatures": [
-        {"name": "Droyer", "id": 10, "kind": 2, "level": 10, "variant": 1}
+        {"name": "Éponine", "id": 10, "kind": 2, "level": 10, "variant": 1}
     ],
     "buildings": [
         {"name": "Spooky Mill", "id": 11, "kind": 2, "variant": 1}

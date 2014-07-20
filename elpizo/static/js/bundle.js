@@ -20879,7 +20879,7 @@ var SkillsTab = require("./tabs/skills.jsx");
 var GuildTab = require("./tabs/guild.jsx");
 var PropertyTab = require("./tabs/property.jsx");
 
-var mod$2 = require("./api");var getPlayer = mod$2.getPlayer;var getExploreNearby = mod$2.getExploreNearby;var getExploreMap = mod$2.getExploreMap;var openExplore = mod$2.openExplore;var postExploreMove = mod$2.postExploreMove;
+var mod$3 = require("./api");var getPlayer = mod$3.getPlayer;var getExploreNearby = mod$3.getExploreNearby;var getExploreMap = mod$3.getExploreMap;var openExplore = mod$3.openExplore;var postExploreMove = mod$3.postExploreMove;
 
 function _App(){"use strict";}
   _App.prototype.getInitialState=function() {"use strict";
@@ -21127,7 +21127,7 @@ module.exports = Chat;
 /** @jsx React.DOM */
 
 var Transport = require("./net").Transport;
-var mod$3 = require("./resources");var Resources = mod$3.Resources;var loadImage = mod$3.loadImage;
+var mod$0 = require("./resources");var Resources = mod$0.Resources;var loadImage = mod$0.loadImage;
 
 var React = require("./../bower_components/react/react.js");
 
@@ -21309,7 +21309,8 @@ function _Map(){"use strict";}
 
   _Map.prototype.render=function() {"use strict";
     return React.DOM.div({className: "map", onClick: this.onClick, 
-                onMouseMove: this.onMouseMove}, 
+                onMouseMove: this.onMouseMove, 
+                onMouseLeave: this.onMouseLeave}, 
       Avatar({x: this.state.avatarX, y: this.state.avatarY}), 
       React.DOM.canvas({width: this.state.width, height: this.state.height, 
               className: "highlight"}), 
@@ -21324,6 +21325,9 @@ function _Map(){"use strict";}
     var sy = Math.floor((e.pageY - rect.top) / TILE_SIZE);
 
     this.props.onMapClick(this.convertScreenSpaceToWorldSpace(sx, sy));
+
+    var ctx = this.getHighlightCanvasContext();
+    ctx.clearRect(0, 0, this.state.width, this.state.height);
   };
 
   _Map.prototype.onMouseMove=function(e) {"use strict";
@@ -21332,9 +21336,14 @@ function _Map(){"use strict";}
     var sy = Math.floor((e.pageY - rect.top) / TILE_SIZE);
 
     var ctx = this.getHighlightCanvasContext();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
     ctx.clearRect(0, 0, this.state.width, this.state.height);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
     ctx.fillRect(sx * TILE_SIZE, sy * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+  };
+
+  _Map.prototype.onMouseLeave=function(e) {"use strict";
+    var ctx = this.getHighlightCanvasContext();
+    ctx.clearRect(0, 0, this.state.width, this.state.height);
   };
 
 var Map = React.createClass(_Map.prototype);

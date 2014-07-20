@@ -159,7 +159,8 @@ class _Map {
 
   render() {
     return <div className="map" onClick={this.onClick}
-                onMouseMove={this.onMouseMove}>
+                onMouseMove={this.onMouseMove}
+                onMouseLeave={this.onMouseLeave}>
       <Avatar x={this.state.avatarX} y={this.state.avatarY} />
       <canvas width={this.state.width} height={this.state.height}
               className="highlight" />
@@ -174,6 +175,9 @@ class _Map {
     var sy = Math.floor((e.pageY - rect.top) / TILE_SIZE);
 
     this.props.onMapClick(this.convertScreenSpaceToWorldSpace(sx, sy));
+
+    var ctx = this.getHighlightCanvasContext();
+    ctx.clearRect(0, 0, this.state.width, this.state.height);
   }
 
   onMouseMove(e) {
@@ -182,9 +186,14 @@ class _Map {
     var sy = Math.floor((e.pageY - rect.top) / TILE_SIZE);
 
     var ctx = this.getHighlightCanvasContext();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
     ctx.clearRect(0, 0, this.state.width, this.state.height);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
     ctx.fillRect(sx * TILE_SIZE, sy * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+  }
+
+  onMouseLeave(e) {
+    var ctx = this.getHighlightCanvasContext();
+    ctx.clearRect(0, 0, this.state.width, this.state.height);
   }
 }
 var Map = React.createClass(_Map.prototype);
