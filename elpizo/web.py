@@ -38,13 +38,26 @@ class RequestHandler(RequestHandler):
     except NoResultFound:
       return None
 
+  def get(self):
+    try:
+      self.actually_get()
+    except NoResultFound:
+      self.send_error(404)
+
+  def post(self):
+    try:
+      self.actually_post()
+    except NoResultFound:
+      self.send_error(404)
+
+
 def _make_handler(name, methods):
   return type(name, (RequestHandler,), methods)
 
 
 def get(method):
-  return _make_handler(method.__name__, {"get": method})
+  return _make_handler(method.__name__, {"actually_get": method})
 
 
 def post(method):
-  return _make_handler(method.__name__, {"post": method})
+  return _make_handler(method.__name__, {"actually_post": method})

@@ -83,7 +83,7 @@ def move(handler):
       .one()
   handler.application.sqla_session.commit()
 
-  nearby.get(handler)
+  nearby.actually_get(handler)
 
 
 ROUTES = [
