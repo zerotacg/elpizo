@@ -5,7 +5,7 @@ from sockjs.tornado.transports import base
 from sqlalchemy.orm.exc import NoResultFound
 from tornado.web import decode_signed_value
 
-from .models import User, Player
+from .models import User, Player, Creature
 
 
 class ChannelSession(session.BaseSession):
@@ -42,8 +42,10 @@ def makeMultiplexConnection(channels):
     def get_player(self):
       try:
         return self.application.sqla_session.query(Player) \
-            .filter((Player.id == User.current_player_id) &
-                    (User.id == self.user_id)) \
+            .filter(User.current_creature_id == Creature.id,
+                    Player.user_id == self.user_id,
+                    Player.creature_id == Creature.id,
+                    User.id == self.user_id) \
             .one()
       except NoResultFound:
         return None

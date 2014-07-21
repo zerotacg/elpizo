@@ -18,37 +18,9 @@ import {getPlayer, getExploreNearby, getExploreMap, openExplore, postExploreMove
 class _App {
   getInitialState() {
     return {
-        player: {
-            name: "Unknown Player",
-            kind: -1,
-            variant: -1,
-            level: -1,
-            hp: -1,
-            mp: -1,
-            xp: -1,
-            maxHp: -1,
-            maxMp: -1,
-            maxXp: -1
-        },
-
-        nearby: {
-          x: -1,
-          y: -1,
-          realm: "Unknown Realm",
-          terrains: [],
-          creatures: [],
-          buildings: [],
-          items: [],
-          facilities: []
-        },
-
-        map: {
-          x: -1,
-          y: -1,
-          w: 0,
-          h: 0,
-          corners: []
-        }
+        player: null,
+        nearby: null,
+        map: null
     };
   }
 
@@ -91,33 +63,42 @@ class _App {
   }
 
   render() {
+    if (this.state.player === null ||
+        this.state.nearby === null ||
+        this.state.map === null) {
+      return null;
+    }
+
+    var playerName = this.state.player.creature.name;
+
     return <div>
       <Map onMapClick={this.onMove} map={this.state.map}
            resources={this.props.resources}
-           playerX={this.state.nearby.x} playerY={this.state.nearby.y} />
+           playerX={this.state.nearby.tile.x}
+           playerY={this.state.nearby.tile.y} />
 
       <div className="ui">
         {PlayerInfo(this.state.player)}
         <Switcher tabs={[
             {name: "Explore", id: "explore", element: <ExploreTab
                 transport={this.props.transport}
-                playerName={this.state.player.name}
+                playerName={playerName}
                 nearby={this.state.nearby}
             />},
             {name: "Inventory", id: "inventory", element: <InventoryTab
-                playerName={this.state.player.name}
+                playerName={playerName}
             />},
             {name: "Quests", id: "quests", element: <QuestsTab
-                playerName={this.state.player.name}
+                playerName={playerName}
             />},
             {name: "Skills", id: "skills", element: <SkillsTab
-                playerName={this.state.player.name}
+                playerName={playerName}
             />},
             {name: "Guild", id: "guild", element: <GuildTab
-                playerName={this.state.player.name}
+                playerName={playerName}
             />},
             {name: "Property", id: "property", element: <PropertyTab
-                playerName={this.state.player.name}
+                playerName={playerName}
             />}
         ]} />
       </div>

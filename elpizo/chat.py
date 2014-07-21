@@ -25,7 +25,7 @@ class ChatProtocol(Protocol):
                exchange=self.get_room_exchange_name("global"),
                type="fanout")
     yield Task(self.channel.exchange_declare,
-               exchange=self.get_player_exchange_name(player.id),
+               exchange=self.get_player_exchange_name(player.creature.id),
                type="fanout")
 
     self.chat_queue = (
@@ -35,7 +35,7 @@ class ChatProtocol(Protocol):
                exchange=self.get_room_exchange_name("global"),
                queue=self.chat_queue)
     yield Task(self.channel.queue_bind,
-               exchange=self.get_player_exchange_name(player.id),
+               exchange=self.get_player_exchange_name(player.creature.id),
                queue=self.chat_queue)
 
     self.channel.basic_consume(self.on_chat_queue_consume,
@@ -51,7 +51,7 @@ class ChatProtocol(Protocol):
       player = self.application.sqla_session.query(Player) \
         .filter(Player.name == target) \
         .one()
-      exchange = self.get_player_exchange_name(player.id)
+      exchange = self.get_player_exchange_name(player.creature.id)
 
     self.channel.basic_publish(exchange=exchange,
                                routing_key="",

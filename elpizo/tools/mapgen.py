@@ -7,59 +7,59 @@ from lxml import etree
 from functools import cmp_to_key
 
 COLORS = {
-    "OCEAN": 0x44447a,
-    "COAST": 0x33335a,
-    "LAKESHORE": 0x225588,
-    "LAKE": 0x336699,
-    "RIVER": 0x225588,
-    "MARSH": 0x2f6666,
-    "ICE": 0x99ffff,
-    "BEACH": 0xa09077,
-    "BRIDGE": 0x686860,
-    "LAVA": 0xcc3333,
+    "ocean": 0x44447a,
+    "coast": 0x33335a,
+    "lakeshore": 0x225588,
+    "lake": 0x336699,
+    "river": 0x225588,
+    "marsh": 0x2f6666,
+    "ice": 0x99ffff,
+    "beach": 0xa09077,
+    "bridge": 0x686860,
+    "lava": 0xcc3333,
 
     # Terrain
-    "SNOW": 0xffffff,
-    "TUNDRA": 0xbbbbaa,
-    "BARE": 0x888888,
-    "SCORCHED": 0x555555,
-    "TAIGA": 0x99aa77,
-    "SHRUBLAND": 0x889977,
-    "TEMPERATE_DESERT": 0xc9d29b,
-    "TEMPERATE_RAIN_FOREST": 0x448855,
-    "TEMPERATE_DECIDUOUS_FOREST": 0x679459,
-    "GRASSLAND": 0x88aa55,
-    "SUBTROPICAL_DESERT": 0xd2b98b,
-    "TROPICAL_RAIN_FOREST": 0x337755,
-    "TROPICAL_SEASONAL_FOREST": 0x559944
+    "snow": 0xffffff,
+    "tundra": 0xbbbbaa,
+    "bare": 0x888888,
+    "scorched": 0x555555,
+    "taiga": 0x99aa77,
+    "shrubland": 0x889977,
+    "temperate_desert": 0xc9d29b,
+    "temperate_rain_forest": 0x448855,
+    "temperate_deciduous_forest": 0x679459,
+    "grassland": 0x88aa55,
+    "subtropical_desert": 0xd2b98b,
+    "tropical_rain_forest": 0x337755,
+    "tropical_seasonal_forest": 0x559944
 }
 
 TERRAIN_NAMES = {
-    "OCEAN": "Ocean",
-    "COAST": "Coast",
-    "LAKESHORE": "Lakeshore",
-    "LAKE": "Lake",
-    "RIVER": "River",
-    "MARSH": "Marsh",
-    "ICE": "Ice",
-    "BEACH": "Beach",
-    "BRIDGE": "Bridge",
-    "LAVA": "Lave",
+    "ocean": "Ocean",
+    "coast": "Coast",
+    "lakeshore": "Lakeshore",
+    "lake": "Lake",
+    "river": "River",
+    "marsh": "Marsh",
+    "ice": "Ice",
+    "beach": "Beach",
+    "bridge": "Bridge",
+    "lava": "Lave",
 
     # Terrain
-    "SNOW": "Snow",
-    "TUNDRA": "Tundra",
-    "BARE": "Bare",
-    "SCORCHED": "Scorched",
-    "TAIGA": "Taiga",
-    "SHRUBLAND": "Shrubland",
-    "TEMPERATE_DESERT": "Temperate Desert",
-    "TEMPERATE_RAIN_FOREST": "Temperate Rain Forest",
-    "TEMPERATE_DECIDUOUS_FOREST": "Temperate Deciduous Forest",
-    "GRASSLAND": "Grassland",
-    "SUBTROPICAL_DESERT": "Subtropical Desert",
-    "TROPICAL_RAIN_FOREST": "Tropical Rain Forest",
-    "TROPICAL_SEASONAL_FOREST": "Tropical Seasonal Forest"
+    "snow": "Snow",
+    "tundra": "Tundra",
+    "bare": "Bare",
+    "scorched": "Scorched",
+    "taiga": "Taiga",
+    "shrubland": "Shrubland",
+    "temperate_desert": "Temperate Desert",
+    "temperate_rain_forest": "Temperate Rain Forest",
+    "temperate_deciduous_forest": "Temperate Deciduous Forest",
+    "grassland": "Grassland",
+    "subtropical_desert": "Subtropical Desert",
+    "tropical_rain_forest": "Tropical Rain Forest",
+    "tropical_seasonal_forest": "Tropical Seasonal Forest"
 }
 
 for c in COLORS:
@@ -230,11 +230,11 @@ def make_map_image(tree, size, zoom_factor):
       (0, size * zoom_factor),
       (size * zoom_factor, size * zoom_factor),
       (size * zoom_factor, 0),
-  ], fill=COLORS["OCEAN"])
+  ], fill=COLORS["ocean"])
 
   logging.info("Filling polygons...")
   for center in map.centers.values():
-    if center.biome == "OCEAN":
+    if center.biome == "ocean":
       continue
 
     points = []
@@ -244,7 +244,7 @@ def make_map_image(tree, size, zoom_factor):
         key=cmp_to_key(_clockwise_cmp_factory(
             (center.x * zoom_factor, center.y * zoom_factor))))
 
-    color = COLORS[center.biome]
+    color = COLORS[center.biome.lower()]
 
     ctx.polygon(points, fill=color)
 
@@ -257,7 +257,7 @@ def make_map_image(tree, size, zoom_factor):
       ctx.line([
           (edge.corner0.x * zoom_factor, edge.corner0.y * zoom_factor),
           (edge.corner1.x * zoom_factor, edge.corner1.y * zoom_factor)
-      ], fill=COLORS["RIVER"], width=int(edge.river / 1.5 * zoom_factor))
+      ], fill=COLORS["river"], width=int(edge.river / 1.5 * zoom_factor))
 
   img_data = img.load()
 

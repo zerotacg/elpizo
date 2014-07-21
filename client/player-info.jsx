@@ -17,16 +17,24 @@ class _PlayerInfo {
 
   render() {
     return <div className="player-info">
-      <Icon taxonomy="creature" kind={this.props.kind} variant={this.props.variant} />
+      <Icon taxonomy="creature"
+            kind={this.props.creature.kind}
+            variant={this.props.creature.variant} />
       <div className="stats">
         <div className="name left">
-          {this.props.name} <small>{titles.creature[names.creature[this.props.kind]]} {this.props.level}</small>
+          {this.props.creature.name} <small>{titles.creature[names.creature[this.props.creature.kind]]} {this.props.creature.level}</small>
         </div>
         <div className="right">{this.state.time}</div>
         <div className="bars clear">
-          <Bar max={this.props.maxHp} value={this.props.hp} className="hp" />
-          <Bar max={this.props.maxMp} value={this.props.mp} className="mp" />
-          <Bar max={this.props.maxXp} value={this.props.xp} className="xp" />
+          <Bar max={this.props.creature.maxHp}
+               value={this.props.creature.hp}
+               className="hp" />
+          <Bar max={this.props.creature.maxMp}
+               value={this.props.creature.mp}
+               className="mp" />
+          <Bar max={this.props.creature.maxXp}
+               value={this.props.creature.xp}
+               className="xp" />
         </div>
       </div>
     </div>;

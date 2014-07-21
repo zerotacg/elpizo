@@ -1,8 +1,8 @@
 import sqlalchemy
 
-from sqlalchemy import types
+from sqlalchemy import func, types
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, Session
+from sqlalchemy.orm import backref, relationship, Session, remote, foreign
 
 Base = declarative_base()
 
@@ -16,29 +16,81 @@ class User(Base):
 
   id = default_pkey()
   name = sqlalchemy.Column(types.String, unique=True, nullable=False)
-  current_player_id = sqlalchemy.Column(types.Integer,
-                                        sqlalchemy.ForeignKey(
-                                            "players.id",
-                                            use_alter=True,
-                                            name="users_current_player_id_fkey"),
-                                        nullable=True)
-  current_player = relationship("Player", foreign_keys="User.current_player_id")
 
+  current_creature_id = sqlalchemy.Column(
+      types.Integer,
+      sqlalchemy.ForeignKey("creatures.id"),
+      nullable=True)
+  current_creature = relationship("Creature",
+                                  foreign_keys="User.current_creature_id")
 
 class Player(Base):
   __tablename__ = "players"
 
-  id = default_pkey()
-  name = sqlalchemy.Column(types.String, unique=True, nullable=False)
   user_id = sqlalchemy.Column(types.Integer,
                               sqlalchemy.ForeignKey("users.id"),
-                              nullable=False)
+                              nullable=False,
+                              primary_key=True)
   user = relationship("User", foreign_keys="Player.user_id", backref="players")
+
+  creature_id = sqlalchemy.Column(
+      types.Integer,
+      sqlalchemy.ForeignKey("creatures.id"),
+      nullable=False,
+      unique=True,
+      primary_key=True)
+  creature = relationship("Creature", backref=backref("player", uselist=False))
+
+  def to_js(self):
+    return {
+        "creature": self.creature.to_js()
+    }
+
+
+class Creature(Base):
+  __tablename__ = "creatures"
+
+  id = default_pkey()
+  name = sqlalchemy.Column(types.String, unique=True, nullable=False)
+
+  creature_kind_id = sqlalchemy.Column(
+      types.Integer,
+      sqlalchemy.ForeignKey("creature_kinds.id"),
+      nullable=False)
+  kind = relationship("CreatureKind")
 
   map_tile_id = sqlalchemy.Column(types.Integer,
                                   sqlalchemy.ForeignKey("map_tiles.id"),
                                   nullable=False)
-  map_tile = relationship("MapTile", backref="players")
+  map_tile = relationship("MapTile", backref="creatures")
+
+  def to_js(self):
+    return {
+        "id": self.id,
+        "name": self.name,
+        "kind": self.kind.id,
+        "variant": 1,
+        "level": 10,
+        "hp": 50,
+        "maxHp": 100,
+        "mp": 50,
+        "maxMp": 100,
+        "xp": 50,
+        "maxXp": 100
+    }
+
+User.current_player = relationship("Player",
+    primaryjoin=(User.current_creature_id == remote(Creature.id)) &
+                (foreign(Player.creature_id) == Creature.id),
+    viewonly=True,
+    uselist=False)
+
+
+class CreatureKind(Base):
+  __tablename__ = "creature_kinds"
+
+  id = default_pkey()
+  name = sqlalchemy.Column(types.String, unique=True, nullable=False)
 
 
 class Realm(Base):
@@ -53,6 +105,11 @@ class Realm(Base):
   corners = relationship("MapCorner", backref="realm")
   tiles = relationship("MapTile", backref="realm")
 
+  def to_js(self):
+    return {
+        "id": self.id,
+        "name": self.name
+    }
 
 class Terrain(Base):
   __tablename__ = "terrains"
@@ -125,6 +182,121 @@ class MapTile(Base):
 
     return corners[0, 0], corners[1, 0], corners[1, 1], corners[0, 1]
 
+  def to_js(self):
+    return {
+        "x": self.x,
+        "y": self.y,
+        "realm": self.realm.to_js()
+    }
+
   __table_args__ = (
       sqlalchemy.Index("map_tiles_xy_idx", "realm_id", "x", "y"),
   )
+
+
+class Building(Base):
+  __tablename__ = "buildings"
+
+  id = default_pkey()
+  name = sqlalchemy.Column(types.String, nullable=False)
+
+  building_kind_id = sqlalchemy.Column(
+      types.Integer,
+      sqlalchemy.ForeignKey("building_kinds.id"),
+      nullable=False)
+  kind = relationship("BuildingKind")
+
+  map_tile_id = sqlalchemy.Column(types.Integer,
+                                  sqlalchemy.ForeignKey("map_tiles.id"),
+                                  nullable=False)
+  map_tile = relationship("MapTile", backref="buildings")
+
+  def to_js(self):
+    return {
+        "id": self.id,
+        "name": self.name,
+        "kind": self.kind.id
+    }
+
+
+class BuildingKind(Base):
+  __tablename__ = "building_kinds"
+
+  id = default_pkey()
+  name = sqlalchemy.Column(types.String, unique=True, nullable=False)
+
+
+class Facility(Base):
+  __tablename__ = "facilities"
+
+  id = default_pkey()
+  name = sqlalchemy.Column(types.String, nullable=False)
+
+  facility_kind_id = sqlalchemy.Column(
+      types.Integer,
+      sqlalchemy.ForeignKey("facility_kinds.id"),
+      nullable=False)
+  kind = relationship("FacilityKind")
+
+  map_tile_id = sqlalchemy.Column(types.Integer,
+                                  sqlalchemy.ForeignKey("map_tiles.id"),
+                                  nullable=False)
+  map_tile = relationship("MapTile", backref="facilities")
+
+  def to_js(self):
+    return {
+        "id": self.id,
+        "name": self.name,
+        "kind": self.kind.id
+    }
+
+
+class FacilityKind(Base):
+  __tablename__ = "facility_kinds"
+
+  id = default_pkey()
+  name = sqlalchemy.Column(types.String, unique=True, nullable=False)
+
+
+class Item(Base):
+  __tablename__ = "items"
+
+  id = default_pkey()
+  name = sqlalchemy.Column(types.String, nullable=False)
+
+  item_kind_id = sqlalchemy.Column(
+      types.Integer,
+      sqlalchemy.ForeignKey("item_kinds.id"),
+      nullable=False)
+  kind = relationship("ItemKind")
+
+  creature_id = sqlalchemy.Column(types.Integer,
+                                  sqlalchemy.ForeignKey("creatures.id"),
+                                  nullable=True)
+  creature = relationship("Creature", backref="inventory")
+
+  map_tile_id = sqlalchemy.Column(types.Integer,
+                                  sqlalchemy.ForeignKey("map_tiles.id"),
+                                  nullable=True)
+  map_tile = relationship("MapTile", backref="items")
+
+  def to_js(self):
+    return {
+        "id": self.id,
+        "name": self.name,
+        "kind": self.kind.id
+    }
+
+  __table_args__ = (
+      sqlalchemy.CheckConstraint(
+          (func.coalesce(creature_id, map_tile_id) != None) &
+              (creature_id * map_tile_id == None),
+          name="one_of_creature_id_map_tile_id_check"),
+  )
+
+
+class ItemKind(Base):
+  __tablename__ = "item_kinds"
+
+  id = default_pkey()
+  name = sqlalchemy.Column(types.String, unique=True, nullable=False)

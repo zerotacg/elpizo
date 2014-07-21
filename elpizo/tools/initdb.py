@@ -6,39 +6,31 @@ import json
 import sys
 
 from elpizo import make_application
-from elpizo.models import Base, User, Player, Realm, MapTile, Terrain
+from elpizo.models import Base, User, Player, Realm, MapTile, Terrain, Creature, CreatureKind
 from elpizo.tools import mapgen
 
 
-def copy_escape(s):
-  return "\"" + s.replace("\"", "\"\"") + "\""
-
-
-def chunks(xs, n):
-  for i in range(0, len(xs), n):
-    yield xs[i:i+n]
-
-
-if __name__ == "__main__":
-  if len(sys.argv) != 2:
-    sys.stderr.write("usage: {} <mapgen2 xml>\n".format(sys.argv[0]))
-    sys.exit(1)
-
-  app = make_application()
+def initialize_schema(app):
   engine = app.sqla_session.bind
 
-  input("This will DELETE ALL DATA! Press ENTER to continue or CTRL+C to abort. ")
   Base.metadata.drop_all(bind=engine)
   Base.metadata.create_all(bind=engine)
   logging.info("Initialized database schema.")
 
+
+def initialize_terrains(app):
   terrains = {}
   for terrain_id, _ in mapgen.TERRAIN_NAMES.items():
-    terrain = Terrain(name=terrain_id.lower())
+    terrain = Terrain(name=terrain_id)
     app.sqla_session.add(terrain)
     terrains[terrain_id] = terrain
+  app.sqla_session.commit()
 
   logging.info("Initialized terrain types.")
+
+
+def initialize_realm(app):
+  engine = app.sqla_session.bind
 
   SIZE = 600
   ZOOM_FACTOR = 1.0
@@ -56,8 +48,12 @@ if __name__ == "__main__":
 
   conn = engine.raw_connection()
 
+  terrains = {}
+  for terrain in app.sqla_session.query(Terrain):
+    terrains[terrain.name] = terrain.id
+
   corners = [
-      (realm.id, s, t, terrains[raw_corners[t * (REALM_SIZE + 1) + s]].id)
+      (realm.id, s, t, terrains[raw_corners[t * (REALM_SIZE + 1) + s]])
       for s, t in product(range(REALM_SIZE + 1), range(REALM_SIZE + 1))
   ]
   cur = conn.cursor()
@@ -81,28 +77,73 @@ if __name__ == "__main__":
   conn.commit()
 
   logging.info("Populated Windvale.")
+  return realm
 
+
+def initialize_creature_kinds(app):
+  for kind in ["human", "cow"]:
+    creature_kind = CreatureKind(name=kind)
+    app.sqla_session.add(creature_kind)
+  app.sqla_session.commit()
+
+  logging.info("Created creature kinds.")
+
+
+def initialize_players(app, realm):
   tile = app.sqla_session.query(MapTile) \
       .filter(MapTile.realm == realm, MapTile.x == 0, MapTile.y == 0) \
+      .one()
+
+  human = app.sqla_session.query(CreatureKind) \
+      .filter(CreatureKind.name == "human") \
       .one()
 
   victor_hugo = User(name="victor_hugo")
   app.sqla_session.add(victor_hugo)
 
-  valjean = Player(name="Valjean", user=victor_hugo, map_tile=tile)
+  valjean = Player(user=victor_hugo,
+                   creature=Creature(name="Valjean", map_tile=tile,
+                                     creature_kind=human))
   app.sqla_session.add(valjean)
 
   dumas = User(name="dumas")
   app.sqla_session.add(dumas)
 
-  athos = Player(name="Athos", user=dumas, map_tile=tile)
+  athos = Player(user=dumas,
+                 creature=Creature(name="Athos", map_tile=tile,
+                                   creature_kind=human))
   app.sqla_session.add(athos)
 
-  aramis = Player(name="Aramis", user=dumas, map_tile=tile)
+  aramis = Player(user=dumas,
+                  creature=Creature(name="Aramis", map_tile=tile,
+                                    creature_kind=human))
   app.sqla_session.add(aramis)
 
-  porthos = Player(name="Porthos", user=dumas, map_tile=tile)
+  porthos = Player(user=dumas,
+                   creature=Creature(name="Porthos", map_tile=tile,
+                                     creature_kind=human))
   app.sqla_session.add(porthos)
 
   app.sqla_session.commit()
+
   logging.info("Created test users.")
+
+
+def main():
+  if len(sys.argv) != 2:
+    sys.stderr.write("usage: {} <mapgen2 xml>\n".format(sys.argv[0]))
+    sys.exit(1)
+
+  app = make_application()
+
+  input("This will DELETE ALL DATA! Press ENTER to continue or CTRL+C to abort. ")
+
+  initialize_schema(app)
+  initialize_terrains(app)
+  realm = initialize_realm(app)
+  initialize_creature_kinds(app)
+  initialize_players(app, realm)
+
+
+if __name__ == "__main__":
+  main()

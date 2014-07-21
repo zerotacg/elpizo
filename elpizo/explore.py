@@ -5,7 +5,7 @@ from tornado.gen import Task, engine
 from .net import Protocol
 from .web import get, post
 
-from .models import MapTile, MapCorner
+from .models import MapTile, MapCorner, Creature, Building, Item, Facility
 
 
 EXTENT = 64
@@ -17,7 +17,7 @@ def map(handler):
   background so the client doesn't need the full map up-front, but has enough of
   the map to move around with.
   """
-  tile = handler.get_player().map_tile
+  tile = handler.get_player().creature.map_tile
 
   left = tile.x - EXTENT
   right = tile.x + EXTENT + 1
@@ -53,33 +53,47 @@ def map(handler):
 def nearby(handler):
   player = handler.get_player()
 
-  tile = player.map_tile
-  corner_terrains = Counter(corner.terrain_id for corner in tile.get_corners())
+  tile = player.creature.map_tile
 
   handler.finish({
-    "terrains": list(sorted(corner_terrains.keys(),
-                            key=lambda k: -corner_terrains[k])),
-    "x": tile.x,
-    "y": tile.y,
-    "realm": tile.realm.name,
-    "creatures": [
-        {"name": "Éponine", "id": 10, "kind": 2, "level": 10, "variant": 1}
-    ],
-    "buildings": [
-        {"name": "Spooky Mill", "id": 11, "kind": 2, "variant": 1}
-    ],
-    "items": [],
-    "facilities": []
+      "terrains": [name for name, _ in
+                   Counter(corner.terrain_id
+                           for corner in tile.get_corners()).most_common()],
+      "tile": tile.to_js(),
+      "creatures": [
+          creature.to_js()
+          for creature
+          in handler.application.sqla_session.query(Creature).filter(
+              Creature.map_tile == tile, Creature.id != player.creature.id)
+      ],
+      "buildings": [
+          building.to_js()
+          for building
+          in handler.application.sqla_session.query(Building).filter(
+              Building.map_tile == tile)
+      ],
+      "items": [
+          item.to_js()
+          for item
+          in handler.application.sqla_session.query(Item).filter(
+              Item.map_tile == tile)
+      ],
+      "facilities": [
+          facility.to_js()
+          for facility
+          in handler.application.sqla_session.query(Facility).filter(
+              Facility.map_tile == tile)
+      ]
   })
 
 
 @post
 def move(handler):
   player = handler.get_player()
-  player.map_tile = handler.application.sqla_session.query(MapTile) \
+  player.creature.map_tile = handler.application.sqla_session.query(MapTile) \
       .filter(MapTile.x == handler.body["x"],
               MapTile.y == handler.body["y"],
-              MapTile.realm == player.map_tile.realm) \
+              MapTile.realm == player.creature.map_tile.realm) \
       .one()
   handler.application.sqla_session.commit()
 

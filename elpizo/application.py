@@ -26,19 +26,19 @@ class SockJSRouter(SockJSRouter):
 
 class BackdoorAuthHandler(RequestHandler):
   def get(self):
-    from .models import User, Player
+    from .models import User, Player, Creature
 
     user_name = self.get_argument("user")
     player_name = self.get_argument("player")
 
     player = self.application.sqla_session.query(Player) \
-        .filter((Player.name == player_name) &
-                (Player.user_id == User.id) &
-                (User.name == user_name)) \
+        .filter(Creature.name == player_name,
+                Player.creature_id == Creature.id,
+                Player.user_id == User.id) \
         .one()
 
     user = player.user
-    user.current_player = player
+    user.current_creature = player.creature
 
     self.application.sqla_session.commit()
 
@@ -46,7 +46,7 @@ class BackdoorAuthHandler(RequestHandler):
     self.finish("ok, set your elpizo_user to {id} ({user_name}, {player_name})".format(
         id=user.id,
         user_name=user.name,
-        player_name=user.current_player.name))
+        player_name=user.current_player.creature.name))
 
 
 class Application(Application):

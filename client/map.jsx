@@ -92,6 +92,10 @@ class _Map {
     };
   }
 
+  componentDidMount() {
+    this.draw();
+  }
+
   componentDidUpdate() {
     this.draw();
   }

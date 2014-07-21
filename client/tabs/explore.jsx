@@ -69,7 +69,7 @@ class _ExploreTab {
 
       <div className="nearby">
         <div className="name">
-          {terrains} <small>{nearby.x}, {nearby.y} {nearby.realm}</small>
+          {terrains} <small>{nearby.tile.x}, {nearby.tile.y} {nearby.tile.realm.name}</small>
         </div>
 
         <div className="long">

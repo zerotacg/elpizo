@@ -1,27 +1,28 @@
 import json
 
-from .models import Terrain
+from .models import CreatureKind, BuildingKind, ItemKind, FacilityKind, Terrain
 from .web import get, post
 
 @get
 def names(handler):
   handler.set_header("Content-Type", "application/javascript")
   handler.finish("window._names=" + json.dumps({
-      "creature": {
-          -1: "unknown",
-           1: "human",
-           2: "wyrm"
-      },
+      "creature": {creature_kind.id: creature_kind.name
+                   for creature_kind
+                   in handler.application.sqla_session.query(CreatureKind)},
 
-      "building": {
-          -1: "unknown",
-           1: "house",
-           2: "windmill"
-      },
+      "building": {building_kind.id: building_kind.name
+                   for building_kind
+                   in handler.application.sqla_session.query(BuildingKind)},
 
-      "item": {},
+      "item": {item_kind.id: item_kind.name
+               for item_kind
+               in handler.application.sqla_session.query(ItemKind)},
 
-      "facility": {},
+
+      "facility": {facility_kind.id: facility_kind.name
+                   for facility_kind
+                   in handler.application.sqla_session.query(FacilityKind)},
 
       "terrain": {terrain.id: terrain.name
                   for terrain
