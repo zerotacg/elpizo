@@ -30,9 +30,6 @@ function rebundle(bundler) {
         debug: true
     })
     .on("error", function(e) {
-      e.toString().split("\n").forEach(function (line) {
-        gutil.log(gutil.colors.red(line));
-      });
       this.emit("end");
     })
     .pipe(source("bundle.js"))
@@ -75,6 +72,7 @@ function reactify(filename) {
           output.sourceMap, data, output.sourceFilename);
     } catch (e) {
       result = data;
+      gutil.log(gutil.colors.red(e.toString() + " in file " + filename));
     }
 
     this.queue(result);
