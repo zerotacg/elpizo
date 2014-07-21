@@ -31,5 +31,5 @@ def names(handler):
 
 
 ROUTES = [
-  (r"/names\.js", names)
+    (r"/names\.js", names)
 ]

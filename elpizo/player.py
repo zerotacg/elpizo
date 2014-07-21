@@ -8,5 +8,5 @@ class PlayerHandler(RequestHandler):
 
 
 ROUTES = [
-  (r"/player", PlayerHandler)
+    (r"/player", PlayerHandler)
 ]

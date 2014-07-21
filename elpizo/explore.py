@@ -97,8 +97,8 @@ def move(handler):
 
 
 ROUTES = [
-  (r"/explore", explore),
-  (r"/explore/move", move)
+    (r"/explore", explore),
+    (r"/explore/move", move)
 ]
 
 
@@ -109,5 +109,5 @@ class ExploreConnection(Protocol):
     })
 
 CHANNELS = {
-  "explore": ExploreConnection
+    "explore": ExploreConnection
 }
