@@ -10,7 +10,13 @@ class PlayerHandler(RequestHandler):
         "name": player.name,
         "kind": 1,
         "variant": 1,
-        "level": 10
+        "level": 10,
+        "hp": 50,
+        "maxHp": 100,
+        "mp": 50,
+        "maxMp": 100,
+        "xp": 50,
+        "maxXp": 100
     })
 
 

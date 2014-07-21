@@ -85,10 +85,10 @@ class _Map {
     return {
         width: 1024,
         height: 768,
+        defaultAvatarX: 8,
+        defaultAvatarY: 9,
         avatarX: 8,
-        avatarY: 9,
-        cursorX: -1,
-        cursorY: -1
+        avatarY: 9
     };
   }
 
@@ -152,8 +152,8 @@ class _Map {
 
   convertScreenSpaceToWorldSpace(sx, sy) {
     return {
-        x: this.props.playerX + sx - this.state.avatarX,
-        y: this.props.playerY + sy - this.state.avatarY
+        x: this.props.playerX + sx - this.state.defaultAvatarX,
+        y: this.props.playerY + sy - this.state.defaultAvatarY
     };
   }
 
@@ -174,7 +174,24 @@ class _Map {
     var sx = Math.floor((e.pageX - rect.left) / TILE_SIZE);
     var sy = Math.floor((e.pageY - rect.top) / TILE_SIZE);
 
-    this.props.onMapClick(this.convertScreenSpaceToWorldSpace(sx, sy));
+    this.setState({
+        avatarX: sx,
+        avatarY: sy
+    });
+
+    this.props.onMapClick(
+        this.convertScreenSpaceToWorldSpace(sx, sy)).then(
+            () => {
+              this.setState({
+                  avatarX: this.state.defaultAvatarX,
+                  avatarY: this.state.defaultAvatarY
+              });
+        }, () => {
+              this.setState({
+                  avatarX: this.state.defaultAvatarX,
+                  avatarY: this.state.defaultAvatarY
+              });
+        });
 
     var ctx = this.getHighlightCanvasContext();
     ctx.clearRect(0, 0, this.state.width, this.state.height);

@@ -1,3 +1,5 @@
+import {Promise} from "rsvp";
+
 export function loadImage(src) {
   return new Promise((resolve, reject) => {
     var img = new Image();

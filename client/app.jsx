@@ -53,26 +53,32 @@ class _App {
   }
 
   updatePlayer(promise) {
-    promise.then((player) => {
+    return promise.then((player) => {
       this.setState({
           player: player
       });
+
+      return player;
     });
   }
 
   updateNearby(promise) {
-    promise.then((nearby) => {
+    return promise.then((nearby) => {
       this.setState({
         nearby: nearby
       });
+
+      return nearby;
     });
   }
 
   updateMap(promise) {
-    promise.then((map) => {
+    return promise.then((map) => {
       this.setState({
         map: map
       });
+
+      return nearby;
     });
   }
 
@@ -119,7 +125,7 @@ class _App {
   }
 
   onMove(e) {
-    this.updateNearby(postExploreMove({
+    return this.updateNearby(postExploreMove({
         x: e.x,
         y: e.y
     }));

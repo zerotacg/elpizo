@@ -1,3 +1,5 @@
+import {Promise} from "rsvp";
+
 module net from "./net";
 
 function httpJson(url, method, body) {
