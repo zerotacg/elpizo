@@ -12,6 +12,7 @@ module Menu from "../parts/menu.jsx";
 module Chat from "../chat.jsx";
 
 import {classSet} from "../util/react";
+import {nubStrings} from "../util/collections";
 
 class _EntityItem {
   getInitialState() {
@@ -58,9 +59,33 @@ class _ExploreTab {
   }
 
   render() {
-    var nearby = this.props.nearby;
-    var terrains = nearby.terrains
-        .map((terrain) => titles.terrain[names.terrain[terrain]])
+    var explore = this.props.explore;
+
+    var i = explore.tile.x - explore.map.x;
+    var j = explore.tile.y - explore.map.y;
+
+    var nw = i >= 0 && j >= 0
+             ? explore.map.corners[(j + 0) * (explore.map.w + 1) + (i + 0)]
+             : null;
+    var ne = i < explore.map.w && j >= 0
+             ? explore.map.corners[(j + 0) * (explore.map.w + 1) + (i + 1)]
+             : null;
+    var sw = i >= 0 && j < explore.map.h
+             ? explore.map.corners[(j + 1) * (explore.map.w + 1) + (i + 0)]
+             : null;
+    var se = i < explore.map.w && j < explore.map.h
+             ? explore.map.corners[(j + 1) * (explore.map.w + 1) + (i + 1)]
+             : null;
+
+    var terrains = [nw, ne, sw, se];
+    var terrainFrequencies = {};
+    terrains.forEach((terrain) => {
+      terrainFrequencies[terrain] = (terrainFrequencies[terrain] || 0) + 1;
+    });
+
+    var terrains = nubStrings([nw, ne, sw, se]
+        .sort((a, b) => terrainFrequencies[a] - terrainFrequencies[b]))
+        .map((id) => titles.terrain[names.terrain[id]])
         .join("/");
 
     return <div id="explore">
@@ -69,21 +94,21 @@ class _ExploreTab {
 
       <div className="nearby">
         <div className="name">
-          {terrains} <small>{nearby.tile.x}, {nearby.tile.y} {nearby.tile.realm.name}</small>
+          {terrains} <small>{explore.tile.x}, {explore.tile.y} {explore.tile.realm.name}</small>
         </div>
 
         <div className="long">
-          <List items={nearby.creatures.map(this.createEntityItem.bind(null, "creature"))} />
-          <List items={nearby.buildings.map(this.createEntityItem.bind(null, "building"))} />
+          <List items={explore.creatures.map(this.createEntityItem.bind(null, "creature"))} />
+          <List items={explore.buildings.map(this.createEntityItem.bind(null, "building"))} />
         </div>
 
         <div className="short">
           <div className="left">
-            <List items={nearby.items.map(this.createEntityItem.bind(null, "item"))} />
+            <List items={explore.items.map(this.createEntityItem.bind(null, "item"))} />
           </div>
 
           <div className="right">
-            <List items={nearby.facilities.map(this.createEntityItem.bind(null, "facility"))} />
+            <List items={explore.facilities.map(this.createEntityItem.bind(null, "facility"))} />
           </div>
         </div>
       </div>

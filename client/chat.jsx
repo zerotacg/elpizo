@@ -16,17 +16,17 @@ class _Chat {
   }
 
   componentWillMount() {
-    this.chat = openChat(this.props.transport);
+    this.chatProtocol = openChat(this.props.transport);
 
-    this.chat.on("open", this.onChatOpen);
-    this.chat.on("message", this.onChatMessage);
-    this.chat.on("close", this.onChatClose);
+    this.chatProtocol.on("open", this.onChatOpen);
+    this.chatProtocol.on("message", this.onChatMessage);
+    this.chatProtocol.on("close", this.onChatClose);
   }
 
   componentWillUnmount () {
-    this.chat.off("open", this.onChatOpen);
-    this.chat.off("message", this.onChatMessage);
-    this.chat.off("close", this.onChatClose);
+    this.chatProtocol.off("open", this.onChatOpen);
+    this.chatProtocol.off("message", this.onChatMessage);
+    this.chatProtocol.off("close", this.onChatClose);
   }
 
   addMessage(message) {
@@ -99,7 +99,7 @@ class _Chat {
       return;
     }
 
-    this.chat.send({
+    this.chatProtocol.send({
         target: "#global",
         text: text
     });

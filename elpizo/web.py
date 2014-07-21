@@ -14,7 +14,9 @@ class RequestHandler(RequestHandler):
       return
 
     self.user_id = int(self.get_secure_cookie("elpizo_user"))
-    if self.get_player() is None:
+    self._player = self._get_player()
+
+    if self._player is None:
       self.send_error(403)
       return
 
@@ -29,7 +31,7 @@ class RequestHandler(RequestHandler):
 
     self.finish(payload)
 
-  def get_player(self):
+  def _get_player(self):
     try:
       return self.application.sqla_session.query(Player) \
           .filter(User.current_creature_id == Creature.id,
@@ -40,15 +42,18 @@ class RequestHandler(RequestHandler):
     except NoResultFound:
       return None
 
+  def get_player(self):
+    return self._player
+
   def get(self):
     try:
-      self.actually_get()
+      self.finish(self.actually_get())
     except NoResultFound:
       self.send_error(404)
 
   def post(self):
     try:
-      self.actually_post()
+      self.finish(self.actually_post())
     except NoResultFound:
       self.send_error(404)
 

@@ -6,7 +6,7 @@ from .web import get, post
 @get
 def names(handler):
   handler.set_header("Content-Type", "application/javascript")
-  handler.finish("window._names=" + json.dumps({
+  return "window._names=" + json.dumps({
       "creature": {creature_kind.id: creature_kind.name
                    for creature_kind
                    in handler.application.sqla_session.query(CreatureKind)},
@@ -27,7 +27,7 @@ def names(handler):
       "terrain": {terrain.id: terrain.name
                   for terrain
                   in handler.application.sqla_session.query(Terrain)}
-  }, separators=",:"))
+  }, separators=",:")
 
 
 ROUTES = [

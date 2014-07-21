@@ -76,7 +76,8 @@ var TILE_MAPPINGS = {
     "beach": "dirt",
     "river": "water",
     "ocean": "water",
-    "lakeshore": "water"
+    "lakeshore": "water",
+    "lake": "water"
 };
 var TILE_SIZE = 32;
 
@@ -122,6 +123,7 @@ class _Map {
                              this.props.map.w, this.props.map.h,
                              TILE_PRECEDENCE);
 
+    // The logic below was originally intended for a pannable map.
     for (var sy = 0; sy < Math.floor(this.state.height / TILE_SIZE); ++sy) {
       for (var sx = 0; sx < Math.floor(this.state.width / TILE_SIZE); ++sx) {
         var xy = this.convertScreenSpaceToWorldSpace(sx, sy);

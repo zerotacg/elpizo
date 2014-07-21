@@ -1,5 +1,4 @@
-from collections import Counter
-
+from sqlalchemy.orm import Session
 from tornado.gen import Task, engine
 
 from .net import Protocol
@@ -8,23 +7,22 @@ from .web import get, post
 from .models import MapTile, MapCorner, Creature, Building, Item, Facility
 
 
-EXTENT = 64
+AVATAR_X = 8
+AVATAR_Y = 9
 
-@get
-def map(handler):
-  """
-  Update the map for the player's current viewport. This is lazily run in the
-  background so the client doesn't need the full map up-front, but has enough of
-  the map to move around with.
-  """
-  tile = handler.get_player().creature.map_tile
+TILE_SIZE = 32
+MAP_WIDTH = 1024 // TILE_SIZE
+MAP_HEIGHT = 768 // TILE_SIZE
 
-  left = tile.x - EXTENT
-  right = tile.x + EXTENT + 1
-  top = tile.y - EXTENT
-  bottom = tile.y + EXTENT + 1
+def get_map(tile):
+  session = Session.object_session(tile)
 
-  corners = handler.application.sqla_session.query(MapCorner) \
+  left = tile.x - AVATAR_X
+  right = left + MAP_WIDTH
+  top = tile.y - AVATAR_Y
+  bottom = top + MAP_HEIGHT
+
+  corners = session.query(MapCorner) \
       .filter(MapCorner.realm == tile.realm,
               MapCorner.s >= left, MapCorner.s <= right,
               MapCorner.t >= top, MapCorner.t <= bottom) \
@@ -43,22 +41,20 @@ def map(handler):
     top = min(corner.t, top)
     bottom = max(corner.t, bottom)
 
-  handler.finish({
+  return {
       "x": left, "y": top, "w": right - left, "h": bottom - top,
       "corners": [corner.terrain.id for corner in corners]
-  })
+  }
 
 
 @get
-def nearby(handler):
+def explore(handler):
   player = handler.get_player()
 
   tile = player.creature.map_tile
 
-  handler.finish({
-      "terrains": [name for name, _ in
-                   Counter(corner.terrain_id
-                           for corner in tile.get_corners()).most_common()],
+  return {
+      "map": get_map(tile),
       "tile": tile.to_js(),
       "creatures": [
           creature.to_js()
@@ -84,7 +80,7 @@ def nearby(handler):
           in handler.application.sqla_session.query(Facility).filter(
               Facility.map_tile == tile)
       ]
-  })
+  }
 
 
 @post
@@ -97,13 +93,12 @@ def move(handler):
       .one()
   handler.application.sqla_session.commit()
 
-  nearby.actually_get(handler)
+  return explore.actually_get(handler)
 
 
 ROUTES = [
-  (r"/explore/nearby", nearby),
-  (r"/explore/move", move),
-  (r"/explore/map", map)
+  (r"/explore", explore),
+  (r"/explore/move", move)
 ]
 
 

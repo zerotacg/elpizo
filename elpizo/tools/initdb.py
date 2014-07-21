@@ -33,7 +33,7 @@ def initialize_realm(app):
   engine = app.sqla_session.bind
 
   SIZE = 600
-  ZOOM_FACTOR = 1.0
+  ZOOM_FACTOR = 0.5
 
   REALM_SIZE = int(SIZE * ZOOM_FACTOR - 1)
 
@@ -102,26 +102,22 @@ def initialize_players(app, realm):
   app.sqla_session.add(victor_hugo)
 
   valjean = Player(user=victor_hugo,
-                   creature=Creature(name="Valjean", map_tile=tile,
-                                     creature_kind=human))
+                   creature=Creature(name="Valjean", map_tile=tile, kind=human))
   app.sqla_session.add(valjean)
 
   dumas = User(name="dumas")
   app.sqla_session.add(dumas)
 
   athos = Player(user=dumas,
-                 creature=Creature(name="Athos", map_tile=tile,
-                                   creature_kind=human))
+                 creature=Creature(name="Athos", map_tile=tile, kind=human))
   app.sqla_session.add(athos)
 
   aramis = Player(user=dumas,
-                  creature=Creature(name="Aramis", map_tile=tile,
-                                    creature_kind=human))
+                  creature=Creature(name="Aramis", map_tile=tile, kind=human))
   app.sqla_session.add(aramis)
 
   porthos = Player(user=dumas,
-                   creature=Creature(name="Porthos", map_tile=tile,
-                                     creature_kind=human))
+                   creature=Creature(name="Porthos", map_tile=tile, kind=human))
   app.sqla_session.add(porthos)
 
   app.sqla_session.commit()

@@ -28,8 +28,7 @@ function openProto(channel, transport) {
 }
 
 export var getPlayer = httpJson.bind(null, "/player", "GET");
-export var getExploreMap = httpJson.bind(null, "/explore/map", "GET");
-export var getExploreNearby = httpJson.bind(null, "/explore/nearby", "GET");
+export var getExplore = httpJson.bind(null, "/explore", "GET");
 export var postExploreMove = httpJson.bind(null, "/explore/move", "POST");
 export var openExplore = openProto.bind(null, "explore");
 export var openChat = openProto.bind(null, "chat");

@@ -56,7 +56,7 @@ class ChatProtocol(Protocol):
     self.channel.basic_publish(exchange=exchange,
                                routing_key="",
                                body=json.dumps({
-                                   "origin": player.name,
+                                   "origin": player.creature.name,
                                    "target": message["target"],
                                    "text": message["text"]
                                }))
@@ -66,5 +66,5 @@ class ChatProtocol(Protocol):
 
 
 CHANNELS = {
-  "chat": ChatProtocol
+    "chat": ChatProtocol
 }

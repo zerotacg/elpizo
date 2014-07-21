@@ -13,14 +13,13 @@ module SkillsTab from "./tabs/skills.jsx";
 module GuildTab from "./tabs/guild.jsx";
 module PropertyTab from "./tabs/property.jsx";
 
-import {getPlayer, getExploreNearby, getExploreMap, openExplore, postExploreMove} from "./api";
+import {getPlayer, getExplore, openExplore, postExploreMove} from "./api";
 
 class _App {
   getInitialState() {
     return {
         player: null,
-        nearby: null,
-        map: null
+        explore: null
     };
   }
 
@@ -34,48 +33,35 @@ class _App {
     });
   }
 
-  updateNearby(promise) {
-    return promise.then((nearby) => {
+  updateExplore(promise) {
+    return promise.then((explore) => {
       this.setState({
-        nearby: nearby
+        explore: explore
       });
 
-      return nearby;
-    });
-  }
-
-  updateMap(promise) {
-    return promise.then((map) => {
-      this.setState({
-        map: map
-      });
-
-      return nearby;
+      return explore;
     });
   }
 
   componentWillMount() {
-    this.explore = openExplore(this.props.transport);
-
+    this.exploreProtocol = openExplore(this.props.transport);
+    this.updateExplore(getExplore());
     this.updatePlayer(getPlayer());
-    this.updateNearby(getExploreNearby());
-    this.updateMap(getExploreMap());
   }
 
   render() {
     if (this.state.player === null ||
-        this.state.nearby === null ||
-        this.state.map === null) {
+        this.state.explore === null) {
       return null;
     }
 
     var playerName = this.state.player.creature.name;
 
     return <div>
-      <Map onMapClick={this.onMove} map={this.state.map}
+      <Map onMapClick={this.onMove} map={this.state.explore.map}
            resources={this.props.resources}
-           playerX={this.state.nearby.tile.x}
-           playerY={this.state.nearby.tile.y} />
+           playerX={this.state.explore.tile.x}
+           playerY={this.state.explore.tile.y} />
 
       <div className="ui">
         {PlayerInfo(this.state.player)}
@@ -83,7 +69,7 @@ class _App {
             {name: "Explore", id: "explore", element: <ExploreTab
                 transport={this.props.transport}
                 playerName={playerName}
-                nearby={this.state.nearby}
+                explore={this.state.explore}
             />},
             {name: "Inventory", id: "inventory", element: <InventoryTab
                 playerName={playerName}
@@ -106,7 +92,7 @@ class _App {
   }
 
   onMove(e) {
-    return this.updateNearby(postExploreMove({
+    return this.updateExplore(postExploreMove({
         x: e.x,
         y: e.y
     }));
