@@ -6,7 +6,7 @@ class _QuestsTab {
   render() {
     return <div id="quests">
       <div className="spread">
-        <div className="name">{this.props.playerName}'s Quests</div>
+        <div className="name">Quests</div>
       </div>
     </div>;
   }

@@ -4,9 +4,9 @@ module React from "react";
 
 class _SkillsTab {
   render() {
-    return <div id="quests">
+    return <div id="skills">
       <div className="spread">
-        <div className="name">{this.props.playerName}'s Skills</div>
+        <div className="name">Skills</div>
       </div>
     </div>;
   }

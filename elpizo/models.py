@@ -111,6 +111,7 @@ class Realm(Base):
         "name": self.name
     }
 
+
 class Terrain(Base):
   __tablename__ = "terrains"
 
@@ -290,7 +291,7 @@ class Item(Base):
   __table_args__ = (
       sqlalchemy.CheckConstraint(
           (func.coalesce(creature_id, map_tile_id) != None) &
-              (creature_id * map_tile_id == None),
+              ((creature_id == None) | (map_tile_id == None)),
           name="one_of_creature_id_map_tile_id_check"),
   )
 

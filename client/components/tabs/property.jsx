@@ -4,9 +4,9 @@ module React from "react";
 
 class _PropertyTab {
   render() {
-    return <div id="quests">
+    return <div id="property">
       <div className="spread">
-        <div className="name">{this.props.playerName}'s Property</div>
+        <div className="name">Property</div>
       </div>
     </div>;
   }

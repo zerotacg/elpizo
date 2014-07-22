@@ -6,7 +6,7 @@ class _InventoryTab {
   render() {
     return <div id="inventory">
       <div className="spread">
-        <div className="name">{this.props.playerName}'s Inventory</div>
+        <div className="name">Inventory</div>
       </div>
     </div>;
   }

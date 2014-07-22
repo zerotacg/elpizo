@@ -2,7 +2,7 @@
 
 module React from "react";
 
-import {classSet} from "./util/react";
+import {classSet} from "../util/react";
 
 class _Sidebar {
   render() {

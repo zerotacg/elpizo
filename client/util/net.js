@@ -1,8 +1,8 @@
-module SockJS from "./util/sockjs-shim";
+module SockJS from "./sockjs-shim";
 
-import {EventEmitter} from "./util/events";
+import {EventEmitter} from "events";
 
-export class Transport extends EventEmitter {
+class Transport extends EventEmitter {
   constructor(host) {
     super();
 
@@ -41,6 +41,8 @@ export class Transport extends EventEmitter {
     this.socket.close();
   }
 }
+
+export var transport = new Transport("/events");
 
 export class Protocol extends EventEmitter {
   constructor(channel, transport) {

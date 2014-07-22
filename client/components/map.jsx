@@ -2,8 +2,14 @@
 
 module React from "react";
 
-import {nubStrings} from "./util/collections";
-module names from "./names";
+import {postExploreMove} from "../api";
+import {nubStrings} from "../util/collections";
+import {resources} from "../util/resources";
+
+module names from "../constants/names";
+
+module exploreStore from "../stores/explore";
+module exploreActions from "../actions/explore";
 
 var TEX_COORDS = {
     0x1: [28, 29, 34, 35], // ne convex corner
@@ -89,16 +95,28 @@ class _Map {
         defaultAvatarX: 8,
         defaultAvatarY: 9,
         avatarX: 8,
-        avatarY: 9
+        avatarY: 9,
+        explore: exploreStore.get()
     };
   }
 
-  componentDidMount() {
+  _onChange() {
+    this.setState({
+        explore: exploreStore.get()
+    });
     this.draw();
   }
 
-  componentDidUpdate() {
-    this.draw();
+  componentWillMount() {
+    exploreActions.fetch();
+  }
+
+  componentDidMount() {
+    exploreStore.addChangeListener(this._onChange);
+  }
+
+  componentWillUnmount() {
+    exploreStore.removeChangeListener(this._onChange);
   }
 
   getTilesCanvasContext() {
@@ -112,31 +130,37 @@ class _Map {
   draw() {
     var ctx = this.getTilesCanvasContext();
 
+    if (!this.state.explore) {
+      return;
+    }
+
+    var map = this.state.explore.map;
+
     ctx.clearRect(0, 0, this.state.width, this.state.height);
-    if (this.props.map.corners.length === 0) {
+    if (map.corners.length === 0) {
       return;
     }
 
     // TODO: || "grass" isn't an acceptable substitute
-    var tiles = computeTiles(this.props.map.corners
+    var tiles = computeTiles(map.corners
                                  .map((id) => TILE_MAPPINGS[names.terrain[id]] || "grass"),
-                             this.props.map.w, this.props.map.h,
+                             map.w, map.h,
                              TILE_PRECEDENCE);
 
     // The logic below was originally intended for a pannable map.
     for (var sy = 0; sy < Math.floor(this.state.height / TILE_SIZE); ++sy) {
       for (var sx = 0; sx < Math.floor(this.state.width / TILE_SIZE); ++sx) {
         var xy = this.convertScreenSpaceToWorldSpace(sx, sy);
-        var i = xy.x - this.props.map.x;
-        var j = xy.y - this.props.map.y;
+        var i = xy.x - map.x;
+        var j = xy.y - map.y;
 
         if (i < 0 || j < 0 ||
-            i >= this.props.map.w ||
-            j >= this.props.map.h) {
+            i >= map.w ||
+            j >= map.h) {
           continue;
         }
 
-        tiles[j * this.props.map.w + i].forEach((tile) => {
+        tiles[j * map.w + i].forEach((tile) => {
           TEX_COORDS[tile.variant].forEach((ti, w) => {
             var u = ti % 6;
             var v = Math.floor(ti / 6);
@@ -144,7 +168,7 @@ class _Map {
             var di = [0, 1, 0, 1][w];
             var dj = [0, 0, 1, 1][w];
 
-            ctx.drawImage(this.props.resources.get("tiles/" + tile.name),
+            ctx.drawImage(resources.get("tiles/" + tile.name),
                           u * TILE_SIZE / 2, v * TILE_SIZE / 2,
                           TILE_SIZE / 2, TILE_SIZE / 2,
                           sx * TILE_SIZE + di * TILE_SIZE / 2,
@@ -158,8 +182,8 @@ class _Map {
 
   convertScreenSpaceToWorldSpace(sx, sy) {
     return {
-        x: this.props.playerX + sx - this.state.defaultAvatarX,
-        y: this.props.playerY + sy - this.state.defaultAvatarY
+        x: this.state.explore.tile.x + sx - this.state.defaultAvatarX,
+        y: this.state.explore.tile.y + sy - this.state.defaultAvatarY
     };
   }
 
@@ -185,18 +209,22 @@ class _Map {
         avatarY: sy
     });
 
-    this.props.onMapClick(
-        this.convertScreenSpaceToWorldSpace(sx, sy)).then(
-            () => {
-              this.setState({
-                  avatarX: this.state.defaultAvatarX,
-                  avatarY: this.state.defaultAvatarY
-              });
+    postExploreMove(this.convertScreenSpaceToWorldSpace(sx, sy))
+        .then((explore) => {
+          exploreActions.update(explore);
+          return explore;
+        })
+        .then((explore) => {
+          this.setState({
+              avatarX: this.state.defaultAvatarX,
+              avatarY: this.state.defaultAvatarY
+          });
+          return explore;
         }, () => {
-              this.setState({
-                  avatarX: this.state.defaultAvatarX,
-                  avatarY: this.state.defaultAvatarY
-              });
+          this.setState({
+              avatarX: this.state.defaultAvatarX,
+              avatarY: this.state.defaultAvatarY
+          });
         });
 
     var ctx = this.getHighlightCanvasContext();

@@ -30,6 +30,7 @@ function rebundle(bundler) {
         debug: true
     })
     .on("error", function(e) {
+      gutil.log(gutil.colors.red(e.toString()));
       this.emit("end");
     })
     .pipe(source("bundle.js"))
@@ -92,7 +93,7 @@ function configureBundler(bundler) {
 }
 
 gulp.task("scripts", function () {
-  return rebundle(configureBundler(browserify));
+  return rebundle(configureBundler(browserify()));
 });
 
 gulp.task("styles", function () {

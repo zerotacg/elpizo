@@ -2,31 +2,53 @@
 
 module React from "react";
 
-import {openChat} from "./api";
+import {openChat} from "../api";
 
-import {nextMonotonicId} from "./util/objects";
+import {nextMonotonicId} from "../util/objects";
+
+module playerStore from "../stores/player";
+module playerActions from "../actions/player";
 
 class _Chat {
   getInitialState() {
     return {
         message: "",
         messages: [],
-        ready: false
+        ready: false,
+        player: playerStore.get()
     };
   }
 
+  _onChange() {
+    var player = playerStore.get();
+    this.setState({
+        player: player,
+        ready: this.chatProtocol.transport.opened && player !== null
+    });
+  }
+
   componentWillMount() {
-    this.chatProtocol = openChat(this.props.transport);
+    playerActions.fetch();
+
+    this.chatProtocol = openChat();
 
     this.chatProtocol.on("open", this.onChatOpen);
     this.chatProtocol.on("message", this.onChatMessage);
     this.chatProtocol.on("close", this.onChatClose);
   }
 
-  componentWillUnmount () {
-    this.chatProtocol.off("open", this.onChatOpen);
-    this.chatProtocol.off("message", this.onChatMessage);
-    this.chatProtocol.off("close", this.onChatClose);
+  componentDidMount() {
+    playerStore.addChangeListener(this._onChange);
+  }
+
+  componentWillUnmount() {
+    this.chatProtocol.removeListener("open", this.onChatOpen);
+    this.chatProtocol.removeListener("message", this.onChatMessage);
+    this.chatProtocol.removeListener("close", this.onChatClose);
+  }
+
+  componentDidUnmount() {
+    playerStore.removeChangeListener(this._onChange);
   }
 
   addMessage(message) {
@@ -43,12 +65,12 @@ class _Chat {
         text: "Connection established."
     });
     this.setState({
-        ready: true
+        ready: this.state.player !== null
     });
   }
 
   onChatMessage(message) {
-    if (message.origin === this.props.playerName) {
+    if (message.origin === this.state.player.creature.name) {
       return;
     }
 
@@ -109,7 +131,7 @@ class _Chat {
     });
 
     this.addMessage({
-        origin: this.props.playerName,
+        origin: this.state.player.creature.name,
         text: text
     })
   }

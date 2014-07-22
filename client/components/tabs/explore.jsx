@@ -2,8 +2,8 @@
 
 module React from "react";
 
-module names from "../names";
-module titles from "../titles";
+module names from "../../constants/names";
+module titles from "../../constants/titles";
 
 module Icon from "../parts/icon.jsx";
 module List from "../parts/list.jsx";
@@ -11,8 +11,11 @@ module Menu from "../parts/menu.jsx";
 
 module Chat from "../chat.jsx";
 
-import {classSet} from "../util/react";
-import {nubStrings} from "../util/collections";
+import {classSet} from "../../util/react";
+import {nubStrings} from "../../util/collections";
+
+module exploreStore from "../../stores/explore";
+module exploreActions from "../../actions/explore";
 
 class _EntityItem {
   getInitialState() {
@@ -51,6 +54,26 @@ class _EntityItem {
 var EntityItem = React.createClass(_EntityItem.prototype);
 
 class _ExploreTab {
+  getInitialState() {
+    return exploreStore.get();
+  }
+
+  _onChange() {
+    this.setState(exploreStore.get());
+  }
+
+  componentWillMount() {
+    exploreActions.fetch();
+  }
+
+  componentDidMount() {
+    exploreStore.addChangeListener(this._onChange);
+  }
+
+  componentDidUnmount() {
+    exploreStore.removeChangeListener(this._onChange);
+  }
+
   createEntityItem(taxonomy, entity) {
     return <EntityItem name={entity.name} taxonomy={taxonomy}
                        kind={entity.kind} variant={entity.variant}
@@ -59,7 +82,11 @@ class _ExploreTab {
   }
 
   render() {
-    var explore = this.props.explore;
+    var explore = this.state;
+
+    if (!explore) {
+      return null;
+    }
 
     var i = explore.tile.x - explore.map.x;
     var j = explore.tile.y - explore.map.y;
@@ -89,9 +116,7 @@ class _ExploreTab {
         .join("/");
 
     return <div id="explore">
-      <Chat transport={this.props.transport}
-            playerName={this.props.playerName} />
-
+      <Chat />
       <div className="nearby">
         <div className="name">
           {terrains} <small>{explore.tile.x}, {explore.tile.y} {explore.tile.realm.name}</small>

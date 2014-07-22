@@ -1,6 +1,6 @@
 import {Promise} from "rsvp";
 
-module net from "./net";
+module net from "./util/net";
 
 function httpJson(url, method, body) {
   return new Promise(function (resolve, reject) {
@@ -23,8 +23,8 @@ function httpJson(url, method, body) {
   });
 }
 
-function openProto(channel, transport) {
-  return new net.Protocol(channel, transport);
+function openProto(channel) {
+  return new net.Protocol(channel, net.transport);
 }
 
 export var getPlayer = httpJson.bind(null, "/player", "GET");

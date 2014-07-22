@@ -4,9 +4,9 @@ module React from "react";
 
 class _GuildsTab {
   render() {
-    return <div id="quests">
+    return <div id="guild">
       <div className="spread">
-        <div className="name">Guilds</div>
+        <div className="name">Guild</div>
       </div>
     </div>;
   }

@@ -2,8 +2,8 @@
 
 module React from "react";
 
-import {classSet} from "../util/react";
-module names from "../names";
+import {classSet} from "../../util/react";
+module names from "../../constants/names";
 
 class _Icon {
   render() {
