@@ -1,4 +1,4 @@
-import {Promise} from "rsvp";
+import {Promise} from "es6-promise";
 
 export function loadImage(src) {
   return new Promise((resolve, reject) => {

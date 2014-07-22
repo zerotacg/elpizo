@@ -1,5 +1,5 @@
 import {EventEmitter} from "events";
-import {Promise} from "rsvp";
+import {Promise} from "es6-promise";
 
 var VIEW_ACTION_SOURCE = "view-action";
 

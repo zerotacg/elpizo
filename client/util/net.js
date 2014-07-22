@@ -1,4 +1,4 @@
-module SockJS from "./sockjs-shim";
+module SockJS from "./sockjs";
 
 import {EventEmitter} from "events";
 
