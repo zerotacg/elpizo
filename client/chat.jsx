@@ -78,7 +78,7 @@ class _Chat {
       </div>
       <input className="message" placeholder="Chat message"
              onChange={this.onMessageChange} value={this.state.message}
-             disabled={this.state.ready ? "" : "disabled"} />
+             disabled={!this.state.ready} />
     </form>;
   }
 

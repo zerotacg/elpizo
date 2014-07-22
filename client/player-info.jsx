@@ -11,7 +11,7 @@ module Icon from "./parts/icon.jsx";
 class _PlayerInfo {
   getInitialState() {
     return {
-        time: "First day of the Dawnstar"
+        time: ""
     };
   }
 
