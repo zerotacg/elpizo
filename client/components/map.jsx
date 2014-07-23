@@ -42,11 +42,7 @@ function computeTiles(corners, width, height, precedence) {
       var se = corners[(j + 1) * (width + 1) + (i + 1)];
 
       var types = nubStrings([nw, ne, sw, se]
-        .sort((x, y) => {
-          var a = precedence.indexOf(x);
-          var b = precedence.indexOf(y);
-          return (a > b) - (a < b);
-        }));
+        .sort((x, y) => precedence.indexOf(x) - precedence.indexOf(y)));
 
       types.forEach((name, i) => {
         var above = types.slice(i);
