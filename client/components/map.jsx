@@ -29,7 +29,7 @@ var TEX_COORDS = {
     0xf: [38, 39, 44, 45], // all
 };
 
-function computeTiles(corners, width, height, precedence) {
+function computeTiles(corners, width, height, precedence, blends) {
   var tiles = [];
 
   for (var j = 0; j < height; ++j) {
@@ -42,10 +42,10 @@ function computeTiles(corners, width, height, precedence) {
       var se = corners[(j + 1) * (width + 1) + (i + 1)];
 
       var types = nubStrings([nw, ne, sw, se]
-        .sort((x, y) => precedence.indexOf(x) - precedence.indexOf(y)));
+        .sort((a, b) => precedence.indexOf(a) - precedence.indexOf(b)));
 
       types.forEach((name, i) => {
-        var above = types.slice(i);
+        var above = types.slice(i).concat(blends[name] || []);
 
         var variant = ((above.indexOf(nw) !== -1) << 3) |
                       ((above.indexOf(ne) !== -1) << 2) |
@@ -73,13 +73,24 @@ class _Avatar {
 }
 var Avatar = React.createClass(_Avatar.prototype);
 
-var TILE_PRECEDENCE = ["dirt", "grass", "water"];
+var TERRAIN_PRECEDENCE = [
+    "ocean", "beach",
+    "subtropical_desert", "tropical_seasonal_forest", "grassland",
+    "tropical_rain_forest",
+    "lake", "river", "lakeshore"
+];
 var TILE_MAPPINGS = {
-    "beach": "dirt",
+    "beach": "beach",
     "river": "water",
     "ocean": "water",
     "lakeshore": "water",
-    "lake": "water"
+    "lake": "water",
+    "subtropical_desert": "sand"
+};
+var TERRAIN_BLENDS = {
+    "lakeshore": ["ocean", "lake", "river"],
+    "river": ["ocean", "lake"],
+    "lake": ["ocean"]
 };
 var TILE_SIZE = 32;
 
@@ -137,11 +148,9 @@ class _Map {
       return;
     }
 
-    // TODO: || "grass" isn't an acceptable substitute
-    var tiles = computeTiles(map.corners
-                                 .map((id) => TILE_MAPPINGS[names.terrain[id]] || "grass"),
+    var tiles = computeTiles(map.corners.map((id) => names.terrain[id]),
                              map.w, map.h,
-                             TILE_PRECEDENCE);
+                             TERRAIN_PRECEDENCE, TERRAIN_BLENDS);
 
     // The logic below was originally intended for a pannable map.
     for (var sy = 0; sy < Math.floor(this.state.height / TILE_SIZE); ++sy) {
@@ -164,7 +173,8 @@ class _Map {
             var di = [0, 1, 0, 1][w];
             var dj = [0, 0, 1, 1][w];
 
-            ctx.drawImage(resources.get("tiles/" + tile.name),
+            // TODO: || "grass" isn't an acceptable substitute
+            ctx.drawImage(resources.get("tiles/" + (TILE_MAPPINGS[tile.name] || "grass")),
                           u * TILE_SIZE / 2, v * TILE_SIZE / 2,
                           TILE_SIZE / 2, TILE_SIZE / 2,
                           sx * TILE_SIZE + di * TILE_SIZE / 2,
