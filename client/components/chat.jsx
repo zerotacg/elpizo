@@ -51,7 +51,6 @@ class _Chat {
     message.id = nextMonotonicId();
 
     var parts = message.text.split(" ");
-    console.log(parts);
     if (parts[0] == "/me") {
       message = {
           origin: null,
