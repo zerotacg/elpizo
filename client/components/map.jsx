@@ -215,7 +215,9 @@ class _Map {
   }
 
   render() {
-    return <div className="map" onClick={this.onClick}
+    return <div className="map"
+                onTouchEnd={this.onClick}
+                onMouseDown={this.onClick}
                 onMouseMove={this.onMouseMove}
                 onMouseLeave={this.onMouseLeave}>
       <Avatar x={this.state.avatarX} y={this.state.avatarY} />
