@@ -9,6 +9,7 @@ module App from "./components/app.jsx";
 
 resources.loadBundle({
     "tiles/water": loadImage("img/tiles/water.png"),
+    "tiles/water-grass": loadImage("img/tiles/water-grass.png"),
     "tiles/beach": loadImage("img/tiles/beach.png"),
     "tiles/dirt": loadImage("img/tiles/dirt.png"),
     "tiles/grass": loadImage("img/tiles/grass.png"),

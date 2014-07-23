@@ -5,6 +5,7 @@ module React from "react";
 import {postExploreMove} from "../api";
 import {nubStrings} from "../util/collections";
 import {resources} from "../util/resources";
+import {hasOwnProp} from "../util/objects";
 
 module names from "../constants/names";
 
@@ -79,11 +80,12 @@ var TERRAIN_PRECEDENCE = [
     "tropical_rain_forest",
     "lake", "river", "lakeshore"
 ];
-var TILE_MAPPINGS = {
+var TEXTURE_MAPPINGS = {
     "beach": "beach",
     "river": "water",
     "ocean": "water",
     "lakeshore": "water",
+    "grassland,lakeshore": "water-grass",
     "lake": "water",
     "subtropical_desert": "sand"
 };
@@ -165,8 +167,26 @@ class _Map {
           continue;
         }
 
-        tiles[j * map.w + i].forEach((tile) => {
-          TEX_COORDS[tile.variant].forEach((ti, w) => {
+        var tileLayer = tiles[j * map.w + i];
+
+        var combinedTileName = tileLayer.map((tile) => tile.name).join(",");
+
+        if (hasOwnProp.call(TEXTURE_MAPPINGS, combinedTileName)) {
+          tileLayer = [{
+              name: combinedTileName,
+              variant: tileLayer[tileLayer.length - 1].variant
+          }];
+        }
+
+        var layers = tileLayer.map((tile) => {
+          return {
+              texture: TEXTURE_MAPPINGS[tile.name] || "grass",
+              texCoords: TEX_COORDS[tile.variant]
+          };
+        });
+
+        layers.forEach((layer) => {
+          layer.texCoords.forEach((ti, w) => {
             var u = ti % 6;
             var v = Math.floor(ti / 6);
 
@@ -174,7 +194,7 @@ class _Map {
             var dj = [0, 0, 1, 1][w];
 
             // TODO: || "grass" isn't an acceptable substitute
-            ctx.drawImage(resources.get("tiles/" + (TILE_MAPPINGS[tile.name] || "grass")),
+            ctx.drawImage(resources.get("tiles/" + layer.texture),
                           u * TILE_SIZE / 2, v * TILE_SIZE / 2,
                           TILE_SIZE / 2, TILE_SIZE / 2,
                           sx * TILE_SIZE + di * TILE_SIZE / 2,
