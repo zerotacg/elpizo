@@ -11,6 +11,7 @@ body {
   background: black;
   font-size: 14px;
   font-family: "Roboto Slab", sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
 small {
@@ -230,9 +231,16 @@ small {
 
     th {
       font-weight: normal;
-      color: #00ccff;
       width: 72px;
       text-align: left;
+
+      &.highlight-1 { color: #ff5555; }
+      &.highlight-2 { color: #ff6600; }
+      &.highlight-3 { color: #ffd42a; }
+      &.highlight-4 { color: #ccff00; }
+      &.highlight-5 { color: #00ccff; }
+      &.highlight-6 { color: #d35fbc; }
+      &.highlight-7 { color: #ff2a7f; }
     }
 
     td {
@@ -515,7 +523,7 @@ small {
     }
 
     .caption {
-      color: #550000;
+      color: #2b0000;
     }
   }
 

@@ -50,6 +50,15 @@ class _Chat {
   addMessage(message) {
     message.id = nextMonotonicId();
 
+    var parts = message.text.split(" ");
+    console.log(parts);
+    if (parts[0] == "/me") {
+      message = {
+          origin: null,
+          text: " * " + message.origin + " " + parts.slice(1).join(" ")
+      };
+    }
+
     this.setState({
         messages: this.state.messages.concat([message])
     });
@@ -89,10 +98,19 @@ class _Chat {
   }
 
   render() {
+    function highlightColor(name) {
+      return [].reduce.call(name, (acc, x) => acc + x.charCodeAt(0), 0) % 7 + 1;
+    }
+
     var messages = this.state.messages.map(function (message) {
       return message.origin === null ?
-        <tr key={message.id}><td className="info" colSpan="2">{message.text}</td></tr> :
-        <tr key={message.id}><th>{message.origin}</th><td>{message.text}</td></tr>;
+        <tr key={message.id}>
+          <td className="info" colSpan="2">{message.text}</td>
+        </tr> :
+        <tr key={message.id}>
+          <th className={"highlight-" + highlightColor(message.origin)}>{message.origin}</th>
+          <td>{message.text}</td>
+        </tr>;
     }.bind(this));
 
     return <form className="row chat" onSubmit={this.onSubmit}>

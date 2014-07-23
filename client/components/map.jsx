@@ -77,7 +77,7 @@ class _Avatar {
 }
 var Avatar = React.createClass(_Avatar.prototype);
 
-var TILE_PRECEDENCE = ["grass", "dirt", "water"];
+var TILE_PRECEDENCE = ["dirt", "grass", "water"];
 var TILE_MAPPINGS = {
     "beach": "dirt",
     "river": "water",
