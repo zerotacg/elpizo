@@ -1,3 +1,5 @@
+import functools
+import json
 from sqlalchemy.orm import Session
 from tornado.gen import Task, engine
 
@@ -83,15 +85,65 @@ def explore(handler):
   }
 
 
+EXPLORE_EXCHANGE_NAME = "elpizo.explore"
+
+def get_tile_routing_key(tile):
+  return "{x}:{y}:{realm_id}".format(x=tile.x, y=tile.y, realm_id=tile.realm.id)
+
+def get_queue_name(player):
+  return "explore.queue:{id}".format(id=player.creature.id)
+
+
+@engine
+def propagate_move(prev_tile, next_tile, player, channel):
+  yield Task(channel.exchange_declare, exchange=EXPLORE_EXCHANGE_NAME,
+             type="direct")
+
+  # update queue bindings
+  yield Task(channel.queue_unbind, exchange=EXPLORE_EXCHANGE_NAME,
+             queue=get_queue_name(player),
+             routing_key=get_tile_routing_key(prev_tile))
+
+  yield Task(channel.queue_bind, exchange=EXPLORE_EXCHANGE_NAME,
+             queue=get_queue_name(player),
+             routing_key=get_tile_routing_key(next_tile))
+
+  # send a leave event to the previous tile
+  channel.basic_publish(exchange=EXPLORE_EXCHANGE_NAME,
+                        routing_key=get_tile_routing_key(prev_tile),
+                        body=json.dumps({
+                            "action": "leave",
+                            "player": {
+                                "creature": {
+                                    "id": player.creature.id
+                                }
+                            }
+                        }))
+
+  # send an enter event to the new tile
+  channel.basic_publish(exchange=EXPLORE_EXCHANGE_NAME,
+                        routing_key=get_tile_routing_key(next_tile),
+                        body=json.dumps({
+                            "action": "enter",
+                            "player": player.to_js()
+                        }))
+
+
 @post
 def move(handler):
   player = handler.get_player()
+  prev_tile = player.creature.map_tile
+
   player.creature.map_tile = handler.application.sqla_session.query(MapTile) \
       .filter(MapTile.x == handler.body["x"],
               MapTile.y == handler.body["y"],
               MapTile.realm == player.creature.map_tile.realm) \
       .one()
   handler.application.sqla_session.commit()
+  next_tile = player.creature.map_tile
+
+  handler.application.amqp.channel(
+      functools.partial(propagate_move, prev_tile, next_tile, player))
 
   return explore.actually_get(handler)
 
@@ -102,12 +154,31 @@ ROUTES = [
 ]
 
 
-class ExploreConnection(Protocol):
-  def on_authed_open(self, info):
-    self.send({
+class ExploreProtocol(Protocol):
+  @engine
+  def on_open(self, info):
+    player = self.get_player()
 
-    })
+    self.channel = \
+        yield Task(lambda callback: self.application.amqp.channel(callback))
+
+    yield Task(self.channel.exchange_declare, exchange=EXPLORE_EXCHANGE_NAME,
+               type="direct")
+
+    self.explore_queue = (
+        yield Task(self.channel.queue_declare,
+                   queue=get_queue_name(player),
+                   exclusive=True)).method.queue
+
+    yield Task(self.channel.queue_bind, exchange=EXPLORE_EXCHANGE_NAME,
+               queue=self.explore_queue,
+               routing_key=get_tile_routing_key(player.creature.map_tile))
+
+    self.channel.basic_consume(self.simple_relay_to_client,
+                               queue=self.explore_queue, no_ack=True)
+
 
 CHANNELS = {
-    "explore": ExploreConnection
+    "explore": ExploreProtocol
+
 }

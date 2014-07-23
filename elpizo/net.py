@@ -19,8 +19,8 @@ class ChannelSession(session.BaseSession):
     # TODO: Handle stats
     self.base.send(":".join([self.name, msg]))
 
-  def on_open(self, msg):
-    self.conn.on_open(msg)
+  def on_open(self, info):
+    self.conn.on_open(info)
 
   def on_message(self, msg):
     self.conn.on_message(msg)
@@ -84,6 +84,7 @@ def makeMultiplexConnection(channels):
       for chan in self.endpoints:
         self.endpoints[chan]._close()
 
+
   MultiplexConnection.channels = channels
   return MultiplexConnection
 
@@ -99,8 +100,8 @@ class Protocol(conn.SockJSConnection):
   def send(self, message):
     super().send(json.dumps(message))
 
-  def on_open(self, info):
-    self.on_authed_open(info)
-
   def on_message(self, msg):
     self.on_parsed_message(json.loads(msg))
+
+  def simple_relay_to_client(self, ch, method, properties, body):
+    self.send(json.loads(body.decode("utf-8")))

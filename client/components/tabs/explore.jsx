@@ -11,6 +11,8 @@ module Menu from "../parts/menu.jsx";
 
 module Chat from "../chat.jsx";
 
+import {openExplore} from "../../api";
+
 import {classSet} from "../../util/react";
 import {nubStrings} from "../../util/collections";
 
@@ -26,7 +28,7 @@ class _EntityItem {
 
   render() {
     var classes = {
-      "active": this.state.active
+        "active": this.state.active
     };
 
     return <li className={classSet(classes)}>
@@ -67,6 +69,11 @@ class _ExploreTab {
   }
 
   componentDidMount() {
+    this.exploreProtocol = openExplore();
+    this.exploreProtocol.on("message", function (message) {
+      console.log(message);
+    });
+
     exploreStore.addChangeListener(this._onChange);
   }
 

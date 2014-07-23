@@ -59,23 +59,31 @@ class Creature(Base):
       nullable=False)
   kind = relationship("CreatureKind")
 
+  variant = sqlalchemy.Column(types.Integer, nullable=False)
+
   map_tile_id = sqlalchemy.Column(types.Integer,
                                   sqlalchemy.ForeignKey("map_tiles.id"),
                                   nullable=False)
   map_tile = relationship("MapTile", backref="creatures")
+
+  level = sqlalchemy.Column(types.Integer, nullable=False)
+
+  hp = sqlalchemy.Column(types.Integer, nullable=False)
+  mp = sqlalchemy.Column(types.Integer, nullable=False)
+  xp = sqlalchemy.Column(types.Integer, nullable=False)
 
   def to_js(self):
     return {
         "id": self.id,
         "name": self.name,
         "kind": self.kind.id,
-        "variant": 1,
-        "level": 10,
-        "hp": 50,
+        "variant": self.variant,
+        "level": self.level,
+        "hp": self.hp,
         "maxHp": 100,
-        "mp": 50,
+        "mp": self.mp,
         "maxMp": 100,
-        "xp": 50,
+        "xp": self.xp,
         "maxXp": 100
     }
 
