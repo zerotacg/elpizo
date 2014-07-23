@@ -81,12 +81,13 @@ var TERRAIN_PRECEDENCE = [
     "lake", "river", "lakeshore"
 ];
 var TEXTURE_MAPPINGS = {
-    "beach": "beach",
-    "river": "water",
     "ocean": "water",
+    "river": "water",
     "lakeshore": "water",
     "grassland,lakeshore": "water-grass",
     "lake": "water",
+    "beach": "beach",
+    "ocean,beach": "beach",
     "subtropical_desert": "sand"
 };
 var TERRAIN_BLENDS = {
