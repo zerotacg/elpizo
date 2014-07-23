@@ -1,8 +1,10 @@
 import json
+import logging
 
 from sockjs.tornado import conn, session
 from sockjs.tornado.transports import base
 from sqlalchemy.orm.exc import NoResultFound
+from tornado.gen import coroutine, Task
 from tornado.web import decode_signed_value
 
 from .models import User, Player, Creature
@@ -25,12 +27,8 @@ class ChannelSession(session.BaseSession):
   def on_message(self, msg):
     self.conn.on_message(msg)
 
-  def close(self, code=3000, message="Go away!"):
-    self._close(code, message)
-
-  # Non-API version of the close, without sending the close message
-  def _close(self, code=3000, message="Go away!"):
-    super(ChannelSession, self).close(code, message)
+  def on_close(self):
+    self.conn.on_close()
 
 
 def makeMultiplexConnection(channels):
@@ -50,7 +48,11 @@ def makeMultiplexConnection(channels):
       except NoResultFound:
         return None
 
+    @coroutine
     def on_open(self, info):
+      self.channel = \
+          yield Task(lambda callback: self.application.amqp.channel(callback))
+
       if info.get_cookie("elpizo_user") is None:
         self.close()
         return
@@ -83,8 +85,12 @@ def makeMultiplexConnection(channels):
       self.endpoints[chan].on_message(payload)
 
     def on_close(self):
-      for chan in self.endpoints:
-        self.endpoints[chan]._close()
+      try:
+        for chan in self.endpoints:
+          self.endpoints[chan].on_close()
+        self.channel.close()
+      except Exception as e:
+        logging.error("Error in on_close for SockJS connection", exc_info=e)
 
 
   MultiplexConnection.channels = channels
@@ -99,6 +105,10 @@ class Protocol(conn.SockJSConnection):
   @property
   def player(self):
     return self.session.base.player
+
+  @property
+  def channel(self):
+    return self.session.base.channel
 
   def send(self, message):
     super().send(json.dumps(message))

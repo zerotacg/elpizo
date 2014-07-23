@@ -1,7 +1,7 @@
 import functools
 import json
 from sqlalchemy.orm import Session
-from tornado.gen import Task, engine
+from tornado.gen import Task, coroutine
 
 from .net import Protocol
 from .web import get, post
@@ -93,7 +93,7 @@ def get_queue_name(player):
   return "explore:{id}".format(id=player.user.id)
 
 
-@engine
+@coroutine
 def propagate_move(prev_tile, next_tile, player, channel):
   yield Task(channel.exchange_declare, exchange=EXPLORE_EXCHANGE_NAME,
              type="direct")
@@ -153,11 +153,8 @@ ROUTES = [
 
 
 class ExploreProtocol(Protocol):
-  @engine
+  @coroutine
   def on_open(self, info):
-    self.channel = \
-        yield Task(lambda callback: self.application.amqp.channel(callback))
-
     yield Task(self.channel.exchange_declare, exchange=EXPLORE_EXCHANGE_NAME,
                type="direct")
 

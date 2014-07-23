@@ -1,6 +1,6 @@
 import json
 
-from tornado.gen import Task, engine
+from tornado.gen import Task, coroutine
 
 from .net import Protocol
 
@@ -17,11 +17,8 @@ class ChatProtocol(Protocol):
   def get_player_routing_key(target):
     return "player:{target}".format(target=target)
 
-  @engine
+  @coroutine
   def on_open(self, info):
-    self.channel = \
-        yield Task(lambda callback: self.application.amqp.channel(callback))
-
     yield Task(self.channel.exchange_declare, exchange=self.EXCHANGE_NAME,
                type="direct")
 
