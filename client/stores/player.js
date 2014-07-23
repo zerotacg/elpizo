@@ -19,6 +19,7 @@ class PlayerStore extends EventEmitter {
       switch (action.actionType) {
         case playerActions.UPDATE:
           this._update(action.player);
+          this.emitChange();
           break;
 
         case playerActions.FETCH:
@@ -29,13 +30,9 @@ class PlayerStore extends EventEmitter {
             });
             this._fetchCalled = true;
           }
-          return true;
-
-        default:
-          return true;
+          break;
       }
 
-      this.emitChange();
       return true;
     });
   }

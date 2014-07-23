@@ -2,7 +2,7 @@
 
 module React from "react";
 
-import {openChat} from "../api";
+import {chatProtocol, exploreProtocol} from "../api";
 
 import {nextMonotonicId} from "../util/objects";
 
@@ -14,7 +14,6 @@ class _Chat {
     return {
         message: "",
         messages: [],
-        ready: false,
         player: playerStore.get()
     };
   }
@@ -22,19 +21,16 @@ class _Chat {
   _onChange() {
     var player = playerStore.get();
     this.setState({
-        player: player,
-        ready: this.chatProtocol.transport.opened && player !== null
+        player: player
     });
   }
 
   componentWillMount() {
     playerActions.fetch();
 
-    this.chatProtocol = openChat();
-
-    this.chatProtocol.on("open", this.onChatOpen);
-    this.chatProtocol.on("message", this.onChatMessage);
-    this.chatProtocol.on("close", this.onChatClose);
+    chatProtocol.on("message", this._onChatMessage);
+    chatProtocol.on("close", this._onChatClose);
+    exploreProtocol.on("message", this._onExploreEvent);
   }
 
   componentDidMount() {
@@ -42,9 +38,9 @@ class _Chat {
   }
 
   componentWillUnmount() {
-    this.chatProtocol.removeListener("open", this.onChatOpen);
-    this.chatProtocol.removeListener("message", this.onChatMessage);
-    this.chatProtocol.removeListener("close", this.onChatClose);
+    chatProtocol.removeListener("message", this._onChatMessage);
+    chatProtocol.removeListener("close", this._onChatClose);
+    exploreProtocol.removeListener("message", this._onExploreEvent);
   }
 
   componentDidUnmount() {
@@ -59,17 +55,7 @@ class _Chat {
     });
   }
 
-  onChatOpen() {
-    this.addMessage({
-        origin: null,
-        text: "Connection established."
-    });
-    this.setState({
-        ready: this.state.player !== null
-    });
-  }
-
-  onChatMessage(message) {
+  _onChatMessage(message) {
     if (message.origin === this.state.player.creature.name) {
       return;
     }
@@ -77,13 +63,28 @@ class _Chat {
     this.addMessage(message);
   }
 
-  onChatClose() {
+  _onExploreEvent(event) {
+    switch (event.action) {
+      case "enter":
+        this.addMessage({
+            origin: null,
+            text: event.creature.name + " arrived."
+        });
+        break;
+
+      case "leave":
+        this.addMessage({
+            origin: null,
+            text: event.creature.name + " left."
+        });
+        break;
+    }
+  }
+
+  _onChatClose() {
     this.addMessage({
         origin: null,
         text: "Connection lost."
-    });
-    this.setState({
-        ready: false
     });
   }
 
@@ -99,8 +100,7 @@ class _Chat {
         <table>{messages}</table>
       </div>
       <input className="message" placeholder="Chat message"
-             onChange={this.onMessageChange} value={this.state.message}
-             disabled={!this.state.ready} />
+             onChange={this.onMessageChange} value={this.state.message} />
     </form>;
   }
 
@@ -121,7 +121,7 @@ class _Chat {
       return;
     }
 
-    this.chatProtocol.send({
+    chatProtocol.send({
         target: "#global",
         text: text
     });

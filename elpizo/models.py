@@ -1,4 +1,5 @@
 import sqlalchemy
+from io import StringIO
 
 from sqlalchemy import func, types
 from sqlalchemy.ext.declarative import declarative_base
@@ -118,6 +119,28 @@ class Realm(Base):
         "id": self.id,
         "name": self.name
     }
+
+  def add_corners(self, corners):
+    session = Session.object_session(self)
+
+    conn = session.bind.raw_connection()
+    cur = conn.cursor()
+    cur.copy_from(
+        StringIO("\n".join(["\t".join(str(col) for col in line)
+                            for line in corners])), "map_corners",
+        columns=("realm_id", "s", "t", "terrain_id"))
+    conn.commit()
+
+  def add_tiles(self, tiles):
+    session = Session.object_session(self)
+
+    conn = session.bind.raw_connection()
+    cur = conn.cursor()
+    cur.copy_from(
+        StringIO("\n".join(["\t".join(str(col) for col in line)
+                            for line in tiles])), "map_tiles",
+        columns=("realm_id", "x", "y"))
+    conn.commit()
 
 
 class Terrain(Base):

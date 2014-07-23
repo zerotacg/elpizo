@@ -19,6 +19,7 @@ class ExploreStore extends EventEmitter {
       switch (action.actionType) {
         case exploreActions.UPDATE:
           this._update(action.explore);
+          this.emitChange();
           break;
 
         case exploreActions.FETCH:
@@ -29,13 +30,21 @@ class ExploreStore extends EventEmitter {
             });
             this._fetchCalled = true;
           }
-          return true;
+          break;
 
-        default:
-          return true;
+        case exploreActions.ADD_CREATURE:
+          this._explore.creatures.push(action.creature);
+          this.emitChange();
+          break;
+
+        case exploreActions.REMOVE_CREATURE:
+          this._explore.creatures =
+              this._explore.creatures.filter((creature) =>
+                  creature.id !== action.id);
+          this.emitChange();
+          break;
       }
 
-      this.emitChange();
       return true;
     });
   }

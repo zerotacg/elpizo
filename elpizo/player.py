@@ -1,12 +1,11 @@
-from .web import RequestHandler
+from .web import get
 
 
-class PlayerHandler(RequestHandler):
-  def get(self):
-    player = self.get_player()
-    self.finish(player.to_js())
+@get
+def player(handler):
+  return handler.player.to_js()
 
 
 ROUTES = [
-    (r"/player", PlayerHandler)
+    (r"/player", player)
 ]

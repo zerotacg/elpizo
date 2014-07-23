@@ -39,7 +39,7 @@ def makeMultiplexConnection(channels):
     def application(self):
       return self.session.server.application
 
-    def get_player(self):
+    def _get_player(self):
       try:
         return self.application.sqla_session.query(Player) \
             .filter(User.current_creature_id == Creature.id,
@@ -60,7 +60,9 @@ def makeMultiplexConnection(channels):
           name="elpizo_user",
           value=info.get_cookie("elpizo_user").value))
 
-      if self.get_player() is None:
+      self.player = self._get_player()
+
+      if self.player is None:
         self.close()
         return
 
@@ -94,8 +96,9 @@ class Protocol(conn.SockJSConnection):
   def application(self):
     return self.session.server.application
 
-  def get_player(self):
-    return self.session.base.get_player()
+  @property
+  def player(self):
+    return self.session.base.player
 
   def send(self, message):
     super().send(json.dumps(message))

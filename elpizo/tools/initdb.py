@@ -1,6 +1,5 @@
 import logging
 from lxml import etree
-from io import StringIO
 from itertools import product
 import json
 import sys
@@ -19,19 +18,14 @@ def initialize_schema(app):
 
 
 def initialize_terrains(app):
-  terrains = {}
   for terrain_id, _ in mapgen.TERRAIN_NAMES.items():
-    terrain = Terrain(name=terrain_id)
-    app.sqla_session.add(terrain)
-    terrains[terrain_id] = terrain
+    app.sqla_session.add(Terrain(name=terrain_id))
   app.sqla_session.commit()
 
   logging.info("Initialized terrain types.")
 
 
 def initialize_realm(app):
-  engine = app.sqla_session.bind
-
   SIZE = 600
   ZOOM_FACTOR = 0.5
 
@@ -46,35 +40,18 @@ def initialize_realm(app):
   raw_corners = list(mapgen.map_image_to_json(img))
   logging.info("Map generation complete.")
 
-  conn = engine.raw_connection()
+  terrain_ids = {terrain.name: terrain.id
+                 for terrain in app.sqla_session.query(Terrain)}
 
-  terrains = {}
-  for terrain in app.sqla_session.query(Terrain):
-    terrains[terrain.name] = terrain.id
-
-  corners = [
-      (realm.id, s, t, terrains[raw_corners[t * (REALM_SIZE + 1) + s]])
-      for s, t in product(range(REALM_SIZE + 1), range(REALM_SIZE + 1))
-  ]
-  cur = conn.cursor()
-  cur.copy_from(
-      StringIO("\n".join(["\t".join(str(col) for col in line)
-                          for line in corners])), "map_corners",
-      columns=("realm_id", "s", "t", "terrain_id"))
+  realm.add_corners(
+      (realm.id, s, t, terrain_ids[raw_corners[t * (REALM_SIZE + 1) + s]])
+      for s, t in product(range(REALM_SIZE + 1), range(REALM_SIZE + 1)))
   logging.info("Created Windvale map corners.")
 
-  tiles = [
+  realm.add_tiles(
       (realm.id, x, y)
-      for x, y in product(range(REALM_SIZE), range(REALM_SIZE))
-  ]
-  cur = conn.cursor()
-  cur.copy_from(
-      StringIO("\n".join(["\t".join(str(col) for col in line)
-                          for line in tiles])), "map_tiles",
-      columns=("realm_id", "x", "y"))
+      for x, y in product(range(REALM_SIZE), range(REALM_SIZE)))
   logging.info("Created Windvale map tiles.")
-
-  conn.commit()
 
   logging.info("Populated Windvale.")
   return realm

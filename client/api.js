@@ -23,12 +23,9 @@ function httpJson(url, method, body) {
   });
 }
 
-function openProto(channel) {
-  return new net.Protocol(channel, net.transport);
-}
-
 export var getPlayer = httpJson.bind(null, "/player", "GET");
 export var getExplore = httpJson.bind(null, "/explore", "GET");
 export var postExploreMove = httpJson.bind(null, "/explore/move", "POST");
-export var openExplore = openProto.bind(null, "explore");
-export var openChat = openProto.bind(null, "chat");
+
+export var chatProtocol = new net.Protocol("chat", net.transport);
+export var exploreProtocol = new net.Protocol("explore", net.transport);

@@ -51,9 +51,7 @@ def get_map(tile):
 
 @get
 def explore(handler):
-  player = handler.get_player()
-
-  tile = player.creature.map_tile
+  tile = handler.player.creature.map_tile
 
   return {
       "map": get_map(tile),
@@ -62,7 +60,8 @@ def explore(handler):
           creature.to_js()
           for creature
           in handler.application.sqla_session.query(Creature).filter(
-              Creature.map_tile == tile, Creature.id != player.creature.id)
+              Creature.map_tile == tile,
+              Creature.id != handler.player.creature.id)
       ],
       "buildings": [
           building.to_js()
@@ -91,7 +90,7 @@ def get_tile_routing_key(tile):
   return "{x}:{y}:{realm_id}".format(x=tile.x, y=tile.y, realm_id=tile.realm.id)
 
 def get_queue_name(player):
-  return "explore.queue:{id}".format(id=player.creature.id)
+  return "explore:{id}".format(id=player.user.id)
 
 
 @engine
@@ -113,10 +112,9 @@ def propagate_move(prev_tile, next_tile, player, channel):
                         routing_key=get_tile_routing_key(prev_tile),
                         body=json.dumps({
                             "action": "leave",
-                            "player": {
-                                "creature": {
-                                    "id": player.creature.id
-                                }
+                            "creature": {
+                                "id": player.creature.id,
+                                "name": player.creature.name
                             }
                         }))
 
@@ -125,25 +123,25 @@ def propagate_move(prev_tile, next_tile, player, channel):
                         routing_key=get_tile_routing_key(next_tile),
                         body=json.dumps({
                             "action": "enter",
-                            "player": player.to_js()
+                            "creature": player.creature.to_js()
                         }))
 
 
 @post
 def move(handler):
-  player = handler.get_player()
-  prev_tile = player.creature.map_tile
+  prev_tile = handler.player.creature.map_tile
 
-  player.creature.map_tile = handler.application.sqla_session.query(MapTile) \
+  handler.player.creature.map_tile = handler.application \
+      .sqla_session.query(MapTile) \
       .filter(MapTile.x == handler.body["x"],
               MapTile.y == handler.body["y"],
-              MapTile.realm == player.creature.map_tile.realm) \
+              MapTile.realm == handler.player.creature.map_tile.realm) \
       .one()
   handler.application.sqla_session.commit()
-  next_tile = player.creature.map_tile
+  next_tile = handler.player.creature.map_tile
 
   handler.application.amqp.channel(
-      functools.partial(propagate_move, prev_tile, next_tile, player))
+      functools.partial(propagate_move, prev_tile, next_tile, handler.player))
 
   return explore.actually_get(handler)
 
@@ -157,28 +155,36 @@ ROUTES = [
 class ExploreProtocol(Protocol):
   @engine
   def on_open(self, info):
-    player = self.get_player()
-
     self.channel = \
         yield Task(lambda callback: self.application.amqp.channel(callback))
 
     yield Task(self.channel.exchange_declare, exchange=EXPLORE_EXCHANGE_NAME,
                type="direct")
 
+    yield Task(self.channel.queue_delete, queue=get_queue_name(self.player))
+
     self.explore_queue = (
         yield Task(self.channel.queue_declare,
-                   queue=get_queue_name(player),
-                   exclusive=True)).method.queue
+                   queue=get_queue_name(self.player),
+                   exclusive=True,
+                   auto_delete=True)).method.queue
 
     yield Task(self.channel.queue_bind, exchange=EXPLORE_EXCHANGE_NAME,
                queue=self.explore_queue,
-               routing_key=get_tile_routing_key(player.creature.map_tile))
+               routing_key=get_tile_routing_key(self.player.creature.map_tile))
 
-    self.channel.basic_consume(self.simple_relay_to_client,
-                               queue=self.explore_queue, no_ack=True)
+    self.channel.basic_consume(self.on_queue_message,
+                               queue=self.explore_queue, no_ack=True,
+                               exclusive=True)
+
+  def on_queue_message(self, ch, method, properties, body):
+    payload = json.loads(body.decode("utf-8"))
+
+    if payload["creature"]["id"] != self.player.creature.id:
+      self.send(payload)
+
 
 
 CHANNELS = {
     "explore": ExploreProtocol
-
 }

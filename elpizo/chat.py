@@ -11,53 +11,55 @@ class ChatProtocol(Protocol):
 
   @staticmethod
   def get_room_routing_key(target):
-    return "room:{}".format(target)
+    return "room:{target}".format(target=target)
 
   @staticmethod
   def get_player_routing_key(target):
-    return "player:{}".format(target)
+    return "player:{target}".format(target=target)
 
   @engine
   def on_open(self, info):
-    player = self.get_player()
-
     self.channel = \
         yield Task(lambda callback: self.application.amqp.channel(callback))
 
     yield Task(self.channel.exchange_declare, exchange=self.EXCHANGE_NAME,
                type="direct")
 
+    yield Task(self.channel.queue_delete,
+               queue="chat:{id}".format(id=self.player.user.id))
+
     self.chat_queue = (
         yield Task(self.channel.queue_declare,
-                   queue="chat.queue:{id}".format(id=player.creature.id),
-                   exclusive=True)).method.queue
+                   queue="chat:{id}".format(id=self.player.user.id),
+                   exclusive=True,
+                   auto_delete=True)).method.queue
 
     yield Task(self.channel.queue_bind, exchange=self.EXCHANGE_NAME,
                queue=self.chat_queue,
                routing_key=self.get_room_routing_key(self.GLOBAL_ROOM_NAME))
     yield Task(self.channel.queue_bind, exchange=self.EXCHANGE_NAME,
                queue=self.chat_queue,
-               routing_key=self.get_player_routing_key(player.creature.id))
+               routing_key=self.get_player_routing_key(self.player.creature.id))
 
     self.channel.basic_consume(self.simple_relay_to_client,
-                               queue=self.chat_queue, no_ack=True)
+                               queue=self.chat_queue, no_ack=True,
+                               exclusive=True)
 
   def on_parsed_message(self, message):
-    player = self.get_player()
     target = message["target"]
 
     if target[0] == "#":
       routing_key = self.get_room_routing_key(target[1:])
     else:
-      player = self.application.sqla_session.query(Player) \
+      self.player = self.application.sqla_session.query(Player) \
         .filter(Player.name == target) \
         .one()
-      routing_key = self.get_player_routing_key(player.creature.id)
+      routing_key = self.get_player_routing_key(self.player.creature.id)
 
     self.channel.basic_publish(exchange=self.EXCHANGE_NAME,
                                routing_key=routing_key,
                                body=json.dumps({
-                                   "origin": player.creature.name,
+                                   "origin": self.player.creature.name,
                                    "target": message["target"],
                                    "text": message["text"]
                                }))

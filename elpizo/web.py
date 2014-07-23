@@ -14,9 +14,9 @@ class RequestHandler(RequestHandler):
       return
 
     self.user_id = int(self.get_secure_cookie("elpizo_user"))
-    self._player = self._get_player()
+    self.player = self._get_player()
 
-    if self._player is None:
+    if self.player is None:
       self.send_error(403)
       return
 
@@ -41,9 +41,6 @@ class RequestHandler(RequestHandler):
           .one()
     except NoResultFound:
       return None
-
-  def get_player(self):
-    return self._player
 
   def get(self):
     try:

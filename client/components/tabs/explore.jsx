@@ -11,7 +11,7 @@ module Menu from "../parts/menu.jsx";
 
 module Chat from "../chat.jsx";
 
-import {openExplore} from "../../api";
+import {exploreProtocol} from "../../api";
 
 import {classSet} from "../../util/react";
 import {nubStrings} from "../../util/collections";
@@ -64,21 +64,29 @@ class _ExploreTab {
     this.setState(exploreStore.get());
   }
 
+  _onExploreEvent(event) {
+    switch (event.action) {
+      case "leave":
+        exploreActions.removeCreature(event.creature.id);
+        break;
+      case "enter":
+        exploreActions.addCreature(event.creature);
+        break;
+    }
+  }
+
   componentWillMount() {
     exploreActions.fetch();
   }
 
   componentDidMount() {
-    this.exploreProtocol = openExplore();
-    this.exploreProtocol.on("message", function (message) {
-      console.log(message);
-    });
-
     exploreStore.addChangeListener(this._onChange);
+    exploreProtocol.on("message", this._onExploreEvent);
   }
 
   componentDidUnmount() {
     exploreStore.removeChangeListener(this._onChange);
+    exploreProtocol.removeListener("message", this._onExploreEvent);
   }
 
   createEntityItem(taxonomy, entity) {
@@ -123,7 +131,7 @@ class _ExploreTab {
         .join("/");
 
     return <div id="explore">
-      <Chat />
+      <Chat explore={this.state} />
       <div className="nearby">
         <div className="name">
           {terrains} <small>{explore.tile.x}, {explore.tile.y} {explore.tile.realm.name}</small>
