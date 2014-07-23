@@ -126,6 +126,9 @@ def propagate_move(prev_tile, next_tile, player, channel):
                             "creature": player.creature.to_js()
                         }))
 
+  # TODO: move channels into requesthandlers and return promises
+  channel.close()
+
 
 @post
 def move(handler):
