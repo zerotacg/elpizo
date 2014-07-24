@@ -2,3 +2,5 @@ tornado
 psycopg2
 sqlalchemy
 git+https://github.com/renshawbay/pika-python3.git
+pillow
+lxml
