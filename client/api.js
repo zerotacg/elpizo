@@ -7,7 +7,7 @@ function httpJson(url, method, body) {
     var xhr = new XMLHttpRequest();
     xhr.open(method, url, true);
 
-    xhr.onload = function (e) {
+    xhr.onload = (e) => {
       if (xhr.status >= 400) {
         reject(new Error(xhr.statusText));
       } else {
@@ -15,9 +15,9 @@ function httpJson(url, method, body) {
       }
     };
 
-    xhr.onerror = function (e) {
+    xhr.onerror = (e) => {
       reject(new Error(e));
-    }
+    };
 
     xhr.send(body ? JSON.stringify(body) : null)
   });
