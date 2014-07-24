@@ -35,30 +35,26 @@ function computeTiles(corners, width, height, precedence, blends) {
 
   for (var j = 0; j < height; ++j) {
     for (var i = 0; i < width; ++i) {
-      var layers = [];
-
       var nw = corners[(j + 0) * (width + 1) + (i + 0)];
       var ne = corners[(j + 0) * (width + 1) + (i + 1)];
       var sw = corners[(j + 1) * (width + 1) + (i + 0)];
       var se = corners[(j + 1) * (width + 1) + (i + 1)];
 
       var types = nubStrings([nw, ne, sw, se]
-        .sort((a, b) => precedence.indexOf(a) - precedence.indexOf(b)));
+          .sort((a, b) => precedence.indexOf(a) - precedence.indexOf(b)));
 
-      types.forEach((name, i) => {
+      tiles.push(types.map((name, i) => {
         var above = types.slice(i).concat(blends[name] || []);
 
         var variant = ((above.indexOf(nw) !== -1) << 3) |
                       ((above.indexOf(ne) !== -1) << 2) |
                       ((above.indexOf(se) !== -1) << 1) |
                       ((above.indexOf(sw) !== -1) << 0);
-        layers.push({
-          name: name,
-          variant: variant
-        });
-      });
-
-      tiles.push(layers);
+        return {
+            name: name,
+            variant: variant
+        };
+      }));
     }
   }
   return tiles;
