@@ -14,9 +14,10 @@ var path = require("path");
 var reactVisitors = require("react-tools/vendor/fbtransform/visitors");
 var source = require("vinyl-source-stream");
 var sourcemaps = require("gulp-sourcemaps");
-//var uglify = require("gulp-uglify");
+var uglify = require("gulp-uglify");
 var watchify = require("watchify");
 var through = require("through");
+var argv = require("yargs").argv;
 
 var paths = {
   scripts: ["client/**/*.js", "client/**/*.jsx"],
@@ -39,7 +40,7 @@ function rebundle(bundler) {
     .pipe(sourcemaps.init({
         loadMaps: true,
     }))
-    //.pipe(uglify())
+    .pipe(argv.debug ? through() : uglify())
     .pipe(sourcemaps.write("../maps"))
     .pipe(gulp.dest("elpizo/static/js"));
 }
