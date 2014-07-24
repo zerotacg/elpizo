@@ -1,7 +1,7 @@
 export function nubStrings(xs) {
   var seen = {};
   var ys = [];
-  xs.forEach(function (x) {
+  xs.forEach((x) => {
     if (!seen[x]) {
       ys.push(x);
       seen[x] = true;
