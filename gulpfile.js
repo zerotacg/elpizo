@@ -127,8 +127,12 @@ gulp.task("watchScripts", function () {
 });
 
 gulp.task("watch", function () {
-  gulp.start("watchScripts")
+  gulp.start("watchScripts");
   gulp.watch(paths.styles, ["styles"]);
 });
 
-gulp.task("default", ["watch", "watchScripts", "styles"]);
+gulp.task("default", [
+  "watch",
+  "watchScripts",
+  "styles"
+]);
