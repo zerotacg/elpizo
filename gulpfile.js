@@ -84,8 +84,26 @@ function reactify(filename) {
   return through(write, end);
 }
 
+function progress(filename) {
+  gutil.log("Bundling", gutil.colors.magenta(filename));
+
+  var data = "";
+
+  function write(buf) {
+    data += buf;
+  }
+
+  function end() {
+    this.queue(data);
+    this.queue(null);
+  }
+
+  return through(write, end);
+}
+
 function configureBundler(bundler) {
   return bundler
+    .transform(progress)
     .transform(reactify)
     .transform(debowerify)
     .require("./client/main.jsx", {
