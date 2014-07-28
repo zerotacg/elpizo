@@ -9,7 +9,7 @@ from .models import User
 
 
 class Protocol(object):
-  EXCHANGE_NAME = "amq.topic"
+  EXCHANGE_NAME = "amq.direct"
 
   def __init__(self, user_id, application, socket, channel):
     self.user_id = user_id

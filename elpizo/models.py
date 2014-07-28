@@ -8,9 +8,11 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import backref, relationship, Session, remote, foreign
 
 
-class Base(declarative_base()):
+class Base(object):
   def to_js(self):
     return {}
+
+Base = declarative_base(cls=Base)
 
 
 def default_pkey():
@@ -28,7 +30,7 @@ class Realm(Base):
 
   @property
   def routing_key(self):
-    return "regions.{realm_id}.#".format(realm_id=self.realm_id)
+    return "realms.{realm_id}".format(realm_id=self.realm_id)
 
 
 class Region(Base):

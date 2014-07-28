@@ -11,7 +11,7 @@ from .exports import ExportsHandler
 from .mint import Mint
 from .net import Connection, Router
 
-from .endpoints import chat, error
+from .endpoints import chat, error, move, private
 
 
 class Application(Application):
@@ -39,7 +39,9 @@ class Application(Application):
 
   def configure_protocol(self):
     self.on_open_hooks = [
-        chat.on_open
+        chat.on_open,
+        move.on_open,
+        private.on_open
     ]
 
     self.sockjs_endpoints = {
