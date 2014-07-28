@@ -48,6 +48,9 @@ class Protocol(object):
   def make_sockjs_context(self):
     return SockJSContext(self.application, self.socket, self.get_player())
 
+  def close(self):
+    self.socket.close()
+
   def on_sockjs_message(self, packet):
     message = json.loads(packet)
     mq = self.make_amqp_context()
@@ -85,6 +88,7 @@ class Connection(SockJSConnection):
         "type": "error",
         "text": "no token found"
       })
+      self.close()
       return
 
     try:
@@ -95,6 +99,7 @@ class Connection(SockJSConnection):
         "type": "error",
         "text": "invalid token: {e}".format(e=e)
       })
+      self.close()
       return
 
     if principal != "user":
@@ -103,6 +108,7 @@ class Connection(SockJSConnection):
         "text": "unrecognized credentials principal: {principal}".format(
             principal=principal)
       })
+      self.close()
       return
 
     self.protocol = Protocol(user_id, self.application, self, self.channel)
@@ -158,3 +164,6 @@ class SockJSContext(object):
 
   def send(self, message):
     self.socket.send(json.dumps(message))
+
+  def close(self):
+    self.socket.close()
