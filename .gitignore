@@ -2,3 +2,5 @@
 node_modules
 bower_components
 elpizo.conf
+elpizo.pem
+elpizo.pub

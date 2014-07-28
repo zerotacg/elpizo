@@ -47,6 +47,15 @@ class Player(Base):
         "creature": self.creature.to_js()
     }
 
+  @classmethod
+  def by_user_id(cls, session, user_id):
+    return session.query(cls) \
+        .filter(User.current_creature_id == Creature.id,
+                cls.user_id == user_id,
+                cls.creature_id == Creature.id,
+                User.id == user_id) \
+        .one()
+
 
 class Creature(Base):
   __tablename__ = "creatures"

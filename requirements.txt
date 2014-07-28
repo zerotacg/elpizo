@@ -4,3 +4,4 @@ sqlalchemy
 git+https://github.com/renshawbay/pika-python3.git
 pillow
 lxml
+pycrypto

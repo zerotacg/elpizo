@@ -53,8 +53,7 @@ function reactify(filename) {
     json.sources = [sourceFilename];
     json.sourcesContent = [sourceCode];
     var base64 = Buffer(JSON.stringify(json)).toString("base64");
-    return "//# sourceMappingURL=data:application/json;base64," +
-           base64;
+    return "//# sourceMappingURL=data:application/json;base64," + base64;
   }
 
   function write(buf) {
@@ -62,7 +61,9 @@ function reactify(filename) {
   }
 
   function end() {
-    var visitors = moduleVisitors.visitorList.concat(reactVisitors.getAllVisitors());
+    var visitors = moduleVisitors.visitorList.concat(
+        reactVisitors.getAllVisitors());
+
     var options = {
         sourceMap: true
     };

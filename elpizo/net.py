@@ -5,9 +5,9 @@ from sockjs.tornado import conn, session
 from sockjs.tornado.transports import base
 from sqlalchemy.orm.exc import NoResultFound
 from tornado.gen import coroutine, Task
-from tornado.web import decode_signed_value
 
 from .models import User, Player, Creature
+from .web import unmint_token
 
 
 class ChannelSession(session.BaseSession):
@@ -37,38 +37,27 @@ def makeMultiplexConnection(channels):
     def application(self):
       return self.session.server.application
 
-    def _get_player(self):
-      try:
-        return self.application.sqla_session.query(Player) \
-            .filter(User.current_creature_id == Creature.id,
-                    Player.user_id == self.user_id,
-                    Player.creature_id == Creature.id,
-                    User.id == self.user_id) \
-            .one()
-      except NoResultFound:
-        return None
-
     @coroutine
     def on_open(self, info):
       self.channel = \
           yield Task(lambda callback: self.application.amqp.channel(callback))
 
-      if info.get_cookie("elpizo_user") is None:
-        self.close()
-        return
-
-      self.user_id = int(decode_signed_value(
-          self.application.settings["cookie_secret"],
-          name="elpizo_user",
-          value=info.get_cookie("elpizo_user").value))
-
-      self.player = self._get_player()
-
-      if self.player is None:
-        self.close()
-        return
-
       self.endpoints = {}
+
+      credentials = unmint_token(self.application.mint,
+                                 info.get_cookie("elpizo_token"))
+
+      if credentials is None:
+        self.close()
+        return
+
+      authority, id = credentials.split(":")
+      id = int(id)
+
+      if "authority" != "user":
+        self.close()
+
+      self.player = Player.by_user_id(self.application.sqla_session, id)
 
       for chan, Chan in self.channels.items():
         session = ChannelSession(Chan, self.session.server, self, chan)
