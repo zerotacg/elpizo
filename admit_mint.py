@@ -4,11 +4,12 @@
 The admit mint will admit any users.
 """
 
+import email
 import base64
 import logging
 
 from elpizo.mint import Mint
-from elpizo.models import User, Player, Creature
+from elpizo.models import User, Player, Actor
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -23,28 +24,46 @@ define("mint_private_key", default="elpizo.pem", help="Private key of the mint")
 
 class AdmitHandler(RequestHandler):
   def get(self):
+    self.set_header("Content-Type", "text/plain")
+
+    mint = self.application.mint
+
     user_name = self.get_argument("user")
-    player_name = self.get_argument("player")
+    actor_name = self.get_argument("actor")
 
     player = self.application.sqla_session.query(Player) \
-        .filter(Creature.name == player_name,
-                Player.creature_id == Creature.id,
+        .filter(Actor.name == actor_name,
+                Player.actor_id == Actor.id,
                 Player.user_id == User.id) \
         .one()
 
     user = player.user
-    user.current_creature = player.creature
+    user.current_actor = player.actor
 
     self.application.sqla_session.commit()
 
     credentials = "user:{}".format(user.id)
 
-    self.set_cookie("elpizo_token", base64.b64encode(
-        self.application.mint.mint(
-            credentials.encode("utf-8"))))
+    token = mint.mint(credentials.encode("utf-8"))
+    self.set_cookie("elpizo_token", base64.b64encode(token))
 
-    self.finish("ok, minted credentials into token: {credentials}".format(
-        credentials=credentials))
+    self.finish("""\
+# credentials
+{credentials}
+
+# token
+{token}
+
+# mint info
+rsa key size: {rsa_key_size}
+signer: {signer}
+hash: {hash}
+""".format(
+        credentials=mint.unmint(token).decode("utf-8"),
+        token=email.base64mime.body_encode(token).strip(),
+        rsa_key_size=mint.rsa_key_size * 8,
+        signer=mint.signer.__class__.__name__,
+        hash=mint.hashfunc.__name__))
 
 
 class Application(Application):

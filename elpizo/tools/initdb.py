@@ -5,7 +5,7 @@ import json
 import sys
 
 from elpizo import make_application
-from elpizo.models import Base, User, Player, Realm, MapTile, Terrain, Creature, CreatureKind
+from elpizo.models import Base, User, Player, Realm, Region, Actor, ActorKind
 from elpizo.tools import mapgen
 
 
@@ -17,88 +17,65 @@ def initialize_schema(app):
   logging.info("Initialized database schema.")
 
 
-def initialize_terrains(app):
-  for terrain_id, _ in mapgen.TERRAIN_NAMES.items():
-    app.sqla_session.add(Terrain(name=terrain_id))
+def initialize_actor_kinds(app):
+  for kind in ["human", "cow"]:
+    actor_kind = ActorKind(name=kind)
+    app.sqla_session.add(actor_kind)
   app.sqla_session.commit()
 
-  logging.info("Initialized terrain types.")
+  logging.info("Created actor kinds.")
 
 
 def initialize_realm(app):
-  SIZE = 600
-  ZOOM_FACTOR = 0.5
-
-  REALM_SIZE = int(SIZE * ZOOM_FACTOR - 1)
-
-  realm = Realm(name="Windvale",
-                width=REALM_SIZE, height=REALM_SIZE)
+  realm = Realm(name="Windvale", width=128, height=128)
   app.sqla_session.add(realm)
+
+  logging.info("Created realm.")
+
+  for ary in range(realm.height // Region.SIZE):
+    for arx in range(realm.width // Region.SIZE):
+      region = Region(arx=arx, ary=ary, realm=realm,
+                      corners=[0] * ((realm.height + 1) * (realm.width + 1)))
+      app.sqla_session.add(region)
+  logging.info("Created realm regions.")
+
   app.sqla_session.commit()
-
-  img = mapgen.make_map_image(etree.parse(sys.argv[1]), SIZE, ZOOM_FACTOR)
-  raw_corners = list(mapgen.map_image_to_json(img))
-  logging.info("Map generation complete.")
-
-  terrain_ids = {terrain.name: terrain.id
-                 for terrain in app.sqla_session.query(Terrain)}
-
-  realm.add_corners(
-      (realm.id, s, t, terrain_ids[raw_corners[t * (REALM_SIZE + 1) + s]])
-      for s, t in product(range(REALM_SIZE + 1), range(REALM_SIZE + 1)))
-  logging.info("Created Windvale map corners.")
-
-  realm.add_tiles(
-      (realm.id, x, y)
-      for x, y in product(range(REALM_SIZE), range(REALM_SIZE)))
-  logging.info("Created Windvale map tiles.")
-
-  logging.info("Populated Windvale.")
   return realm
 
 
-def initialize_creature_kinds(app):
-  for kind in ["human", "cow"]:
-    creature_kind = CreatureKind(name=kind)
-    app.sqla_session.add(creature_kind)
-  app.sqla_session.commit()
-
-  logging.info("Created creature kinds.")
-
-
 def initialize_players(app, realm):
-  tile = app.sqla_session.query(MapTile) \
-      .filter(MapTile.realm == realm, MapTile.x == 0, MapTile.y == 0) \
-      .one()
-
-  human = app.sqla_session.query(CreatureKind) \
-      .filter(CreatureKind.name == "human") \
+  human = app.sqla_session.query(ActorKind) \
+      .filter(ActorKind.name == "human") \
       .one()
 
   victor_hugo = User(name="victor_hugo")
   app.sqla_session.add(victor_hugo)
 
   valjean = Player(user=victor_hugo,
-                   creature=Creature(name="Valjean", map_tile=tile, kind=human,
-                                     variant=1, level=1, hp=100, mp=100, xp=100))
+                   actor=Actor(name="Valjean", kind=human, variant=1, level=1,
+                               hp=100, mp=100, xp=100,
+                               realm=realm, arx=0, ary=0, rx=0, ry=0))
   app.sqla_session.add(valjean)
 
   dumas = User(name="dumas")
   app.sqla_session.add(dumas)
 
   athos = Player(user=dumas,
-                 creature=Creature(name="Athos", map_tile=tile, kind=human,
-                                   variant=1, level=1, hp=100, mp=100, xp=10))
+                 actor=Actor(name="Athos", kind=human, variant=1, level=1,
+                             hp=100, mp=100, xp=10,
+                             realm=realm, arx=0, ary=0, rx=0, ry=0))
   app.sqla_session.add(athos)
 
   aramis = Player(user=dumas,
-                  creature=Creature(name="Aramis", map_tile=tile, kind=human,
-                                    variant=1, level=1, hp=100, mp=100, xp=10))
+                  actor=Actor(name="Aramis", kind=human, variant=1, level=1,
+                              hp=100, mp=100, xp=10,
+                              realm=realm, arx=0, ary=0, rx=0, ry=0))
   app.sqla_session.add(aramis)
 
   porthos = Player(user=dumas,
-                   creature=Creature(name="Porthos", map_tile=tile, kind=human,
-                                     variant=1, level=1, hp=100, mp=100, xp=10))
+                   actor=Actor(name="Porthos", kind=human, variant=1, level=1,
+                               hp=100, mp=100, xp=10,
+                               realm=realm, arx=0, ary=0, rx=0, ry=0))
   app.sqla_session.add(porthos)
 
   app.sqla_session.commit()
@@ -116,9 +93,8 @@ def main():
   input("This will DELETE ALL DATA! Press ENTER to continue or CTRL+C to abort. ")
 
   initialize_schema(app)
-  initialize_terrains(app)
+  initialize_actor_kinds(app)
   realm = initialize_realm(app)
-  initialize_creature_kinds(app)
   initialize_players(app, realm)
 
 
