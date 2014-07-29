@@ -5,9 +5,10 @@ from tornado.concurrent import Future
 from tornado.ioloop import IOLoop
 
 
-def wait_for_future(fut, ioloop=None):
+def await(fut, ioloop=None):
   """
-  Wait for a future to complete.
+  Wait for a future to complete. This must be run in a child greenlet of a
+  parent greenlet.
   """
 
   if ioloop is None:
@@ -29,23 +30,17 @@ def wait_for_future(fut, ioloop=None):
   # The child greenlet has switched us back in and the future should now be
   # fulfilled.
   assert fut.done(), "future was not done when it returned from the greenlet"
+  return fut.result()
 
 
 def green(f, ioloop=None):
   """
-  Wrap a future-returning function to use greenlets to resolve the future, such
-  that the result of the future is returned to the caller (which must be running
-  in a greenlet itself).
-
-  This is compatible with Tornado's tornado.gen.coroutine decorator -- this will
-  turn coroutines into synchronous functions.
+  Wrap a future-returning function to use greenlets to resolve the future.
   """
 
   @functools.wraps(f)
   def _wrapper(*args, **kwargs):
-    fut = f(*args, **kwargs)
-    wait_for_future(fut, ioloop=ioloop)
-    return fut.result()
+    return await(f(*args, **kwargs), ioloop=ioloop)
 
   return _wrapper
 
@@ -60,8 +55,7 @@ def green_task(f, callback_name="callback", ioloop=None):
     fut = Future()
     kwargs[callback_name] = fut.set_result
     f(*args, **kwargs)
-    wait_for_future(fut, ioloop=ioloop)
-    return fut.result()
+    return await(fut, ioloop=ioloop)
 
   return _wrapper
 
@@ -79,7 +73,6 @@ def green_root(f):
   return _wrapper
 
 
-@green
 def sleep(n, ioloop=None):
   """
   Cause a greenlet to sleep for n seconds.
@@ -89,7 +82,7 @@ def sleep(n, ioloop=None):
 
   fut = Future()
   ioloop.call_later(n, functools.partial(fut.set_result, None))
-  return fut
+  await(fut, ioloop=ioloop)
 
 
 class Event(object):
@@ -115,7 +108,7 @@ class Event(object):
 
   def wait(self, timeout=None):
     if timeout is None:
-      wait_for_future(self._fut, ioloop=self.ioloop)
+      await(self._fut, ioloop=self.ioloop)
     else:
       sleep(timeout, ioloop=self.ioloop)
     return self.is_set()
