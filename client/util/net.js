@@ -2,7 +2,7 @@ module SockJS from "./sockjs";
 
 import {EventEmitter} from "events";
 
-class Transport extends EventEmitter {
+export class Transport extends EventEmitter {
   constructor(host) {
     super();
 
@@ -26,15 +26,12 @@ class Transport extends EventEmitter {
     };
 
     this.socket.onmessage = (e) => {
-      var parts = e.data.split(":");
-      var channel = parts[0];
-      var message = JSON.parse(parts.slice(1).join(":"));
-      this.emit("message", channel, message);
+      this.emit("message", JSON.parse(e.data));
     };
   }
 
-  send(channel, message) {
-    this.socket.send([channel, JSON.stringify(message)].join(":"));
+  send(message) {
+    this.socket.send(JSON.stringify(message));
   }
 
   close() {
@@ -42,13 +39,10 @@ class Transport extends EventEmitter {
   }
 }
 
-export var transport = new Transport("/events");
-
 export class Protocol extends EventEmitter {
-  constructor(channel, transport) {
+  constructor(transport) {
     super();
 
-    this.channel = channel;
     this.transport = transport;
 
     if (this.transport.opened) {
@@ -57,17 +51,13 @@ export class Protocol extends EventEmitter {
       setTimeout(this.emit.bind(this, "open"), 0);
     }
 
-    this.transport.on("message", (channel, message) => {
-      if (channel === this.channel) {
-        this.emit("message", message);
-      }
+    this.transport.on("message", (message) => {
+      this.emit(message.type, message);
     });
-
-    this.transport.on("open", this.emit.bind(this, "open"));
-    this.transport.on("close", this.emit.bind(this, "close"));
   }
 
-  send(message) {
-    this.transport.send(this.channel, message);
+  send(type, message) {
+    message.type = type;
+    this.transport.send(message);
   }
 }

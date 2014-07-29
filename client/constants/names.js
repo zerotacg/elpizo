@@ -1,2 +1,2 @@
-export default = window._names;
-delete window._names;
+export default = window._exports.names;
+delete window._exports.names;

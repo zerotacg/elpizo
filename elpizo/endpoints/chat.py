@@ -1,9 +1,5 @@
-from tornado.gen import coroutine
-
-
-@coroutine
 def on_open(mq):
-  yield mq.subscribe("chatrooms.global")
+  mq.subscribe("chatrooms.global")
 
 
 def socket_chat(mq, message):
@@ -15,11 +11,11 @@ def socket_chat(mq, message):
   if ns not in ["chatrooms", "actors"]:
     mq.send({
       "type": "error",
-      "text": "unknown chat namespace"
+      "text": "unknown chat namespace: {ns}".format(ns=ns)
     })
     return
 
-  mq.publish(destination, {
+  mq.publish(target, {
     "type": "chat",
     "origin": mq.player.actor.name,
     "target": target,

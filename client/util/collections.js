@@ -9,3 +9,14 @@ export function nubStrings(xs) {
   });
   return ys;
 }
+
+export function countingSort(numBuckets, xs, f) {
+  var buckets = new Array(numBuckets);
+  for (var i = 0; i < numBuckets; ++i) {
+    buckets[i] = [];
+  }
+  xs.forEach((x) => {
+    buckets[f(x)] = x;
+  });
+  return buckets;
+}

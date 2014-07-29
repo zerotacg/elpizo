@@ -1,9 +1,13 @@
 import base64
 import json
+import logging
+import sys
+import traceback
 
 from sockjs.tornado import SockJSConnection, SockJSRouter
-from tornado.gen import coroutine, Task
+from tornado.gen import coroutine
 
+from . import green
 from .mint import InvalidTokenError
 from .models import User
 
@@ -17,36 +21,38 @@ class Protocol(object):
     self.socket = socket
     self.channel = channel
 
-  @coroutine
   def on_open(self):
     player = self.get_player()
 
     # Set up the user's AMQP subscriptions
     queue_name = player.user.queue_name
 
-    yield Task(self.channel.queue_delete, queue=queue_name)
-    yield Task(self.channel.queue_declare, queue=queue_name,
-               exclusive=True, auto_delete=True)
+    green.green_task(self.channel.queue_delete)(queue=queue_name)
+    green.green_task(self.channel.queue_declare)(queue=queue_name,
+                                                 exclusive=True,
+                                                 auto_delete=True)
 
     self.channel.basic_consume(self.on_amqp_message, queue=queue_name,
                                no_ack=True, exclusive=True)
 
-    yield Task(self.channel.queue_bind, exchange=self.EXCHANGE_NAME,
-               queue=queue_name, routing_key=player.actor.routing_key)
+    green.green_task(self.channel.queue_bind)(
+        exchange=self.EXCHANGE_NAME,
+        queue=queue_name,
+        routing_key=player.actor.routing_key)
 
     for on_open_hook in self.application.on_open_hooks:
       on_open_hook(self.make_amqp_context())
 
   def get_player(self):
-    return self.application.sqla_session.query(User) \
-      .get(self.user_id) \
-      .current_player
+    return self.application.sqla.query(User) \
+        .get(self.user_id) \
+        .current_player
 
   def make_amqp_context(self):
-    return AMQPContext(self.application, self.channel, self.get_player())
+    return AMQPContext(self, self.get_player())
 
   def make_sockjs_context(self):
-    return SockJSContext(self.application, self.socket, self.get_player())
+    return SockJSContext(self, self.get_player())
 
   def close(self):
     self.socket.close()
@@ -72,98 +78,121 @@ class Router(SockJSRouter):
 
 
 class Connection(SockJSConnection):
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.protocol_event = green.Event()
+
   @property
   def application(self):
     return self.session.server.application
 
-  @coroutine
+  def error(self, reason="internal server error", exc_info=None):
+    packet = {
+        "type": "error",
+        "text": reason
+    }
+
+    if self.application.settings.get("serve_traceback") and \
+        exc_info is not None:
+      packet["debug_trace"] = "".join(traceback.format_exception(*exc_info))
+
+    self.send(json.dumps(packet))
+    self.close()
+
+  @green.green_root
   def on_open(self, info):
-    self.channel = \
-        yield Task(lambda callback: self.application.amqp.channel(callback))
-
-    # Authorize the user using a minted token.
-    token = info.get_cookie("elpizo_token")
-    if token is None:
-      self.send({
-        "type": "error",
-        "text": "no token found"
-      })
-      self.close()
-      return
-
     try:
-      principal, user_id = self.application.mint.unmint(
-          base64.b64decode(token)).decode("utf-8").split(":")
-    except InvalidTokenError as e:
-      self.send({
-        "type": "error",
-        "text": "invalid token: {e}".format(e=e)
-      })
-      self.close()
-      return
+      self.channel = green.green_task(self.application.amqp.channel,
+                                      callback_name="on_open_callback")()
 
-    if principal != "user":
-      self.send({
-        "type": "error",
-        "text": "unrecognized credentials principal: {principal}".format(
-            principal=principal)
-      })
-      self.close()
-      return
+      # Authorize the user using a minted token.
+      cookie = info.get_cookie("elpizo_token")
+      if cookie is None:
+        self.error("no token found")
+        return
+      token = cookie.value
 
-    self.protocol = Protocol(user_id, self.application, self, self.channel)
-    yield self.protocol.on_open()
+      try:
+        realm, user_id = self.application.mint.unmint(
+            base64.b64decode(token)).decode("utf-8").split(".")
+      except InvalidTokenError as e:
+        self.error("invalid token: {e}".format(e=e))
+        return
 
+      if realm != "user":
+        self.error("unrecognized credentials realm: {realm}".format(realm=realm))
+        return
+
+      self.protocol = Protocol(user_id, self.application, self, self.channel)
+      self.protocol.on_open()
+      self.protocol_event.set()
+    except Exception as e:
+      self.error(exc_info=sys.exc_info())
+      logging.error("Error in on_open for SockJS connection", exc_info=e)
+
+  @green.green_root
   def on_message(self, packet):
-    self.protocol.on_sockjs_message(self, packet)
+    self.protocol_event.wait()
 
-  def on_close(self):
     try:
-      self.channel.close()
+      self.protocol.on_sockjs_message(packet)
+    except Exception as e:
+      self.error(exc_info=sys.exc_info())
+      logging.error("Error in on_message for SockJS connection", exc_info=e)
+
+  @green.green_root
+  def on_close(self):
+    self.protocol_event.wait()
+
+    try:
+      if self.channel.is_open:
+        self.channel.close()
       self.protocol.on_close()
     except Exception as e:
       logging.error("Error in on_close for SockJS connection", exc_info=e)
 
 
 class AMQPContext(object):
-  @property
-  def application(self):
-    return self.protocol.application
-
   def __init__(self, protocol, player):
     self.protocol = protocol
     self.player = player
 
+  @property
+  def application(self):
+    return self.protocol.application
+
   def send(self, packet):
-    self.publish(player.routing_key, packet)
+    self.publish(self.player.actor.routing_key, packet)
 
   def publish(self, routing_key, packet):
-    self.channel.basic_publish(exchange=Protocol.EXCHANGE_NAME,
-                               routing_key=routing_key,
-                               body=json.dumps(packet))
+    self.protocol.channel.basic_publish(exchange=Protocol.EXCHANGE_NAME,
+                                        routing_key=routing_key,
+                                        body=json.dumps(packet))
 
-  @coroutine
   def unsubscribe(self, routing_key):
-    yield Task(self.channel.queue_unbind, exchange=Protocol.EXCHANGE_NAME,
-               queue=self.player.user.queue_name, routing_key=routing_key)
+    green.green_task(self.protocol.channel.queue_unbind)(
+        exchange=Protocol.EXCHANGE_NAME,
+        queue=self.player.user.queue_name,
+        routing_key=routing_key)
 
-  @coroutine
   def subscribe(self, routing_key):
-    yield Task(self.channel.queue_unbind, exchange=Protocol.EXCHANGE_NAME,
-               queue=self.player.user.queue_name, routing_key=routing_key)
+    green.green_task(self.protocol.channel.queue_bind)(
+        exchange=Protocol.EXCHANGE_NAME,
+        queue=self.player.user.queue_name,
+        routing_key=routing_key)
 
 
 class SockJSContext(object):
-  @property
-  def application(self):
-    return self.protocol.application
-
   def __init__(self, protocol, player):
     self.protocol = protocol
     self.player = player
 
+  @property
+  def application(self):
+    return self.protocol.application
+
   def send(self, message):
-    self.socket.send(json.dumps(message))
+    self.protocol.socket.send(json.dumps(message))
 
   def close(self):
-    self.socket.close()
+    self.protocol.socket.close()

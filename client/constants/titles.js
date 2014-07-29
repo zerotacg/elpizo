@@ -1,4 +1,4 @@
-export var creature = {
+export var actor = {
     "human": "Human",
     "wyrm": "Wyrm"
 };

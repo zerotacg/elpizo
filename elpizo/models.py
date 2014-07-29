@@ -30,7 +30,7 @@ class Realm(Base):
 
   @property
   def routing_key(self):
-    return "realms.{realm_id}".format(realm_id=self.realm_id)
+    return "realms.{realm_id}".format(realm_id=self.id)
 
 
 class Region(Base):
@@ -68,7 +68,7 @@ class LocationMixin(object):
   @declared_attr
   def region(cls):
     return relationship("Region",
-        primaryjoin=lambda: 
+        primaryjoin=lambda:
             (cls.realm_id == remote(Realm.id)) &
             (Region.realm_id == remote(Realm.id)) &
             (cls.arx == foreign(Region.arx)) & (cls.ary == foreign(Region.ary)),

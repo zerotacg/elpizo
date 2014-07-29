@@ -42,7 +42,7 @@ class AdmitHandler(RequestHandler):
 
     self.application.sqla_session.commit()
 
-    credentials = "user:{}".format(user.id)
+    credentials = "user.{}".format(user.id)
 
     token = mint.mint(credentials.encode("utf-8"))
     self.set_cookie("elpizo_token", base64.b64encode(token))
