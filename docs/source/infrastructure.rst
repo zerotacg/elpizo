@@ -49,6 +49,12 @@ routing key:
 A connection to RabbitMQ declares the direct exchange and binds the associated
 player, region, and chat room routing keys to its queues.
 
+Greenlet
+~~~~~~~~
+The realm server makes extensive use of Greenlet -- a green thread library. This
+masquerades asynchronous calls as synchronous calls by allowing green threads to
+yield to each other.
+
 NPC Server
 ----------
 A supplementary NPC server handles the execution of NPC behaviors -- NPCs
