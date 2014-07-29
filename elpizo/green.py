@@ -1,6 +1,5 @@
 import greenlet
 import functools
-import sys
 
 from tornado.concurrent import Future
 from tornado.gen import Task
@@ -72,9 +71,22 @@ def green_root(f):
   return _wrapper
 
 
+@green
+def sleep(n, ioloop=None):
+  """
+  Cause a greenlet to sleep for n seconds.
+  """
+  if ioloop is None:
+    ioloop = IOLoop.instance()
+
+  fut = Future()
+  ioloop.call_later(n, functools.partial(fut.set_result, None))
+  return fut
+
+
 class Event(object):
   """
-  A green version of a threading.Event, which uses greenlets.
+  A green version of a threading.Event.
   """
 
   def __init__(self, ioloop=None):
@@ -82,7 +94,7 @@ class Event(object):
       ioloop = IOLoop.instance()
 
     self.ioloop = ioloop
-    self._fut = Future()
+    self.clear()
 
   def is_set(self):
     return self._fut.done()
@@ -90,5 +102,12 @@ class Event(object):
   def set(self):
     self._fut.set_result(None)
 
-  def wait(self):
-    return green(lambda: self._fut, ioloop=self.ioloop)()
+  def clear(self):
+    self._fut = Future()
+
+  def wait(self, timeout=None):
+    if timeout is None:
+      green(lambda: self._fut, ioloop=self.ioloop)()
+    else:
+      sleep(timeout, ioloop=self.ioloop)
+    return self.is_set()
