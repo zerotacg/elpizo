@@ -25,8 +25,8 @@ class Realm(Base):
   id = default_pkey()
   name = sqlalchemy.Column(types.String, nullable=False)
 
-  width = sqlalchemy.Column(types.Integer, nullable=False)
-  height = sqlalchemy.Column(types.Integer, nullable=False)
+  aw = sqlalchemy.Column(types.Integer, nullable=False)
+  ah = sqlalchemy.Column(types.Integer, nullable=False)
 
   @property
   def routing_key(self):

@@ -3,17 +3,6 @@ export var actor = {
     "wyrm": "Wyrm"
 };
 
-export var building = {
-    "house": "House",
-    "windmill": "Windmill"
-};
-
-export var item = {
-};
-
-export var facility = {
-};
-
 export var terrain = {
     "ocean": "Ocean",
     "coast": "Coast",

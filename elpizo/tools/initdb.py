@@ -27,15 +27,15 @@ def initialize_actor_kinds(app):
 
 
 def initialize_realm(app):
-  realm = Realm(name="Windvale", width=128, height=128)
+  realm = Realm(name="Windvale", aw=128, ah=128)
   app.sqla.add(realm)
 
   logging.info("Created realm.")
 
-  for ary in range(realm.height // Region.SIZE):
-    for arx in range(realm.width // Region.SIZE):
+  for ary in range(realm.ah // Region.SIZE):
+    for arx in range(realm.aw // Region.SIZE):
       region = Region(arx=arx, ary=ary, realm=realm,
-                      corners=[0] * ((realm.height + 1) * (realm.width + 1)))
+                      corners=[0] * ((realm.ah + 1) * (realm.aw + 1)))
       app.sqla.add(region)
   logging.info("Created realm regions.")
 

@@ -1,3 +1,7 @@
+export function repeat(n, f) {
+  return Array.apply(null, new Array(n)).map(f);
+}
+
 export function nubStrings(xs) {
   var seen = {};
   var ys = [];
@@ -11,12 +15,9 @@ export function nubStrings(xs) {
 }
 
 export function countingSort(numBuckets, xs, f) {
-  var buckets = new Array(numBuckets);
-  for (var i = 0; i < numBuckets; ++i) {
-    buckets[i] = [];
-  }
+  var buckets = repeat(numBuckets, () => []);;
   xs.forEach((x) => {
     buckets[f(x)] = x;
   });
-  return buckets;
+  return [].concat.apply([], buckets);
 }

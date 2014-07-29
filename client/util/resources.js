@@ -10,7 +10,7 @@ export function loadImage(src) {
   });
 }
 
-class Resources {
+export class Resources {
   constructor() {
     this._resources = {};
   }
@@ -31,5 +31,3 @@ class Resources {
     return this._resources[name] || null;
   }
 }
-
-export var resources = new Resources();

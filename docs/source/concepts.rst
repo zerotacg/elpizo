@@ -248,7 +248,7 @@ Absolute corner coordinates are computed by finding the coordinate of their
 parent region, multiplying by the region size, and adding the relative corner
 coordinate. These are always computed.
 
-Viewport Coordinates (*vx*, *vy*)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-These are the coordinates used in screen-space, e.g. 1 unit of *vx*/*vy* is 1
+Screen Coordinates (*sx*, *sy*)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+These are the coordinates used in screen-space, e.g. 1 unit of *sx*/*sy* is 1
 exactly pixel.

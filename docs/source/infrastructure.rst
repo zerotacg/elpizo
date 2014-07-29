@@ -111,7 +111,7 @@ Entities
 ++++++++
 A bounding-box check is performed to cull all entities that are not on screen.
 Entities will be rendered iff their bounding box intersects the viewport's
-bounding box. They are ordered by their ay coordinate (or vy, as entities culled
+bounding box. They are ordered by their ay coordinate (or sy, as entities culled
 off the screen don't matter), such that a higher ay indicates an object is more
 in front.
 

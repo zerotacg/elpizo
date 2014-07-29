@@ -9,8 +9,8 @@ from sqlalchemy.orm import sessionmaker
 from tornado.web import Application, RequestHandler, StaticFileHandler
 
 from . import endpoints
+from .exports import get_exports
 from .mint import Mint
-from .models import ActorKind
 from .net import Connection, Router
 
 
@@ -20,18 +20,9 @@ class GameHandler(RequestHandler):
 
 
 class ExportsHandler(RequestHandler):
-  def _get_exports(self):
-    return {
-        "names": {
-            "actor": {
-                actor.id: actor.name
-                for actor in self.application.sqla.query(ActorKind)}
-        }
-    }
-
   def get(self):
     self.set_header("Content-Type", "application/javascript")
-    self.finish("window._exports=" + json.dumps(self._get_exports()))
+    self.finish("window._exports=" + json.dumps(get_exports(self.application)))
 
 
 class Application(Application):
