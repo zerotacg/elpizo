@@ -2,7 +2,6 @@ import greenlet
 import functools
 
 from tornado.concurrent import Future
-from tornado.gen import Task
 from tornado.ioloop import IOLoop
 
 
@@ -51,11 +50,15 @@ def green_task(f, callback_name="callback", ioloop=None):
   transparent.
   """
 
+  @functools.wraps(f)
+  @functools.partial(green, ioloop=ioloop)
   def _wrapper(*args, **kwargs):
-    kwargs[callback_name] = kwargs.pop("callback")
+    fut = Future()
+    kwargs[callback_name] = fut.set_result
     f(*args, **kwargs)
+    return fut
 
-  return green(functools.partial(Task, _wrapper), ioloop)
+  return _wrapper
 
 
 def green_root(f):

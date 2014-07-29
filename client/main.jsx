@@ -3,7 +3,7 @@
 module React from "react";
 module App from "./app.jsx";
 
-//React.renderComponent(<App />, document.getElementById("elpizo"));
+React.renderComponent(<App />, document.getElementById("elpizo"));
 
 import {Realm, Region} from "./map";
 import {Renderer} from "./renderer";
