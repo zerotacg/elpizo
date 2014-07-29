@@ -5,6 +5,32 @@ from tornado.concurrent import Future
 from tornado.ioloop import IOLoop
 
 
+def wait_for_future(fut, ioloop=None):
+  """
+  Wait for a future to complete.
+  """
+
+  if ioloop is None:
+    ioloop = IOLoop.instance()
+
+  g_self = greenlet.getcurrent()
+  assert g_self.parent is not None, "there is no parent greenlet"
+
+  # We add the callback to the IOLoop, rather than directly switching the
+  # greenlet. This is in case we acquired the future through other means (e.g.
+  # via a ThreadPoolExecutor) and are in a different thread -- greenlets can
+  # only run in the same thread.
+  fut.add_done_callback(functools.partial(ioloop.add_callback, g_self.switch))
+
+  # We switch to the parent greenlet, while we wait for the child greenlet to
+  # switch us back in.
+  g_self.parent.switch()
+
+  # The child greenlet has switched us back in and the future should now be
+  # fulfilled.
+  assert fut.done(), "future was not done when it returned from the greenlet"
+
+
 def green(f, ioloop=None):
   """
   Wrap a future-returning function to use greenlets to resolve the future, such
@@ -15,30 +41,10 @@ def green(f, ioloop=None):
   turn coroutines into synchronous functions.
   """
 
-  if ioloop is None:
-    ioloop = IOLoop.instance()
-
   @functools.wraps(f)
   def _wrapper(*args, **kwargs):
-    g_self = greenlet.getcurrent()
-
-    assert g_self.parent is not None, "there is no parent greenlet"
-
     fut = f(*args, **kwargs)
-
-    # We add the callback to the IOLoop, rather than directly switching the
-    # greenlet. This is in case we acquired the future through other means (e.g.
-    # via a ThreadPoolExecutor) and are in a different thread -- greenlets can
-    # only run in the same thread.
-    fut.add_done_callback(functools.partial(ioloop.add_callback, g_self.switch))
-
-    # We switch to the parent greenlet, while we wait for the child greenlet to
-    # switch us back in.
-    g_self.parent.switch()
-
-    # The child greenlet has switched us back in and the future should now be
-    # fulfilled.
-    assert fut.done(), "future was not done when it returned from the greenlet"
+    wait_for_future(fut, ioloop=ioloop)
     return fut.result()
 
   return _wrapper
@@ -46,17 +52,16 @@ def green(f, ioloop=None):
 
 def green_task(f, callback_name="callback", ioloop=None):
   """
-  This replaces Tornado's Tasks to use green such that futures are
-  transparent.
+  This replaces Tornado's Tasks to use green such that futures are transparent.
   """
 
   @functools.wraps(f)
-  @functools.partial(green, ioloop=ioloop)
   def _wrapper(*args, **kwargs):
     fut = Future()
     kwargs[callback_name] = fut.set_result
     f(*args, **kwargs)
-    return fut
+    wait_for_future(fut, ioloop=ioloop)
+    return fut.result()
 
   return _wrapper
 
@@ -110,7 +115,7 @@ class Event(object):
 
   def wait(self, timeout=None):
     if timeout is None:
-      green(lambda: self._fut, ioloop=self.ioloop)()
+      wait_for_future(self._fut, ioloop=self.ioloop)
     else:
       sleep(timeout, ioloop=self.ioloop)
     return self.is_set()
