@@ -95,3 +95,13 @@ Region.TERRAIN_PREDECENCES = [
     "tropical_rain_forest",
     "lake", "river", "lakeshore"
 ];
+
+export class Entity {
+  constructor(id, kind, type, ax, ay) {
+    this.id = id;
+    this.kind = kind;
+    this.type = type;
+    this.ax = ax;
+    this.ay = ay;
+  }
+}

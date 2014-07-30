@@ -10,16 +10,16 @@ def socket_chat(mq, message):
 
   if ns not in ["chatrooms", "actors"]:
     mq.send({
-      "type": "error",
-      "text": "unknown chat namespace: {ns}".format(ns=ns)
+        "type": "error",
+        "text": "unknown chat namespace: {ns}".format(ns=ns)
     })
     return
 
   mq.publish(target, {
-    "type": "chat",
-    "origin": mq.player.actor.name,
-    "target": target,
-    "text": text
+      "type": "chat",
+      "origin": mq.player.actor.name,
+      "target": target,
+      "text": text
   })
 
 

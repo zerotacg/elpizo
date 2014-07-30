@@ -1,7 +1,9 @@
-import {Region} from "./map";
-import {countingSort} from "./util/collections";
-import {hasOwnProp, extend} from "./util/objects";
-module coords from "./util/coords";
+import {Region} from "../map";
+import {countingSort} from "../util/collections";
+import {hasOwnProp, extend} from "../util/objects";
+module coords from "../util/coords";
+
+module entityDefs from "../constants/entitydefs";
 
 export class Renderer {
   prepareContext(ctx) {
@@ -41,7 +43,9 @@ export class Renderer {
 
     this.resources = resources;
     this.realm = null;
+
     this.regionTerrainCache = {};
+    this.entitySprites = {};
   }
 
   absoluteToScreenCoords(ax, ay) {
@@ -185,15 +189,26 @@ export class Renderer {
 
     // We use counting sort to render entities as it is asymptotically better
     // than Array#sort (O(n) + constant factor of bucket allocation).
-    countingSort(
-        numBuckets,
+    var sortedEntities = countingSort(
+        numBuckets, (entity) => entity.ay - this.aTopLeft.ay,
         realm.getAllEntities().filter(
-            (entity) => entity.ay >= this.aTopLeft.ay &&
-                        entity.ay < this.aTopLeft.ay + aWorldBounds.aTop),
-        (entity) => entity.ay - this.aTopLeft)
-        .forEach((entity) => {
-      this.renderEntity(entity, ctx);
-    })
+            (entity) => entity.ay >= aWorldBounds.aTop &&
+                        entity.ay < aWorldBounds.aBottom));
+
+    // We render in two passes -- the first pass will render all the
+    // non-overlapping parts at full opacity, and the second pass will render
+    // everything at reduced opacity for x-raying.
+    ctx.globalCompositeOperation = "xor";
+    ctx.globalAlpha = 1.0;
+    sortedEntities.forEach((entity) => {
+      this.renderEntity(entity, ctx)
+    });
+
+    ctx.globalCompositeOperation = "source-over";
+    ctx.globalAlpha = 0.5;
+    sortedEntities.forEach((entity) => {
+      this.renderEntity(entity, ctx)
+    });
   }
 
   renderRegionTerrainAsBuffer(region) {
@@ -248,7 +263,22 @@ export class Renderer {
   }
 
   renderEntity(entity, ctx) {
-    // No idea!
+    var entityDef = entityDefs[entity.kind][entity.type];
+
+    if (!hasOwnProp.call(this.entitySprites, entity.id)) {
+      this.entitySprites[entity.id] = entityDef.makeSprite();
+    }
+
+    var sOffset = this.absoluteToScreenCoords(
+        entity.ax - this.aTopLeft.ax - entityDef.baseBox.aLeft,
+        entity.ay - this.aTopLeft.ay - entityDef.baseBox.aTop);
+
+    var sprite = this.entitySprites[entity.id];
+
+    ctx.save();
+    ctx.translate(sOffset.sx, sOffset.sy);
+    sprite.render(this.resources, ctx);
+    ctx.restore();
   }
 }
 
