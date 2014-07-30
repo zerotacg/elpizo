@@ -33,7 +33,7 @@ def await(fut, ioloop=None):
   return fut.result()
 
 
-def green(f, ioloop=None):
+def async(f, ioloop=None):
   """
   Wrap a future-returning function to use greenlets to resolve the future.
   """
@@ -45,7 +45,7 @@ def green(f, ioloop=None):
   return _wrapper
 
 
-def green_task(f, callback_name="callback", ioloop=None):
+def async_task(f, callback_name="callback", ioloop=None):
   """
   This replaces Tornado's Tasks to use green such that futures are transparent.
   """
@@ -60,7 +60,7 @@ def green_task(f, callback_name="callback", ioloop=None):
   return _wrapper
 
 
-def green_root(f):
+def root(f):
   """
   Make a root greenlet. This should be done in the request handler for each
   incoming request at the highest level.

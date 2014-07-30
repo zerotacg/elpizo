@@ -27,15 +27,15 @@ class Protocol(object):
     # Set up the user's AMQP subscriptions
     queue_name = player.user.queue_name
 
-    green.green_task(self.channel.queue_delete)(queue=queue_name)
-    green.green_task(self.channel.queue_declare)(queue=queue_name,
+    green.async_task(self.channel.queue_delete)(queue=queue_name)
+    green.async_task(self.channel.queue_declare)(queue=queue_name,
                                                  exclusive=True,
                                                  auto_delete=True)
 
-    self.channel.basic_consume(self.on_amqp_message, queue=queue_name,
-                               no_ack=True, exclusive=True)
+    self.channel.basic_consume(green.root(self.on_amqp_message),
+                               queue=queue_name, no_ack=True, exclusive=True)
 
-    green.green_task(self.channel.queue_bind)(
+    green.async_task(self.channel.queue_bind)(
         exchange=self.EXCHANGE_NAME,
         queue=queue_name,
         routing_key=player.actor.routing_key)
@@ -99,10 +99,10 @@ class Connection(SockJSConnection):
     self.send(json.dumps(packet))
     self.close()
 
-  @green.green_root
+  @green.root
   def on_open(self, info):
     try:
-      self.channel = green.green_task(self.application.amqp.channel,
+      self.channel = green.async_task(self.application.amqp.channel,
                                       callback_name="on_open_callback")()
 
       # Authorize the user using a minted token.
@@ -130,7 +130,7 @@ class Connection(SockJSConnection):
       self.error(exc_info=sys.exc_info())
       logging.error("Error in on_open for SockJS connection", exc_info=e)
 
-  @green.green_root
+  @green.root
   def on_message(self, packet):
     self.protocol_event.wait()
 
@@ -140,7 +140,7 @@ class Connection(SockJSConnection):
       self.error(exc_info=sys.exc_info())
       logging.error("Error in on_message for SockJS connection", exc_info=e)
 
-  @green.green_root
+  @green.root
   def on_close(self):
     self.protocol_event.wait()
 
@@ -170,13 +170,13 @@ class AMQPContext(object):
                                         body=json.dumps(packet))
 
   def unsubscribe(self, routing_key):
-    green.green_task(self.protocol.channel.queue_unbind)(
+    green.async_task(self.protocol.channel.queue_unbind)(
         exchange=Protocol.EXCHANGE_NAME,
         queue=self.player.user.queue_name,
         routing_key=routing_key)
 
   def subscribe(self, routing_key):
-    green.green_task(self.protocol.channel.queue_bind)(
+    green.async_task(self.protocol.channel.queue_bind)(
         exchange=Protocol.EXCHANGE_NAME,
         queue=self.player.user.queue_name,
         routing_key=routing_key)

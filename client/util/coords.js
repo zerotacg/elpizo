@@ -7,13 +7,6 @@ export function absoluteToContainingRegion(ax, ay) {
   };
 }
 
-export function absoluteToBoundingRegion(ax, ay) {
-  return {
-      arw: Math.ceil(ax / Region.SIZE),
-      arh: Math.ceil(ay / Region.SIZE)
-  };
-}
-
 export function regionToAbsolute(arx, ary) {
   return {
       ax: arx * Region.SIZE,

@@ -1,5 +1,9 @@
 export function repeat(n, f) {
-  return Array.apply(null, new Array(n)).map(f);
+  var xs = new Array(n);
+  for (var i = 0; i < n; ++i) {
+    xs[i] = f();
+  }
+  return xs;
 }
 
 export function nubStrings(xs) {

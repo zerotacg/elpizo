@@ -1,12 +1,38 @@
 import {Region} from "./map";
 import {countingSort} from "./util/collections";
-import {hasOwnProp} from "./util/objects";
+import {hasOwnProp, extend} from "./util/objects";
 module coords from "./util/coords";
 
 export class Renderer {
+  prepareContext(ctx) {
+    ctx.imageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+  }
+
+  createCanvas() {
+    var canvas = document.createElement("canvas");
+    extend(canvas.style, {
+        position: "absolute",
+        left: "0px",
+        top: "0px",
+        width: "100%",
+        height: "100%"
+    });
+    return canvas;
+  }
+
   constructor(resources) {
-    this.terrainCanvas = document.createElement("canvas");
-    this.entityCanvas = document.createElement("canvas");
+    this.el = document.createElement("div");
+    this.el.style.position = "relative";
+
+    this.terrainCanvas = this.createCanvas();
+    this.terrainCanvas.style.zIndex = 0;
+    this.el.appendChild(this.terrainCanvas);
+
+    this.entityCanvas = this.createCanvas();
+    this.entityCanvas.style.zIndex = 1;
+    this.el.appendChild(this.entityCanvas);
 
     this.aTopLeft = {
         ax: 0,
@@ -33,6 +59,11 @@ export class Renderer {
   }
 
   setScreenViewportSize(sw, sh) {
+    var rect = this.el.getBoundingClientRect();
+
+    this.el.style.width = sw + "px";
+    this.el.style.height = sh + "px";
+
     this.terrainCanvas.width = sw;
     this.terrainCanvas.height = sh;
 
@@ -41,9 +72,11 @@ export class Renderer {
   }
 
   getScreenViewportSize() {
+    var rect = this.el.getBoundingClientRect();
+
     return {
-        sw: this.terrainCanvas.width,
-        sh: this.terrainCanvas.height
+        sw: rect.width,
+        sh: rect.height
     };
   }
 
@@ -53,15 +86,30 @@ export class Renderer {
         viewport.sw, viewport.sh);
 
     return {
-        aw: Math.ceil(absoluteWorldBounds.ax),
-        ah: Math.ceil(absoluteWorldBounds.ay)
+        aLeft: this.aTopLeft.ax,
+        aTop: this.aTopLeft.ay,
+        aRight: this.aTopLeft.ax + absoluteWorldBounds.ax,
+        aBottom: this.aTopLeft.ay + absoluteWorldBounds.ay,
     };
   }
 
   getRegionWorldBounds() {
-    var absoluteWorldBounds = this.getAbsoluteWorldBounds();
-    return coords.absoluteToBoundingRegion(absoluteWorldBounds.aw,
-                                           absoluteWorldBounds.ah);
+    var aBounds = this.getAbsoluteWorldBounds();
+
+    var arTopLeft = coords.absoluteToContainingRegion(
+        aBounds.aLeft,
+        aBounds.aTop);
+
+    var arBottomRight = coords.absoluteToContainingRegion(
+        aBounds.aRight,
+        aBounds.aBottom);
+
+    return {
+        arLeft: Math.floor(arTopLeft.arx),
+        arTop: Math.floor(arTopLeft.ary),
+        arRight: Math.floor(arBottomRight.arx) + 1,
+        arBottom: Math.floor(arBottomRight.ary) + 1
+    };
   }
 
   setRealm(realm) {
@@ -86,31 +134,25 @@ export class Renderer {
     var ctx = this.terrainCanvas.getContext("2d");
     ctx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
 
-    var arTopLeft = coords.absoluteToContainingRegion(-this.aTopLeft.ax,
-                                                      -this.aTopLeft.ay);
+    var arTopLeft = coords.absoluteToContainingRegion(
+        this.aTopLeft.ax,
+        this.aTopLeft.ay);
 
     var sOffset = this.absoluteToScreenCoords(
-        this.aTopLeft.ax, this.aTopLeft.ay);
+        -this.aTopLeft.ax,
+        -this.aTopLeft.ay);
 
     var arWorldBounds = this.getRegionWorldBounds();
 
-    var arRight = arTopLeft.arx + arWorldBounds.arw;
-    var arBottom = arTopLeft.ary + arWorldBounds.arh;
-
     // Only render the chunks in bounded by the viewport.
-    for (var ary = arTopLeft.ary; ary <= arBottom; ++ary) {
-      for (var arx = arTopLeft.arx; arx <= arRight; ++arx) {
+    for (var ary = arWorldBounds.arTop; ary < arWorldBounds.arBottom; ++ary) {
+      for (var arx = arWorldBounds.arLeft; arx < arWorldBounds.arRight; ++arx) {
         var aPosition = coords.regionToAbsolute(arx, ary);
         var sPosition = this.absoluteToScreenCoords(aPosition.ax, aPosition.ay);
 
         // Additional screen-space culling.
         var sLeft = Math.round(sOffset.sx + sPosition.sx);
         var sTop = Math.round(sOffset.sy + sPosition.sy);
-
-        if (sLeft + regionScreenSize.sx < 0 || sLeft >= screenViewportSize.sw ||
-            sTop + regionScreenSize.sy < 0 || sTop >= screenViewportSize.sh) {
-          continue;
-        }
 
         var key = [arx, ary].join(",");
         var region = realm.getRegion(arx, ary);
@@ -134,17 +176,20 @@ export class Renderer {
 
   renderEntities(realm) {
     var ctx = this.entityCanvas.getContext("2d");
+    this.prepareContext(ctx);
     ctx.clearRect(0, 0, this.entityCanvas.width, this.entityCanvas.height);
 
     var aWorldBounds = this.getAbsoluteWorldBounds();
 
+    var numBuckets = Math.ceil(aWorldBounds.aBottom - aWorldBounds.aTop);
+
     // We use counting sort to render entities as it is asymptotically better
     // than Array#sort (O(n) + constant factor of bucket allocation).
     countingSort(
-        aWorldBounds.ah,
+        numBuckets,
         realm.getAllEntities().filter(
             (entity) => entity.ay >= this.aTopLeft.ay &&
-                        entity.ay < this.aTopLeft.ay + aWorldBounds.ah),
+                        entity.ay < this.aTopLeft.ay + aWorldBounds.aTop),
         (entity) => entity.ay - this.aTopLeft)
         .forEach((entity) => {
       this.renderEntity(entity, ctx);
@@ -159,6 +204,7 @@ export class Renderer {
     canvas.height = size.sy;
 
     var ctx = canvas.getContext("2d");
+    this.prepareContext(ctx);
 
     region.computeTerrain().forEach((terrain, i) => {
       var rx = i % Region.SIZE;
