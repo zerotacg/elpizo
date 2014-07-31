@@ -34,6 +34,39 @@ export class Realm {
   getAllEntities() {
     return Object.keys(this.entities).map((k) => this.entities[k]);
   }
+
+  computePath(ax0, ay0, ax1, ay1) {
+    var path = [];
+
+    var dax = Math.abs(ax1 - ax0);
+    var day = Math.abs(ay1 - ay0);
+
+    var iax = ax0 < ax1 ? 1 : -1;
+    var iay = ay0 < ay1 ? 1 : -1;
+
+    var e = 0;
+
+    for (var i = 0; i < dax + day; ++i) {
+      var e1 = e + day;
+      var e2 = e - dax;
+
+      var step;
+
+      if (Math.abs(e1) < Math.abs(e2)) {
+        ax0 += iax;
+        e = e1;
+        step = {ax: iax, ay: 0};
+      } else {
+        ay0 += iay;
+        e = e2;
+        step = {ax: 0, ay: iay};
+      }
+
+      path.push(step);
+    }
+
+    return path;
+  }
 }
 
 export class Region {

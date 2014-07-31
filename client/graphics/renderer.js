@@ -1,3 +1,5 @@
+import {EventEmitter} from "events";
+
 import {Region} from "../map";
 import {countingSort} from "../util/collections";
 import {hasOwnProp, extend} from "../util/objects";
@@ -5,28 +7,13 @@ module coords from "../util/coords";
 
 module entityDefs from "../constants/entitydefs";
 
-export class Renderer {
-  prepareContext(ctx) {
-    ctx.imageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled = false;
-  }
-
-  createCanvas() {
-    var canvas = document.createElement("canvas");
-    extend(canvas.style, {
-        position: "absolute",
-        left: "0px",
-        top: "0px",
-        width: "100%",
-        height: "100%"
-    });
-    return canvas;
-  }
-
+export class Renderer extends EventEmitter {
   constructor(resources) {
+    super();
+
     this.el = document.createElement("div");
     this.el.style.position = "relative";
+    this.el.onclick = this.handleOnClick.bind(this);
 
     this.terrainCanvas = this.createCanvas();
     this.terrainCanvas.style.zIndex = 0;
@@ -48,6 +35,34 @@ export class Renderer {
     this.entitySprites = {};
   }
 
+  handleOnClick(e) {
+    var sx = e.clientX - this.sBounds.left;
+    var sy = e.clientY - this.sBounds.top;
+    var aCoords = this.screenToAbsoluteCoords(sx, sy);
+    this.emit("click", {
+        ax: Math.floor(aCoords.ax + this.aTopLeft.ax),
+        ay: Math.floor(aCoords.ay + this.aTopLeft.ay),
+    });
+  }
+
+  prepareContext(ctx) {
+    ctx.imageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.mozImageSmoothingEnabled = false;
+  }
+
+  createCanvas() {
+    var canvas = document.createElement("canvas");
+    extend(canvas.style, {
+        position: "absolute",
+        left: "0px",
+        top: "0px",
+        width: "100%",
+        height: "100%"
+    });
+    return canvas;
+  }
+
   absoluteToScreenCoords(ax, ay) {
     return {
         sx: ax * Renderer.TILE_SIZE,
@@ -63,10 +78,9 @@ export class Renderer {
   }
 
   setScreenViewportSize(sw, sh) {
-    var rect = this.el.getBoundingClientRect();
-
     this.el.style.width = sw + "px";
     this.el.style.height = sh + "px";
+    this.sBounds = this.el.getBoundingClientRect();
 
     this.terrainCanvas.width = sw;
     this.terrainCanvas.height = sh;
@@ -76,11 +90,9 @@ export class Renderer {
   }
 
   getScreenViewportSize() {
-    var rect = this.el.getBoundingClientRect();
-
     return {
-        sw: rect.width,
-        sh: rect.height
+        sw: this.sBounds.width,
+        sh: this.sBounds.height
     };
   }
 
@@ -118,15 +130,17 @@ export class Renderer {
 
   setRealm(realm) {
     this.realm = realm;
+    this.entitySprites = {};
+    this.regionTerrainCache = {};
   }
 
-  render() {
+  render(dt) {
     if (this.realm === null) {
       return;
     }
 
     this.renderTerrain(this.realm);
-    this.renderEntities(this.realm);
+    this.renderEntities(this.realm, dt);
   }
 
   renderTerrain(realm) {
@@ -178,7 +192,7 @@ export class Renderer {
     }
   }
 
-  renderEntities(realm) {
+  renderEntities(realm, dt) {
     var ctx = this.entityCanvas.getContext("2d");
     this.prepareContext(ctx);
     ctx.clearRect(0, 0, this.entityCanvas.width, this.entityCanvas.height);
@@ -201,13 +215,14 @@ export class Renderer {
     ctx.globalCompositeOperation = "xor";
     ctx.globalAlpha = 1.0;
     sortedEntities.forEach((entity) => {
-      this.renderEntity(entity, ctx)
+      this.renderEntity(entity, ctx, dt);
     });
 
     ctx.globalCompositeOperation = "source-over";
     ctx.globalAlpha = 0.5;
     sortedEntities.forEach((entity) => {
-      this.renderEntity(entity, ctx)
+      // We've already updated the sprite by dt ticks, so we don't do it again.
+      this.renderEntity(entity, ctx, 0);
     });
   }
 
@@ -262,7 +277,7 @@ export class Renderer {
     return canvas;
   }
 
-  renderEntity(entity, ctx) {
+  renderEntity(entity, ctx, dt) {
     var entityDef = entityDefs[entity.kind][entity.type];
 
     if (!hasOwnProp.call(this.entitySprites, entity.id)) {
@@ -274,6 +289,7 @@ export class Renderer {
         entity.ay - this.aTopLeft.ay - entityDef.baseBox.aTop);
 
     var sprite = this.entitySprites[entity.id];
+    sprite.update(dt);
 
     ctx.save();
     ctx.translate(sOffset.sx, sOffset.sy);
