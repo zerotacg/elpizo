@@ -10,8 +10,6 @@ import {Renderer} from "./graphics/renderer";
 import {repeat} from "./util/collections";
 import {Resources, loadImage} from "./util/resources";
 
-module coords from "./util/coords";
-
 var resources = new Resources();
 
 resources.loadBundle({
@@ -48,31 +46,18 @@ resources.loadBundle({
   var startTime = new Date().valueOf();
 
   renderer.on("click", (aCoords) => {
-    var path = realm.computePath(bob.ax, bob.ay, aCoords.ax, aCoords.ay);
-    var ax = bob.ax;
-    var ay = bob.ay;
-
-    var current = renderer.absoluteToScreenCoords(ax, ay);
-    current.sx += 16;
-    current.sy += 16;
-
-    bob.ax = aCoords.ax;
-    bob.ay = aCoords.ay;
-    renderer.render(0);
-
-    var ctx = renderer.entityCanvas.getContext("2d");
-    ctx.strokeStyle = "blue";;
-    ctx.lineWidth = 5;
-    ctx.beginPath();
-    ctx.moveTo(current.sx, current.sy);
-    path.forEach((step) => {
-      var sStep = renderer.absoluteToScreenCoords(step.ax, step.ay);
-      current.sx += sStep.sx;
-      current.sy += sStep.sy;
-      ctx.lineTo(current.sx, current.sy);
-    });
-    ctx.stroke();
+    var path = bob.moveTo(aCoords.ax, aCoords.ay);
+    console.log(path);
   });
 
-  renderer.render(0);
+  var cont = () => {
+    var currentTime = new Date().valueOf();
+    var dt = currentTime - startTime;
+    realm.update(dt);
+    renderer.render(dt);
+    window.requestAnimationFrame(cont);
+
+    startTime = currentTime;
+  };
+  cont();
 });

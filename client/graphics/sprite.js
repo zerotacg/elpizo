@@ -9,11 +9,9 @@ export class Sprite {
     this._frameIndex = 0;
   }
 
-  update(dt) {
+  render(resources, dt, ctx) {
     this._frameIndex += this.speed * dt;
-  }
 
-  render(resources, ctx) {
     var frame = this.speed > 0
                 ? this.frames[Math.floor(this._frame) % this.frames.length]
                 : this.frames[0];

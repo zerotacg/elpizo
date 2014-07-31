@@ -204,7 +204,7 @@ export class Renderer extends EventEmitter {
     // We use counting sort to render entities as it is asymptotically better
     // than Array#sort (O(n) + constant factor of bucket allocation).
     var sortedEntities = countingSort(
-        numBuckets, (entity) => entity.ay - this.aTopLeft.ay,
+        numBuckets, (entity) => Math.floor(entity.ay - this.aTopLeft.ay),
         realm.getAllEntities().filter(
             (entity) => entity.ay >= aWorldBounds.aTop &&
                         entity.ay < aWorldBounds.aBottom));
@@ -289,11 +289,10 @@ export class Renderer extends EventEmitter {
         entity.ay - this.aTopLeft.ay - entityDef.baseBox.aTop);
 
     var sprite = this.entitySprites[entity.id];
-    sprite.update(dt);
 
     ctx.save();
     ctx.translate(sOffset.sx, sOffset.sy);
-    sprite.render(this.resources, ctx);
+    sprite.render(this.resources, dt, ctx);
     ctx.restore();
   }
 }
