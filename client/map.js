@@ -5,7 +5,7 @@ function sgn(x) {
   return x < 0 ? -1 : x > 0 ? 1 : 0;
 }
 
-function computePath(ax0, ay0, ax1, ay1) {
+function computePath(ax0, ay0, ax1, ay1, d) {
   var path = [];
 
   var dax = repeat(Math.abs(ax1 - ax0), () => ({
@@ -21,9 +21,17 @@ function computePath(ax0, ay0, ax1, ay1) {
   if (dax.length > day.length) {
     [].push.apply(path, dax);
     [].push.apply(path, day);
-  } else {
+  } else if (dax.length < day.length) {
     [].push.apply(path, day);
     [].push.apply(path, dax);
+  } else {
+    if (d === 0x1 || d === 0x2) {
+      [].push.apply(path, day);
+      [].push.apply(path, dax);
+    } else if (d === 0x4 || d === 0x8) {
+      [].push.apply(path, dax);
+      [].push.apply(path, day);
+    }
   }
 
   return path;
@@ -177,7 +185,7 @@ export class Entity {
     var startAx = Math.round(this.ax + dax);
     var startAy = Math.round(this.ay + day);
 
-    var path = computePath(startAx, startAy, ax, ay);
+    var path = computePath(startAx, startAy, ax, ay, this.direction);
     [].push.apply(this.currentPath, path);
 
     return {

@@ -21,43 +21,13 @@ tiles are computed on the client side.
 Pathing
 +++++++
 Pathing is computed only in straight lines -- there is no intelligent
-pathfinding (e.g. A*). A straight line is drawn from the origin point to the
-destination via a 4-connected variant of Bresenham's algorithm, which will
-construct a path as a series of directional single-tile steps. Impassable
-terrain is checked for along the path -- a tile is impassable if more than two
-corner terrains are impassable. The paths are computed on the client side and
-sent to the server -- the path is verified first by the client, and the server
-can choose to reject it if it is invalid.
+pathfinding (e.g. A*). Two deltas are computed -- the x delta and the y delta.
+A path is drawn to the target from the player: first along the longer delta,
+then along the shorter one. In the event of a tie, the axis in which the player
+is currently aligned is chosen.
 
-::
-
-    def compute_path(x0, y0, x1, y1):
-      path = []
-
-      dx = abs(x1 - x0)
-      dy = abs(y1 - y0)
-
-      ix = 1 if x0 < x1 else -1
-      iy = 1 if y0 < y1 else -1
-
-      e = 0
-
-      for i in range(dx + dy):
-        e1 = e + dy
-        e2 = e - dx
-
-        if abs(e1) < abs(e2):
-          x0 += ix
-          e = e1
-          step = (ix, 0)
-        else:
-          y0 += iy
-          e = e2
-          step = (0, iy)
-
-        path.append(step)
-
-      return path
+**NOTE:** 4-connected Bresenham was originally specified, but the behavior of
+the algorithm is too unintuitive to players.
 
 Corners
 ~~~~~~~
