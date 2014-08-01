@@ -29,6 +29,19 @@ function computePath(ax0, ay0, ax1, ay1) {
   return path;
 }
 
+// Get the direction constant for a given axis vector.
+//
+// 0x1: N
+// 0x2: S
+// 0x4: E
+// 0x8: W
+function getDirectionConstant(dx, dy) {
+  var h = dx < 0 ? 1 : dx > 0 ? 2 : 0;
+  var l = dy < 0 ? 1 : dy > 0 ? 2 : 0;
+
+  return h << 2| l;
+}
+
 export class Realm {
   constructor(aw, ah) {
     this.aw = aw;
@@ -140,7 +153,7 @@ export class Entity {
     this.direction = direction;
 
     this.currentPath = [];
-    this.speed = 0.01;
+    this.speed = 0.005;
   }
 
   moveTo(ax, ay) {
@@ -205,6 +218,8 @@ export class Entity {
       // reflect how many partial steps we have remaining.
       if (aDistance > 0) {
         var head = this.currentPath[0];
+
+        this.direction = getDirectionConstant(head.ax, head.ay);
 
         var dax = sgn(head.ax) * aDistance;
         var day = sgn(head.ay) * aDistance;

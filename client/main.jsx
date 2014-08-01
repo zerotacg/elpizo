@@ -29,11 +29,11 @@ resources.loadBundle({
   realm.addRegion(new Region(0, 1, corners));
   realm.addRegion(new Region(1, 0, corners));
   realm.addRegion(new Region(1, 1, corners));
-  var bob = new Entity("bob", "human", "man", 2, 1);
+  var bob = new Entity("bob", "human", "man", 2, 1, 1);
   realm.addEntity(bob);
-  realm.addEntity(new Entity("foo", "tree", "oak", 2, 3));
-  realm.addEntity(new Entity("bar", "tree", "oak", 4, 3));
-  realm.addEntity(new Entity("baz", "tree", "oak", 3, 4));
+  realm.addEntity(new Entity("foo", "tree", "oak", 2, 3, 2));
+  realm.addEntity(new Entity("bar", "tree", "oak", 4, 3, 2));
+  realm.addEntity(new Entity("baz", "tree", "oak", 3, 4, 2));
   renderer.setRealm(realm);
 
   var el = renderer.el;

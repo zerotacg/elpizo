@@ -7,7 +7,39 @@ module coords from "../util/coords";
 
 module entityDefs from "../constants/entitydefs";
 
-import {Sprite} from "./sprite";
+export class Sprite {
+  constructor(def, speed) {
+    this.def = def;
+    this.speed = speed;
+    this.frameIndex = 0;
+  }
+
+  render(resources, dt, ctx) {
+    var speed = this.speed * this.def.speedFactor;
+
+    this.frameIndex += speed * dt;
+
+    var frame = this.speed > 0
+                ? this.def.frames[Math.floor(this.frameIndex) %
+                                  this.def.frames.length]
+                : this.def.frames[0];
+
+    ctx.drawImage(resources.get(this.def.resourceName),
+                  frame.sx, frame.sy,
+                  this.def.sw, this.def.sh,
+                  0, 0,
+                  this.def.sw, this.def.sh);
+  }
+
+  swapDef(def) {
+    if (this.def === def) {
+      return;
+    }
+
+    this.def = def;
+    this.frameIndex %= this.def.frames.length;
+  }
+}
 
 export class Renderer extends EventEmitter {
   constructor(resources) {
@@ -279,11 +311,28 @@ export class Renderer extends EventEmitter {
     return canvas;
   }
 
+  getSpriteDirection(direction) {
+    return ({
+      1: "n",
+      2: "s",
+      4: "e",
+      8: "w"
+    })[direction];
+  }
+
+  getSpriteState(entity) {
+    return entity.currentPath.length > 0 ? "walking" : "standing"
+  }
+
   renderEntity(entity, ctx, dt) {
     var entityDef = entityDefs[entity.kind][entity.type];
+    var spriteDef = entityDef.spriteDefs
+        [this.getSpriteState(entity)]
+        [this.getSpriteDirection(entity.direction)];
 
-    if (!hasOwnProp.call(this.entitySprites, entity.id)) {
-      this.entitySprites[entity.id] = new Sprite(entityDef.spriteDef);
+    if (!hasOwnProp.call(this.entitySprites, entity.id) ||
+        this.entitySprites[entity.id].def !== spriteDef) {
+      this.entitySprites[entity.id] = new Sprite(spriteDef, entity.speed);
     }
 
     var sOffset = this.absoluteToScreenCoords(
