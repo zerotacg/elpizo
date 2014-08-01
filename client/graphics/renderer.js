@@ -7,6 +7,8 @@ module coords from "../util/coords";
 
 module entityDefs from "../constants/entitydefs";
 
+import {Sprite} from "./sprite";
+
 export class Renderer extends EventEmitter {
   constructor(resources) {
     super();
@@ -281,7 +283,7 @@ export class Renderer extends EventEmitter {
     var entityDef = entityDefs[entity.kind][entity.type];
 
     if (!hasOwnProp.call(this.entitySprites, entity.id)) {
-      this.entitySprites[entity.id] = entityDef.makeSprite();
+      this.entitySprites[entity.id] = new Sprite(entityDef.spriteDef);
     }
 
     var sOffset = this.absoluteToScreenCoords(

@@ -131,12 +131,13 @@ Region.TERRAIN_PREDECENCES = [
 ];
 
 export class Entity {
-  constructor(id, kind, type, ax, ay) {
+  constructor(id, kind, type, ax, ay, direction) {
     this.id = id;
     this.kind = kind;
     this.type = type;
     this.ax = ax;
     this.ay = ay;
+    this.direction = direction;
 
     this.currentPath = [];
     this.speed = 0.01;
