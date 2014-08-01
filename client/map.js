@@ -182,6 +182,7 @@ export class Entity {
       }
     }
 
+    // We round this out to correct for floating point error.
     var startAx = Math.round(this.ax + dax);
     var startAy = Math.round(this.ay + day);
 
@@ -234,6 +235,8 @@ export class Entity {
 
         if (Math.abs(head.ax) <= Math.abs(dax) &&
             Math.abs(head.ay) <= Math.abs(day)) {
+          // We round this out to correct for floating point error, so we don't
+          // accumulate errors (and it's relatively accurate here.)
           this.ax = Math.round(this.ax + head.ax);
           this.ay = Math.round(this.ay + head.ay);
 
