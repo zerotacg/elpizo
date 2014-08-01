@@ -1,2 +1,2 @@
-def mq_error(socket, message):
-  socket.send(message)
+def mq_error(ctx, message):
+  ctx.send(message)

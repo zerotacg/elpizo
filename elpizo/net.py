@@ -41,31 +41,49 @@ class Protocol(object):
         routing_key=player.actor.routing_key)
 
     for on_open_hook in self.application.on_open_hooks:
-      on_open_hook(self.make_amqp_context())
+      on_open_hook(self.make_context())
+
+  def send(self, message):
+    self.socket.send(json.dumps(message))
 
   def get_player(self):
     return self.application.sqla.query(User) \
         .get(self.user_id) \
         .current_player
 
-  def make_amqp_context(self):
-    return AMQPContext(self, self.get_player())
+  def publish(self, routing_key, message):
+    self.channel.basic_publish(exchange=Protocol.EXCHANGE_NAME,
+                               routing_key=routing_key,
+                               body=json.dumps(message))
 
-  def make_sockjs_context(self):
-    return SockJSContext(self, self.get_player())
+  def unsubscribe(self, player, routing_key):
+    green.async_task(self.channel.queue_unbind)(
+        exchange=Protocol.EXCHANGE_NAME,
+        queue=player.user.queue_name,
+        routing_key=routing_key)
+
+  def subscribe(self, player, routing_key):
+    green.async_task(self.channel.queue_bind)(
+        exchange=Protocol.EXCHANGE_NAME,
+        queue=player.user.queue_name,
+        routing_key=routing_key)
+
+
+  def make_context(self):
+    return Context(self, self.get_player())
 
   def close(self):
     self.socket.close()
 
   def on_sockjs_message(self, packet):
     message = json.loads(packet)
-    mq = self.make_amqp_context()
-    self.application.sockjs_endpoints[message["type"]](mq, message)
+    ctx = self.make_context()
+    self.application.sockjs_endpoints[message["type"]](ctx, message)
 
   def on_amqp_message(self, channel, method, properties, body):
     message = json.loads(body.decode("utf-8"))
-    socket = self.make_sockjs_context()
-    self.application.amqp_endpoints[message["type"]](socket, message)
+    ctx = self.make_context()
+    self.application.amqp_endpoints[message["type"]](ctx, message)
 
   def on_close(self):
     pass
@@ -152,37 +170,7 @@ class Connection(SockJSConnection):
       logging.error("Error in on_close for SockJS connection", exc_info=e)
 
 
-class AMQPContext(object):
-  def __init__(self, protocol, player):
-    self.protocol = protocol
-    self.player = player
-
-  @property
-  def application(self):
-    return self.protocol.application
-
-  def send(self, packet):
-    self.publish(self.player.actor.routing_key, packet)
-
-  def publish(self, routing_key, packet):
-    self.protocol.channel.basic_publish(exchange=Protocol.EXCHANGE_NAME,
-                                        routing_key=routing_key,
-                                        body=json.dumps(packet))
-
-  def unsubscribe(self, routing_key):
-    green.async_task(self.protocol.channel.queue_unbind)(
-        exchange=Protocol.EXCHANGE_NAME,
-        queue=self.player.user.queue_name,
-        routing_key=routing_key)
-
-  def subscribe(self, routing_key):
-    green.async_task(self.protocol.channel.queue_bind)(
-        exchange=Protocol.EXCHANGE_NAME,
-        queue=self.player.user.queue_name,
-        routing_key=routing_key)
-
-
-class SockJSContext(object):
+class Context(object):
   def __init__(self, protocol, player):
     self.protocol = protocol
     self.player = player
@@ -192,7 +180,19 @@ class SockJSContext(object):
     return self.protocol.application
 
   def send(self, message):
-    self.protocol.socket.send(json.dumps(message))
+    self.protocol.send(message)
+
+  def publish(self, routing_key, message):
+    self.protocol.publish(routing_key, message)
+
+  def publish(self, routing_key, packet):
+    self.protocol.publish(routing_key, packet)
+
+  def unsubscribe(self, routing_key):
+    self.protocol.unsubscribe(self.player, routing_key)
+
+  def subscribe(self, routing_key):
+    self.protocol.subscribe(self.player, routing_key)
 
   def close(self):
-    self.protocol.socket.close()
+    self.protocol.close()

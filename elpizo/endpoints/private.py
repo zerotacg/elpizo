@@ -1,3 +1,3 @@
-def on_open(mq):
+def on_open(ctx):
   # Bind to the relevant channels.
-  mq.subscribe(mq.player.actor.routing_key)
+  ctx.subscribe(ctx.player.actor.routing_key)

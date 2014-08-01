@@ -1,4 +1,4 @@
-def on_open(mq):
+def on_open(ctx):
   # Bind to the relevant channels.
-  mq.subscribe(mq.player.actor.realm.routing_key)
-  mq.subscribe(mq.player.actor.region.routing_key)
+  ctx.subscribe(ctx.player.actor.realm.routing_key)
+  ctx.subscribe(ctx.player.actor.region.routing_key)

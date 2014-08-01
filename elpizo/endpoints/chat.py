@@ -1,27 +1,27 @@
-def on_open(mq):
-  mq.subscribe("chatrooms.global")
+def on_open(ctx):
+  ctx.subscribe("chatrooms.global")
 
 
-def socket_chat(mq, message):
+def socket_chat(ctx, message):
   target = message["target"]
   text = message["text"]
 
   ns, _ = target.split(".")
 
   if ns not in ["chatrooms", "actors"]:
-    mq.send({
+    ctx.send({
         "type": "error",
         "text": "unknown chat namespace: {ns}".format(ns=ns)
     })
     return
 
-  mq.publish(target, {
+  ctx.publish(target, {
       "type": "chat",
-      "origin": mq.player.actor.name,
+      "origin": ctx.player.actor.name,
       "target": target,
       "text": text
   })
 
 
-def mq_chat(socket, message):
-  socket.send(message)
+def mq_chat(ctx, message):
+  ctx.send(message)
