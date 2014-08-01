@@ -209,20 +209,20 @@ export class Renderer extends EventEmitter {
             (entity) => entity.ay >= aWorldBounds.aTop &&
                         entity.ay < aWorldBounds.aBottom));
 
-    // We render in two passes -- the first pass will render all the
-    // non-overlapping parts at full opacity, and the second pass will render
-    // everything at reduced opacity for x-raying.
-    ctx.globalCompositeOperation = "xor";
+    // Render in two passes - opaque items in the first pass, and xrayable in
+    // the second.
     ctx.globalAlpha = 1.0;
     sortedEntities.forEach((entity) => {
+      var entityDef = entityDefs[entity.kind][entity.type];
       this.renderEntity(entity, ctx, dt);
     });
 
-    ctx.globalCompositeOperation = "source-over";
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.25;
     sortedEntities.forEach((entity) => {
-      // We've already updated the sprite by dt ticks, so we don't do it again.
-      this.renderEntity(entity, ctx, 0);
+      var entityDef = entityDefs[entity.kind][entity.type];
+      if (entityDef.xrayable) {
+        this.renderEntity(entity, ctx, 0);
+      }
     });
   }
 
@@ -285,8 +285,8 @@ export class Renderer extends EventEmitter {
     }
 
     var sOffset = this.absoluteToScreenCoords(
-        entity.ax - this.aTopLeft.ax - entityDef.baseBox.aLeft,
-        entity.ay - this.aTopLeft.ay - entityDef.baseBox.aTop);
+        entity.ax - this.aTopLeft.ax - entityDef.center.ax,
+        entity.ay - this.aTopLeft.ay - entityDef.center.ay);
 
     var sprite = this.entitySprites[entity.id];
 

@@ -25,8 +25,9 @@ export class Sprite {
 }
 
 export class EntityDef {
-  constructor(makeSprite, baseBox) {
+  constructor(makeSprite, center, xrayable) {
     this.makeSprite = makeSprite;
-    this.baseBox = baseBox;
+    this.center = center;
+    this.xrayable = xrayable;
   }
 }

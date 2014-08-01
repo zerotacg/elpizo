@@ -1,4 +1,4 @@
-import {nubStrings} from "./util/collections";
+import {nubStrings, repeat} from "./util/collections";
 import {hasOwnProp} from "./util/objects";
 
 function sgn(x) {
@@ -8,31 +8,22 @@ function sgn(x) {
 function computePath(ax0, ay0, ax1, ay1) {
   var path = [];
 
-  var dax = Math.abs(ax1 - ax0);
-  var day = Math.abs(ay1 - ay0);
+  var dax = repeat(Math.abs(ax1 - ax0), () => ({
+      ax: sgn(ax1 - ax0),
+      ay: 0
+  }));
 
-  var iax = ax0 < ax1 ? 1 : -1;
-  var iay = ay0 < ay1 ? 1 : -1;
+  var day = repeat(Math.abs(ay1 - ay0), () => ({
+      ax: 0,
+      ay: sgn(ay1 - ay0)
+  }));
 
-  var e = 0;
-
-  for (var i = 0; i < dax + day; ++i) {
-    var e1 = e + day;
-    var e2 = e - dax;
-
-    var step;
-
-    if (Math.abs(e1) < Math.abs(e2)) {
-      ax0 += iax;
-      e = e1;
-      step = {ax: iax, ay: 0};
-    } else {
-      ay0 += iay;
-      e = e2;
-      step = {ax: 0, ay: iay};
-    }
-
-    path.push(step);
+  if (dax.length > day.length) {
+    [].push.apply(path, dax);
+    [].push.apply(path, day);
+  } else {
+    [].push.apply(path, day);
+    [].push.apply(path, dax);
   }
 
   return path;
@@ -172,7 +163,7 @@ export class Entity {
     var startAx = Math.round(this.ax + dax);
     var startAy = Math.round(this.ay + day);
 
-    var path = this.computePath(startAx, startAy, ax, ay);
+    var path = computePath(startAx, startAy, ax, ay);
     [].push.apply(this.currentPath, path);
 
     return {
