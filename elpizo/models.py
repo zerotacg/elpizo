@@ -177,6 +177,8 @@ class Actor(LocationMixin, Base):
 
   variant = sqlalchemy.Column(types.Integer, nullable=False)
 
+  direction = sqlalchemy.Column(types.Integer, nullable=False)
+
   level = sqlalchemy.Column(types.Integer, nullable=False)
 
   hp = sqlalchemy.Column(types.Integer, nullable=False)
@@ -191,6 +193,7 @@ class Actor(LocationMixin, Base):
         "name": self.name,
         "kind": self.kind.id,
         "variant": self.variant,
+        "direction": self.direction.
         "level": self.level,
         "hp": self.hp,
         "maxHp": 100,
