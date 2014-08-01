@@ -26,8 +26,8 @@ A path is drawn to the target from the player: first along the longer delta,
 then along the shorter one. In the event of a tie, the axis in which the player
 is currently aligned is chosen.
 
-**NOTE:** 4-connected Bresenham was originally specified, but the behavior of
-the algorithm is too unintuitive to players.
+.. note:: 4-connected Bresenham was originally specified, but the behavior of
+          the algorithm is too unintuitive to players.
 
 Corners
 ~~~~~~~
