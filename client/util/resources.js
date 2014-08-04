@@ -1,3 +1,4 @@
+import {EventEmitter} from "events";
 import {Promise} from "es6-promise";
 
 export function loadImage(src) {
@@ -10,21 +11,28 @@ export function loadImage(src) {
   });
 }
 
-export class Resources {
+export class Resources extends EventEmitter {
   constructor() {
+    super();
     this._resources = {};
   }
 
   load(name, promise) {
     return promise.then((resource) => {
       this._resources[name] = resource;
+      this.emit("resourceLoaded", {name: name, resource: resource});
       return resource;
     });
   }
 
   loadBundle(bundle) {
     var keys = Object.keys(bundle);
-    return Promise.all(keys.map((key) => this.load(key, bundle[key])));
+    return Promise.all(keys.map((key) =>
+        this.load(key, bundle[key]))).then(() => {
+      var resources = keys.map((k) => this._resources[k]);
+      this.emit("bundleLoaded", resources);
+      return resources;
+    });
   }
 
   get(name) {

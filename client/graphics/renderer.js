@@ -28,12 +28,15 @@ class Sprite {
 }
 
 export class Renderer extends EventEmitter {
-  constructor(resources) {
+  constructor(resources, parent) {
     super();
 
     this.el = document.createElement("div");
+    this.el.classList.add("renderer");
     this.el.style.position = "relative";
     this.el.onclick = this.handleOnClick.bind(this);
+
+    parent.appendChild(this.el);
 
     this.terrainCanvas = this.createCanvas();
     this.terrainCanvas.style.zIndex = 0;

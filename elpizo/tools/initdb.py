@@ -18,7 +18,7 @@ def initialize_schema(app):
 
 
 def initialize_realm(app):
-  realm = Realm(name="Windvale", aw=16, ah=16)
+  realm = Realm(name="Windvale", aw=128, ah=128)
   app.sqla.add(realm)
 
   ocean = Terrain(name="ocean")

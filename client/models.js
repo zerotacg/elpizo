@@ -10,42 +10,6 @@ export var Directions = {
     E: 3
 };
 
-function sgn(x) {
-  return x < 0 ? -1 : x > 0 ? 1 : 0;
-}
-
-function computePath(ax0, ay0, ax1, ay1, d) {
-  var path = [];
-
-  var dax = repeat(Math.abs(ax1 - ax0), () => ({
-      ax: sgn(ax1 - ax0),
-      ay: 0
-  }));
-
-  var day = repeat(Math.abs(ay1 - ay0), () => ({
-      ax: 0,
-      ay: sgn(ay1 - ay0)
-  }));
-
-  if (dax.length > day.length) {
-    [].push.apply(path, dax);
-    [].push.apply(path, day);
-  } else if (dax.length < day.length) {
-    [].push.apply(path, day);
-    [].push.apply(path, dax);
-  } else {
-    if (d === Directions.N || d === Directions.S) {
-      [].push.apply(path, day);
-      [].push.apply(path, dax);
-    } else if (d === Directions.W || d === Directions.E) {
-      [].push.apply(path, dax);
-      [].push.apply(path, day);
-    }
-  }
-
-  return path;
-}
-
 // Get the direction constant for a given axis vector.
 //
 // Returns -1 on an invalid direction.
@@ -209,8 +173,6 @@ export class Entity extends EventEmitter {
 
     this.emit("moveStart", this.position);
     this.remainder = 1;
-
-    return true;
   }
 
   update(dt) {
@@ -233,6 +195,22 @@ export class Entity extends EventEmitter {
         this.position.ax = Math.round(this.position.ax);
         this.position.ay = Math.round(this.position.ay);
         this.emit("moveEnd", this.position);
+      }
+    }
+  }
+
+  updateAsAvatar(dt, inputState, protocol) {
+    // TODO: validate timing server-side.
+    if (this.remainder === 0) {
+      var direction = inputState.isPressed(37) ? Directions.W :
+                      inputState.isPressed(38) ? Directions.N :
+                      inputState.isPressed(39) ? Directions.E :
+                      inputState.isPressed(40) ? Directions.S :
+                      null;
+
+      if (direction !== null) {
+        this.moveInDirection(direction);
+        protocol.send("move", {direction: direction});
       }
     }
   }
