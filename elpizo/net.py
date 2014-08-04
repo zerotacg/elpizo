@@ -20,6 +20,7 @@ class Protocol(object):
     self.application = application
     self.socket = socket
     self.channel = channel
+    self.transient_storage = {}
 
   def on_open(self):
     player = self.get_player()
@@ -173,6 +174,10 @@ class Context(object):
   @property
   def application(self):
     return self.protocol.application
+
+  @property
+  def transient_storage(self):
+    return self.protocol.transient_storage
 
   def send(self, message):
     self.protocol.send(message)

@@ -31,7 +31,7 @@ class Realm(Base):
 
   @property
   def routing_key(self):
-    return "realms.{realm_id}".format(realm_id=self.id)
+    return "realm.{realm_id}".format(realm_id=self.id)
 
   def to_js(self):
     return {
@@ -91,9 +91,13 @@ class Region(Base):
   corners = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
 
   @property
+  def key(self):
+    return "{realm_id}.{arx}_{ary}".format(realm_id=self.realm_id,
+                                           arx=self.arx, ary=self.ary)
+
+  @property
   def routing_key(self):
-    return "regions.{realm_id}.{arx}_{ary}".format(realm_id=self.realm_id,
-                                                   arx=self.arx, ary=self.ary)
+    return "region.{key}".format(key=self.key)
 
   @hybrid.hybrid_method
   def bounded_by(cls, a_left, a_top, a_right, a_bottom):
@@ -264,7 +268,7 @@ class Entity(LocationMixin, Base):
 
   @property
   def routing_key(self):
-    return "entities.{name}".format(name=self.name)
+    return "entity.{id}".format(id=self.id)
 
 
 User.current_player = relationship("Player",

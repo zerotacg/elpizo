@@ -10,10 +10,6 @@ def get_direction_vector(d):
   }[d]
 
 
-def on_open(ctx):
-  ctx.subscribe(ctx.player.entity.realm.routing_key)
-
-
 def socket_move(ctx, message):
   direction = message["direction"]
   dax, day = get_direction_vector(direction)

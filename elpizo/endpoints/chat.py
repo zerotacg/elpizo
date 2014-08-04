@@ -1,5 +1,6 @@
 def on_open(ctx):
   ctx.subscribe("chatroom.global")
+  ctx.subscribe("conversation.{name}".format(name=ctx.player.entity.name))
 
 
 def socket_chat(ctx, message):
@@ -8,7 +9,7 @@ def socket_chat(ctx, message):
 
   ns, _ = target.split(".")
 
-  if ns not in ["chatroom", "entity"]:
+  if ns not in ["chatroom", "conversation"]:
     ctx.send({
         "type": "error",
         "text": "unknown chat namespace: {ns}".format(ns=ns)
