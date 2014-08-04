@@ -9,10 +9,13 @@ def configure(application):
   ]
 
   application.sockjs_endpoints = {
-      "chat": chat.socket_chat
+      "chat": chat.socket_chat,
+      "viewport": private.viewport,
+      "move": move.socket_move
   }
 
   application.amqp_endpoints = {
       "chat": chat.mq_chat,
-      "error": error.mq_error
+      "error": error.mq_error,
+      "move": move.mq_move
   }

@@ -1,4 +1,4 @@
-import {Region} from "../map";
+import {Region} from "../models";
 
 export function absoluteToContainingRegion(position) {
   return {

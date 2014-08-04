@@ -35,16 +35,11 @@ class Protocol(object):
     self.channel.basic_consume(green.root(self.on_amqp_message),
                                queue=queue_name, no_ack=True, exclusive=True)
 
-    green.async_task(self.channel.queue_bind)(
-        exchange=self.EXCHANGE_NAME,
-        queue=queue_name,
-        routing_key=player.actor.routing_key)
-
     for on_open_hook in self.application.on_open_hooks:
       on_open_hook(self.make_context())
 
   def send(self, message):
-    self.socket.send(json.dumps(message))
+    self.socket.send(json.dumps(message, separators=",:"))
 
   def get_player(self):
     return self.application.sqla.query(User) \
@@ -114,7 +109,7 @@ class Connection(SockJSConnection):
         exc_info is not None:
       packet["debug_trace"] = "".join(traceback.format_exception(*exc_info))
 
-    self.send(json.dumps(packet))
+    self.send(json.dumps(packet, separators=",:"))
     self.close()
 
   @green.root

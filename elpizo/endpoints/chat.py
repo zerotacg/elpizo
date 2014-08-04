@@ -1,5 +1,5 @@
 def on_open(ctx):
-  ctx.subscribe("chatrooms.global")
+  ctx.subscribe("chatroom.global")
 
 
 def socket_chat(ctx, message):
@@ -8,7 +8,7 @@ def socket_chat(ctx, message):
 
   ns, _ = target.split(".")
 
-  if ns not in ["chatrooms", "actors"]:
+  if ns not in ["chatroom", "entity"]:
     ctx.send({
         "type": "error",
         "text": "unknown chat namespace: {ns}".format(ns=ns)
@@ -17,7 +17,7 @@ def socket_chat(ctx, message):
 
   ctx.publish(target, {
       "type": "chat",
-      "origin": ctx.player.actor.name,
+      "origin": ctx.player.entity.name,
       "target": target,
       "text": text
   })

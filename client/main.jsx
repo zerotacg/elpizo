@@ -3,12 +3,15 @@
 module React from "react";
 module App from "./app.jsx";
 
+import {Transport, Protocol} from "./util/net";
+
 //React.renderComponent(<App />, document.getElementById("elpizo"));
 
-import {Realm, Region, Entity, Directions} from "./map";
+import {Realm, Region, Entity, Directions, getDirectionVector} from "./models";
 import {Renderer} from "./graphics/renderer";
 import {repeat} from "./util/collections";
 import {Resources, loadImage} from "./util/resources";
+module names from "./constants/names";
 
 var resources = new Resources();
 
@@ -40,32 +43,15 @@ resources.loadBundle({
     "tiles.water":
         loadImage("static/img/tiles/water.png")
 }).then(function () {
+  var keysDown = {};
+  window.onkeydown = (e) => {
+    keysDown[e.which] = true;
+  };
+  window.onkeyup = (e) => {
+    delete keysDown[e.which];
+  };
+
   var renderer = new Renderer(resources);
-  var realm = new Realm({aw: 32, ah: 32});
-  var corners = repeat(17 * 17, (i) => {
-    var x = i % 17;
-    var y = Math.floor(i / 17);
-    return x == 0 || x == 16 || y == 0 || y == 16 ? "ocean" : "grassland";
-  });
-  realm.addRegion(new Region({arx: 0, ary: 0}, corners));
-  realm.addRegion(new Region({arx: 0, ary: 1}, corners));
-  realm.addRegion(new Region({arx: 1, ary: 0}, corners));
-  realm.addRegion(new Region({arx: 1, ary: 1}, corners));
-  var bob = new Entity("bob", [
-      "body.male.light",
-      "facial.beard.brown",
-      "hair.messy1.brown"
-  ], {ax: 2, ay: 1}, Directions.S, [
-      {type: "torso.shirt.white_longsleeve_male"},
-      {type: "legs.pants.teal_pants_male"},
-      {type: "feet.shoes.brown_shoes_male"}
-  ]);
-  window._bob = bob;
-  realm.addEntity(bob);
-  realm.addEntity(new Entity("foo", ["fixture.tree.oak"], {ax: 2, ay: 3}, Directions.N, []));
-  realm.addEntity(new Entity("bar", ["fixture.tree.oak"], {ax: 4, ay: 3}, Directions.N, []));
-  realm.addEntity(new Entity("baz", ["fixture.tree.oak"], {ax: 3, ay: 4}, Directions.N, []));
-  renderer.setRealm(realm);
 
   var el = renderer.el;
   el.style.position = "absolute";
@@ -74,21 +60,82 @@ resources.loadBundle({
   document.body.appendChild(el);
   renderer.setScreenViewportSize(1024, 768);
 
-  var startTime = new Date().valueOf();
-
-  renderer.on("click", (aCoords) => {
-    var path = bob.moveTo(aCoords.ax, aCoords.ay);
-    console.log(path);
+  var protocol = new Protocol(new Transport("/sockjs"));
+  protocol.transport.on("open", () => {
+    protocol.send("viewport", renderer.getAbsoluteWorldBounds())
   });
 
-  var cont = () => {
-    var currentTime = new Date().valueOf();
-    var dt = currentTime - startTime;
-    realm.update(dt);
-    renderer.render(dt);
-    window.requestAnimationFrame(cont);
+  var realm = null;
+  protocol.on("realm", (message) => {
+    realm = new Realm(message.realm.id, message.realm.name, message.realm.size);
+  });
 
-    startTime = currentTime;
-  };
-  cont();
+  protocol.on("region", (message) => {
+    if (message.region.position.realmId !== realm.id) {
+      console.warn("Got invalid region realm ID (" + message.region.realmId +
+                   ") for current realm (" + realm.id + "), discarding.");
+      return;
+    }
+    var region = new Region(
+        message.region.position,
+        message.region.corners.map((id) => names.terrain[id]));
+    realm.addRegion(region);
+  });
+
+  protocol.on("entity", (message) => {
+    if (message.entity.position.realmId !== realm.id) {
+      console.warn("Got invalid region realm ID (" +
+                   message.entity.position.realmId + ") for current realm (" +
+                   realm.id + "), discarding.");
+      return;
+    }
+    var entity = new Entity(message.entity.id, message.entity.name, [
+        "body.male.light"
+    ], message.entity.position, message.entity.direction, []);
+    realm.addEntity(entity);
+  });
+
+  protocol.on("avatar", (message) => {
+    var me = realm.getEntity(message.entityId);
+    renderer.setRealm(realm);
+
+    var startTime = new Date().valueOf() / 1000;
+    var cont = () => {
+      var currentTime = new Date().valueOf() / 1000;
+      var dt = currentTime - startTime;
+
+      // Update the realm first.
+      if (realm !== null) {
+        realm.update(dt);
+      }
+
+      // Handle some movement updates.
+      // TODO: validate timing server-side.
+      if (me.remainder === 0) {
+        var direction = keysDown[37] ? Directions.W :
+                        keysDown[38] ? Directions.N :
+                        keysDown[39] ? Directions.E :
+                        keysDown[40] ? Directions.S :
+                        null;
+
+        if (direction !== null) {
+          me.moveInDirection(direction);
+          protocol.send("move", {direction: direction});
+        }
+      }
+
+      // Now render.
+      renderer.render(dt);
+
+      startTime = currentTime;
+      window.requestAnimationFrame(cont);
+    };
+    cont();
+  });
+
+  protocol.on("move", (message) => {
+    var entity = realm.getEntity(message.origin);
+    entity.moveInDirection(message.direction);
+  });
+
 });

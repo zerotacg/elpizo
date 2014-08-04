@@ -1,6 +1,6 @@
 import {EventEmitter} from "events";
 
-import {Region, Directions} from "../map";
+import {Region, Directions} from "../models";
 import {countingSort, repeat} from "../util/collections";
 import {hasOwnProp, extend} from "../util/objects";
 module coords from "../util/coords";
@@ -312,7 +312,7 @@ export class Renderer extends EventEmitter {
   }
 
   getSpriteState(entity) {
-    return entity.currentPath.length > 0 ? "walking" : "standing"
+    return entity.remainder > 0 ? "walking" : "standing"
   }
 
   renderEntity(entity, ctx, dt, xraying) {

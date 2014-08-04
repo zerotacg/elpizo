@@ -1,11 +1,10 @@
-from .models import ActorKind
+from .models import Terrain
 
 
 def get_exports(application):
   return {
       "names": {
-          "actor": {
-              actor.id: actor.name
-              for actor in application.sqla.query(ActorKind)}
+          "terrain": {terrain.id: terrain.name
+              for terrain in application.sqla.query(Terrain)}
       }
   }

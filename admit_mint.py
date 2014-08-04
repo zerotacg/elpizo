@@ -9,7 +9,7 @@ import base64
 import logging
 
 from elpizo.mint import Mint
-from elpizo.models import User, Player, Actor
+from elpizo.models import User, Player, Entity
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -29,16 +29,16 @@ class AdmitHandler(RequestHandler):
     mint = self.application.mint
 
     user_name = self.get_argument("user")
-    actor_name = self.get_argument("actor")
+    entity_name = self.get_argument("entity")
 
     player = self.application.sqla_session.query(Player) \
-        .filter(Actor.name == actor_name,
-                Player.actor_id == Actor.id,
+        .filter(Entity.name == entity_name,
+                Player.entity_id == Entity.id,
                 Player.user_id == User.id) \
         .one()
 
     user = player.user
-    user.current_actor = player.actor
+    user.current_entity = player.entity
 
     self.application.sqla_session.commit()
 
