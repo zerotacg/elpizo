@@ -17,6 +17,7 @@ resources.loadBundle({
     "tiles/water": loadImage("static/img/tiles/water.png"),
     "entities/tree": loadImage("static/img/entities/tree.png"),
     "entities/man": loadImage("static/img/entities/man.png"),
+    "entities/man-pants": loadImage("static/img/entities/man-pants.png")
 }).then(function () {
   var renderer = new Renderer(resources);
   var realm = new Realm(32, 32);
@@ -29,11 +30,11 @@ resources.loadBundle({
   realm.addRegion(new Region(0, 1, corners));
   realm.addRegion(new Region(1, 0, corners));
   realm.addRegion(new Region(1, 1, corners));
-  var bob = new Entity("bob", "human", "man", 2, 1, 1);
+  var bob = new Entity("bob", "human", "man", 2, 1, 2, [{type: "man-pants"}]);
   realm.addEntity(bob);
-  realm.addEntity(new Entity("foo", "tree", "oak", 2, 3, 2));
-  realm.addEntity(new Entity("bar", "tree", "oak", 4, 3, 2));
-  realm.addEntity(new Entity("baz", "tree", "oak", 3, 4, 2));
+  realm.addEntity(new Entity("foo", "tree", "oak", 2, 3, 0, []));
+  realm.addEntity(new Entity("bar", "tree", "oak", 4, 3, 0, []));
+  realm.addEntity(new Entity("baz", "tree", "oak", 3, 4, 0, []));
   renderer.setRealm(realm);
 
   var el = renderer.el;

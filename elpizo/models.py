@@ -193,7 +193,7 @@ class Actor(LocationMixin, Base):
         "name": self.name,
         "kind": self.kind.id,
         "variant": self.variant,
-        "direction": self.direction.
+        "direction": self.direction,
         "level": self.level,
         "hp": self.hp,
         "maxHp": 100,

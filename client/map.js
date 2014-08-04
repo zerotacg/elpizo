@@ -39,15 +39,24 @@ function computePath(ax0, ay0, ax1, ay1, d) {
 
 // Get the direction constant for a given axis vector.
 //
-// 0x1: N
-// 0x2: S
-// 0x4: E
-// 0x8: W
+// 0: N
+// 1: W
+// 2: S
+// 3: E
+//
+// Returns -1 on an invalid direction.
 function getDirectionConstant(dx, dy) {
-  var h = dx < 0 ? 1 : dx > 0 ? 2 : 0;
-  var l = dy < 0 ? 1 : dy > 0 ? 2 : 0;
+  if (dy < 0) {
+    return 0;
+  } else if (dx < 0) {
+    return 1;
+  } else if (dy > 0) {
+    return 2;
+  } else if (dx > 0) {
+    return 3;
+  }
 
-  return h << 2| l;
+  return -1;
 }
 
 export class Realm {
@@ -152,13 +161,14 @@ Region.TERRAIN_PREDECENCES = [
 ];
 
 export class Entity {
-  constructor(id, kind, type, ax, ay, direction) {
+  constructor(id, kind, type, ax, ay, direction, equipment) {
     this.id = id;
     this.kind = kind;
     this.type = type;
     this.ax = ax;
     this.ay = ay;
     this.direction = direction;
+    this.equipment = equipment;
 
     this.currentPath = [];
     this.speed = 0.005;

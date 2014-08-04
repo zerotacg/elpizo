@@ -1,11 +1,11 @@
 import {EventEmitter} from "events";
 
 import {Region} from "../map";
-import {countingSort} from "../util/collections";
+import {countingSort, repeat} from "../util/collections";
 import {hasOwnProp, extend} from "../util/objects";
 module coords from "../util/coords";
 
-module entityDefs from "../constants/entitydefs";
+module sprites from "../assets/sprites";
 
 export class Sprite {
   constructor(def, speed) {
@@ -29,15 +29,6 @@ export class Sprite {
                   this.def.sw, this.def.sh,
                   0, 0,
                   this.def.sw, this.def.sh);
-  }
-
-  swapDef(def) {
-    if (this.def === def) {
-      return;
-    }
-
-    this.def = def;
-    this.frameIndex %= this.def.frames.length;
   }
 }
 
@@ -247,16 +238,12 @@ export class Renderer extends EventEmitter {
     // the second.
     ctx.globalAlpha = 1.0;
     sortedEntities.forEach((entity) => {
-      var entityDef = entityDefs[entity.kind][entity.type];
-      this.renderEntity(entity, ctx, dt);
+      this.renderEntity(entity, ctx, dt, false);
     });
 
     ctx.globalAlpha = 0.25;
     sortedEntities.forEach((entity) => {
-      var entityDef = entityDefs[entity.kind][entity.type];
-      if (entityDef.xrayable) {
-        this.renderEntity(entity, ctx, 0);
-      }
+      this.renderEntity(entity, ctx, 0, true);
     });
   }
 
@@ -313,10 +300,10 @@ export class Renderer extends EventEmitter {
 
   getSpriteDirection(direction) {
     return ({
-      1: "n",
-      2: "s",
-      4: "e",
-      8: "w"
+        0: "n",
+        1: "w",
+        2: "s",
+        3: "e"
     })[direction];
   }
 
@@ -324,26 +311,41 @@ export class Renderer extends EventEmitter {
     return entity.currentPath.length > 0 ? "walking" : "standing"
   }
 
-  renderEntity(entity, ctx, dt) {
-    var entityDef = entityDefs[entity.kind][entity.type];
-    var spriteDef = entityDef.spriteDefs
-        [this.getSpriteState(entity)]
-        [this.getSpriteDirection(entity.direction)];
+  renderEntity(entity, ctx, dt, xraying) {
+    var state = this.getSpriteState(entity);
+    var direction = this.getSpriteDirection(entity.direction);
 
-    if (!hasOwnProp.call(this.entitySprites, entity.id) ||
-        this.entitySprites[entity.id].def !== spriteDef) {
-      this.entitySprites[entity.id] = new Sprite(spriteDef, entity.speed);
+    var spriteDefs = [sprites[entity.kind][entity.type][state][direction]];
+
+    entity.equipment.forEach((equipment) => {
+      spriteDefs.push(sprites.equipment[equipment.type][state][direction]);
+    });
+
+    if (!hasOwnProp.call(this.entitySprites, entity.id)) {
+      this.entitySprites[entity.id] = repeat(spriteDefs.length, () =>
+          new Sprite(null, entity.speed));
     }
 
-    var sOffset = this.absoluteToScreenCoords(
-        entity.ax - this.aTopLeft.ax - entityDef.center.ax,
-        entity.ay - this.aTopLeft.ay - entityDef.center.ay);
+    spriteDefs.forEach((spriteDef, i) => {
+      if (this.entitySprites[entity.id][i].def !== spriteDef) {
+        this.entitySprites[entity.id][i] = new Sprite(spriteDef, entity.speed);
+      }
+    });
 
-    var sprite = this.entitySprites[entity.id];
+    var sOffset = this.absoluteToScreenCoords(
+        entity.ax - this.aTopLeft.ax,
+        entity.ay - this.aTopLeft.ay);
 
     ctx.save();
     ctx.translate(sOffset.sx, sOffset.sy);
-    sprite.render(this.resources, dt, ctx);
+    this.entitySprites[entity.id].forEach((sprite) => {
+      ctx.save();
+      ctx.translate(-sprite.def.center.sx, -sprite.def.center.sy);
+      if (!xraying || sprite.def.xrayable) {
+        sprite.render(this.resources, dt, ctx);
+      }
+      ctx.restore();
+    });
     ctx.restore();
   }
 }
