@@ -1,4 +1,5 @@
 import {EventEmitter} from "events";
+import {Promise} from "es6-promise";
 
 import {Renderer} from "./graphics/renderer";
 import {Transport, Protocol} from "./util/net";
