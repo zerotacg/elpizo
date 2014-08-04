@@ -319,7 +319,8 @@ export class Renderer extends EventEmitter {
     ].concat(entity.equipment.map((equipment) =>
         sprites.equipment[equipment.type][state][direction]));
 
-    if (!hasOwnProp.call(this.entitySprites, entity.id)) {
+    if (!hasOwnProp.call(this.entitySprites, entity.id) ||
+        this.entitySprites[entity.id].length != spriteDefs.length) {
       this.entitySprites[entity.id] = repeat(spriteDefs.length, () =>
           new Sprite(null, entity.speed));
     }

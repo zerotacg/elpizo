@@ -31,6 +31,7 @@ resources.loadBundle({
   realm.addRegion(new Region(1, 0, corners));
   realm.addRegion(new Region(1, 1, corners));
   var bob = new Entity("bob", "human", "man", 2, 1, 2, [{type: "man-pants"}]);
+  window._bob = bob;
   realm.addEntity(bob);
   realm.addEntity(new Entity("foo", "tree", "oak", 2, 3, 0, []));
   realm.addEntity(new Entity("bar", "tree", "oak", 4, 3, 0, []));
