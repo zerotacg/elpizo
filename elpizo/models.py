@@ -16,14 +16,14 @@ class Base(object):
 Base = declarative_base(cls=Base)
 
 
-def default_pkey():
+def basic_primary_key():
   return sqlalchemy.Column(Integer, primary_key=True, nullable=False)
 
 
 class Realm(Base):
   __tablename__ = "realms"
 
-  id = default_pkey()
+  id = basic_primary_key()
   name = sqlalchemy.Column(String, nullable=False)
 
   aw = sqlalchemy.Column(Integer, nullable=False)
@@ -47,7 +47,7 @@ class Realm(Base):
 class Terrain(Base):
   __tablename__ = "terrain"
 
-  id = default_pkey()
+  id = basic_primary_key()
   name = sqlalchemy.Column(String, nullable=False)
 
   def to_js(self):
@@ -184,7 +184,7 @@ class LocationMixin(object):
 class User(Base):
   __tablename__ = "users"
 
-  id = default_pkey()
+  id = basic_primary_key()
   name = sqlalchemy.Column(String, unique=True, nullable=False)
 
   current_entity_id = sqlalchemy.Column(
@@ -233,7 +233,7 @@ class Player(Base):
 class Entity(LocationMixin, Base):
   __tablename__ = "entities"
 
-  id = default_pkey()
+  id = basic_primary_key()
   name = sqlalchemy.Column(String, unique=True, nullable=False)
   types = sqlalchemy.Column(postgresql.ARRAY(String), nullable=False)
   direction = sqlalchemy.Column(Integer, nullable=False)
