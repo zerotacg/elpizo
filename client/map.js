@@ -237,7 +237,7 @@ export class Entity {
       // Resolve the partial step by first computing how much of the partial
       // step we need to move through, then updating the head of the path to
       // reflect how many partial steps we have remaining.
-      if (aDistance > 0) {
+      if (aDistance > 0 && this.currentPath.length > 0) {
         var head = this.currentPath[0];
 
         this.direction = getDirectionConstant(head.ax, head.ay);
