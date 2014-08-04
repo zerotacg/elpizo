@@ -1,6 +1,6 @@
 import {EventEmitter} from "events";
 
-import {Region} from "../map";
+import {Region, Directions} from "../map";
 import {countingSort, repeat} from "../util/collections";
 import {hasOwnProp, extend} from "../util/objects";
 module coords from "../util/coords";
@@ -298,12 +298,12 @@ export class Renderer extends EventEmitter {
   }
 
   getSpriteDirection(direction) {
-    return ({
-        0: "n",
-        1: "w",
-        2: "s",
-        3: "e"
-    })[direction];
+    switch (direction) {
+      case Directions.N: return "n";
+      case Directions.W: return "w";
+      case Directions.S: return "s";
+      case Directions.E: return "e";
+    }
   }
 
   getSpriteState(entity) {

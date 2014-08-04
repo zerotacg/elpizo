@@ -1,6 +1,13 @@
 import {nubStrings, repeat} from "./util/collections";
 import {hasOwnProp} from "./util/objects";
 
+export var Directions = {
+    N: 0,
+    W: 1,
+    S: 2,
+    E: 3
+};
+
 function sgn(x) {
   return x < 0 ? -1 : x > 0 ? 1 : 0;
 }
@@ -25,10 +32,10 @@ function computePath(ax0, ay0, ax1, ay1, d) {
     [].push.apply(path, day);
     [].push.apply(path, dax);
   } else {
-    if (d === 0x0 || d === 0x2) {
+    if (d === Directions.N || d === Directions.S) {
       [].push.apply(path, day);
       [].push.apply(path, dax);
-    } else if (d === 0x1 || d === 0x3) {
+    } else if (d === Directions.W || d === Directions.E) {
       [].push.apply(path, dax);
       [].push.apply(path, day);
     }
@@ -39,21 +46,16 @@ function computePath(ax0, ay0, ax1, ay1, d) {
 
 // Get the direction constant for a given axis vector.
 //
-// 0: N
-// 1: W
-// 2: S
-// 3: E
-//
 // Returns -1 on an invalid direction.
 function getDirectionConstant(dx, dy) {
   if (dy < 0) {
-    return 0;
+    return Directions.N;
   } else if (dx < 0) {
-    return 1;
+    return Directions.W;
   } else if (dy > 0) {
-    return 2;
+    return Directions.S;
   } else if (dx > 0) {
-    return 3;
+    return Directions.E;
   }
 
   return -1;
