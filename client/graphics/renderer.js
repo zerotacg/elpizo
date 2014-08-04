@@ -315,11 +315,10 @@ export class Renderer extends EventEmitter {
     var state = this.getSpriteState(entity);
     var direction = this.getSpriteDirection(entity.direction);
 
-    var spriteDefs = [sprites[entity.kind][entity.type][state][direction]];
-
-    entity.equipment.forEach((equipment) => {
-      spriteDefs.push(sprites.equipment[equipment.type][state][direction]);
-    });
+    var spriteDefs = [
+        sprites[entity.kind][entity.type][state][direction]
+    ].concat(entity.equipment.map((equipment) =>
+        sprites.equipment[equipment.type][state][direction]));
 
     if (!hasOwnProp.call(this.entitySprites, entity.id)) {
       this.entitySprites[entity.id] = repeat(spriteDefs.length, () =>
