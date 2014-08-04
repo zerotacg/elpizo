@@ -15,13 +15,9 @@ class Sprite {
   }
 
   render(resources, dt, ctx) {
-    var speed = this.speed * this.def.speedFactor;
-
-    var frame = this.def.frames[0];
-    if (speed > 0) {
-      this.frameIndex = (this.frameIndex + speed * dt) % this.def.frames.length;
-      frame = this.def.frames[Math.floor(this.frameIndex)];
-    }
+    this.frameIndex += this.speed * this.def.speedFactor * dt;
+    var frame = this.def.frames[Math.floor(this.frameIndex) %
+                                this.def.frames.length];
 
     ctx.drawImage(resources.get(this.def.resourceName),
                   frame.sx, frame.sy,
@@ -312,7 +308,7 @@ export class Renderer extends EventEmitter {
   }
 
   getSpriteState(entity) {
-    return entity.remainder > 0 ? "walking" : "standing"
+    return entity.remainder > 0 ? "walking" : "standing";
   }
 
   renderEntity(entity, ctx, dt, xraying) {
@@ -331,9 +327,7 @@ export class Renderer extends EventEmitter {
     }
 
     spriteDefs.forEach((spriteDef, i) => {
-      if (this.entitySprites[entity.id][i].def !== spriteDef) {
-        this.entitySprites[entity.id][i] = new Sprite(spriteDef, entity.speed);
-      }
+      this.entitySprites[entity.id][i].def = spriteDef;
     });
 
     var sOffset = this.absoluteToScreenCoords({
