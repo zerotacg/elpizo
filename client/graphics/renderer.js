@@ -17,12 +17,11 @@ export class Sprite {
   render(resources, dt, ctx) {
     var speed = this.speed * this.def.speedFactor;
 
-    this.frameIndex += speed * dt;
-
-    var frame = this.speed > 0
-                ? this.def.frames[Math.floor(this.frameIndex) %
-                                  this.def.frames.length]
-                : this.def.frames[0];
+    var frame = this.def.frames[0];
+    if (speed > 0) {
+      this.frameIndex += (speed * dt) % this.def.frames.length;
+      frame = this.def.frames[Math.floor(this.frameIndex)];
+    }
 
     ctx.drawImage(resources.get(this.def.resourceName),
                   frame.sx, frame.sy,
