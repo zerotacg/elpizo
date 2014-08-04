@@ -7,7 +7,7 @@ module coords from "../util/coords";
 
 module sprites from "../assets/sprites";
 
-export class Sprite {
+class Sprite {
   constructor(def, speed) {
     this.def = def;
     this.speed = speed;
@@ -19,7 +19,7 @@ export class Sprite {
 
     var frame = this.def.frames[0];
     if (speed > 0) {
-      this.frameIndex += (speed * dt) % this.def.frames.length;
+      this.frameIndex = (this.frameIndex + speed * dt) % this.def.frames.length;
       frame = this.def.frames[Math.floor(this.frameIndex)];
     }
 
