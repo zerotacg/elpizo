@@ -25,7 +25,8 @@ def await(fut, ioloop=None):
 
   # We switch to the parent greenlet, while we wait for the child greenlet to
   # switch us back in.
-  g_self.parent.switch()
+  fut2 = g_self.parent.switch()
+  assert fut2 is fut, "unexpected future received from greenlet switch"
 
   # The child greenlet has switched us back in and the future should now be
   # fulfilled.
@@ -35,7 +36,7 @@ def await(fut, ioloop=None):
 
 def async(f, ioloop=None):
   """
-  Wrap a future-returning function to use greenlets to resolve the future.
+  Wrap a function that returns a future to run synchronously via greenlets.
   """
 
   @functools.wraps(f)
@@ -47,7 +48,8 @@ def async(f, ioloop=None):
 
 def async_task(f, callback_name="callback", ioloop=None):
   """
-  This replaces Tornado's Tasks to use green such that futures are transparent.
+  Wrap a function that takes a callback parameter to run synchronously via
+  greenlets.
   """
 
   @functools.wraps(f)
@@ -77,11 +79,25 @@ def sleep(n, ioloop=None):
   """
   Cause a greenlet to sleep for n seconds.
   """
+
   if ioloop is None:
     ioloop = IOLoop.instance()
 
   fut = Future()
-  ioloop.call_later(n, functools.partial(fut.set_result, None))
+  ioloop.call_later(n, fut.set_result, None)
+  await(fut, ioloop=ioloop)
+
+
+def yield_(ioloop=None):
+  """
+  Yield control temporarily to another tick of the IOLoop.
+  """
+
+  if ioloop is None:
+    ioloop = IOLoop.instance()
+
+  fut = Future()
+  ioloop.add_callback(fut.set_result, None)
   await(fut, ioloop=ioloop)
 
 
