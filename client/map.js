@@ -25,10 +25,10 @@ function computePath(ax0, ay0, ax1, ay1, d) {
     [].push.apply(path, day);
     [].push.apply(path, dax);
   } else {
-    if (d === 0x1 || d === 0x2) {
+    if (d === 0x0 || d === 0x2) {
       [].push.apply(path, day);
       [].push.apply(path, dax);
-    } else if (d === 0x4 || d === 0x8) {
+    } else if (d === 0x1 || d === 0x3) {
       [].push.apply(path, dax);
       [].push.apply(path, day);
     }
