@@ -119,8 +119,9 @@ resources.loadBundle({
                         null;
 
         if (direction !== null) {
-          me.moveInDirection(direction);
-          protocol.send("move", {direction: direction});
+          if (me.moveInDirection(direction)) {
+            protocol.send("move", {direction: direction});
+          }
         }
       }
 

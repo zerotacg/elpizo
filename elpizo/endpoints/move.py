@@ -18,8 +18,10 @@ def socket_move(ctx, message):
   direction = message["direction"]
   dax, day = get_direction_vector(direction)
   ctx.player.entity.direction = direction
-  ctx.player.entity.ax += dax
-  ctx.player.entity.ay += day
+  ctx.player.entity.ax = min([max([0, ctx.player.entity.ax + dax]),
+                              ctx.player.entity.region.realm.aw - 1])
+  ctx.player.entity.ay = min([max([0, ctx.player.entity.ay + day]),
+                              ctx.player.entity.region.realm.ah - 1])
   ctx.application.sqla.commit()
 
   ctx.publish(ctx.player.entity.region.routing_key, {
