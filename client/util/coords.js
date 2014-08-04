@@ -1,15 +1,15 @@
 import {Region} from "../map";
 
-export function absoluteToContainingRegion(ax, ay) {
+export function absoluteToContainingRegion(position) {
   return {
-      arx: Math.floor(ax / Region.SIZE),
-      ary: Math.floor(ay / Region.SIZE)
+      arx: Math.floor(position.ax / Region.SIZE),
+      ary: Math.floor(position.ay / Region.SIZE)
   };
 }
 
-export function regionToAbsolute(arx, ary) {
+export function regionToAbsolute(position) {
   return {
-      ax: arx * Region.SIZE,
-      ay: ary * Region.SIZE
+      ax: position.arx * Region.SIZE,
+      ay: position.ary * Region.SIZE
   };
 }

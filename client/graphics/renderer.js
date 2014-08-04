@@ -62,7 +62,7 @@ export class Renderer extends EventEmitter {
   handleOnClick(e) {
     var sx = e.clientX - this.sBounds.left;
     var sy = e.clientY - this.sBounds.top;
-    var aCoords = this.screenToAbsoluteCoords(sx, sy);
+    var aCoords = this.screenToAbsoluteCoords({sx: sx, sy: sy});
     this.emit("click", {
         ax: Math.floor(aCoords.ax + this.aTopLeft.ax),
         ay: Math.floor(aCoords.ay + this.aTopLeft.ay),
@@ -87,17 +87,17 @@ export class Renderer extends EventEmitter {
     return canvas;
   }
 
-  absoluteToScreenCoords(ax, ay) {
+  absoluteToScreenCoords(position) {
     return {
-        sx: ax * Renderer.TILE_SIZE,
-        sy: ay * Renderer.TILE_SIZE
+        sx: position.ax * Renderer.TILE_SIZE,
+        sy: position.ay * Renderer.TILE_SIZE
     };
   }
 
-  screenToAbsoluteCoords(sx, sy) {
+  screenToAbsoluteCoords(position) {
     return {
-        ax: sx / Renderer.TILE_SIZE,
-        ay: sy / Renderer.TILE_SIZE
+        ax: position.sx / Renderer.TILE_SIZE,
+        ay: position.sy / Renderer.TILE_SIZE
     };
   }
 
@@ -122,8 +122,10 @@ export class Renderer extends EventEmitter {
 
   getAbsoluteWorldBounds() {
     var viewport = this.getScreenViewportSize();
-    var absoluteWorldBounds = this.screenToAbsoluteCoords(
-        viewport.sw, viewport.sh);
+    var absoluteWorldBounds = this.screenToAbsoluteCoords({
+        sx: viewport.sw,
+        sy: viewport.sh
+    });
 
     return {
         aLeft: this.aTopLeft.ax,
@@ -136,13 +138,15 @@ export class Renderer extends EventEmitter {
   getRegionWorldBounds() {
     var aBounds = this.getAbsoluteWorldBounds();
 
-    var arTopLeft = coords.absoluteToContainingRegion(
-        aBounds.aLeft,
-        aBounds.aTop);
+    var arTopLeft = coords.absoluteToContainingRegion({
+        ax: aBounds.aLeft,
+        ay: aBounds.aTop
+    });
 
-    var arBottomRight = coords.absoluteToContainingRegion(
-        aBounds.aRight,
-        aBounds.aBottom);
+    var arBottomRight = coords.absoluteToContainingRegion({
+        ax: aBounds.aRight,
+        ay: aBounds.aBottom
+    });
 
     return {
         arLeft: Math.floor(arTopLeft.arx),
@@ -171,33 +175,30 @@ export class Renderer extends EventEmitter {
     var screenViewportSize = this.getScreenViewportSize();
 
     var regionScreenSize =
-        this.absoluteToScreenCoords(Region.SIZE, Region.SIZE);
+        this.absoluteToScreenCoords({ax: Region.SIZE, ay: Region.SIZE});
 
     var ctx = this.terrainCanvas.getContext("2d");
     ctx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
 
-    var arTopLeft = coords.absoluteToContainingRegion(
-        this.aTopLeft.ax,
-        this.aTopLeft.ay);
-
-    var sOffset = this.absoluteToScreenCoords(
-        -this.aTopLeft.ax,
-        -this.aTopLeft.ay);
+    var sOffset = this.absoluteToScreenCoords({
+        ax: -this.aTopLeft.ax,
+        ay: -this.aTopLeft.ay
+    });
 
     var arWorldBounds = this.getRegionWorldBounds();
 
     // Only render the chunks in bounded by the viewport.
     for (var ary = arWorldBounds.arTop; ary < arWorldBounds.arBottom; ++ary) {
       for (var arx = arWorldBounds.arLeft; arx < arWorldBounds.arRight; ++arx) {
-        var aPosition = coords.regionToAbsolute(arx, ary);
-        var sPosition = this.absoluteToScreenCoords(aPosition.ax, aPosition.ay);
+        var sPosition = this.absoluteToScreenCoords(
+            coords.regionToAbsolute({arx: arx, ary: ary}));
 
         // Additional screen-space culling.
         var sLeft = Math.round(sOffset.sx + sPosition.sx);
         var sTop = Math.round(sOffset.sy + sPosition.sy);
 
         var key = [arx, ary].join(",");
-        var region = realm.getRegion(arx, ary);
+        var region = realm.getRegion({arx: arx, ary: ary});
 
         if (region === null) {
           continue;
@@ -228,10 +229,11 @@ export class Renderer extends EventEmitter {
     // We use counting sort to render entities as it is asymptotically better
     // than Array#sort (O(n) + constant factor of bucket allocation).
     var sortedEntities = countingSort(
-        numBuckets, (entity) => Math.floor(entity.ay - this.aTopLeft.ay),
+        numBuckets, (entity) =>
+            Math.floor(entity.position.ay - this.aTopLeft.ay),
         realm.getAllEntities().filter(
-            (entity) => entity.ay >= aWorldBounds.aTop &&
-                        entity.ay < aWorldBounds.aBottom));
+            (entity) => entity.position.ay >= aWorldBounds.aTop &&
+                        entity.position.ay < aWorldBounds.aBottom));
 
     // Render in two passes - opaque items in the first pass, and xrayable in
     // the second.
@@ -248,7 +250,7 @@ export class Renderer extends EventEmitter {
 
   renderRegionTerrainAsBuffer(region) {
     var canvas = document.createElement("canvas");
-    var size = this.absoluteToScreenCoords(Region.SIZE, Region.SIZE);
+    var size = this.absoluteToScreenCoords({ax: Region.SIZE, ay: Region.SIZE});
 
     canvas.width = size.sx;
     canvas.height = size.sy;
@@ -283,9 +285,12 @@ export class Renderer extends EventEmitter {
           var dx = [0, 1, 0, 1][index];
           var dy = [0, 0, 1, 1][index];
 
-          var s = this.absoluteToScreenCoords(rx + dx / 2, ry + dy / 2);
+          var s = this.absoluteToScreenCoords({
+              ax: rx + dx / 2,
+              ay: ry + dy / 2
+          });
 
-          ctx.drawImage(this.resources.get("tiles/" + texture),
+          ctx.drawImage(this.resources.get("tiles." + texture),
                         u * Renderer.TILE_SIZE / 2, v * Renderer.TILE_SIZE / 2,
                         Renderer.TILE_SIZE / 2, Renderer.TILE_SIZE / 2,
                         s.sx, s.sy,
@@ -314,10 +319,10 @@ export class Renderer extends EventEmitter {
     var state = this.getSpriteState(entity);
     var direction = this.getSpriteDirection(entity.direction);
 
-    var spriteDefs = [
-        sprites[entity.kind][entity.type][state][direction]
-    ].concat(entity.equipment.map((equipment) =>
-        sprites.equipment[equipment.type][state][direction]));
+    var spriteDefs = entity.types.map((type) =>
+        sprites[type][state][direction]
+    ).concat(entity.equipment.map((equipment) =>
+        sprites[equipment.type][state][direction]));
 
     if (!hasOwnProp.call(this.entitySprites, entity.id) ||
         this.entitySprites[entity.id].length != spriteDefs.length) {
@@ -331,9 +336,10 @@ export class Renderer extends EventEmitter {
       }
     });
 
-    var sOffset = this.absoluteToScreenCoords(
-        entity.ax - this.aTopLeft.ax,
-        entity.ay - this.aTopLeft.ay);
+    var sOffset = this.absoluteToScreenCoords({
+        ax: entity.position.ax - this.aTopLeft.ax,
+        ay: entity.position.ay - this.aTopLeft.ay
+    });
 
     ctx.save();
     ctx.translate(sOffset.sx, sOffset.sy);

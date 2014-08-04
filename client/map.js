@@ -62,9 +62,8 @@ function getDirectionConstant(dx, dy) {
 }
 
 export class Realm {
-  constructor(aw, ah) {
-    this.aw = aw;
-    this.ah = ah;
+  constructor(size) {
+    this.size = size;
 
     this.regions = {};
     this.entities = {};
@@ -78,8 +77,8 @@ export class Realm {
     delete this.regions[region.getKey()];
   }
 
-  getRegion(arx, ary) {
-    var key = [arx, ary].join(",");
+  getRegion(position) {
+    var key = [position.arx, position.ary].join(",");
     return hasOwnProp.call(this.regions, key) ? this.regions[key] : null;
   }
 
@@ -103,14 +102,13 @@ export class Realm {
 }
 
 export class Region {
-  constructor(arx, ary, corners) {
-    this.arx = arx;
-    this.ary = ary;
+  constructor(position, corners) {
+    this.position = position;
     this.corners = corners;
   }
 
   getKey() {
-    return [this.arx, this.ary].join(",");
+    return [this.position.arx, this.position.ary].join(",");
   }
 
   computeTerrain() {
@@ -163,17 +161,15 @@ Region.TERRAIN_PREDECENCES = [
 ];
 
 export class Entity {
-  constructor(id, kind, type, ax, ay, direction, equipment) {
+  constructor(id, types, position, direction, equipment) {
     this.id = id;
-    this.kind = kind;
-    this.type = type;
-    this.ax = ax;
-    this.ay = ay;
+    this.types = types;
+    this.position = position;
     this.direction = direction;
     this.equipment = equipment;
 
     this.currentPath = [];
-    this.speed = 0.005;
+    this.speed = 0.0025;
   }
 
   moveTo(ax, ay) {
@@ -195,8 +191,8 @@ export class Entity {
     }
 
     // We round this out to correct for floating point error.
-    var startAx = Math.round(this.ax + dax);
-    var startAy = Math.round(this.ay + day);
+    var startAx = Math.round(this.position.ax + dax);
+    var startAy = Math.round(this.position.ay + day);
 
     var path = computePath(startAx, startAy, ax, ay, this.direction);
     [].push.apply(this.currentPath, path);
@@ -229,8 +225,8 @@ export class Entity {
       // Resolve all the whole path steps.
       while (numSteps > 0) {
         var step = this.currentPath.shift();
-        this.ax += step.ax;
-        this.ay += step.ay
+        this.position.ax += step.ax;
+        this.position.ay += step.ay
         --numSteps;
       }
 
@@ -249,13 +245,13 @@ export class Entity {
             Math.abs(head.ay) <= Math.abs(day)) {
           // We round this out to correct for floating point error, so we don't
           // accumulate errors (and it's relatively accurate here.)
-          this.ax = Math.round(this.ax + head.ax);
-          this.ay = Math.round(this.ay + head.ay);
+          this.position.ax = Math.round(this.position.ax + head.ax);
+          this.position.ay = Math.round(this.position.ay + head.ay);
 
           this.currentPath.shift();
         } else {
-          this.ax += dax;
-          this.ay += day;
+          this.position.ax += dax;
+          this.position.ay += day;
 
           head.ax -= dax;
           head.ay -= day;
