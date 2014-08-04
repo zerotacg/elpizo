@@ -89,9 +89,9 @@ resources.loadBundle({
                    realm.id + "), discarding.");
       return;
     }
-    var entity = new Entity(message.entity.id, message.entity.name, [
-        "body.male.light"
-    ], message.entity.position, message.entity.direction, []);
+    var entity = new Entity(message.entity.id, message.entity.name,
+                            message.entity.types, message.entity.position,
+                            message.entity.direction, []);
     realm.addEntity(entity);
   });
 
