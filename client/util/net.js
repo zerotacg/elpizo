@@ -1,4 +1,7 @@
 module SockJS from "./sockjs";
+module game_pb2 from "../game_pb2";
+
+import {hasOwnProp} from "./objects";
 
 import {EventEmitter} from "events";
 
@@ -26,18 +29,29 @@ export class Transport extends EventEmitter {
     };
 
     this.socket.onmessage = (e) => {
-      this.emit("message", JSON.parse(e.data));
+      this.emit("message", game_pb2.Packet.decode64(e.data));
     };
   }
 
-  send(message) {
-    this.socket.send(JSON.stringify(message));
+  send(packet) {
+    this.socket.send(packet.encode64());
   }
 
   close() {
     this.socket.close();
   }
 }
+
+var PACKETS = {};
+Object.keys(game_pb2).forEach((name) => {
+  var cls = game_pb2[name];
+  if (!hasOwnProp.call(cls.$options, "(packetType)")) {
+    return;
+  }
+
+  var packetType = game_pb2.Packet.Type[cls.$options["(packetType)"]];
+  PACKETS[packetType] = cls;
+});
 
 export class Protocol extends EventEmitter {
   constructor(transport) {
@@ -51,13 +65,18 @@ export class Protocol extends EventEmitter {
       setTimeout(this.emit.bind(this, "open"), 0);
     }
 
-    this.transport.on("message", (message) => {
-      this.emit(message.type, message);
+    this.transport.on("message", (packet) => {
+      var message = PACKETS[packet.type].decode(packet.payload);
+      console.log(message);
+      this.emit(packet.type, packet.origin, message);
     });
   }
 
   send(type, message) {
-    message.type = type;
-    this.transport.send(message);
+    this.transport.send(new game_pb2.Packet({
+        type: type,
+        payload: message.encode()
+    }));
   }
 }
+

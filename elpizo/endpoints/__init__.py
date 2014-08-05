@@ -1,4 +1,5 @@
 from . import chat, error, move, private
+from ..game_pb2 import Packet
 
 
 def configure(application):
@@ -8,13 +9,13 @@ def configure(application):
   ]
 
   application.sockjs_endpoints = {
-      "chat": chat.socket_chat,
-      "viewport": private.viewport,
-      "move": move.socket_move
+      Packet.CHAT: chat.socket_chat,
+      Packet.VIEWPORT: private.viewport,
+      Packet.MOVE: move.socket_move
   }
 
   application.amqp_endpoints = {
-      "chat": chat.mq_chat,
-      "error": error.mq_error,
-      "move": move.mq_move
+      Packet.CHAT: chat.mq_chat,
+      Packet.ERROR: error.mq_error,
+      Packet.MOVE: move.mq_move
   }

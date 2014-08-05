@@ -6,6 +6,7 @@ import {Transport, Protocol} from "./util/net";
 import {Resources} from "./util/resources";
 import {InputState} from "./util/input";
 
+module game_pb2 from "./game_pb2";
 module handlers from "./handlers";
 
 function waitFor(emitter, event) {
@@ -65,7 +66,9 @@ export class Game extends EventEmitter {
   }
 
   go() {
-    this.protocol.send("viewport", this.renderer.getAbsoluteWorldBounds());
+    this.protocol.send(
+        game_pb2.Packet.Type.VIEWPORT,
+        new game_pb2.ViewportPacket(this.renderer.getAbsoluteWorldBounds()));
 
     var startTime = new Date().valueOf() / 1000;
     var cont = () => {

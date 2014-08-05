@@ -12,6 +12,8 @@ var less = require("gulp-less");
 var moduleVisitors = require("es6-module-jstransform/visitors");
 var path = require("path");
 var reactVisitors = require("react-tools/vendor/fbtransform/visitors");
+var rename = require("gulp-rename");
+var run = require("gulp-run");
 var source = require("vinyl-source-stream");
 var sourcemaps = require("gulp-sourcemaps");
 var uglify = require("gulp-uglify");
@@ -21,7 +23,8 @@ var argv = require("yargs").argv;
 
 var paths = {
   scripts: ["client/**/*.js", "client/**/*.jsx"],
-  styles: ["client/style/**/*.less"]
+  styles: ["client/style/**/*.less"],
+  protos: ["proto/game.proto"]
 };
 
 function rebundle(bundler) {
@@ -133,6 +136,15 @@ gulp.task("styles", function () {
     .pipe(gulp.dest("elpizo/static/css"));
 });
 
+gulp.task("protos", function () {
+  return gulp.src("./proto/game.proto")
+    .pipe(run(path.join(__dirname, "node_modules", ".bin", "proto2js") +
+                        " /dev/stdin -commonjs",
+              {silent: true}))
+    .pipe(rename("game_pb2.js"))
+    .pipe(gulp.dest("client"));
+});
+
 gulp.task("watchScripts", function () {
   var bundler = configureBundler(watchify());
   bundler.on("update", function (files) {
@@ -146,8 +158,9 @@ gulp.task("watchScripts", function () {
 });
 
 gulp.task("watch", function () {
-  gulp.start("watchScripts");
   gulp.watch(paths.styles, ["styles"]);
+  gulp.watch(paths.protos, ["protos"]);
+  gulp.start("watchScripts");
 });
 
 gulp.task("default", [

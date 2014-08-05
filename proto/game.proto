@@ -1,0 +1,128 @@
+import "google/protobuf/descriptor.proto";
+
+message Origin {
+  optional uint32 id = 1;
+  optional string name = 2;
+}
+
+message Packet {
+  enum Type {
+    ERROR = 0;
+    CHAT = 1;
+    MOVE = 2;
+    AVATAR = 3;
+    REALM = 4;
+    REGION = 5;
+    VIEWPORT = 6;
+    ENTITY = 7;
+  }
+
+  optional Type type = 1;
+  optional Origin origin = 2;
+  optional bytes payload = 3;
+}
+
+extend google.protobuf.MessageOptions {
+  optional Packet.Type packetType = 50000;
+}
+
+message AbsoluteLocation {
+  optional uint32 realmId = 1;
+  optional sint32 ax = 2;
+  optional sint32 ay = 3;
+}
+
+message AbsoluteRealmLocation {
+  optional uint32 realmId = 1;
+  optional sint32 arx = 2;
+  optional sint32 ary = 3;
+}
+
+message Terrain {
+  optional uint32 id = 1;
+  optional string name = 2;
+}
+
+message Region {
+  optional AbsoluteRealmLocation location = 1;
+  repeated uint32 corners = 2;
+}
+
+message Realm {
+  message AbsoluteSize {
+    optional uint32 aw = 1;
+    optional uint32 ah = 2;
+  }
+
+  optional uint32 id = 1;
+  optional string name = 2;
+  optional AbsoluteSize size = 3;
+}
+
+message Entity {
+  optional uint32 id = 1;
+  optional string name = 2;
+  repeated string types = 3;
+  optional uint32 direction = 4;
+  optional AbsoluteLocation location = 5;
+  optional uint32 level = 6;
+  optional uint32 hp = 7;
+  optional uint32 maxHp = 8;
+  optional uint32 mp = 9;
+  optional uint32 maxMp = 10;
+  optional uint32 xp = 11;
+  optional uint32 maxXp = 12;
+}
+
+message Player {
+  optional Entity entity = 1;
+}
+
+message ErrorPacket {
+  option (packetType) = ERROR;
+
+  optional string text = 1;
+}
+
+message ChatPacket {
+  option (packetType) = CHAT;
+
+  optional string target = 1;
+  optional string text = 2;
+}
+
+message MovePacket {
+  option (packetType) = MOVE;
+
+  optional uint32 direction = 1;
+}
+
+message AvatarPacket {
+  option (packetType) = AVATAR;
+}
+
+message RealmPacket {
+  option (packetType) = REALM;
+
+  optional Realm realm = 1;
+}
+
+message RegionPacket {
+  option (packetType) = REGION;
+
+  optional Region region = 1;
+}
+
+message ViewportPacket {
+  option (packetType) = VIEWPORT;
+
+  optional sint32 aLeft = 1;
+  optional sint32 aTop = 2;
+  optional sint32 aRight = 3;
+  optional sint32 aBottom = 4;
+}
+
+message EntityPacket {
+  option (packetType) = ENTITY;
+  optional Entity entity = 1;
+}

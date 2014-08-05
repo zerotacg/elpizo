@@ -3,6 +3,8 @@ import {EventEmitter} from "events";
 import {nubStrings, repeat} from "./util/collections";
 import {hasOwnProp} from "./util/objects";
 
+module game_pb2 from "./game_pb2";
+
 export var Directions = {
     N: 0,
     W: 1,
@@ -54,8 +56,8 @@ export class Realm {
     delete this.regions[region.getKey()];
   }
 
-  getRegion(position) {
-    var key = [position.arx, position.ary].join(",");
+  getRegion(location) {
+    var key = [location.arx, location.ary].join(",");
     return hasOwnProp.call(this.regions, key) ? this.regions[key] : null;
   }
 
@@ -85,13 +87,13 @@ export class Realm {
 }
 
 export class Region {
-  constructor(position, corners) {
-    this.position = position;
+  constructor(location, corners) {
+    this.location = location;
     this.corners = corners;
   }
 
   getKey() {
-    return [this.position.arx, this.position.ary].join(",");
+    return [this.location.arx, this.location.ary].join(",");
   }
 
   computeTerrain() {
@@ -144,13 +146,13 @@ Region.TERRAIN_PREDECENCES = [
 ];
 
 export class Entity extends EventEmitter {
-  constructor(id, name, types, position, direction, equipment) {
+  constructor(id, name, types, location, direction, equipment) {
     super();
 
     this.id = id;
     this.name = name;
     this.types = types;
-    this.position = position;
+    this.location = location;
     this.direction = direction;
 
     // TODO: work this out
@@ -164,14 +166,14 @@ export class Entity extends EventEmitter {
   moveInDirection(direction) {
     // Move the entity one tile in an axis direction.
     //
-    // It will forcibly normalize the position (may be janky, but will always be
+    // It will forcibly normalize the location (may be janky, but will always be
     // correct).
     var unit = getDirectionVector(this.direction);
-    this.position.ax = Math.round(this.position.ax + unit.ax * this.remainder);
-    this.position.ay = Math.round(this.position.ay + unit.ay * this.remainder);
+    this.location.ax = Math.round(this.location.ax + unit.ax * this.remainder);
+    this.location.ay = Math.round(this.location.ay + unit.ay * this.remainder);
     this.direction = direction;
 
-    this.emit("moveStart", this.position);
+    this.emit("moveStart", this.location);
     this.remainder = 1;
   }
 
@@ -182,19 +184,19 @@ export class Entity extends EventEmitter {
 
       this.remainder -= aDistance;
 
-      this.position.ax = Math.min(
-          Math.max(0, this.position.ax + unit.ax * aDistance),
+      this.location.ax = Math.min(
+          Math.max(0, this.location.ax + unit.ax * aDistance),
           this.realm.size.aw - 1);
-      this.position.ay = Math.min(
-          Math.max(0, this.position.ay + unit.ay * aDistance),
+      this.location.ay = Math.min(
+          Math.max(0, this.location.ay + unit.ay * aDistance),
           this.realm.size.ah - 1);
 
       this.emit("moveStep", {aDistance: aDistance});
 
       if (this.remainder <= 0) {
-        this.position.ax = Math.round(this.position.ax);
-        this.position.ay = Math.round(this.position.ay);
-        this.emit("moveEnd", this.position);
+        this.location.ax = Math.round(this.location.ax);
+        this.location.ay = Math.round(this.location.ay);
+        this.emit("moveEnd", this.location);
       }
     }
   }
@@ -210,7 +212,8 @@ export class Entity extends EventEmitter {
 
       if (direction !== null) {
         this.moveInDirection(direction);
-        protocol.send("move", {direction: direction});
+        protocol.send(game_pb2.Packet.Type.MOVE,
+                      new game_pb2.MovePacket({direction: direction}));
       }
     }
   }

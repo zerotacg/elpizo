@@ -8,12 +8,15 @@ from sockjs.tornado import SockJSConnection, SockJSRouter
 from tornado.gen import coroutine
 
 from . import green
+from . import game_pb2
 from .mint import InvalidTokenError
 from .models import User
 
 
 class Protocol(object):
   EXCHANGE_NAME = "amq.direct"
+
+  PACKETS = {}
 
   def __init__(self, user_id, application, socket, channel):
     self.user_id = user_id
@@ -39,18 +42,36 @@ class Protocol(object):
     for on_open_hook in self.application.on_open_hooks:
       on_open_hook(self.make_context())
 
-  def send(self, message):
-    self.socket.send(json.dumps(message, separators=",:"))
+  @classmethod
+  def serialize_packet(cls, type, origin, message):
+    packet = game_pb2.Packet(
+        type=type,
+        payload=message.SerializeToString())
+
+    if origin is not None:
+      packet.origin.MergeFrom(origin)
+
+    return base64.b64encode(packet.SerializeToString()).decode("utf-8")
+
+  @classmethod
+  def deserialize_packet(cls, raw):
+    packet = game_pb2.Packet.FromString(base64.b64decode(raw))
+    return packet.type, packet.origin, \
+           cls.PACKETS[packet.type].FromString(packet.payload)
+
+  def send(self, type, origin, message):
+    self.socket.send(self.serialize_packet(type, origin, message))
 
   def get_player(self):
     return self.application.sqla.query(User) \
         .get(self.user_id) \
         .current_player
 
-  def publish(self, routing_key, message):
-    self.channel.basic_publish(exchange=Protocol.EXCHANGE_NAME,
-                               routing_key=routing_key,
-                               body=json.dumps(message))
+  def publish(self, routing_key, type, origin, message):
+    self.channel.basic_publish(
+        exchange=Protocol.EXCHANGE_NAME,
+        routing_key=routing_key,
+        body=self.serialize_packet(type, origin, message))
 
   def unsubscribe(self, player, routing_key):
     green.async_task(self.channel.queue_unbind)(
@@ -64,7 +85,6 @@ class Protocol(object):
         queue=player.user.queue_name,
         routing_key=routing_key)
 
-
   def make_context(self):
     return Context(self, self.get_player())
 
@@ -72,17 +92,25 @@ class Protocol(object):
     self.socket.close()
 
   def on_sockjs_message(self, packet):
-    message = json.loads(packet)
+    type, origin, message = self.deserialize_packet(packet)
     ctx = self.make_context()
-    self.application.sockjs_endpoints[message["type"]](ctx, message)
+    self.application.sockjs_endpoints[type](ctx, message)
 
   def on_amqp_message(self, channel, method, properties, body):
-    message = json.loads(body.decode("utf-8"))
+    type, origin, message = self.deserialize_packet(body)
     ctx = self.make_context()
-    self.application.amqp_endpoints[message["type"]](ctx, message)
+    self.application.amqp_endpoints[type](ctx, origin, message)
 
   def on_close(self):
     pass
+
+
+for name, descriptor in game_pb2.DESCRIPTOR.message_types_by_name.items():
+  options = descriptor.GetOptions()
+
+  if options.HasExtension(game_pb2.packetType):
+    Protocol.PACKETS[options.Extensions[game_pb2.packetType]] = \
+        getattr(game_pb2, name)
 
 
 class Router(SockJSRouter):
@@ -101,16 +129,14 @@ class Connection(SockJSConnection):
     return self.session.server.application
 
   def error(self, reason="internal server error", exc_info=None):
-    packet = {
-        "type": "error",
-        "text": reason
-    }
+    body = reason
 
     if self.application.settings.get("serve_traceback") and \
         exc_info is not None:
-      packet["debug_trace"] = "".join(traceback.format_exception(*exc_info))
+      body += "\nTraceback:\n" +  "".join(traceback.format_exception(*exc_info))
 
-    self.send(json.dumps(packet, separators=",:"))
+    self.send(Protocol.serialize_packet(
+        game_pb2.Packet.ERROR, None, game_pb2.ErrorPacket(text=body)))
     self.close()
 
   @green.root
@@ -179,14 +205,15 @@ class Context(object):
   def transient_storage(self):
     return self.protocol.transient_storage
 
-  def send(self, message):
-    self.protocol.send(message)
+  def error(self, text):
+    self.protocol.socket.error(text)
 
-  def publish(self, routing_key, message):
-    self.protocol.publish(routing_key, message)
+  def send(self, type, origin, message):
+    self.protocol.send(type, origin, message)
 
-  def publish(self, routing_key, packet):
-    self.protocol.publish(routing_key, packet)
+  def publish(self, routing_key, type, message):
+    self.protocol.publish(routing_key, type,
+                          self.player.entity.to_origin_protobuf(), message)
 
   def unsubscribe(self, routing_key):
     self.protocol.unsubscribe(self.player, routing_key)

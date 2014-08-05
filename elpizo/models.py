@@ -8,12 +8,9 @@ from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.orm import backref, relationship, Session, remote, foreign
 from sqlalchemy.types import *
 
+from . import game_pb2
 
-class Base(object):
-  def to_js(self):
-    return {}
-
-Base = declarative_base(cls=Base)
+Base = declarative_base()
 
 
 def basic_primary_key():
@@ -33,15 +30,10 @@ class Realm(Base):
   def routing_key(self):
     return "realm.{realm_id}".format(realm_id=self.id)
 
-  def to_js(self):
-    return {
-        "id": self.id,
-        "name": self.name,
-        "size": {
-            "aw": self.aw,
-            "ah": self.ah
-        }
-    }
+  def to_protobuf(self):
+    return game_pb2.Realm(id=self.id, name=self.name,
+                          size=game_pb2.Realm.AbsoluteSize(aw=self.aw,
+                                                           ah=self.ah))
 
 
 class Terrain(Base):
@@ -50,11 +42,8 @@ class Terrain(Base):
   id = basic_primary_key()
   name = sqlalchemy.Column(String, nullable=False)
 
-  def to_js(self):
-    return {
-        "id": self.id,
-        "name": self.name
-    }
+  def to_protobuf(self):
+    return game_pb2.Terrain(id=self.id, name=self.name)
 
 
 class Region(Base):
@@ -113,15 +102,11 @@ class Region(Base):
            (cls.a_top >= a_top - a_padding_h) & \
            (cls.a_bottom <= a_bottom + a_padding_h)
 
-  def to_js(self):
-    return {
-        "position": {
-            "realmId": self.realm_id,
-            "arx": self.arx,
-            "ary": self.ary,
-        },
-        "corners": self.corners
-    }
+  def to_protobuf(self):
+    return game_pb2.Region(
+        location=game_pb2.AbsoluteRealmLocation(realmId=self.realm_id,
+                                                arx=self.arx, ary=self.ary),
+        corners=self.corners)
 
 
 class LocationMixin(object):
@@ -175,14 +160,9 @@ class LocationMixin(object):
                          "realm_id", "arx", "ary", "rx", "ry"),
     )
 
-  def to_js(self):
-    return {
-        "position": {
-            "realmId": self.realm_id,
-            "ax": self.ax,
-            "ay": self.ay
-        }
-    }
+  def location_to_protobuf(self):
+    return game_pb2.AbsoluteLocation(realmId=self.realm_id,
+                                     ax=self.ax, ay=self.ay)
 
 
 class User(Base):
@@ -220,10 +200,8 @@ class Player(Base):
       primary_key=True)
   entity = relationship("Entity", backref=backref("player", uselist=False))
 
-  def to_js(self):
-    return {
-        "entity": self.entity.to_js()
-    }
+  def to_protobuf(self):
+    return game_pb2.Player(entity=self.entity.to_protobuf())
 
   @classmethod
   def by_user_id(cls, session, user_id):
@@ -247,24 +225,15 @@ class Entity(LocationMixin, Base):
   mp = sqlalchemy.Column(Integer, nullable=False)
   xp = sqlalchemy.Column(Integer, nullable=False)
 
-  def to_js(self):
-    js = super().to_js()
+  def to_protobuf(self):
+    return game_pb2.Entity(id=self.id, name=self.name, types=self.types,
+                           location=self.location_to_protobuf(),
+                           direction=self.direction, level=self.level,
+                           hp=self.hp, maxHp=100, mp=self.mp, maxMp=100,
+                           xp=self.xp, maxXp=100)
 
-    js.update({
-        "id": self.id,
-        "name": self.name,
-        "types": self.types,
-        "direction": self.direction,
-        "level": self.level,
-        "hp": self.hp,
-        "maxHp": 100,
-        "mp": self.mp,
-        "maxMp": 100,
-        "xp": self.xp,
-        "maxXp": 100,
-    })
-
-    return js
+  def to_origin_protobuf(self):
+    return game_pb2.Origin(id=self.id, name=self.name)
 
   @property
   def routing_key(self):

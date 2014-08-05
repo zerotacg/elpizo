@@ -86,17 +86,17 @@ export class Renderer extends EventEmitter {
     return canvas;
   }
 
-  absoluteToScreenCoords(position) {
+  absoluteToScreenCoords(location) {
     return {
-        sx: position.ax * Renderer.TILE_SIZE,
-        sy: position.ay * Renderer.TILE_SIZE
+        sx: location.ax * Renderer.TILE_SIZE,
+        sy: location.ay * Renderer.TILE_SIZE
     };
   }
 
-  screenToAbsoluteCoords(position) {
+  screenToAbsoluteCoords(location) {
     return {
-        ax: position.sx / Renderer.TILE_SIZE,
-        ay: position.sy / Renderer.TILE_SIZE
+        ax: location.sx / Renderer.TILE_SIZE,
+        ay: location.sy / Renderer.TILE_SIZE
     };
   }
 
@@ -192,7 +192,6 @@ export class Renderer extends EventEmitter {
         var sPosition = this.absoluteToScreenCoords(
             coords.regionToAbsolute({arx: arx, ary: ary}));
 
-        // Additional screen-space culling.
         var sLeft = Math.round(sOffset.sx + sPosition.sx);
         var sTop = Math.round(sOffset.sy + sPosition.sy);
 
@@ -229,10 +228,10 @@ export class Renderer extends EventEmitter {
     // than Array#sort (O(n) + constant factor of bucket allocation).
     var sortedEntities = countingSort(
         numBuckets, (entity) =>
-            Math.floor(entity.position.ay - this.aTopLeft.ay),
+            Math.floor(entity.location.ay - this.aTopLeft.ay),
         realm.getAllEntities().filter(
-            (entity) => entity.position.ay >= aWorldBounds.aTop &&
-                        entity.position.ay < aWorldBounds.aBottom));
+            (entity) => entity.location.ay >= aWorldBounds.aTop &&
+                        entity.location.ay < aWorldBounds.aBottom));
 
     // Render in two passes - opaque items in the first pass, and xrayable in
     // the second.
@@ -334,8 +333,8 @@ export class Renderer extends EventEmitter {
     });
 
     var sOffset = this.absoluteToScreenCoords({
-        ax: entity.position.ax - this.aTopLeft.ax,
-        ay: entity.position.ay - this.aTopLeft.ay
+        ax: entity.location.ax - this.aTopLeft.ax,
+        ay: entity.location.ay - this.aTopLeft.ay
     });
 
     ctx.save();
