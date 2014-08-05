@@ -5,7 +5,7 @@ import json
 import sys
 
 from elpizo import make_application
-from elpizo.models import Base, User, Player, Realm, Region, Entity, Terrain
+from elpizo.models import Base, User, Player, Realm, Region, Entity, Terrain, EntityType
 from elpizo.tools import mapgen
 
 
@@ -32,21 +32,39 @@ def initialize_realm(app):
       region = Region(arx=arx, ary=ary, realm=realm,
                       corners=[ocean.id] * ((realm.ah + 1) * (realm.aw + 1)))
       app.sqla.add(region)
-  logging.info("Created realm regions.")
 
   app.sqla.commit()
+  logging.info("Created realm regions.")
   return realm
 
 
-def initialize_players(app, realm):
+def initialize_entity_types(app):
+  for name in [
+      "fixture.tree.oak",
+      "body.male.light",
+      "facial.beard.brown",
+      "hair.messy1.brown",
+      "torso.shirt.white_longsleeve_male",
+      "legs.pants.teal_pants_male",
+      "feet.shoes.brown_shoes_male"
+  ]:
+    type = EntityType(name=name)
+    app.sqla.add(type)
+
+  app.sqla.commit()
+  logging.info("Created entity types.")
+
+  return {type.name: type.id for type in app.sqla.query(EntityType)}
+
+def initialize_players(app, types, realm):
   victor_hugo = User(name="victor_hugo")
   app.sqla.add(victor_hugo)
 
   valjean = Player(user=victor_hugo,
                    entity=Entity(name="Valjean", level=1,
-                                 types=["body.male.light",
-                                        "facial.beard.brown",
-                                        "hair.messy1.brown"],
+                                 types=[types["body.male.light"],
+                                        types["facial.beard.brown"],
+                                        types["hair.messy1.brown"]],
                                  direction=1,
                                  hp=100, mp=100, xp=100,
                                  realm=realm, arx=0, ary=0, rx=0, ry=0))
@@ -57,9 +75,9 @@ def initialize_players(app, realm):
 
   athos = Player(user=dumas,
                  entity=Entity(name="Athos", level=1,
-                               types=["body.male.light",
-                                      "facial.beard.brown",
-                                      "hair.messy1.brown"],
+                               types=[types["body.male.light"],
+                                      types["facial.beard.brown"],
+                                      types["hair.messy1.brown"]],
                                direction=1,
                                hp=100, mp=100, xp=10,
                                realm=realm, arx=0, ary=0, rx=0, ry=0))
@@ -67,9 +85,9 @@ def initialize_players(app, realm):
 
   aramis = Player(user=dumas,
                   entity=Entity(name="Aramis", level=1,
-                                types=["body.male.light",
-                                       "facial.beard.brown",
-                                       "hair.messy1.brown"],
+                                types=[types["body.male.light"],
+                                       types["facial.beard.brown"],
+                                       types["hair.messy1.brown"]],
                                 direction=1,
                                 hp=100, mp=100, xp=10,
                                 realm=realm, arx=0, ary=0, rx=0, ry=0))
@@ -77,9 +95,9 @@ def initialize_players(app, realm):
 
   porthos = Player(user=dumas,
                    entity=Entity(name="Porthos", level=1,
-                                 types=["body.male.light",
-                                        "facial.beard.brown",
-                                        "hair.messy1.brown"],
+                                 types=[types["body.male.light"],
+                                        types["facial.beard.brown"],
+                                        types["hair.messy1.brown"]],
                                  direction=1,
                                  hp=100, mp=100, xp=10,
                                  realm=realm, arx=0, ary=0, rx=0, ry=0))
@@ -101,7 +119,8 @@ def main():
 
   initialize_schema(app)
   realm = initialize_realm(app)
-  initialize_players(app, realm)
+  types = initialize_entity_types(app)
+  initialize_players(app, types, realm)
 
 
 if __name__ == "__main__":

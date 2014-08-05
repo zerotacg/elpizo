@@ -32,7 +32,8 @@ export function install(game) {
     }
 
     game.realm.addEntity(new Entity(
-        message.entity.id, message.entity.name, message.entity.types,
+        message.entity.id, message.entity.name,
+        message.entity.types.map((id) => names.entityTypes[id]),
         message.entity.location, message.entity.direction, []));
   });
 

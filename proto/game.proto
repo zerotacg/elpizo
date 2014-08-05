@@ -62,7 +62,7 @@ message Realm {
 message Entity {
   optional uint32 id = 1;
   optional string name = 2;
-  repeated string types = 3;
+  repeated uint32 types = 3;
   optional uint32 direction = 4;
   optional AbsoluteLocation location = 5;
   optional uint32 level = 6;

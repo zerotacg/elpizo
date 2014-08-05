@@ -40,7 +40,7 @@ class Terrain(Base):
   __tablename__ = "terrain"
 
   id = basic_primary_key()
-  name = sqlalchemy.Column(String, nullable=False)
+  name = sqlalchemy.Column(String, unique=True, nullable=False)
 
   def to_protobuf(self):
     return game_pb2.Terrain(id=self.id, name=self.name)
@@ -212,12 +212,13 @@ class Player(Base):
                 User.id == user_id) \
         .one()
 
+
 class Entity(LocationMixin, Base):
   __tablename__ = "entities"
 
   id = basic_primary_key()
   name = sqlalchemy.Column(String, unique=True, nullable=False)
-  types = sqlalchemy.Column(postgresql.ARRAY(String), nullable=False)
+  types = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
   direction = sqlalchemy.Column(Integer, nullable=False)
   level = sqlalchemy.Column(Integer, nullable=False)
 
@@ -245,3 +246,10 @@ User.current_player = relationship("Player",
                 (foreign(Player.entity_id) == Entity.id),
     viewonly=True,
     uselist=False)
+
+
+class EntityType(Base):
+  __tablename__ = "entity_types"
+
+  id = basic_primary_key()
+  name = sqlalchemy.Column(String, unique=True, nullable=False)
