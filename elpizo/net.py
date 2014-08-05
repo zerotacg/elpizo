@@ -4,8 +4,8 @@ import logging
 import sys
 import traceback
 
-from sockjs.tornado import SockJSConnection, SockJSRouter
 from tornado.gen import coroutine
+from tornado.websocket import WebSocketHandler
 
 from . import green
 from . import game_pb2
@@ -51,16 +51,17 @@ class Protocol(object):
     if origin is not None:
       packet.origin.MergeFrom(origin)
 
-    return base64.b64encode(packet.SerializeToString()).decode("utf-8")
+    return packet.SerializeToString()
 
   @classmethod
   def deserialize_packet(cls, raw):
-    packet = game_pb2.Packet.FromString(base64.b64decode(raw))
+    packet = game_pb2.Packet.FromString(raw)
     return packet.type, packet.origin, \
            cls.PACKETS[packet.type].FromString(packet.payload)
 
   def send(self, type, origin, message):
-    self.socket.send(self.serialize_packet(type, origin, message))
+    self.socket.write_message(self.serialize_packet(type, origin, message),
+                              binary=True)
 
   def get_player(self):
     return self.application.sqla.query(User) \
@@ -91,7 +92,7 @@ class Protocol(object):
   def close(self):
     self.socket.close()
 
-  def on_sockjs_message(self, packet):
+  def on_ws_message(self, packet):
     type, origin, message = self.deserialize_packet(packet)
     ctx = self.make_context()
     self.application.sockjs_endpoints[type](ctx, message)
@@ -113,20 +114,10 @@ for name, descriptor in game_pb2.DESCRIPTOR.message_types_by_name.items():
         getattr(game_pb2, name)
 
 
-class Router(SockJSRouter):
-  def __init__(self, application, *args, **kwargs):
-    self.application = application
-    super().__init__(*args, **kwargs)
-
-
-class Connection(SockJSConnection):
+class Connection(WebSocketHandler):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.protocol_event = green.Event()
-
-  @property
-  def application(self):
-    return self.session.server.application
 
   def error(self, reason="internal server error", exc_info=None):
     body = reason
@@ -135,22 +126,23 @@ class Connection(SockJSConnection):
         exc_info is not None:
       body += "\nTraceback:\n" +  "".join(traceback.format_exception(*exc_info))
 
-    self.send(Protocol.serialize_packet(
-        game_pb2.Packet.ERROR, None, game_pb2.ErrorPacket(text=body)))
+    self.write_message(
+        Protocol.serialize_packet(game_pb2.Packet.ERROR, None,
+                                  game_pb2.ErrorPacket(text=body)),
+        binary=True)
     self.close()
 
   @green.root
-  def on_open(self, info):
+  def open(self):
     try:
       self.channel = green.async_task(self.application.amqp.channel,
                                       callback_name="on_open_callback")()
 
       # Authorize the user using a minted token.
-      cookie = info.get_cookie("elpizo_token")
-      if cookie is None:
+      token = self.get_cookie("elpizo_token")
+      if token is None:
         self.error("no token found")
         return
-      token = cookie.value
 
       try:
         realm, user_id = self.application.mint.unmint(
@@ -168,17 +160,17 @@ class Connection(SockJSConnection):
       self.protocol_event.set()
     except Exception as e:
       self.error(exc_info=sys.exc_info())
-      logging.error("Error in on_open for SockJS connection", exc_info=e)
+      logging.error("Error in on_open for WebSocket connection", exc_info=e)
 
   @green.root
   def on_message(self, packet):
     self.protocol_event.wait()
 
     try:
-      self.protocol.on_sockjs_message(packet)
+      self.protocol.on_ws_message(packet)
     except Exception as e:
       self.error(exc_info=sys.exc_info())
-      logging.error("Error in on_message for SockJS connection", exc_info=e)
+      logging.error("Error in on_message for WebSocket connection", exc_info=e)
 
   @green.root
   def on_close(self):
@@ -189,7 +181,7 @@ class Connection(SockJSConnection):
         self.channel.close()
       self.protocol.on_close()
     except Exception as e:
-      logging.error("Error in on_close for SockJS connection", exc_info=e)
+      logging.error("Error in on_close for WebSocket connection", exc_info=e)
 
 
 class Context(object):

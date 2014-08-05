@@ -11,7 +11,7 @@ from tornado.web import Application, RequestHandler, StaticFileHandler
 from . import endpoints
 from .exports import get_exports
 from .mint import Mint
-from .net import Connection, Router
+from .net import Connection
 
 
 class GameHandler(RequestHandler):
@@ -27,15 +27,14 @@ class ExportsHandler(RequestHandler):
 
 class Application(Application):
   def __init__(self, **kwargs):
-    self.sockjs = Router(self, Connection, "/sockjs")
-
     routes = [
       (r"/static/(.*)", StaticFileHandler, {
           "path": os.path.join(os.path.dirname(__file__), "static")
       }),
       (r"/exports\.js", ExportsHandler),
+      (r"/socket", Connection),
       (r"/", GameHandler),
-    ] + self.sockjs.urls
+    ]
 
     super().__init__(
         routes,

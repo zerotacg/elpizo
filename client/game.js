@@ -22,7 +22,8 @@ export class Game extends EventEmitter {
     this.realm = null;
     this.me = null;
 
-    this.protocol = new Protocol(new Transport("/sockjs"));
+    this.protocol = new Protocol(new Transport(
+        "ws://" + window.location.host + "/socket"));
     this.resources = new Resources();
     this.renderer = new Renderer(this.resources, parent);
     this.inputState = new InputState(window);

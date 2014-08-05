@@ -1,4 +1,3 @@
-module SockJS from "./sockjs";
 module game_pb2 from "../game_pb2";
 
 import {hasOwnProp} from "./objects";
@@ -15,7 +14,8 @@ export class Transport extends EventEmitter {
   }
 
   connect() {
-    this.socket = new SockJS(this.host);
+    this.socket = new WebSocket(this.host);
+    this.socket.binaryType = "arraybuffer";
 
     this.socket.onopen = (e) => {
       this.opened = true;
@@ -29,12 +29,12 @@ export class Transport extends EventEmitter {
     };
 
     this.socket.onmessage = (e) => {
-      this.emit("message", game_pb2.Packet.decode64(e.data));
+      this.emit("message", game_pb2.Packet.decode(e.data));
     };
   }
 
   send(packet) {
-    this.socket.send(packet.encode64());
+    this.socket.send(packet.encode().buffer);
   }
 
   close() {
