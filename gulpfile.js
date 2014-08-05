@@ -19,6 +19,7 @@ var sourcemaps = require("gulp-sourcemaps");
 var uglify = require("gulp-uglify");
 var watchify = require("watchify");
 var through = require("through");
+var tmp = require("tmp");
 var argv = require("yargs").argv;
 
 var paths = {
@@ -136,13 +137,27 @@ gulp.task("styles", function () {
     .pipe(gulp.dest("elpizo/static/css"));
 });
 
-gulp.task("protos", function () {
+gulp.task("protos", ["protos-js", "protos-py"]);
+
+gulp.task("protos-js", function () {
   return gulp.src("./proto/game.proto")
     .pipe(run(path.join(__dirname, "node_modules", ".bin", "proto2js") +
                         " /dev/stdin -commonjs",
               {silent: true}))
     .pipe(rename("game_pb2.js"))
     .pipe(gulp.dest("client"));
+});
+
+gulp.task("protos-py", function (callback) {
+  tmp.dir({prefix: "protoc"}, function (err, tmpdir) {
+    gulp.src("./proto/game.proto")
+      .pipe(run(path.join(__dirname, "protobuf-py3", "src", "protoc") +
+        " -I=./proto --python_out=" + tmpdir + " ./proto/game.proto" +
+        " && cat " + tmpdir + "/game_pb2.py", {silent: true}))
+      .pipe(rename("game_pb2.py"))
+      .pipe(gulp.dest("elpizo"))
+      .on("end", callback);
+  });
 });
 
 gulp.task("watchScripts", function () {
