@@ -1,5 +1,7 @@
 ## Installing
 
+**Prerequisites:** Postgres, RabbitMQ
+
 1. Update git submodules.
 
         git submodule init && git submodule update
