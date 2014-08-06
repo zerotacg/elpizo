@@ -170,6 +170,7 @@ export class Entity extends EventEmitter {
 
     this.equipment = message.equipment;
 
+    this.moving = false;
     this.remainder = 0;
   }
 
@@ -184,6 +185,7 @@ export class Entity extends EventEmitter {
     this.direction = direction;
 
     this.emit("moveStart", this.location);
+    this.moving = true;
     this.remainder = 1;
   }
 
@@ -224,6 +226,10 @@ export class Entity extends EventEmitter {
         this.moveInDirection(direction);
         protocol.send(game_pb2.Packet.Type.MOVE,
                       new game_pb2.MovePacket({direction: direction}));
+      } else if (this.moving) {
+        this.moving = false;
+        protocol.send(game_pb2.Packet.Type.STOP_MOVE,
+                      new game_pb2.StopMovePacket());
       }
     }
   }

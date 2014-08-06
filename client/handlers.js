@@ -39,4 +39,8 @@ export function install(game) {
   protocol.on(Packet.Type.MOVE, (origin, message) => {
     game.realm.getEntity(origin.id).moveInDirection(message.direction);
   });
+
+  protocol.on(Packet.Type.STOP_MOVE, (origin, message) => {
+    game.realm.getEntity(origin.id).moving = false;
+  });
 }

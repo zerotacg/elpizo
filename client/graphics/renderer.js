@@ -310,7 +310,7 @@ export class Renderer extends EventEmitter {
   }
 
   getSpriteState(entity) {
-    return entity.remainder > 0 ? "walking" : "standing";
+    return entity.moving ? "walking" : "standing";
   }
 
   renderEntity(entity, ctx, dt, xraying) {

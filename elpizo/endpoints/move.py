@@ -24,10 +24,19 @@ def socket_move(ctx, message):
   ctx.application.sqla.commit()
 
   ctx.publish(ctx.player.actor.region.routing_key,
-              game_pb2.Packet.MOVE,
-              game_pb2.MovePacket(direction=direction))
+              game_pb2.Packet.MOVE, message)
 
 
 def mq_move(ctx, origin, message):
   if origin.id != ctx.player.actor.id:
     ctx.send(game_pb2.Packet.MOVE, origin, message)
+
+
+def socket_stop_move(ctx, message):
+  ctx.publish(ctx.player.actor.region.routing_key,
+              game_pb2.Packet.STOP_MOVE, message)
+
+
+def mq_stop_move(ctx, origin, message):
+  if origin.id != ctx.player.actor.id:
+    ctx.send(game_pb2.Packet.STOP_MOVE, origin, message)
