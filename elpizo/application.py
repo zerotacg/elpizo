@@ -44,6 +44,7 @@ class Application(Application):
     self.amqp = TornadoConnection(pika.ConnectionParameters(
         self.settings["amqp_server"]), stop_ioloop_on_close=False)
 
+    from .models import base, entities, fixtures, realm
     self.sqla = sessionmaker(bind=create_engine(self.settings["dsn"]))()
 
     with open(self.settings["mint_public_key"]) as f:

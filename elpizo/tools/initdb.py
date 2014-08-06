@@ -5,7 +5,10 @@ import json
 import sys
 
 from elpizo import make_application
-from elpizo.models import Base, User, Player, Realm, Region, Entity, Terrain, Player
+from elpizo.models.base import Base, User
+from elpizo.models.entities import Entity, Player
+from elpizo.models.realm import Realm, Region, Terrain
+from elpizo.models.fixtures import Tree
 from elpizo.tools import mapgen
 
 
@@ -30,7 +33,7 @@ def initialize_realm(app):
   for ary in range(realm.ah // Region.SIZE):
     for arx in range(realm.aw // Region.SIZE):
       region = Region(arx=arx, ary=ary, realm=realm,
-                      corners=[ocean.id] * ((realm.ah + 1) * (realm.aw + 1)))
+                      corners=[ocean.id] * ((16 + 1) * (16 + 1)))
       app.sqla.add(region)
 
   app.sqla.commit()
@@ -38,13 +41,11 @@ def initialize_realm(app):
   return realm
 
 
-def initialize_entities(app, realm):
-  app.sqla.add(Entity(name="Tree", type_id=types["tree.small"],
-                      property_ids=[properties["tree.small.oak"]],
-                      realm=realm, ax=7, ay=7))
+def initialize_fixtures(app, realm):
+  app.sqla.add(Tree(realm=realm, ax=7, ay=7))
   app.sqla.commit()
 
-  logging.info("Initialized entities.")
+  logging.info("Initialized fixtures.")
 
 
 def initialize_players(app, realm):
@@ -99,7 +100,7 @@ def main():
 
   initialize_schema(app)
   realm = initialize_realm(app)
-  #initialize_entities(app, realm)
+  initialize_fixtures(app, realm)
   initialize_players(app, realm)
 
 

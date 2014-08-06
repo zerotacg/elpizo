@@ -1,5 +1,5 @@
 from .. import game_pb2
-from ..models import Region
+from ..models.realm import Region
 
 
 def on_open(ctx):

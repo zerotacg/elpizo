@@ -10,7 +10,7 @@ from tornado.websocket import WebSocketHandler
 from . import green
 from . import game_pb2
 from .mint import InvalidTokenError
-from .models import User
+from .models.base import User
 
 
 class Protocol(object):

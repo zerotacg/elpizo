@@ -1,6 +1,6 @@
 import {EventEmitter} from "events";
 
-import {Region, Directions} from "../models";
+import {Directions} from "../models";
 import {countingSort, repeat} from "../util/collections";
 import {hasOwnProp, extend} from "../util/objects";
 module coords from "../util/coords";
@@ -174,7 +174,7 @@ export class Renderer extends EventEmitter {
     var screenViewportSize = this.getScreenViewportSize();
 
     var regionScreenSize =
-        this.absoluteToScreenCoords({ax: Region.SIZE, ay: Region.SIZE});
+        this.absoluteToScreenCoords({ax: coords.REGION_SIZE, ay: coords.REGION_SIZE});
 
     var ctx = this.terrainCanvas.getContext("2d");
     ctx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
@@ -248,7 +248,10 @@ export class Renderer extends EventEmitter {
 
   renderRegionTerrainAsBuffer(region) {
     var canvas = document.createElement("canvas");
-    var size = this.absoluteToScreenCoords({ax: Region.SIZE, ay: Region.SIZE});
+    var size = this.absoluteToScreenCoords({
+        ax: coords.REGION_SIZE,
+        ay: coords.REGION_SIZE
+    });
 
     canvas.width = size.sx;
     canvas.height = size.sy;
@@ -257,8 +260,8 @@ export class Renderer extends EventEmitter {
     this.prepareContext(ctx);
 
     region.terrain.forEach((terrain, i) => {
-      var rx = i % Region.SIZE;
-      var ry = Math.floor(i / Region.SIZE);
+      var rx = i % coords.REGION_SIZE;
+      var ry = Math.floor(i / coords.REGION_SIZE);
 
       // If we have a tile named all the terrain joined together, we use that
       // instead of compositing terrain.
@@ -357,11 +360,18 @@ Renderer.SPRITES = {
         names.push("facial." + actor.facial);
       }
 
-      [].push.apply(names, actor.equipment.map((equipment) => equipment.type));
+      [].push.apply(names,
+                    actor.equipment.map((equipment) => equipment.type));
 
       return names;
+    },
+
+    fixtures: (fixture) => {
+      return [fixture.fixtureType.name];
     }
 };
+
+Renderer.SPRITES.players = Renderer.SPRITES.actors;
 
 Renderer.TILE_SIZE = 32;
 

@@ -5,6 +5,7 @@ import {hasOwnProp} from "./util/objects";
 
 module game_pb2 from "./game_pb2";
 module exports from "./constants/exports";
+module coords from "./util/coords";
 
 export var Directions = {
     N: 0,
@@ -65,6 +66,18 @@ export class Realm {
     return hasOwnProp.call(this.regions, key) ? this.regions[key] : null;
   }
 
+  getClosestRegion(location) {
+    return this.getRegion(coords.absoluteToContainingRegion(location));
+  }
+
+  hasCollidableAt(location) {
+    var region = this.getClosestRegion(location);
+    if (region === null) {
+      return true;
+    }
+    return region.hasCollidableAt(coords.absoluteToRelative(location));
+  }
+
   addEntity(entity) {
     entity.realm = this;
     this.entities[entity.id] = entity;
@@ -98,6 +111,7 @@ export class Region {
     };
     this.corners = message.corners.map((id) => exports.terrain[id]);
     this.terrain = this.computeTerrain();
+    this.collisionMask = repeat(coords.REGION_SIZE * coords.REGION_SIZE, () => false);
   }
 
   getKey() {
@@ -107,14 +121,14 @@ export class Region {
   computeTerrain() {
     // Compute terrain from corners, using a modified version of the Marching
     // Squares algorithm.
-    var terrain = [];
+    var terrain = new Array(coords.REGION_SIZE * coords.REGION_SIZE);
 
-    for (var rt = 0; rt < Region.SIZE; ++rt) {
-      for (var rs = 0; rs < Region.SIZE; ++rs) {
-        var nw = this.corners[(rt + 0) * (Region.SIZE + 1) + (rs + 0)].name;
-        var ne = this.corners[(rt + 0) * (Region.SIZE + 1) + (rs + 1)].name;
-        var sw = this.corners[(rt + 1) * (Region.SIZE + 1) + (rs + 0)].name;
-        var se = this.corners[(rt + 1) * (Region.SIZE + 1) + (rs + 1)].name;
+    for (var rt = 0; rt < coords.REGION_SIZE; ++rt) {
+      for (var rs = 0; rs < coords.REGION_SIZE; ++rs) {
+        var nw = this.corners[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 0)].name;
+        var ne = this.corners[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 1)].name;
+        var sw = this.corners[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 0)].name;
+        var se = this.corners[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 1)].name;
 
         var types = nubStrings([nw, ne, sw, se]
             .filter((corner) => corner !== null)
@@ -122,7 +136,7 @@ export class Region {
                 Region.TERRAIN_PREDECENCES.indexOf(a) -
                     Region.TERRAIN_PREDECENCES.indexOf(b)));
 
-        terrain.push(types.map((name, i) => {
+        terrain[rt * coords.REGION_SIZE + rs] = types.map((name, i) => {
           // Terrain blends may exist (e.g. ocean into river), and this ensures
           // that two terrain blending are treated similarly to two terrain of
           // the same type.
@@ -135,15 +149,17 @@ export class Region {
                     ((above.indexOf(se) !== -1) << 1) |
                     ((above.indexOf(sw) !== -1) << 0)
           };
-        }));
+        });
       }
     }
 
     return terrain;
   }
-}
 
-Region.SIZE = 16;
+  hasCollidableAt(location) {
+    return this.collisionMask[location.ry * coords.REGION_SIZE + location.rx];
+  }
+}
 
 Region.TERRAIN_BLENDS = {};
 Region.TERRAIN_PREDECENCES = [
@@ -158,7 +174,7 @@ export class Entity extends EventEmitter {
     super();
 
     this.id = message.id;
-    this.name = message.name;
+    this.type = message.type;
     this.location = {
         ax: message.location.ax,
         ay: message.location.ay
@@ -167,8 +183,6 @@ export class Entity extends EventEmitter {
 
     // TODO: work this out
     this.speed = 2;
-
-    this.equipment = message.equipment;
 
     this.moving = false;
     this.remainder = 0;
@@ -194,20 +208,22 @@ export class Entity extends EventEmitter {
       var unit = getDirectionVector(this.direction);
       var aDistance = Math.min(this.speed * dt, this.remainder);
 
-      this.remainder -= aDistance;
-
-      this.location.ax = Math.min(
-          Math.max(0, this.location.ax + unit.ax * aDistance),
-          this.realm.size.aw - 1);
-      this.location.ay = Math.min(
-          Math.max(0, this.location.ay + unit.ay * aDistance),
-          this.realm.size.ah - 1);
-
-      this.emit("moveStep", {aDistance: aDistance});
+      if (!this.realm.hasCollidableAt({
+          ax: Math.round(this.location.ax + unit.ax * this.remainder),
+          ay: Math.round(this.location.ay + unit.ay * this.remainder)
+      })) {
+        this.location.ax += unit.ax * aDistance;
+        this.location.ay += unit.ay * aDistance;
+        this.emit("moveStep", {aDistance: aDistance});
+        this.remainder -= aDistance;
+      } else {
+        this.remainder = 0;
+      }
 
       if (this.remainder <= 0) {
         this.location.ax = Math.round(this.location.ax);
         this.location.ay = Math.round(this.location.ay);
+        this.remainder = 0;
         this.emit("moveEnd", this.location);
       }
     }
@@ -238,7 +254,6 @@ export class Entity extends EventEmitter {
 export class Actor extends Entity {
   constructor(message) {
     super(message);
-
     message = message.actorExt;
 
     this.equipment = [];
@@ -248,9 +263,26 @@ export class Actor extends Entity {
   }
 }
 
-Actor.prototype.type = "actors";
+export class Player extends Actor {
+  constructor(message) {
+    super(message);
+    message = message.playerExt;
+
+    this.name = message.name;
+  }
+}
+
+export class Fixture extends Entity {
+  constructor(message) {
+    super(message);
+    message = message.fixtureExt;
+
+    this.fixtureType = exports.fixtureTypes[message.fixtureType];
+  }
+}
 
 Entity.TYPES = {
     actors: Actor,
-    players: Actor
+    players: Player,
+    fixtures: Fixture
 };

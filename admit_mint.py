@@ -9,7 +9,8 @@ import base64
 import logging
 
 from elpizo.mint import Mint
-from elpizo.models import User, Player, Entity
+from elpizo.models.base import User
+from elpizo.models.entities import Player
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
