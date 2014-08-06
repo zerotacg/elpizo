@@ -144,8 +144,8 @@ export class Region {
         var types = nubBy([nw, ne, sw, se]
             .filter((corner) => corner !== null)
             .sort((a, b) =>
-                Region.TERRAIN_PREDECENCES.indexOf(a) -
-                    Region.TERRAIN_PREDECENCES.indexOf(b)),
+                Region.TERRAIN_PREDECENCES.indexOf(a.name) -
+                    Region.TERRAIN_PREDECENCES.indexOf(b.name)),
             (corner) => corner.name);
 
         terrain[rt * coords.REGION_SIZE + rs] = types.map((corner, i) => {
@@ -238,6 +238,8 @@ export class Entity extends EventEmitter {
     //
     // It will forcibly normalize the location (may be janky, but will always be
     // correct).
+    var lastDirection = this.direction;
+
     var unit = getDirectionVector(this.direction);
     this.location.ax = Math.round(this.location.ax + unit.ax * this.remainder);
     this.location.ay = Math.round(this.location.ay + unit.ay * this.remainder);
@@ -250,12 +252,17 @@ export class Entity extends EventEmitter {
         ay: Math.round(this.location.ay + unit.ay)
     })) {
       this.remainder = 0;
+      this.moving = lastDirection !== this.direction;
     } else {
       this.remainder = 1;
+      this.moving = true;
     }
 
-    this.emit("moveStart", this.location);
-    this.moving = true;
+    if (this.moving) {
+      this.emit("moveStart", this.location);
+    }
+
+    return this.moving;
   }
 
   update(dt) {
@@ -287,13 +294,22 @@ export class Entity extends EventEmitter {
                       null;
 
       if (direction !== null) {
-        this.moveInDirection(direction);
-        protocol.send(game_pb2.Packet.Type.MOVE,
-                      new game_pb2.MovePacket({direction: direction}));
+        if (this.moveInDirection(direction)) {
+          // Send a move packet only if we've successfully moved.
+          protocol.send(game_pb2.Packet.Type.MOVE,
+                        new game_pb2.MovePacket({direction: direction}));
+        } else {
+          // Otherwise, we're trying to move in a direction that's obstructed so
+          // we stop moving and send StopMoves.
+          this.moving = false;
+          protocol.send(game_pb2.Packet.Type.STOP_MOVE,
+                        new game_pb2.StopMovePacket());
+        }
       } else if (this.moving) {
-        this.moving = false;
-        protocol.send(game_pb2.Packet.Type.STOP_MOVE,
-                      new game_pb2.StopMovePacket());
+          // We've stopped moving entirely.
+          this.moving = false;
+          protocol.send(game_pb2.Packet.Type.STOP_MOVE,
+                        new game_pb2.StopMovePacket());
       }
     }
   }

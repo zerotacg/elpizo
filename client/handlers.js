@@ -22,7 +22,7 @@ export function install(game) {
 
   protocol.on(Packet.Type.ENTITY, (origin, message) => {
     if (message.entity.location.realmId !== game.realm.id) {
-      console.warn("Got invalid region realm ID (" +
+      console.warn("Got invalid entity realm ID (" +
                    message.entity.location.realmId + ") for current realm (" +
                    game.realm.id + "), discarding.");
       return;
@@ -42,5 +42,22 @@ export function install(game) {
 
   protocol.on(Packet.Type.STOP_MOVE, (origin, message) => {
     game.realm.getEntity(origin.id).moving = false;
+  });
+
+  protocol.on(Packet.Type.TELEPORT, (origin, message) => {
+    if (message.entity.location.realmId !== game.realm.id) {
+      console.warn("Got invalid teleport realm ID (" +
+                   message.entity.location.realmId + ") for current realm (" +
+                   game.realm.id + "), discarding.");
+      return;
+    }
+
+    var entity = game.realm.getEntity(origin.id);
+    entity.moving = false;
+    entity.remainder = 0;
+    entity.location = {
+        ax: message.location.ax,
+        ay: message.location.ay
+    };
   });
 }

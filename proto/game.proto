@@ -16,6 +16,7 @@ message Packet {
     VIEWPORT = 6;
     ENTITY = 7;
     STOP_MOVE = 8;
+    TELEPORT = 9;
   }
 
   optional Type type = 1;
@@ -151,4 +152,10 @@ message EntityPacket {
 
 message StopMovePacket {
   option (packet_type) = STOP_MOVE;
+}
+
+message TeleportPacket {
+  option (packet_type) = TELEPORT;
+
+  optional AbsoluteLocation location = 1;
 }
