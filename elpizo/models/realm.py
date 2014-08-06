@@ -93,7 +93,7 @@ class Region(Base):
     return "region.{key}".format(key=self.key)
 
   @hybrid.hybrid_method
-  def bounded_by(cls, a_left, a_top, a_right, a_bottom):
+  def bounded_by(self, a_left, a_top, a_right, a_bottom):
     # We want to select 1.5x the viewport area.
     a_width = a_right - a_left
     a_height = a_bottom - a_top
@@ -105,7 +105,7 @@ class Region(Base):
         func.point(a_left - a_padding_w, a_top - a_padding_h),
         func.point(a_right + a_padding_w, a_bottom + a_padding_h))
 
-    return cls.bbox.op("&&")(viewport_box)
+    return self.bbox.op("&&")(viewport_box)
 
   def to_protobuf(self):
     return game_pb2.Region(

@@ -60,16 +60,16 @@ class Fixture(Entity):
     }
 
   @hybrid.hybrid_property
-  def bbox(cls):
-    return func.box(func.point(cls.a_left, cls.a_top),
-                    func.point(cls.a_right - 1, cls.a_bottom - 1))
+  def bbox(self):
+    return func.box(func.point(self.a_left, self.a_top),
+                    func.point(self.a_right - 1, self.a_bottom - 1))
 
   @hybrid.hybrid_method
-  def bbox_contains(cls, realm_id, ax, ay):
-    offset = func.point(cls.ax, cls.ay)
+  def bbox_contains(self, realm_id, ax, ay):
+    offset = func.point(self.ax, self.ay)
     point = func.point(ax, ay)
 
-    return (cls.realm_id == realm_id) & (cls.bbox).op("@>")(point - offset)
+    return (self.realm_id == realm_id) & (self.bbox).op("@>")(point - offset)
 
 
 Fixture.__table_args__ = (
