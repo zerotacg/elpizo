@@ -18,9 +18,9 @@ def socket_move(ctx, message):
   ctx.player.actor.direction = direction
 
   ctx.player.actor.ax = min([max([0, ctx.player.actor.ax + dax]),
-                              ctx.player.actor.region.realm.aw - 1])
+                                  ctx.player.actor.region.realm.aw - 1])
   ctx.player.actor.ay = min([max([0, ctx.player.actor.ay + day]),
-                              ctx.player.actor.region.realm.ah - 1])
+                                  ctx.player.actor.region.realm.ah - 1])
   ctx.application.sqla.commit()
 
   ctx.publish(ctx.player.actor.region.routing_key,

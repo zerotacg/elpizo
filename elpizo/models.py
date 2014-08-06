@@ -108,7 +108,7 @@ class Region(Base):
 
   def to_protobuf(self):
     return game_pb2.Region(
-        location=game_pb2.AbsoluteRealmLocation(realmId=self.realm_id,
+        location=game_pb2.AbsoluteRealmLocation(realm_id=self.realm_id,
                                                 arx=self.arx, ary=self.ary),
         corners=self.corners)
 
@@ -214,15 +214,15 @@ class Entity(Base):
     )
 
   def location_to_protobuf(self):
-    return game_pb2.AbsoluteLocation(realmId=self.realm_id,
+    return game_pb2.AbsoluteLocation(realm_id=self.realm_id,
                                      ax=self.ax, ay=self.ay)
 
   def to_protobuf(self):
     return game_pb2.Entity(id=self.id, name=self.name, type=self.type,
                            location=self.location_to_protobuf(),
                            direction=self.direction, level=self.level,
-                           hp=self.hp, maxHp=100, mp=self.mp, maxMp=100,
-                           xp=self.xp, maxXp=100)
+                           hp=self.hp, max_hp=100, mp=self.mp, max_mp=100,
+                           xp=self.xp, max_xp=100)
 
   def to_origin_protobuf(self):
     return game_pb2.Origin(id=self.id, name=self.name)
@@ -263,5 +263,5 @@ class Actor(Entity):
     if self.facial is not None:
       message.facial = self.facial
 
-    protobuf.Extensions[game_pb2.Actor.actorExt].MergeFrom(message)
+    protobuf.Extensions[game_pb2.Actor.actor_ext].MergeFrom(message)
     return protobuf

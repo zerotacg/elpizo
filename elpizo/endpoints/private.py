@@ -15,14 +15,14 @@ def on_open(ctx):
 def viewport(ctx, message):
   last_viewport = ctx.transient_storage.get(
       "viewport",
-      game_pb2.ViewportPacket(aLeft=0, aTop=0, aRight=0, aBottom=0))
+      game_pb2.ViewportPacket(a_left=0, a_top=0, a_right=0, a_bottom=0))
 
   ctx.transient_storage["viewport"] = message
 
   last_regions = {region.key: region
       for region in ctx.application.sqla.query(Region).filter(
-      Region.bounded_by(last_viewport.aLeft, last_viewport.aTop,
-                        last_viewport.aRight, last_viewport.aBottom))}
+      Region.bounded_by(last_viewport.a_left, last_viewport.a_top,
+                        last_viewport.a_right, last_viewport.a_bottom))}
 
   regions = {region.key: region
       for region in ctx.application.sqla.query(Region).filter(
