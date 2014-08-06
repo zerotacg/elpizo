@@ -23,7 +23,7 @@ class User(Base):
   current_player_id = sqlalchemy.Column(
       Integer,
       sqlalchemy.ForeignKey("players.id", use_alter=True,
-                            name="user_current_player_id -> players"),
+                            name="user_current_player_id"),
       nullable=True)
   current_player = relationship("Player",
                                 foreign_keys="User.current_player_id")

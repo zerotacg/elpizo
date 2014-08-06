@@ -83,7 +83,7 @@ class Entity(Base):
 
 
 Entity.__table_args__ = (
-    sqlalchemy.Index("entities_location_gist_idx", Entity.point,
+    sqlalchemy.Index("ix_entities_point", Entity.point,
                      postgresql_using="gist"),
 )
 

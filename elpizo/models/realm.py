@@ -114,6 +114,5 @@ class Region(Base):
         corners=self.corners)
 
 Region.__table_args__ = (
-    sqlalchemy.Index("region_bbox_gist_idx", Region.bbox,
-                     postgresql_using="gist"),
+    sqlalchemy.Index("ix_regions_bbox", Region.bbox, postgresql_using="gist"),
 )

@@ -73,8 +73,7 @@ class Fixture(Entity):
 
 
 Fixture.__table_args__ = (
-    sqlalchemy.Index("fixture_bbox_gist_idx", Fixture.bbox,
-                     postgresql_using="gist"),
+    sqlalchemy.Index("ix_fixtures_bbox", Fixture.bbox, postgresql_using="gist"),
 )
 
 
