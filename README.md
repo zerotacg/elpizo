@@ -57,6 +57,6 @@
 
         ./admit_mint.py --debug --port=5000
 
-5. Mint a token with the mint. If you're using `admit_mint.py`, go to `http://localhost:5000/admit_mint.py?user=dumas&actor=Athos`. The token will be valid for 10 minutes. If the token expires, mint a new one.
+5. Mint a token with the mint. If you're using `admit_mint.py`, go to `http://localhost:5000/admit?user=dumas&actor=Athos`. The token will be valid for 10 minutes. If the token expires, mint a new one.
 
 6. Visit `http://localhost:9999`.
