@@ -15,6 +15,7 @@ message Packet {
     REGION = 5;
     VIEWPORT = 6;
     ENTITY = 7;
+    STOP_MOVE = 8;
   }
 
   optional Type type = 1;
@@ -128,4 +129,8 @@ message ViewportPacket {
 message EntityPacket {
   option (packetType) = ENTITY;
   optional Entity entity = 1;
+}
+
+message StopMovePacket {
+  option (packetType) = STOP_MOVE;
 }
