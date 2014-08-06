@@ -1,3 +1,5 @@
+import time
+
 from .. import game_pb2
 from ..green import sleep
 from ..models.realm import Region, Terrain
@@ -14,13 +16,18 @@ def get_direction_vector(d):
 
 
 def socket_move(ctx, message):
+  last_move_time = ctx.transient_storage.get("last_move_time", 0)
+  now = time.monotonic()
+
+  dt = now - last_move_time
+
+  direction = message.direction
+
+  dax, day = get_direction_vector(direction)
+  ctx.player.direction = direction
+  ctx.sqla.commit()
+
   try:
-    direction = message.direction
-
-    dax, day = get_direction_vector(direction)
-    ctx.player.direction = direction
-    ctx.sqla.commit()
-
     ctx.player.ax += dax
     ctx.player.ay += day
 
@@ -30,21 +37,44 @@ def socket_move(ctx, message):
       ctx.sqla.rollback()
       return
 
-    corners = [
-        region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
-                       (ctx.player.rx + 0)],
-        region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
-                       (ctx.player.rx + 1)],
-        region.corners[(ctx.player.ry + 1) * (Region.SIZE + 1) +
-                       (ctx.player.rx + 0)],
-        region.corners[(ctx.player.ry + 1) * (Region.SIZE + 1) +
-                       (ctx.player.rx + 1)]
-    ]
-    terrain_map = {terrain.id: terrain
-                   for terrain
-                   in ctx.sqla.query(Terrain).filter(Terrain.id.in_(corners))}
+    nw = region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
+                        (ctx.player.rx + 0)]
+    ne = region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
+                        (ctx.player.rx + 1)]
+    sw = region.corners[(ctx.player.ry + 1) * (Region.SIZE + 1) +
+                        (ctx.player.rx + 0)]
+    se = region.corners[(ctx.player.ry + 1) * (Region.SIZE + 1) +
+                        (ctx.player.rx + 1)]
 
-    if sum([terrain_map[corner].passable for corner in corners]) <= 1:
+    passabilities = {terrain.id: terrain.passable
+                     for terrain
+                     in ctx.sqla.query(Terrain).filter(Terrain.id.in_([
+                          nw, ne, sw, se
+                     ]))}
+
+    mask = passabilities.get(nw, False) << 3 | \
+           passabilities.get(ne, False) << 2 | \
+           passabilities.get(se, False) << 1 | \
+           passabilities.get(sw, False) << 0
+
+    if not {
+        0x0: False,
+        0x1: False,
+        0x2: False,
+        0x3: True,
+        0x4: False,
+        0x5: True,
+        0x6: False,
+        0x7: True,
+        0x8: False,
+        0x9: False,
+        0xa: True,
+        0xb: True,
+        0xc: False,
+        0xd: False,
+        0xe: False,
+        0xf: True
+    }[mask]:
       ctx.sqla.rollback()
       return
 
@@ -54,6 +84,7 @@ def socket_move(ctx, message):
       ctx.sqla.rollback()
       return
 
+    ctx.transient_storage["last_move_time"] = now
     ctx.sqla.commit()
   finally:
     ctx.publish(ctx.player.region.routing_key, game_pb2.Packet.MOVE, message)

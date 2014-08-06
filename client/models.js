@@ -70,11 +70,11 @@ export class Realm {
     return this.getRegion(coords.absoluteToContainingRegion(location));
   }
 
-  hasCollidableAt(location) {
+  isPassable(location) {
     var region = this.getClosestRegion(location);
     if (region === null ||
-        region.hasCollidableAt(coords.absoluteToRelative(location))) {
-      return true;
+        !region.isPassable(coords.absoluteToRelative(location))) {
+      return false;
     }
 
     if (this.getAllEntities().filter(
@@ -84,10 +84,10 @@ export class Realm {
              location.ay >= entity.location.ay + entity.aTop &&
              location.ay < entity.location.ay + entity.aBottom;
     })) {
-      return true;
+      return false;
     }
 
-    return false;
+    return true;
   }
 
   addEntity(entity) {
@@ -170,18 +170,39 @@ export class Region {
     return terrain;
   }
 
-  hasCollidableAt(location) {
-    var corners = [
-        this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
-                     (location.rx + 0)],
-        this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
-                     (location.rx + 1)],
-        this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
-                     (location.rx + 0)],
-        this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
-                     (location.rx + 1)]
-    ];
-    return corners.filter((terrain) => terrain.passable).length <= 1;
+  isPassable(location) {
+    var nw = this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
+                          (location.rx + 0)];
+    var ne = this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
+                          (location.rx + 1)];
+    var sw = this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
+                          (location.rx + 0)];
+    var se = this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
+                          (location.rx + 1)];
+
+    var mask = (nw !== null ? nw.passable : false) << 3 |
+               (ne !== null ? ne.passable : false) << 2 |
+               (se !== null ? se.passable : false) << 1 |
+               (sw !== null ? sw.passable : false) << 0;
+
+    return ({
+        0x0: false,
+        0x1: false,
+        0x2: false,
+        0x3: true,
+        0x4: false,
+        0x5: true,
+        0x6: false,
+        0x7: true,
+        0x8: false,
+        0x9: false,
+        0xa: true,
+        0xb: true,
+        0xc: false,
+        0xd: false,
+        0xe: false,
+        0xf: true
+    })[mask];
   }
 }
 
@@ -224,7 +245,7 @@ export class Entity extends EventEmitter {
     this.direction = direction;
     unit = getDirectionVector(this.direction);
 
-    if (this.realm.hasCollidableAt({
+    if (!this.realm.isPassable({
         ax: Math.round(this.location.ax + unit.ax),
         ay: Math.round(this.location.ay + unit.ay)
     })) {
