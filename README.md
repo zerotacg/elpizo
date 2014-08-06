@@ -41,18 +41,22 @@
 
 ## Running
 
-1. Start a client Gulp build.
+1. Activate the virtualenv.
+
+        source VENV/bin/activate
+
+2. Start a client Gulp build.
 
         node_modules/.bin/gulp
 
-2. In another terminal, start the server.
+3. In another terminal, start the server.
 
         python -m elpizo --debug
 
-3. For testing, run `admit_mint.py`.
+4. For testing, run `admit_mint.py`.
 
         ./admit_mint.py --debug --port=5000
 
-4. Mint a token with the mint. If you're using `admit_mint.py`, go to `http://localhost:5000/admit_mint.py?user=dumas&actor=Athos`. The token will be valid for 10 minutes. If the token expires, mint a new one.
+5. Mint a token with the mint. If you're using `admit_mint.py`, go to `http://localhost:5000/admit_mint.py?user=dumas&actor=Athos`. The token will be valid for 10 minutes. If the token expires, mint a new one.
 
-5. Visit `http://localhost:9999`.
+6. Visit `http://localhost:9999`.
