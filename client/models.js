@@ -97,6 +97,7 @@ export class Region {
         ary: message.location.ary
     };
     this.corners = message.corners.map((id) => exports.terrain[id]);
+    this.terrain = this.computeTerrain();
   }
 
   getKey() {

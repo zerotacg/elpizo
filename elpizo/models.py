@@ -185,6 +185,8 @@ class Entity(Base):
   __table_args__ = (
         sqlalchemy.Index("realm_location_idx",
                          "realm_id", "arx", "ary", "rx", "ry"),
+        sqlalchemy.Index("unique_player_name", "name",
+                         postgresql_where=type == "players", unique=True)
     )
 
   def location_to_protobuf(self):

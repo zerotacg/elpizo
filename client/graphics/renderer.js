@@ -256,7 +256,7 @@ export class Renderer extends EventEmitter {
     var ctx = canvas.getContext("2d");
     this.prepareContext(ctx);
 
-    region.computeTerrain().forEach((terrain, i) => {
+    region.terrain.forEach((terrain, i) => {
       var rx = i % Region.SIZE;
       var ry = Math.floor(i / Region.SIZE);
 
