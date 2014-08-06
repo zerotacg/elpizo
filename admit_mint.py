@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-The admit mint will admit any users.
+The admit mint will admit any user.
 """
 
 import email
