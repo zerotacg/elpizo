@@ -7,6 +7,7 @@ var browserify = require("browserify");
 var debowerify = require("debowerify");
 var duration = require("gulp-duration")
 var gutil = require("gulp-util");
+var insert = require("gulp-insert");
 var jstransform = require("jstransform");
 var less = require("gulp-less");
 var moduleVisitors = require("es6-module-jstransform/visitors");
@@ -144,6 +145,7 @@ gulp.task("protos-js", function () {
     .pipe(run(path.join(__dirname, "node_modules", ".bin", "proto2js") +
                         " /dev/stdin -commonjs",
               {silent: true}))
+    .pipe(insert.prepend("require(\"protobufjs\").convertFieldsToCamelCase=true;"))
     .pipe(rename("game_pb2.js"))
     .pipe(gulp.dest("client"));
 });

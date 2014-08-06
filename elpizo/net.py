@@ -109,8 +109,8 @@ class Protocol(object):
 for name, descriptor in game_pb2.DESCRIPTOR.message_types_by_name.items():
   options = descriptor.GetOptions()
 
-  if options.HasExtension(game_pb2.packetType):
-    Protocol.PACKETS[options.Extensions[game_pb2.packetType]] = \
+  if options.HasExtension(game_pb2.packet_type):
+    Protocol.PACKETS[options.Extensions[game_pb2.packet_type]] = \
         getattr(game_pb2, name)
 
 

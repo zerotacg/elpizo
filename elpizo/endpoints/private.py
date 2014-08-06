@@ -26,8 +26,8 @@ def viewport(ctx, message):
 
   regions = {region.key: region
       for region in ctx.application.sqla.query(Region).filter(
-      Region.bounded_by(message.aLeft, message.aTop,
-                        message.aRight, message.aBottom))}
+      Region.bounded_by(message.a_left, message.a_top,
+                        message.a_right, message.a_bottom))}
 
 
   for added_region_key in set(regions.keys()) - set(last_regions.keys()):

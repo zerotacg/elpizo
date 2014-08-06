@@ -45,11 +45,11 @@ export class Transport extends EventEmitter {
 var PACKETS = {};
 Object.keys(game_pb2).forEach((name) => {
   var cls = game_pb2[name];
-  if (!hasOwnProp.call(cls.$options, "(packetType)")) {
+  if (!hasOwnProp.call(cls.$options, "(packet_type)")) {
     return;
   }
 
-  var packetType = game_pb2.Packet.Type[cls.$options["(packetType)"]];
+  var packetType = game_pb2.Packet.Type[cls.$options["(packet_type)"]];
   PACKETS[packetType] = cls;
 });
 

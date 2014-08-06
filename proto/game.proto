@@ -132,5 +132,5 @@ message EntityPacket {
 }
 
 message StopMovePacket {
-  option (packetType) = STOP_MOVE;
+  option (packet_type) = STOP_MOVE;
 }
