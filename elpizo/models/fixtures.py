@@ -3,7 +3,7 @@ import sqlalchemy
 from sqlalchemy import func, inspect
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext import hybrid
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.ext.declarative import declared_attr
 from sqlalchemy.orm import backref, relationship, Session, remote, foreign
 from sqlalchemy.types import *
 
@@ -13,7 +13,19 @@ from .entities import Entity
 
 
 class Fixture(Entity):
-  NAME = "unknown"
+  __tablename__ = "fixtures"
+  NAME = "abstract"
+
+  id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
+                         primary_key=True)
+  a_left = sqlalchemy.Column(Integer, nullable=False)
+  a_top = sqlalchemy.Column(Integer, nullable=False)
+  a_right = sqlalchemy.Column(Integer, nullable=False)
+  a_bottom = sqlalchemy.Column(Integer, nullable=False)
+
+  def __init__(self, *args, **kwargs):
+    self.a_left, self.a_top, self.a_right, self.a_bottom = self.BBOX
+    super().__init__(*args, **kwargs)
 
   @declared_attr
   def __mapper_args__(cls):
@@ -26,23 +38,33 @@ class Fixture(Entity):
     protobuf.type = "fixtures"
 
     _, type = self.type.split(".")
-    message = game_pb2.Fixture(fixture_type=type)
+    message = game_pb2.Fixture(fixture_type=type,
+                               a_left=self.a_left, a_top=self.a_top,
+                               a_right=self.a_right, a_bottom=self.a_bottom)
 
     protobuf.Extensions[game_pb2.Fixture.fixture_ext].MergeFrom(message)
     return protobuf
 
   @classmethod
   def to_js(cls):
-    aw, ah = cls.SIZE
+    a_left, a_top, a_right, a_bottom = cls.BBOX
 
     return {
         "name": cls.NAME,
         "size": {
-            "aw": aw,
-            "ah": ah
+            "aLeft": a_left,
+            "aTop": a_top,
+            "aRight": a_right,
+            "aBottom": a_bottom
         }
     }
 
+  @hybrid.hybrid_method
+  def bbox_contains(cls, ax, ay):
+    return (ax >= cls.ax + cls.a_left) & (ax < cls.ax + cls.a_right) & \
+           (ay >= cls.ax + cls.a_top) & (ay < cls.ay + cls.a_bottom)
+
+
 class Tree(Fixture):
   NAME = "tree"
-  SIZE = (1, 1)
+  BBOX = (0, 0, 1, 1)

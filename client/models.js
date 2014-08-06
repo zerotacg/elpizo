@@ -72,10 +72,22 @@ export class Realm {
 
   hasCollidableAt(location) {
     var region = this.getClosestRegion(location);
-    if (region === null) {
+    if (region === null ||
+        region.hasCollidableAt(coords.absoluteToRelative(location))) {
       return true;
     }
-    return region.hasCollidableAt(coords.absoluteToRelative(location));
+
+    if (this.getAllEntities().filter(
+        (entity) => entity.type == "fixtures").some((entity) => {
+      return location.ax >= entity.location.ax + entity.aLeft &&
+             location.ax < entity.location.ax + entity.aRight &&
+             location.ay >= entity.location.ay + entity.aTop &&
+             location.ay < entity.location.ay + entity.aBottom;
+    })) {
+      return true;
+    }
+
+    return false;
   }
 
   addEntity(entity) {
@@ -196,11 +208,21 @@ export class Entity extends EventEmitter {
     var unit = getDirectionVector(this.direction);
     this.location.ax = Math.round(this.location.ax + unit.ax * this.remainder);
     this.location.ay = Math.round(this.location.ay + unit.ay * this.remainder);
+
     this.direction = direction;
+    unit = getDirectionVector(this.direction);
+
+    if (this.realm.hasCollidableAt({
+        ax: Math.round(this.location.ax + unit.ax),
+        ay: Math.round(this.location.ay + unit.ay)
+    })) {
+      this.remainder = 0;
+    } else {
+      this.remainder = 1;
+    }
 
     this.emit("moveStart", this.location);
     this.moving = true;
-    this.remainder = 1;
   }
 
   update(dt) {
@@ -208,17 +230,10 @@ export class Entity extends EventEmitter {
       var unit = getDirectionVector(this.direction);
       var aDistance = Math.min(this.speed * dt, this.remainder);
 
-      if (!this.realm.hasCollidableAt({
-          ax: Math.round(this.location.ax + unit.ax * this.remainder),
-          ay: Math.round(this.location.ay + unit.ay * this.remainder)
-      })) {
-        this.location.ax += unit.ax * aDistance;
-        this.location.ay += unit.ay * aDistance;
-        this.emit("moveStep", {aDistance: aDistance});
-        this.remainder -= aDistance;
-      } else {
-        this.remainder = 0;
-      }
+      this.location.ax += unit.ax * aDistance;
+      this.location.ay += unit.ay * aDistance;
+      this.emit("moveStep", {aDistance: aDistance});
+      this.remainder -= aDistance;
 
       if (this.remainder <= 0) {
         this.location.ax = Math.round(this.location.ax);
@@ -278,6 +293,10 @@ export class Fixture extends Entity {
     message = message.fixtureExt;
 
     this.fixtureType = exports.fixtureTypes[message.fixtureType];
+    this.aLeft = message.aLeft;
+    this.aTop = message.aTop;
+    this.aRight = message.aRight;
+    this.aBottom = message.aBottom;
   }
 }
 

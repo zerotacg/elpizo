@@ -1,5 +1,6 @@
 from .. import game_pb2
 from ..green import sleep
+from ..models.fixtures import Fixture
 
 
 def get_direction_vector(d):
@@ -17,11 +18,14 @@ def socket_move(ctx, message):
   dax, day = get_direction_vector(direction)
   ctx.player.direction = direction
 
-  ctx.player.ax = min([max([0, ctx.player.ax + dax]),
-                      ctx.player.region.realm.aw - 1])
-  ctx.player.ay = min([max([0, ctx.player.ay + day]),
-                      ctx.player.region.realm.ah - 1])
-  ctx.application.sqla.commit()
+  if not ctx.application.sqla.query(ctx.application.sqla.query(Fixture).filter(
+      Fixture.bbox_contains(ctx.player.ax + dax, ctx.player.ay + day)
+  ).exists()).scalar():
+    ctx.player.ax = min([max([0, ctx.player.ax + dax]),
+                        ctx.player.region.realm.aw - 1])
+    ctx.player.ay = min([max([0, ctx.player.ay + day]),
+                        ctx.player.region.realm.ah - 1])
+    ctx.application.sqla.commit()
 
   ctx.publish(ctx.player.region.routing_key,
               game_pb2.Packet.MOVE, message)
