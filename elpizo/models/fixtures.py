@@ -59,10 +59,22 @@ class Fixture(Entity):
         }
     }
 
+  @hybrid.hybrid_property
+  def bbox(cls):
+    return func.box(func.point(cls.a_left, cls.a_top),
+                    func.point(cls.a_right - 1, cls.a_bottom - 1))
+
   @hybrid.hybrid_method
-  def bbox_contains(cls, ax, ay):
-    return (ax >= cls.ax + cls.a_left) & (ax < cls.ax + cls.a_right) & \
-           (ay >= cls.ax + cls.a_top) & (ay < cls.ay + cls.a_bottom)
+  def bbox_contains(cls, realm_id, ax, ay):
+    offset = func.point(cls.ax, cls.ay)
+    point = func.point(ax, ay)
+
+    return (cls.realm_id == realm_id) & (self.bbox).op("@>")(point - offset)
+
+
+Fixture.__table_args__ = (
+    sqlalchemy.Index("bbox_gist_idx", Fixture.bbox, postgresql_using="gist"),
+)
 
 
 class Tree(Fixture):

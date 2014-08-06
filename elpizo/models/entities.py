@@ -22,7 +22,7 @@ class Entity(Base):
 
   realm_id = sqlalchemy.Column(Integer,
                                sqlalchemy.ForeignKey("realms.id"),
-                               nullable=False)
+                               nullable=False, index=True)
   arx = sqlalchemy.Column(Integer, nullable=False)
   ary = sqlalchemy.Column(Integer, nullable=False)
 
@@ -57,10 +57,9 @@ class Entity(Base):
     self.ary = v // Region.SIZE
     self.ry = v % Region.SIZE
 
-  __table_args__ = (
-      sqlalchemy.Index("realm_location_idx",
-                       "realm_id", "arx", "ary", "rx", "ry"),
-  )
+  @hybrid.hybrid_property
+  def point(self):
+    return func.point(self.ax, self.ay)
 
   def location_to_protobuf(self):
     return game_pb2.AbsoluteLocation(realm_id=self.realm_id,
@@ -81,6 +80,11 @@ class Entity(Base):
   __mapper_args__ = {
       "polymorphic_on": type
   }
+
+
+Entity.__table_args__ = (
+    sqlalchemy.Index("ax_ay_gist_idx", Entity.point, postgresql_using="gist"),
+)
 
 
 class Actor(Entity):

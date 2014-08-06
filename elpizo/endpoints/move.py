@@ -19,7 +19,8 @@ def socket_move(ctx, message):
   ctx.player.direction = direction
 
   if not ctx.application.sqla.query(ctx.application.sqla.query(Fixture).filter(
-      Fixture.bbox_contains(ctx.player.ax + dax, ctx.player.ay + day)
+      Fixture.bbox_contains(ctx.player.realm_id,
+                            ctx.player.ax + dax, ctx.player.ay + day)
   ).exists()).scalar():
     ctx.player.ax = min([max([0, ctx.player.ax + dax]),
                         ctx.player.region.realm.aw - 1])
