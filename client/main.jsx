@@ -3,8 +3,8 @@ import {loadImage} from "./util/resources";
 
 var game = new Game(document.body);
 game.loadResources({
-    "sprites.fixture.tree.oak":
-        loadImage("static/img/fixture/tree/oak.png"),
+    "sprites.tree.small.oak":
+        loadImage("static/img/tree/small/oak.png"),
 
     "sprites.body.male.light":
         loadImage("static/img/body/male/light.png"),

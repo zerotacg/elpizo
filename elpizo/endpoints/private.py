@@ -4,12 +4,12 @@ from ..models import Region
 
 def on_open(ctx):
   # Bind to the relevant channels.
-  ctx.subscribe(ctx.player.entity.routing_key)
-  ctx.subscribe(ctx.player.entity.realm.routing_key)
+  ctx.subscribe(ctx.player.actor.routing_key)
+  ctx.subscribe(ctx.player.actor.realm.routing_key)
 
   # Send realm information.
   ctx.send(game_pb2.Packet.REALM, None,
-           game_pb2.RealmPacket(realm=ctx.player.entity.realm.to_protobuf()))
+           game_pb2.RealmPacket(realm=ctx.player.actor.realm.to_protobuf()))
 
 
 def viewport(ctx, message):
@@ -45,5 +45,5 @@ def viewport(ctx, message):
     region = regions[removed_region_key]
     ctx.unsubscribe(region.routing_key)
 
-  ctx.send(game_pb2.Packet.AVATAR, ctx.player.entity.to_origin_protobuf(),
+  ctx.send(game_pb2.Packet.AVATAR, ctx.player.actor.to_origin_protobuf(),
            game_pb2.AvatarPacket())

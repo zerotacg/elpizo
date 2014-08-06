@@ -205,7 +205,7 @@ class Context(object):
 
   def publish(self, routing_key, type, message):
     self.protocol.publish(routing_key, type,
-                          self.player.entity.to_origin_protobuf(), message)
+                          self.player.actor.to_origin_protobuf(), message)
 
   def unsubscribe(self, routing_key):
     self.protocol.unsubscribe(self.player, routing_key)

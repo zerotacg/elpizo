@@ -317,10 +317,8 @@ export class Renderer extends EventEmitter {
     var state = this.getSpriteState(entity);
     var direction = this.getSpriteDirection(entity.direction);
 
-    var spriteDefs = entity.types.map((type) =>
-        sprites[type][state][direction]
-    ).concat(entity.equipment.map((equipment) =>
-        sprites[equipment.type][state][direction]));
+    var spriteDefs = Renderer.SPRITES[entity.type](entity).map((name) =>
+        sprites[name][state][direction]);
 
     if (!hasOwnProp.call(this.entitySprites, entity.id) ||
         this.entitySprites[entity.id].length != spriteDefs.length) {
@@ -350,6 +348,20 @@ export class Renderer extends EventEmitter {
     ctx.restore();
   }
 }
+
+Renderer.SPRITES = {
+    actors: (actor) => {
+      var names = ["body." + actor.body];
+
+      if (actor.facial) {
+        names.push("facial." + actor.facial);
+      }
+
+      [].push.apply(names, actor.equipment.map((equipment) => equipment.type));
+
+      return names;
+    }
+};
 
 Renderer.TILE_SIZE = 32;
 

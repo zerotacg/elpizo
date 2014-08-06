@@ -38,11 +38,6 @@ message AbsoluteRealmLocation {
   optional sint32 ary = 3;
 }
 
-message Terrain {
-  optional uint32 id = 1;
-  optional string name = 2;
-}
-
 message Region {
   optional AbsoluteRealmLocation location = 1;
   repeated uint32 corners = 2;
@@ -60,9 +55,11 @@ message Realm {
 }
 
 message Entity {
+  extensions 100 to max;
+
   optional uint32 id = 1;
   optional string name = 2;
-  repeated uint32 types = 3;
+  optional string type = 3;
   optional uint32 direction = 4;
   optional AbsoluteLocation location = 5;
   optional uint32 level = 6;
@@ -74,8 +71,14 @@ message Entity {
   optional uint32 maxXp = 12;
 }
 
-message Player {
+message Actor {
+  extend Entity {
+    optional Actor actorExt = 101;
+  }
+
   optional Entity entity = 1;
+  optional string body = 2;
+  optional string facial = 3;
 }
 
 message ErrorPacket {

@@ -46,10 +46,10 @@ function makeHumanoidSpriteDef(resourceName) {
 }
 
 export default = {
-  "fixture.tree.oak": {
+  "tree.small.oak": {
       standing: {
           n: new SpriteDef(
-              "sprites.fixture.tree.oak", 96, 96, 0,
+              "sprites.tree.small.oak", 96, 96, 0,
               [{sx: 0, sy: 0}], {sx: 32, sy: 64}, false)
       }
   },

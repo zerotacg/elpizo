@@ -1,4 +1,4 @@
-module names from "./constants/names";
+module exports from "./constants/exports";
 import {Realm, Region, Entity, Directions} from "./models";
 
 import {Packet} from "./game_pb2";
@@ -7,8 +7,7 @@ export function install(game) {
   var protocol = game.protocol;
 
   protocol.on(Packet.Type.REALM, (origin, message) => {
-    game.setRealm(new Realm(
-        message.realm.id, message.realm.name, message.realm.size));
+    game.setRealm(new Realm(message.realm));
   });
 
   protocol.on(Packet.Type.REGION, (origin, message) => {;
@@ -18,9 +17,7 @@ export function install(game) {
       return;
     }
 
-    game.realm.addRegion(new Region(
-        message.region.location,
-        message.region.corners.map((id) => names.terrain[id])));
+    game.realm.addRegion(new Region(message.region));
   });
 
   protocol.on(Packet.Type.ENTITY, (origin, message) => {
@@ -31,10 +28,8 @@ export function install(game) {
       return;
     }
 
-    game.realm.addEntity(new Entity(
-        message.entity.id, message.entity.name,
-        message.entity.types.map((id) => names.entityTypes[id]),
-        message.entity.location, message.entity.direction, []));
+    game.realm.addEntity(new (Entity.TYPES[message.entity.type])(
+        message.entity));
   });
 
   protocol.on(Packet.Type.AVATAR, (origin, message) => {

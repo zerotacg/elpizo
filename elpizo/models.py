@@ -41,9 +41,13 @@ class Terrain(Base):
 
   id = basic_primary_key()
   name = sqlalchemy.Column(String, unique=True, nullable=False)
+  passable = sqlalchemy.Column(Boolean, nullable=False)
 
-  def to_protobuf(self):
-    return game_pb2.Terrain(id=self.id, name=self.name)
+  def to_js(self):
+    return {
+        "name": self.name,
+        "passable": self.passable
+    }
 
 
 class Region(Base):
@@ -109,31 +113,82 @@ class Region(Base):
         corners=self.corners)
 
 
-class LocationMixin(object):
-  @declared_attr
-  def realm_id(cls):
-    return sqlalchemy.Column(Integer,
-                             sqlalchemy.ForeignKey("realms.id"),
-                             nullable=False)
-  @declared_attr
-  def realm(cls):
-    return relationship("Realm")
+class User(Base):
+  __tablename__ = "users"
 
-  @declared_attr
-  def region(cls):
-    return relationship("Region",
-        primaryjoin=lambda:
-            (cls.realm_id == Realm.id) & (Region.realm_id == Realm.id) &
-            (cls.arx == foreign(Region.arx)) & (cls.ary == foreign(Region.ary)),
-        viewonly=True,
-        uselist=False,
-        backref=backref(cls.__tablename__, uselist=True))
+  id = basic_primary_key()
+  name = sqlalchemy.Column(String, unique=True, nullable=False)
 
+  current_actor_id = sqlalchemy.Column(
+      Integer,
+      sqlalchemy.ForeignKey("actors.id"),
+      nullable=True)
+  current_actor = relationship("Actor",
+                               foreign_keys="User.current_actor_id")
+
+  @property
+  def queue_name(self):
+    return "users.{id}".format(id=self.id)
+
+
+class Player(Base):
+  __tablename__ = "players"
+
+  user_id = sqlalchemy.Column(Integer,
+                              sqlalchemy.ForeignKey("users.id"),
+                              nullable=False,
+                              primary_key=True)
+  user = relationship("User", foreign_keys="Player.user_id", backref="players")
+
+  actor_id = sqlalchemy.Column(
+      Integer,
+      sqlalchemy.ForeignKey("actors.id"),
+      nullable=False,
+      unique=True,
+      primary_key=True)
+  actor = relationship("Actor", backref=backref("player", uselist=False))
+
+  @classmethod
+  def by_user_id(cls, session, user_id):
+    return session.query(cls) \
+        .filter(User.current_actor_id == Entity.id,
+                cls.user_id == user_id,
+                cls.actor_id == Entity.id,
+                User.id == user_id) \
+        .one()
+
+
+class Entity(Base):
+  __tablename__ = "entities"
+
+  id = basic_primary_key()
+  name = sqlalchemy.Column(String, nullable=False)
+  type = sqlalchemy.Column(String, nullable=False)
+  direction = sqlalchemy.Column(Integer, nullable=False, default=0)
+  level = sqlalchemy.Column(Integer, nullable=False, default=0)
+
+  hp = sqlalchemy.Column(Integer, nullable=False, default=0)
+  mp = sqlalchemy.Column(Integer, nullable=False, default=0)
+  xp = sqlalchemy.Column(Integer, nullable=False, default=0)
+
+  realm_id = sqlalchemy.Column(Integer,
+                               sqlalchemy.ForeignKey("realms.id"),
+                               nullable=False)
   arx = sqlalchemy.Column(Integer, nullable=False)
   ary = sqlalchemy.Column(Integer, nullable=False)
 
   rx = sqlalchemy.Column(Integer, nullable=False)
   ry = sqlalchemy.Column(Integer, nullable=False)
+
+  realm = relationship("Realm")
+
+  region = relationship("Region",
+      primaryjoin=
+          (realm_id == Realm.id) & (Region.realm_id == Realm.id) &
+          (arx == foreign(Region.arx)) & (ary == foreign(Region.ary)),
+      viewonly=True,
+      uselist=False,
+      backref=backref("entities", uselist=True))
 
   @hybrid.hybrid_property
   def ax(self):
@@ -153,9 +208,7 @@ class LocationMixin(object):
     self.ary = v // Region.SIZE
     self.ry = v % Region.SIZE
 
-  @declared_attr
-  def __table_args__(cls):
-    return (
+  __table_args__ = (
         sqlalchemy.Index("realm_location_idx",
                          "realm_id", "arx", "ary", "rx", "ry"),
     )
@@ -164,70 +217,8 @@ class LocationMixin(object):
     return game_pb2.AbsoluteLocation(realmId=self.realm_id,
                                      ax=self.ax, ay=self.ay)
 
-
-class User(Base):
-  __tablename__ = "users"
-
-  id = basic_primary_key()
-  name = sqlalchemy.Column(String, unique=True, nullable=False)
-
-  current_entity_id = sqlalchemy.Column(
-      Integer,
-      sqlalchemy.ForeignKey("entities.id"),
-      nullable=True)
-  current_entity = relationship("Entity",
-                               foreign_keys="User.current_entity_id")
-
-  @property
-  def queue_name(self):
-    return "users.{id}".format(id=self.id)
-
-
-class Player(Base):
-  __tablename__ = "players"
-
-  user_id = sqlalchemy.Column(Integer,
-                              sqlalchemy.ForeignKey("users.id"),
-                              nullable=False,
-                              primary_key=True)
-  user = relationship("User", foreign_keys="Player.user_id", backref="players")
-
-  entity_id = sqlalchemy.Column(
-      Integer,
-      sqlalchemy.ForeignKey("entities.id"),
-      nullable=False,
-      unique=True,
-      primary_key=True)
-  entity = relationship("Entity", backref=backref("player", uselist=False))
-
   def to_protobuf(self):
-    return game_pb2.Player(entity=self.entity.to_protobuf())
-
-  @classmethod
-  def by_user_id(cls, session, user_id):
-    return session.query(cls) \
-        .filter(User.current_entity_id == Entity.id,
-                cls.user_id == user_id,
-                cls.entity_id == Entity.id,
-                User.id == user_id) \
-        .one()
-
-
-class Entity(LocationMixin, Base):
-  __tablename__ = "entities"
-
-  id = basic_primary_key()
-  name = sqlalchemy.Column(String, unique=True, nullable=False)
-  types = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
-  direction = sqlalchemy.Column(Integer, nullable=False)
-  level = sqlalchemy.Column(Integer, nullable=False)
-
-  hp = sqlalchemy.Column(Integer, nullable=False)
-  mp = sqlalchemy.Column(Integer, nullable=False)
-  xp = sqlalchemy.Column(Integer, nullable=False)
-
-  def to_protobuf(self):
-    return game_pb2.Entity(id=self.id, name=self.name, types=self.types,
+    return game_pb2.Entity(id=self.id, name=self.name, type=self.type,
                            location=self.location_to_protobuf(),
                            direction=self.direction, level=self.level,
                            hp=self.hp, maxHp=100, mp=self.mp, maxMp=100,
@@ -240,16 +231,37 @@ class Entity(LocationMixin, Base):
   def routing_key(self):
     return "entity.{id}".format(id=self.id)
 
+  __mapper_args__ = {
+      "polymorphic_on": type,
+      "with_polymorphic": "*"
+  }
+
 
 User.current_player = relationship("Player",
-    primaryjoin=(User.current_entity_id == remote(Entity.id)) &
-                (foreign(Player.entity_id) == Entity.id),
+    primaryjoin=(User.current_actor_id == remote(Entity.id)) &
+                (foreign(Player.actor_id) == Entity.id),
     viewonly=True,
     uselist=False)
 
 
-class EntityType(Base):
-  __tablename__ = "entity_types"
+class Actor(Entity):
+  __tablename__ = "actors"
 
-  id = basic_primary_key()
-  name = sqlalchemy.Column(String, unique=True, nullable=False)
+  id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
+                         primary_key=True)
+  body = sqlalchemy.Column(String, nullable=False)
+  facial = sqlalchemy.Column(String, nullable=True)
+
+  __mapper_args__ = {
+      "polymorphic_identity": __tablename__
+  }
+
+  def to_protobuf(self):
+    protobuf = super().to_protobuf()
+    message = game_pb2.Actor(body=self.body)
+
+    if self.facial is not None:
+      message.facial = self.facial
+
+    protobuf.Extensions[game_pb2.Actor.actorExt].MergeFrom(message)
+    return protobuf

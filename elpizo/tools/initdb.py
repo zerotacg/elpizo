@@ -5,7 +5,7 @@ import json
 import sys
 
 from elpizo import make_application
-from elpizo.models import Base, User, Player, Realm, Region, Entity, Terrain, EntityType
+from elpizo.models import Base, User, Player, Realm, Region, Entity, Terrain, Actor
 from elpizo.tools import mapgen
 
 
@@ -21,7 +21,7 @@ def initialize_realm(app):
   realm = Realm(name="Windvale", aw=128, ah=128)
   app.sqla.add(realm)
 
-  ocean = Terrain(name="ocean")
+  ocean = Terrain(name="ocean", passable=False)
   app.sqla.add(ocean)
   app.sqla.commit()
 
@@ -38,69 +38,53 @@ def initialize_realm(app):
   return realm
 
 
-def initialize_entity_types(app):
-  for name in [
-      "fixture.tree.oak",
-      "body.male.light",
-      "facial.beard.brown",
-      "hair.messy1.brown",
-      "torso.shirt.white_longsleeve_male",
-      "legs.pants.teal_pants_male",
-      "feet.shoes.brown_shoes_male"
-  ]:
-    type = EntityType(name=name)
-    app.sqla.add(type)
-
+def initialize_entities(app, realm):
+  app.sqla.add(Entity(name="Tree", type_id=types["tree.small"],
+                      property_ids=[properties["tree.small.oak"]],
+                      realm=realm, ax=7, ay=7))
   app.sqla.commit()
-  logging.info("Created entity types.")
 
-  return {type.name: type.id for type in app.sqla.query(EntityType)}
+  logging.info("Initialized entities.")
 
-def initialize_players(app, types, realm):
+
+def initialize_players(app, realm):
   victor_hugo = User(name="victor_hugo")
   app.sqla.add(victor_hugo)
 
   valjean = Player(user=victor_hugo,
-                   entity=Entity(name="Valjean", level=1,
-                                 types=[types["body.male.light"],
-                                        types["facial.beard.brown"],
-                                        types["hair.messy1.brown"]],
-                                 direction=1,
-                                 hp=100, mp=100, xp=100,
-                                 realm=realm, arx=0, ary=0, rx=0, ry=0))
+                   actor=Actor(name="Valjean", level=1,
+                               body="male.light",
+                               facial="beard.brown",
+                               direction=1,
+                               hp=100, mp=100, xp=100,
+                                realm=realm, arx=0, ary=0, rx=0, ry=0))
   app.sqla.add(valjean)
 
   dumas = User(name="dumas")
   app.sqla.add(dumas)
 
   athos = Player(user=dumas,
-                 entity=Entity(name="Athos", level=1,
-                               types=[types["body.male.light"],
-                                      types["facial.beard.brown"],
-                                      types["hair.messy1.brown"]],
-                               direction=1,
-                               hp=100, mp=100, xp=10,
-                               realm=realm, arx=0, ary=0, rx=0, ry=0))
+                 actor=Actor(name="Athos", level=1,
+                             body="male.light",
+                             direction=1,
+                             hp=100, mp=100, xp=10,
+                             realm=realm, arx=0, ary=0, rx=0, ry=0))
   app.sqla.add(athos)
 
   aramis = Player(user=dumas,
-                  entity=Entity(name="Aramis", level=1,
-                                types=[types["body.male.light"],
-                                       types["facial.beard.brown"],
-                                       types["hair.messy1.brown"]],
-                                direction=1,
-                                hp=100, mp=100, xp=10,
-                                realm=realm, arx=0, ary=0, rx=0, ry=0))
+                  actor=Actor(name="Aramis", level=1,
+                              body="male.light",
+                              direction=1,
+                              hp=100, mp=100, xp=10,
+                              realm=realm, arx=0, ary=0, rx=0, ry=0))
   app.sqla.add(aramis)
 
   porthos = Player(user=dumas,
-                   entity=Entity(name="Porthos", level=1,
-                                 types=[types["body.male.light"],
-                                        types["facial.beard.brown"],
-                                        types["hair.messy1.brown"]],
-                                 direction=1,
-                                 hp=100, mp=100, xp=10,
-                                 realm=realm, arx=0, ary=0, rx=0, ry=0))
+                   actor=Actor(name="Porthos", level=1,
+                               body="male.light",
+                               direction=1,
+                               hp=100, mp=100, xp=10,
+                               realm=realm, arx=0, ary=0, rx=0, ry=0))
   app.sqla.add(porthos)
 
   app.sqla.commit()
@@ -119,8 +103,8 @@ def main():
 
   initialize_schema(app)
   realm = initialize_realm(app)
-  types = initialize_entity_types(app)
-  initialize_players(app, types, realm)
+  #initialize_entities(app, realm)
+  initialize_players(app, realm)
 
 
 if __name__ == "__main__":

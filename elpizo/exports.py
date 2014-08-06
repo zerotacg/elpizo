@@ -1,12 +1,8 @@
-from .models import Terrain, EntityType
+from .models import Terrain
 
 
 def get_exports(application):
   return {
-      "names": {
-          "terrain": {terrain.id: terrain.name
-              for terrain in application.sqla.query(Terrain)},
-          "entityTypes": {entity_type.id: entity_type.name
-              for entity_type in application.sqla.query(EntityType)}
-      }
+      "terrain": {terrain.id: terrain.to_js()
+          for terrain in application.sqla.query(Terrain)}
   }

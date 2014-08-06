@@ -4,6 +4,7 @@ import {nubStrings, repeat} from "./util/collections";
 import {hasOwnProp} from "./util/objects";
 
 module game_pb2 from "./game_pb2";
+module exports from "./constants/exports";
 
 export var Directions = {
     N: 0,
@@ -39,10 +40,13 @@ export function getDirectionVector(d) {
 }
 
 export class Realm {
-  constructor(id, name, size) {
-    this.id = id;
-    this.name = name;
-    this.size = size;
+  constructor(message) {
+    this.id = message.id;
+    this.name = message.name;
+    this.size = {
+        aw: message.size.aw,
+        ah: message.size.ah
+    };
 
     this.regions = {};
     this.entities = {};
@@ -87,9 +91,12 @@ export class Realm {
 }
 
 export class Region {
-  constructor(location, corners) {
-    this.location = location;
-    this.corners = corners;
+  constructor(message) {
+    this.location = {
+        arx: message.location.arx,
+        ary: message.location.ary
+    };
+    this.corners = message.corners.map((id) => exports.terrain[id]);
   }
 
   getKey() {
@@ -103,10 +110,10 @@ export class Region {
 
     for (var rt = 0; rt < Region.SIZE; ++rt) {
       for (var rs = 0; rs < Region.SIZE; ++rs) {
-        var nw = this.corners[(rt + 0) * (Region.SIZE + 1) + (rs + 0)];
-        var ne = this.corners[(rt + 0) * (Region.SIZE + 1) + (rs + 1)];
-        var sw = this.corners[(rt + 1) * (Region.SIZE + 1) + (rs + 0)];
-        var se = this.corners[(rt + 1) * (Region.SIZE + 1) + (rs + 1)];
+        var nw = this.corners[(rt + 0) * (Region.SIZE + 1) + (rs + 0)].name;
+        var ne = this.corners[(rt + 0) * (Region.SIZE + 1) + (rs + 1)].name;
+        var sw = this.corners[(rt + 1) * (Region.SIZE + 1) + (rs + 0)].name;
+        var se = this.corners[(rt + 1) * (Region.SIZE + 1) + (rs + 1)].name;
 
         var types = nubStrings([nw, ne, sw, se]
             .filter((corner) => corner !== null)
@@ -146,19 +153,22 @@ Region.TERRAIN_PREDECENCES = [
 ];
 
 export class Entity extends EventEmitter {
-  constructor(id, name, types, location, direction, equipment) {
+  constructor(message) {
     super();
 
-    this.id = id;
-    this.name = name;
-    this.types = types;
-    this.location = location;
-    this.direction = direction;
+    this.id = message.id;
+    this.name = message.name;
+    this.type = message.type;
+    this.location = {
+        ax: message.location.ax,
+        ay: message.location.ay
+    };
+    this.direction = message.direction;
 
     // TODO: work this out
     this.speed = 2;
 
-    this.equipment = equipment;
+    this.equipment = message.equipment;
 
     this.remainder = 0;
   }
@@ -218,3 +228,19 @@ export class Entity extends EventEmitter {
     }
   }
 }
+
+export class Actor extends Entity {
+  constructor(message) {
+    super(message);
+    message = message.actorExt;
+
+    this.equipment = [];
+
+    this.body = message.body;
+    this.facial = message.facial;
+  }
+}
+
+Entity.TYPES = {
+    actors: Actor
+};
