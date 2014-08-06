@@ -13,7 +13,7 @@ from elpizo.tools import mapgen
 
 
 def initialize_schema(app):
-  engine = app.sqla.bind
+  engine = app.sqla_factory().bind
 
   Base.metadata.drop_all(bind=engine)
   Base.metadata.create_all(bind=engine)
@@ -21,36 +21,50 @@ def initialize_schema(app):
 
 
 def initialize_realm(app):
+  sqla = app.sqla_factory()
+
   realm = Realm(name="Windvale", aw=128, ah=128)
-  app.sqla.add(realm)
+  sqla.add(realm)
 
   ocean = Terrain(name="ocean", passable=False)
-  app.sqla.add(ocean)
-  app.sqla.commit()
+  sqla.add(ocean)
+
+  grassland = Terrain(name="grassland", passable=True)
+  sqla.add(grassland)
+
+  sqla.commit()
 
   logging.info("Created realm.")
 
   for ary in range(realm.ah // Region.SIZE):
     for arx in range(realm.aw // Region.SIZE):
       region = Region(arx=arx, ary=ary, realm=realm,
-                      corners=[ocean.id] * ((16 + 1) * (16 + 1)))
-      app.sqla.add(region)
+                      corners=[grassland.id] * ((16 + 1) * (16 + 1)))
+      region.corners[3 * 17 + 1] = ocean.id
+      region.corners[3 * 17 + 2] = ocean.id
+      region.corners[4 * 17 + 1] = ocean.id
+      region.corners[4 * 17 + 2] = ocean.id
+      sqla.add(region)
 
-  app.sqla.commit()
+  sqla.commit()
   logging.info("Created realm regions.")
   return realm
 
 
 def initialize_fixtures(app, realm):
-  app.sqla.add(Tree(realm=realm, ax=7, ay=7))
-  app.sqla.commit()
+  sqla = app.sqla_factory()
 
-  logging.info("Initialized fixtures.")
+  sqla.add(Tree(realm=realm, ax=7, ay=7))
+  sqla.commit()
+
+  logging.info("Created fixtures.")
 
 
 def initialize_players(app, realm):
+  sqla = app.sqla_factory()
+
   victor_hugo = User(name="victor_hugo")
-  app.sqla.add(victor_hugo)
+  sqla.add(victor_hugo)
 
   valjean = Player(name="Valjean", level=1, user=victor_hugo,
                    body="male.light",
@@ -58,33 +72,33 @@ def initialize_players(app, realm):
                    direction=1,
                    hp=100, mp=100, xp=100,
                    realm=realm, arx=0, ary=0, rx=0, ry=0)
-  app.sqla.add(valjean)
+  sqla.add(valjean)
 
   dumas = User(name="dumas")
-  app.sqla.add(dumas)
+  sqla.add(dumas)
 
   athos = Player(name="Athos", level=1, user=dumas,
                  body="male.light",
                  direction=1,
                  hp=100, mp=100, xp=10,
                  realm=realm, arx=0, ary=0, rx=0, ry=0)
-  app.sqla.add(athos)
+  sqla.add(athos)
 
   aramis = Player(name="Aramis", level=1, user=dumas,
                   body="male.light",
                   direction=1,
                   hp=100, mp=100, xp=10,
                   realm=realm, arx=0, ary=0, rx=0, ry=0)
-  app.sqla.add(aramis)
+  sqla.add(aramis)
 
   porthos = Player(name="Porthos", level=1, user=dumas,
                    body="male.light",
                    direction=1,
                    hp=100, mp=100, xp=10,
                    realm=realm, arx=0, ary=0, rx=0, ry=0)
-  app.sqla.add(porthos)
+  sqla.add(porthos)
 
-  app.sqla.commit()
+  sqla.commit()
 
   logging.info("Created test users.")
 

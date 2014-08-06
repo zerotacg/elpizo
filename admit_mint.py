@@ -13,7 +13,7 @@ from elpizo.models.base import User
 from elpizo.models.entities import Player
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 
 from tornado.ioloop import IOLoop
 from tornado.options import define, options, parse_command_line, \
@@ -25,6 +25,8 @@ define("mint_private_key", default="elpizo.pem", help="Private key of the mint")
 
 class AdmitHandler(RequestHandler):
   def get(self):
+    sqla = self.application.sqla_factory()
+
     self.set_header("Content-Type", "text/plain")
 
     mint = self.application.mint
@@ -32,7 +34,7 @@ class AdmitHandler(RequestHandler):
     user_name = self.get_argument("user")
     player_name = self.get_argument("player")
 
-    player = self.application.sqla_session.query(Player) \
+    player = sqla.query(Player) \
         .filter(Player.name == player_name,
                 User.name == user_name,
                 Player.user_id == User.id) \
@@ -41,7 +43,7 @@ class AdmitHandler(RequestHandler):
     user = player.user
     user.current_player = player
 
-    self.application.sqla_session.commit()
+    sqla.commit()
 
     credentials = "user.{}".format(user.id)
 
@@ -76,9 +78,7 @@ class Application(Application):
     super().__init__(routes, **kwargs)
 
     engine = create_engine(self.settings["dsn"])
-    Session = sessionmaker(bind=engine)
-
-    self.sqla_session = Session()
+    self.sqla_factory = scoped_session(sessionmaker(bind=engine))
 
     with open(self.settings["mint_private_key"]) as f:
       self.mint = Mint(f)

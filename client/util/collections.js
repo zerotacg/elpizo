@@ -6,13 +6,14 @@ export function repeat(n, f) {
   return xs;
 }
 
-export function nubStrings(xs) {
+export function nubBy(xs, f) {
   var seen = {};
   var ys = [];
   xs.forEach((x) => {
-    if (!seen[x]) {
+    var k = f(x);
+    if (!seen[k]) {
       ys.push(x);
-      seen[x] = true;
+      seen[k] = true;
     }
   });
   return ys;

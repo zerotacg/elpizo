@@ -1,6 +1,6 @@
 import {EventEmitter} from "events";
 
-import {nubStrings, repeat} from "./util/collections";
+import {nubBy, repeat} from "./util/collections";
 import {hasOwnProp} from "./util/objects";
 
 module game_pb2 from "./game_pb2";
@@ -123,7 +123,6 @@ export class Region {
     };
     this.corners = message.corners.map((id) => exports.terrain[id]);
     this.terrain = this.computeTerrain();
-    this.collisionMask = repeat(coords.REGION_SIZE * coords.REGION_SIZE, () => false);
   }
 
   getKey() {
@@ -137,29 +136,32 @@ export class Region {
 
     for (var rt = 0; rt < coords.REGION_SIZE; ++rt) {
       for (var rs = 0; rs < coords.REGION_SIZE; ++rs) {
-        var nw = this.corners[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 0)].name;
-        var ne = this.corners[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 1)].name;
-        var sw = this.corners[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 0)].name;
-        var se = this.corners[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 1)].name;
+        var nw = this.corners[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 0)];
+        var ne = this.corners[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 1)];
+        var sw = this.corners[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 0)];
+        var se = this.corners[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 1)];
 
-        var types = nubStrings([nw, ne, sw, se]
+        var types = nubBy([nw, ne, sw, se]
             .filter((corner) => corner !== null)
             .sort((a, b) =>
                 Region.TERRAIN_PREDECENCES.indexOf(a) -
-                    Region.TERRAIN_PREDECENCES.indexOf(b)));
+                    Region.TERRAIN_PREDECENCES.indexOf(b)),
+            (corner) => corner.name);
 
-        terrain[rt * coords.REGION_SIZE + rs] = types.map((name, i) => {
+        terrain[rt * coords.REGION_SIZE + rs] = types.map((corner, i) => {
           // Terrain blends may exist (e.g. ocean into river), and this ensures
           // that two terrain blending are treated similarly to two terrain of
           // the same type.
-          var above = types.slice(i).concat(Region.TERRAIN_BLENDS[name] || []);
+          var above = types.slice(i).concat(
+              Region.TERRAIN_BLENDS[corner.name] || []);
 
           return {
-              name: name,
+              name: corner.name,
               mask: ((above.indexOf(nw) !== -1) << 3) |
                     ((above.indexOf(ne) !== -1) << 2) |
                     ((above.indexOf(se) !== -1) << 1) |
-                    ((above.indexOf(sw) !== -1) << 0)
+                    ((above.indexOf(sw) !== -1) << 0),
+              passable: corner.passable
           };
         });
       }
@@ -169,7 +171,17 @@ export class Region {
   }
 
   hasCollidableAt(location) {
-    return this.collisionMask[location.ry * coords.REGION_SIZE + location.rx];
+    var corners = [
+        this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
+                     (location.rx + 0)],
+        this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
+                     (location.rx + 1)],
+        this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
+                     (location.rx + 0)],
+        this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
+                     (location.rx + 1)]
+    ];
+    return corners.filter((terrain) => terrain.passable).length <= 1;
   }
 }
 

@@ -5,7 +5,7 @@ import pika
 
 from pika.adapters.tornado_connection import TornadoConnection
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from tornado.web import Application, RequestHandler, StaticFileHandler
 
 from . import endpoints
@@ -45,7 +45,8 @@ class Application(Application):
         self.settings["amqp_server"]), stop_ioloop_on_close=False)
 
     from .models import base, entities, fixtures, realm
-    self.sqla = sessionmaker(bind=create_engine(self.settings["dsn"]))()
+    self.sqla_factory = scoped_session(
+        sessionmaker(bind=create_engine(self.settings["dsn"])))
 
     with open(self.settings["mint_public_key"]) as f:
       self.mint = Mint(f)

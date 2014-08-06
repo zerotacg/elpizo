@@ -19,14 +19,14 @@ def viewport(ctx, message):
 
   if last_viewport is not None:
     last_regions = {region.key: region
-        for region in ctx.application.sqla.query(Region).filter(
+        for region in ctx.sqla.query(Region).filter(
         Region.bounded_by(last_viewport.a_left, last_viewport.a_top,
                           last_viewport.a_right, last_viewport.a_bottom))}
   else:
     last_regions = {}
 
   regions = {region.key: region
-      for region in ctx.application.sqla.query(Region).filter(
+      for region in ctx.sqla.query(Region).filter(
       Region.bounded_by(message.a_left, message.a_top,
                         message.a_right, message.a_bottom))}
 

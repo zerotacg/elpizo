@@ -79,4 +79,4 @@ Fixture.__table_args__ = (
 
 class Tree(Fixture):
   NAME = "tree"
-  BBOX = (0, 0, 1, 1)
+  BBOX = (-1, 0, 2, 1)

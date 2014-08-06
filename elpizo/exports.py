@@ -3,9 +3,10 @@ from .models.fixtures import Fixture
 
 
 def get_exports(application):
+  sqla = application.sqla_factory()
   return {
       "terrain": {terrain.id: terrain.to_js()
-          for terrain in application.sqla.query(Terrain)},
+          for terrain in sqla.query(Terrain)},
       "fixtureTypes": {fixture.NAME: fixture.to_js()
           for fixture in Fixture.__subclasses__()}
   }

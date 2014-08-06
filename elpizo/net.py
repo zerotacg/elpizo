@@ -26,7 +26,7 @@ class Protocol(object):
     self.transient_storage = {}
 
   def on_open(self):
-    player = self.get_player()
+    player = self.get_player(self.application.sqla_factory())
 
     # Set up the user's AMQP subscriptions
     queue_name = player.user.queue_name
@@ -63,10 +63,12 @@ class Protocol(object):
     self.socket.write_message(self.serialize_packet(type, origin, message),
                               binary=True)
 
-  def get_player(self):
-    return self.application.sqla.query(User) \
+  def get_player(self, sqla):
+    player = sqla.query(User) \
         .get(self.user_id) \
         .current_player
+    sqla.refresh(player)
+    return player
 
   def publish(self, routing_key, type, origin, message):
     self.channel.basic_publish(
@@ -87,7 +89,7 @@ class Protocol(object):
         routing_key=routing_key)
 
   def make_context(self):
-    return Context(self, self.get_player())
+    return Context(self, self.get_player(self.application.sqla_factory()))
 
   def close(self):
     self.socket.close()
@@ -188,6 +190,7 @@ class Context(object):
   def __init__(self, protocol, player):
     self.protocol = protocol
     self.player = player
+    self.sqla = self.application.sqla_factory()
 
   @property
   def application(self):

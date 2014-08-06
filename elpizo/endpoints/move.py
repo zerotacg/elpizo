@@ -1,5 +1,6 @@
 from .. import game_pb2
 from ..green import sleep
+from ..models.realm import Region, Terrain
 from ..models.fixtures import Fixture
 
 
@@ -17,17 +18,42 @@ def socket_move(ctx, message):
 
   dax, day = get_direction_vector(direction)
   ctx.player.direction = direction
+  ctx.sqla.commit()
 
-  if not ctx.application.sqla.query(ctx.application.sqla.query(Fixture).filter(
-      Fixture.bbox_contains(ctx.player.realm_id,
-                            ctx.player.ax + dax, ctx.player.ay + day)
+  ctx.player.ax += dax
+  ctx.player.ay += day
+
+  region = ctx.player.region
+
+  if region is None:
+    ctx.sqla.rollback()
+    return
+
+  corners = [
+      region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
+                     (ctx.player.rx + 0)],
+      region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
+                     (ctx.player.rx + 1)],
+      region.corners[(ctx.player.ry + 1) * (Region.SIZE + 1) +
+                     (ctx.player.rx + 0)],
+      region.corners[(ctx.player.ry + 1) * (Region.SIZE + 1) +
+                     (ctx.player.rx + 1)]
+  ]
+  terrain_map = {terrain.id: terrain
+                 for terrain
+                 in ctx.sqla.query(Terrain).filter(Terrain.id.in_(corners))}
+
+  if sum([terrain_map[corner].passable for corner in corners]) <= 1:
+    ctx.sqla.rollback()
+    return
+
+  if ctx.sqla.query(ctx.sqla.query(Fixture).filter(
+      Fixture.bbox_contains(ctx.player.realm_id, ctx.player.ax, ctx.player.ay)
   ).exists()).scalar():
-    ctx.player.ax = min([max([0, ctx.player.ax + dax]),
-                        ctx.player.region.realm.aw - 1])
-    ctx.player.ay = min([max([0, ctx.player.ay + day]),
-                        ctx.player.region.realm.ah - 1])
-    ctx.application.sqla.commit()
+    ctx.sqla.rollback()
+    return
 
+  ctx.sqla.commit()
   ctx.publish(ctx.player.region.routing_key,
               game_pb2.Packet.MOVE, message)
 
