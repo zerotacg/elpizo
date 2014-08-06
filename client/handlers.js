@@ -10,7 +10,7 @@ export function install(game) {
     game.setRealm(new Realm(message.realm));
   });
 
-  protocol.on(Packet.Type.REGION, (origin, message) => {;
+  protocol.on(Packet.Type.REGION, (origin, message) => {
     if (message.region.location.realmId !== game.realm.id) {
       console.warn("Got invalid region realm ID (" + message.region.realmId +
                    ") for current realm (" + game.realm.id + "), discarding.");

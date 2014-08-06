@@ -75,6 +75,11 @@ class Region(Base):
   def a_bottom(self):
     return (self.ary + 1) * Region.SIZE
 
+  @hybrid.hybrid_property
+  def bbox(self):
+    return func.box(func.point(self.a_left, self.a_top),
+                    func.point(self.a_right, self.a_bottom))
+
   # The array contains integers in the Terrain table.
   corners = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
 
@@ -96,13 +101,19 @@ class Region(Base):
     a_padding_w = a_width // 2
     a_padding_h = a_height // 2
 
-    return (cls.a_left >= a_left - a_padding_w) & \
-           (cls.a_right <= a_right + a_padding_w) & \
-           (cls.a_top >= a_top - a_padding_h) & \
-           (cls.a_bottom <= a_bottom + a_padding_h)
+    viewport_box = func.box(
+        func.point(a_left - a_padding_w, a_top - a_padding_h),
+        func.point(a_right + a_padding_w, a_bottom + a_padding_h))
+
+    return cls.bbox.op("&&")(viewport_box)
 
   def to_protobuf(self):
     return game_pb2.Region(
         location=game_pb2.AbsoluteRealmLocation(realm_id=self.realm_id,
                                                 arx=self.arx, ary=self.ary),
         corners=self.corners)
+
+Region.__table_args__ = (
+    sqlalchemy.Index("region_bbox_gist_idx", Region.bbox,
+                     postgresql_using="gist"),
+)

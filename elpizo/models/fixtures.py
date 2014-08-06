@@ -69,11 +69,12 @@ class Fixture(Entity):
     offset = func.point(cls.ax, cls.ay)
     point = func.point(ax, ay)
 
-    return (cls.realm_id == realm_id) & (self.bbox).op("@>")(point - offset)
+    return (cls.realm_id == realm_id) & (cls.bbox).op("@>")(point - offset)
 
 
 Fixture.__table_args__ = (
-    sqlalchemy.Index("bbox_gist_idx", Fixture.bbox, postgresql_using="gist"),
+    sqlalchemy.Index("fixture_bbox_gist_idx", Fixture.bbox,
+                     postgresql_using="gist"),
 )
 
 
