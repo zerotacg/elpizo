@@ -158,7 +158,6 @@ export class Entity extends EventEmitter {
 
     this.id = message.id;
     this.name = message.name;
-    this.type = message.type;
     this.location = {
         ax: message.location.ax,
         ay: message.location.ay
@@ -238,6 +237,7 @@ export class Entity extends EventEmitter {
 export class Actor extends Entity {
   constructor(message) {
     super(message);
+
     message = message.actorExt;
 
     this.equipment = [];
@@ -247,6 +247,9 @@ export class Actor extends Entity {
   }
 }
 
+Actor.prototype.type = "actors";
+
 Entity.TYPES = {
-    actors: Actor
+    actors: Actor,
+    players: Actor
 };

@@ -5,7 +5,7 @@ import json
 import sys
 
 from elpizo import make_application
-from elpizo.models import Base, User, Player, Realm, Region, Entity, Terrain, Actor
+from elpizo.models import Base, User, Player, Realm, Region, Entity, Terrain, Player
 from elpizo.tools import mapgen
 
 
@@ -51,40 +51,36 @@ def initialize_players(app, realm):
   victor_hugo = User(name="victor_hugo")
   app.sqla.add(victor_hugo)
 
-  valjean = Player(user=victor_hugo,
-                   actor=Actor(name="Valjean", level=1,
-                               body="male.light",
-                               facial="beard.brown",
-                               direction=1,
-                               hp=100, mp=100, xp=100,
-                                realm=realm, arx=0, ary=0, rx=0, ry=0))
+  valjean = Player(name="Valjean", level=1, user=victor_hugo,
+                   body="male.light",
+                   facial="beard.brown",
+                   direction=1,
+                   hp=100, mp=100, xp=100,
+                   realm=realm, arx=0, ary=0, rx=0, ry=0)
   app.sqla.add(valjean)
 
   dumas = User(name="dumas")
   app.sqla.add(dumas)
 
-  athos = Player(user=dumas,
-                 actor=Actor(name="Athos", level=1,
-                             body="male.light",
-                             direction=1,
-                             hp=100, mp=100, xp=10,
-                             realm=realm, arx=0, ary=0, rx=0, ry=0))
+  athos = Player(name="Athos", level=1, user=dumas,
+                 body="male.light",
+                 direction=1,
+                 hp=100, mp=100, xp=10,
+                 realm=realm, arx=0, ary=0, rx=0, ry=0)
   app.sqla.add(athos)
 
-  aramis = Player(user=dumas,
-                  actor=Actor(name="Aramis", level=1,
-                              body="male.light",
-                              direction=1,
-                              hp=100, mp=100, xp=10,
-                              realm=realm, arx=0, ary=0, rx=0, ry=0))
+  aramis = Player(name="Aramis", level=1, user=dumas,
+                  body="male.light",
+                  direction=1,
+                  hp=100, mp=100, xp=10,
+                  realm=realm, arx=0, ary=0, rx=0, ry=0)
   app.sqla.add(aramis)
 
-  porthos = Player(user=dumas,
-                   actor=Actor(name="Porthos", level=1,
-                               body="male.light",
-                               direction=1,
-                               hp=100, mp=100, xp=10,
-                               realm=realm, arx=0, ary=0, rx=0, ry=0))
+  porthos = Player(name="Porthos", level=1, user=dumas,
+                   body="male.light",
+                   direction=1,
+                   hp=100, mp=100, xp=10,
+                   realm=realm, arx=0, ary=0, rx=0, ry=0)
   app.sqla.add(porthos)
 
   app.sqla.commit()

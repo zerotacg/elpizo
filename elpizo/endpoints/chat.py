@@ -3,7 +3,7 @@ from .. import game_pb2
 
 def on_open(ctx):
   ctx.subscribe("chatroom.global")
-  ctx.subscribe("conversation.{name}".format(name=ctx.player.actor.name))
+  ctx.subscribe("conversation.{name}".format(name=ctx.player.name))
 
 
 def socket_chat(ctx, message):

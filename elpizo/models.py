@@ -119,43 +119,17 @@ class User(Base):
   id = basic_primary_key()
   name = sqlalchemy.Column(String, unique=True, nullable=False)
 
-  current_actor_id = sqlalchemy.Column(
+  current_player_id = sqlalchemy.Column(
       Integer,
-      sqlalchemy.ForeignKey("actors.id"),
+      sqlalchemy.ForeignKey("players.id", use_alter=True,
+                            name="user_current_player_id -> players"),
       nullable=True)
-  current_actor = relationship("Actor",
-                               foreign_keys="User.current_actor_id")
+  current_player = relationship("Player",
+                                foreign_keys="User.current_player_id")
 
   @property
   def queue_name(self):
     return "users.{id}".format(id=self.id)
-
-
-class Player(Base):
-  __tablename__ = "players"
-
-  user_id = sqlalchemy.Column(Integer,
-                              sqlalchemy.ForeignKey("users.id"),
-                              nullable=False,
-                              primary_key=True)
-  user = relationship("User", foreign_keys="Player.user_id", backref="players")
-
-  actor_id = sqlalchemy.Column(
-      Integer,
-      sqlalchemy.ForeignKey("actors.id"),
-      nullable=False,
-      unique=True,
-      primary_key=True)
-  actor = relationship("Actor", backref=backref("player", uselist=False))
-
-  @classmethod
-  def by_user_id(cls, session, user_id):
-    return session.query(cls) \
-        .filter(User.current_actor_id == Entity.id,
-                cls.user_id == user_id,
-                cls.actor_id == Entity.id,
-                User.id == user_id) \
-        .one()
 
 
 class Entity(Base):
@@ -237,13 +211,6 @@ class Entity(Base):
   }
 
 
-User.current_player = relationship("Player",
-    primaryjoin=(User.current_actor_id == remote(Entity.id)) &
-                (foreign(Player.actor_id) == Entity.id),
-    viewonly=True,
-    uselist=False)
-
-
 class Actor(Entity):
   __tablename__ = "actors"
 
@@ -265,3 +232,19 @@ class Actor(Entity):
 
     protobuf.Extensions[game_pb2.Actor.actor_ext].MergeFrom(message)
     return protobuf
+
+
+class Player(Actor):
+  __tablename__ = "players"
+
+  id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("actors.id"),
+                         primary_key=True)
+
+  user_id = sqlalchemy.Column(Integer,
+                              sqlalchemy.ForeignKey("users.id"),
+                              nullable=False)
+  user = relationship("User", foreign_keys="Player.user_id", backref="players")
+
+  __mapper_args__ = {
+      "polymorphic_identity": __tablename__
+  }
