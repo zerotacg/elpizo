@@ -302,7 +302,6 @@ export class Actor extends Entity {
   }
 
   updateAsAvatar(dt, inputState, protocol) {
-    // TODO: validate timing server-side.
     if (this.remainder === 0) {
       var direction = inputState.isPressed(37) ? Directions.W :
                       inputState.isPressed(38) ? Directions.N :
