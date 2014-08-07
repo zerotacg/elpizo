@@ -16,12 +16,18 @@ def get_direction_vector(d):
 
 
 def socket_move(ctx, message):
-  ctx.publish(ctx.player.region.routing_key, game_pb2.Packet.MOVE, message)
-
   last_move_time = ctx.transient_storage.get("last_move_time", 0)
   now = time.monotonic()
 
   dt = now - last_move_time
+
+  if dt < 1 / ctx.player.speed:
+    ctx.send(ctx.player.to_origin_protobuf(), game_pb2.TeleportPacket(
+        location=ctx.player.location_to_protobuf(),
+        direction=ctx.player.direction))
+    return
+
+  ctx.publish(ctx.player.region.routing_key, message)
 
   direction = message.direction
 
@@ -94,14 +100,13 @@ def socket_move(ctx, message):
 
 def mq_move(ctx, origin, message):
   if origin.id != ctx.player.id:
-    ctx.send(game_pb2.Packet.MOVE, origin, message)
+    ctx.send(origin, message)
 
 
 def socket_stop_move(ctx, message):
-  ctx.publish(ctx.player.region.routing_key,
-              game_pb2.Packet.STOP_MOVE, message)
+  ctx.publish(ctx.player.region.routing_key, message)
 
 
 def mq_stop_move(ctx, origin, message):
   if origin.id != ctx.player.id:
-    ctx.send(game_pb2.Packet.STOP_MOVE, origin, message)
+    ctx.send(origin, message)

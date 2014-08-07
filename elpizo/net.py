@@ -43,9 +43,9 @@ class Protocol(object):
       on_open_hook(self.make_context())
 
   @classmethod
-  def serialize_packet(cls, type, origin, message):
+  def serialize_packet(cls, origin, message):
     packet = game_pb2.Packet(
-        type=type,
+        type=message.DESCRIPTOR.GetOptions().Extensions[game_pb2.packet_type],
         payload=message.SerializeToString())
 
     if origin is not None:
@@ -59,8 +59,8 @@ class Protocol(object):
     return packet.type, packet.origin, \
            cls.PACKETS[packet.type].FromString(packet.payload)
 
-  def send(self, type, origin, message):
-    self.socket.write_message(self.serialize_packet(type, origin, message),
+  def send(self, origin, message):
+    self.socket.write_message(self.serialize_packet(origin, message),
                               binary=True)
 
   def get_player(self, sqla):
@@ -70,11 +70,11 @@ class Protocol(object):
     sqla.refresh(player)
     return player
 
-  def publish(self, routing_key, type, origin, message):
+  def publish(self, routing_key, origin, message):
     self.channel.basic_publish(
         exchange=Protocol.EXCHANGE_NAME,
         routing_key=routing_key,
-        body=self.serialize_packet(type, origin, message))
+        body=self.serialize_packet(origin, message))
 
   def unsubscribe(self, player, routing_key):
     green.async_task(self.channel.queue_unbind)(
@@ -129,8 +129,7 @@ class Connection(WebSocketHandler):
       body += "\nTraceback:\n" +  "".join(traceback.format_exception(*exc_info))
 
     self.write_message(
-        Protocol.serialize_packet(game_pb2.Packet.ERROR, None,
-                                  game_pb2.ErrorPacket(text=body)),
+        Protocol.serialize_packet(None, game_pb2.ErrorPacket(text=body)),
         binary=True)
     self.close()
 
@@ -203,11 +202,11 @@ class Context(object):
   def error(self, text):
     self.protocol.socket.error(text)
 
-  def send(self, type, origin, message):
-    self.protocol.send(type, origin, message)
+  def send(self, origin, message):
+    self.protocol.send(origin, message)
 
-  def publish(self, routing_key, type, message):
-    self.protocol.publish(routing_key, type,
+  def publish(self, routing_key, message):
+    self.protocol.publish(routing_key,
                           self.player.to_origin_protobuf(), message)
 
   def unsubscribe(self, routing_key):

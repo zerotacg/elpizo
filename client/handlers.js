@@ -45,19 +45,21 @@ export function install(game) {
   });
 
   protocol.on(Packet.Type.TELEPORT, (origin, message) => {
-    if (message.entity.location.realmId !== game.realm.id) {
+    var entity = game.realm.getEntity(origin.id);
+
+    if (message.location.realmId !== game.realm.id) {
       console.warn("Got invalid teleport realm ID (" +
-                   message.entity.location.realmId + ") for current realm (" +
+                   message.location.realmId + ") for current realm (" +
                    game.realm.id + "), discarding.");
       return;
     }
 
-    var entity = game.realm.getEntity(origin.id);
     entity.moving = false;
     entity.remainder = 0;
     entity.location = {
         ax: message.location.ax,
         ay: message.location.ay
     };
+    entity.direction = message.direction;
   });
 }

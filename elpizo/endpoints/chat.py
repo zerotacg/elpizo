@@ -15,9 +15,8 @@ def socket_chat(ctx, message):
     ctx.error("unknown chat namespace: {ns}".format(ns=ns))
     return
 
-  ctx.publish(target, game_pb2.Packet.Type.CHAT,
-              game_pb2.ChatPacket(target=target, text=text))
+  ctx.publish(target, game_pb2.ChatPacket(target=target, text=text))
 
 
 def mq_chat(ctx, origin, message):
-  ctx.send(game_pb2.Packet.Type.CHAT, origin, message)
+  ctx.send(origin, message)

@@ -102,6 +102,8 @@ class Actor(Entity):
   body = sqlalchemy.Column(String, nullable=False)
   facial = sqlalchemy.Column(String, nullable=True)
 
+  speed = 2 # should probably not be hardcoded
+
   __mapper_args__ = {
       "polymorphic_identity": __tablename__
   }
@@ -109,7 +111,7 @@ class Actor(Entity):
   def to_protobuf(self):
     protobuf = super().to_protobuf()
     message = game_pb2.Actor(level=self.level, hp=self.hp, mp=self.mp,
-                             xp=self.xp, body=self.body)
+                             xp=self.xp, body=self.body, speed=self.speed)
 
     if self.facial is not None:
       message.facial = self.facial

@@ -326,7 +326,7 @@ export class Renderer extends EventEmitter {
     if (!hasOwnProp.call(this.entitySprites, entity.id) ||
         this.entitySprites[entity.id].length != spriteDefs.length) {
       this.entitySprites[entity.id] = repeat(spriteDefs.length, () =>
-          new Sprite(null, entity.speed));
+          new Sprite(null, entity.speed || 0));
     }
 
     spriteDefs.forEach((spriteDef, i) => {

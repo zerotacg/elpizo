@@ -79,6 +79,7 @@ message Actor {
   optional uint32 max_xp = 7;
   optional string body = 8;
   optional string facial = 9;
+  optional uint32 speed = 10;
 }
 
 message Player {
@@ -158,4 +159,5 @@ message TeleportPacket {
   option (packet_type) = TELEPORT;
 
   optional AbsoluteLocation location = 1;
+  optional uint32 direction = 2;
 }

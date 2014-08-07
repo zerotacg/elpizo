@@ -68,7 +68,6 @@ export class Game extends EventEmitter {
 
   go() {
     this.protocol.send(
-        game_pb2.Packet.Type.VIEWPORT,
         new game_pb2.ViewportPacket(this.renderer.getAbsoluteWorldBounds()));
 
     var startTime = new Date().valueOf() / 1000;

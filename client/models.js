@@ -225,9 +225,24 @@ export class Entity extends EventEmitter {
         ay: message.location.ay
     };
     this.direction = message.direction;
+  }
+
+  update(dt) {
+  }
+}
+
+export class Actor extends Entity {
+  constructor(message) {
+    super(message);
+    message = message.actorExt;
+
+    this.equipment = [];
+
+    this.body = message.body;
+    this.facial = message.facial;
 
     // TODO: work this out
-    this.speed = 2;
+    this.speed = message.speed;
 
     this.moving = false;
     this.remainder = 0;
@@ -266,6 +281,8 @@ export class Entity extends EventEmitter {
   }
 
   update(dt) {
+    super.update(dt);
+
     if (this.remainder > 0) {
       var unit = getDirectionVector(this.direction);
       var aDistance = Math.min(this.speed * dt, this.remainder);
@@ -296,34 +313,19 @@ export class Entity extends EventEmitter {
       if (direction !== null) {
         if (this.moveInDirection(direction)) {
           // Send a move packet only if we've successfully moved.
-          protocol.send(game_pb2.Packet.Type.MOVE,
-                        new game_pb2.MovePacket({direction: direction}));
+          protocol.send(new game_pb2.MovePacket({direction: direction}));
         } else {
           // Otherwise, we're trying to move in a direction that's obstructed so
           // we stop moving and send StopMoves.
           this.moving = false;
-          protocol.send(game_pb2.Packet.Type.STOP_MOVE,
-                        new game_pb2.StopMovePacket());
+          protocol.send(new game_pb2.StopMovePacket());
         }
       } else if (this.moving) {
           // We've stopped moving entirely.
           this.moving = false;
-          protocol.send(game_pb2.Packet.Type.STOP_MOVE,
-                        new game_pb2.StopMovePacket());
+          protocol.send(new game_pb2.StopMovePacket());
       }
     }
-  }
-}
-
-export class Actor extends Entity {
-  constructor(message) {
-    super(message);
-    message = message.actorExt;
-
-    this.equipment = [];
-
-    this.body = message.body;
-    this.facial = message.facial;
   }
 }
 
