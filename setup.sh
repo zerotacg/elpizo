@@ -4,7 +4,7 @@ sudo apt-get install -y postgresql-server-dev-9.3 libpython3.4-dev libxml2-dev \
                         rabbitmq-server nodejs python3-setuptools npm \
                         git build-essential libtool autoconf && \
 sudo easy_install-3.4 pip && \
-sudo pip-3.4 install virtualenv && \
+sudo pip3.4 install virtualenv && \
 sudo npm install -g bower && \
 git submodule init && git submodule update && \
 make && \

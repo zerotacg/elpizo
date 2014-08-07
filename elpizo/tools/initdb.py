@@ -2,7 +2,6 @@ import logging
 from lxml import etree
 from itertools import product
 import json
-import sys
 
 from elpizo import make_application
 from elpizo.models.base import Base, User
@@ -104,10 +103,6 @@ def initialize_players(app, realm):
 
 
 def main():
-  if len(sys.argv) != 2:
-    sys.stderr.write("usage: {} <mapgen2 xml>\n".format(sys.argv[0]))
-    sys.exit(1)
-
   app = make_application()
 
   input("This will DELETE ALL DATA! Press ENTER to continue or CTRL+C to abort. ")
