@@ -15,4 +15,5 @@ npm install && \
 bower install && \
 openssl genrsa -out elpizo.pem 2048 && \
 openssl rsa -in elpizo.pem -pubout -out elpizo.pub && \
+node_modules/.bin/gulp protos && \
 python -m elpizo.tools.initdb

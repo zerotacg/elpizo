@@ -1,3 +1,3 @@
-dsn = "postgres://localhost/elpizo"
+dsn = "postgres://user:password@localhost/elpizo"
 amqp_server = "127.0.0.1"
 mint_public_key = "elpizo.pub"
