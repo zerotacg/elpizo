@@ -143,7 +143,7 @@ gulp.task("protos", ["protos-js", "protos-py"]);
 gulp.task("protos-js", function () {
   return gulp.src("./proto/game.proto")
     .pipe(run(path.join(__dirname, "node_modules", ".bin", "proto2js") +
-                        " /dev/stdin -commonjs",
+                        " ./proto/game.proto -commonjs",
               {silent: true}))
     .pipe(insert.prepend("require(\"protobufjs\").convertFieldsToCamelCase=true;"))
     .pipe(rename("game_pb2.js"))
