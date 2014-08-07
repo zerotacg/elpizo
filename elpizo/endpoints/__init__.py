@@ -1,11 +1,20 @@
-from . import chat, error, move, private
+from . import chat, move, private
 from ..game_pb2 import Packet
+
+
+def basic_mq_endpoint(ctx, origin, message):
+  if origin.id != ctx.player.id:
+    ctx.send(origin, message)
 
 
 def configure(application):
   application.on_open_hooks = [
       chat.on_open,
       private.on_open
+  ]
+
+  application.on_close_hooks = [
+      private.on_close
   ]
 
   application.sockjs_endpoints = {
@@ -16,8 +25,9 @@ def configure(application):
   }
 
   application.amqp_endpoints = {
-      Packet.CHAT: chat.mq_chat,
-      Packet.ERROR: error.mq_error,
-      Packet.MOVE: move.mq_move,
-      Packet.STOP_MOVE: move.mq_stop_move
+      Packet.CHAT: basic_mq_endpoint,
+      Packet.ERROR: basic_mq_endpoint,
+      Packet.MOVE: basic_mq_endpoint,
+      Packet.STOP_MOVE: basic_mq_endpoint,
+      Packet.STATUS: basic_mq_endpoint
   }

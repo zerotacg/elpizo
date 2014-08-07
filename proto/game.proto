@@ -17,6 +17,7 @@ message Packet {
     ENTITY = 7;
     STOP_MOVE = 8;
     TELEPORT = 9;
+    STATUS = 10;
   }
 
   optional Type type = 1;
@@ -194,4 +195,13 @@ message TeleportPacket {
 
   optional AbsoluteLocation location = 1;
   optional uint32 direction = 2;
+}
+
+message StatusPacket {
+  // Sent by the server to indicate a change in status of a player.
+  //
+  // Direction: Server -> Client
+  option (packet_type) = STATUS;
+
+  optional bool online = 1;
 }

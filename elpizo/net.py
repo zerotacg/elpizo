@@ -105,7 +105,8 @@ class Protocol(object):
     self.application.amqp_endpoints[type](ctx, origin, message)
 
   def on_close(self):
-    pass
+    for on_close_hook in self.application.on_close_hooks:
+      on_close_hook(self.make_context())
 
 
 for name, descriptor in game_pb2.DESCRIPTOR.message_types_by_name.items():
@@ -179,8 +180,8 @@ class Connection(WebSocketHandler):
 
     try:
       if self.channel.is_open:
+        self.protocol.on_close()
         self.channel.close()
-      self.protocol.on_close()
     except Exception as e:
       logging.error("Error in on_close for WebSocket connection", exc_info=e)
 

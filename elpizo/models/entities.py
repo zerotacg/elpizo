@@ -131,6 +131,8 @@ class Player(Actor):
                               sqlalchemy.ForeignKey("users.id"),
                               nullable=False)
 
+  online = sqlalchemy.Column(Boolean, nullable=False, default=False)
+
   __mapper_args__ = {
       "polymorphic_identity": __tablename__
   }

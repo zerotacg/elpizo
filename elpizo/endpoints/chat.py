@@ -16,7 +16,3 @@ def socket_chat(ctx, message):
     return
 
   ctx.publish(target, game_pb2.ChatPacket(target=target, text=text))
-
-
-def mq_chat(ctx, origin, message):
-  ctx.send(origin, message)

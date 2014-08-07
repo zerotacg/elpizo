@@ -98,15 +98,5 @@ def socket_move(ctx, message):
   ctx.sqla.commit()
 
 
-def mq_move(ctx, origin, message):
-  if origin.id != ctx.player.id:
-    ctx.send(origin, message)
-
-
 def socket_stop_move(ctx, message):
   ctx.publish(ctx.player.region.routing_key, message)
-
-
-def mq_stop_move(ctx, origin, message):
-  if origin.id != ctx.player.id:
-    ctx.send(origin, message)
