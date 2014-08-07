@@ -109,7 +109,7 @@ html_theme_path = [csp.get_theme_dir()]
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-html_title = "Elpizo Technical Design Document"
+html_title = "Rekindled Hope Technical Design Document"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None

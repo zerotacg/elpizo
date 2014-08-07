@@ -1,7 +1,7 @@
 Home
 ====
 
-Welcome to the *Rekindled Hope* technical design documentation.
+Welcome to the *Rekindled Hope* technical design document.
 
 Contents:
 
