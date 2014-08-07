@@ -1,9 +1,10 @@
 Communications
 ==============
-Packets are sent back and forth between the client and server using JSON over
-SockJS. Packets that are bidirectional will have an additional origin field
-added to their body for responses. The communications channel also has a cookie
-side-channel, used for authentication and initial session data.
+Packets are sent back and forth between the client and server using binary
+Protocol Buffers over a WebSocket. Packets that are bidirectional will have an
+additional origin field added to their body for responses. The communications
+channel also has a cookie side-channel, used for authentication and initial
+session data.
 
 Authentication
 --------------
@@ -60,56 +61,4 @@ default functionality for the one-to-one correlation of responses to requests
 (no RPC semantics), but messages may contain request identifiers to associate
 requests to responses.
 
-Chat
-~~~~
-Direction
-  bidirectional
-
-::
-
-    {
-      "type": "chat",
-      "target": "chatrooms.global",
-      "message": "hello!"
-    }
-
-The target field indicates the location to send the message to -- a player, a
-chat room, or "nearby".
-
-Movement
-~~~~~~~~
-Direction
-  bidirectional
-
-::
-
-    {
-      "type": "move",
-      "path": "llrruuddlrrlr"
-    }
-
-The path indicates the steps to travel to the destination computed by the
-client. The path consists of single tile movements left, right, up, and down.
-The server will validate the path then broadcast the move if it is successful.
-
-The client who sent the move packet does not need to wait for the server to
-acknowledge the move -- it assumes the server has implicitly acknowledged it.
-The server can retroactively cancel the move by sending a teleport packet.
-
-Teleport
-~~~~~~~~
-Direction
-  server to client
-
-::
-
-    {
-      "type": "teleport",
-      "ax": 30,
-      "ay": 38
-    }
-
-A teleport packet is sent if a move was rejected, or if the server requires the
-client to be at a specific location immediately. The coordinates are in the
-absolute tile space (ax, ay). Upon receiving this packet, the client must
-immediately abort any movement and go to the indicated tile. NPC Server API
+For a description of packet types, see ``proto/game.proto``.

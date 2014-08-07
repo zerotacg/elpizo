@@ -18,17 +18,6 @@ in a realm. Tiles contain no terrain information and is inferred strictly from
 the corners-in-regions table (i.e. they don't actually exist physically). The
 tiles are computed on the client side.
 
-Pathing
-+++++++
-Pathing is computed only in straight lines -- there is no intelligent
-pathfinding (e.g. A*). Two deltas are computed -- the x delta and the y delta.
-A path is drawn to the target from the player: first along the longer delta,
-then along the shorter one. In the event of a tie, the axis in which the player
-is currently aligned is chosen.
-
-.. note:: 4-connected Bresenham was originally specified, but the behavior of
-          the algorithm is too unintuitive to players.
-
 Corners
 ~~~~~~~
 Corners are the dual of tiles and contain terrain information about the corners
@@ -155,12 +144,6 @@ occupying the viewport.
 
 Additionally, regions may correspond to pre-rendered chunks of terrain.
 
-Entities
---------
-Entities are fixtures on a map which trigger events (e.g. buildings transport
-the player to different realms, anvils allow for players to forge weapons from
-ingots, actors who roam around).
-
 Actors
 ~~~~~~
 Actors are NPCs or players, who are free to move around. They may also engage in
@@ -171,6 +154,11 @@ NPCs
 NPCs are controlled by an auxiliary server, which acts as a normal human player
 with the exception that the server knows that the players controlled by the NPC
 server are NPCs.
+
+Fixtures
+~~~~~~~~
+Fixtures are fixed entities on the map which players may activate to trigger
+events (e.g. trees, ore rocks, etc.).
 
 Coordinate Systems
 ------------------
