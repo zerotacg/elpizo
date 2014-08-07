@@ -103,12 +103,19 @@ message Fixture {
 }
 
 message ErrorPacket {
+  // Sent to the client when an error occurs.
+  //
+  // Direction: Server -> Client
   option (packet_type) = ERROR;
 
   optional string text = 1;
 }
 
 message ChatPacket {
+  // Sent by the client to relay a chat message; sent by the server to notify
+  // the client of a received chat message.
+  //
+  // Direction: Server <-> Client
   option (packet_type) = CHAT;
 
   optional string target = 1;
@@ -116,28 +123,44 @@ message ChatPacket {
 }
 
 message MovePacket {
+  // Sent by the client to perform a move; sent by the server to notify the
+  // client of a performed move.
+  //
+  // Direction: Server <-> Client
   option (packet_type) = MOVE;
 
   optional uint32 direction = 1;
 }
 
 message AvatarPacket {
+  // Sent by the server to indicate which entity is the avatar.
+  //
+  // Direction: Server -> Client
   option (packet_type) = AVATAR;
 }
 
 message RealmPacket {
+  // Sent by the server to begin populating the client's realm information.
+  //
+  // Direction: Server -> Client
   option (packet_type) = REALM;
 
   optional Realm realm = 1;
 }
 
 message RegionPacket {
+  // Sent by the server to populate the client's realm regions.
+  //
+  // Direction: Server -> Client
   option (packet_type) = REGION;
 
   optional Region region = 1;
 }
 
 message ViewportPacket {
+  // Sent by the client to indicate its viewport size.
+  //
+  // Direction: Server <- Client
   option (packet_type) = VIEWPORT;
 
   optional sint32 a_left = 1;
@@ -147,15 +170,26 @@ message ViewportPacket {
 }
 
 message EntityPacket {
+  // Sent by the server to populate the client's realm entities.
+  //
+  // Direction: Server -> Client
   option (packet_type) = ENTITY;
+
   optional Entity entity = 1;
 }
 
 message StopMovePacket {
+  // Sent by the client to indicate it has stopped moving; sent by the server to
+  // notify a client to stop move animations.
+  //
+  // Direction: Server <-> Client
   option (packet_type) = STOP_MOVE;
 }
 
 message TeleportPacket {
+  // Sent by the server to force a client to reposition itself.
+  //
+  // Direction: Server -> Client
   option (packet_type) = TELEPORT;
 
   optional AbsoluteLocation location = 1;
