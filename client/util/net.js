@@ -75,12 +75,8 @@ export class Protocol extends EventEmitter {
   }
 
   send(message) {
-    // HACK: super SUPER hack retrieve the protobuf's type name (because for
-    // some reason protobuf instances completely are sealed?)
-    var type = message.toString().slice(1);
-
     this.transport.send(new game_pb2.Packet({
-        type: game_pb2.Packet.Type[game_pb2[type].$options["(packet_type)"]],
+        type: message.$type.options["(packet_type)"],
         payload: message.encode()
     }));
   }
