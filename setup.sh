@@ -1,8 +1,8 @@
 #!/bin/bash
-sudo apt-get install postgresql-server-dev-9.3 libpython3.4-dev libxml2-dev \
-                     libxslt1-dev cython3 nodejs-legacy python3.4 \
-                     rabbitmq-server nodejs python3-setuptools npm \
-                     git build-essential libtool autoconf
+sudo apt-get install -y postgresql-server-dev-9.3 libpython3.4-dev libxml2-dev \
+                        libxslt1-dev cython3 nodejs-legacy python3.4 \
+                        rabbitmq-server nodejs python3-setuptools npm \
+                        git build-essential libtool autoconf
 sudo npm install -g bower
 git submodule init && git submodule update
 make
