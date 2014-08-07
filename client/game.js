@@ -30,6 +30,11 @@ export class Game extends EventEmitter {
 
     handlers.install(this);
 
+    this.renderer.on("viewportChange", (bounds) => {
+      this.protocol.send(
+          new game_pb2.ViewportPacket(this.renderer.getAbsoluteWorldBounds()));
+    });
+
     Promise.all([
         waitFor(this.protocol.transport, "open"),
         waitFor(this.resources, "bundleLoaded")
@@ -67,9 +72,6 @@ export class Game extends EventEmitter {
   }
 
   go() {
-    this.protocol.send(
-        new game_pb2.ViewportPacket(this.renderer.getAbsoluteWorldBounds()));
-
     var startTime = new Date().valueOf() / 1000;
     var cont = () => {
       var currentTime = new Date().valueOf() / 1000;

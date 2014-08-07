@@ -110,6 +110,8 @@ export class Renderer extends EventEmitter {
 
     this.entityCanvas.width = sw;
     this.entityCanvas.height = sh;
+
+    this.emit("viewportChange", this.getAbsoluteWorldBounds());
   }
 
   getScreenViewportSize() {

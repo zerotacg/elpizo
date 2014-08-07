@@ -30,8 +30,8 @@ game.loadResources({
     "tiles.water":
         loadImage("static/img/tiles/water.png")
 });
-game.renderer.setScreenViewportSize(1024, 768);
 
 game.on("ready", () => {
+  game.renderer.setScreenViewportSize(1024, 768);
   game.go();
 });
