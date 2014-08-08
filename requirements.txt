@@ -8,3 +8,4 @@ pycrypto
 greenlet
 protobuf-py3
 venusian
+sqltap

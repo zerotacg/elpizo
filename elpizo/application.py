@@ -26,6 +26,12 @@ class ExportsHandler(RequestHandler):
     self.finish("window._exports=" + json.dumps(get_exports(self.application)))
 
 
+class SQLTapDebugHandler(RequestHandler):
+  def get(self):
+    import sqltap
+    self.finish(sqltap.report(self.application._sqltap_stats))
+
+
 class Application(Application):
   def __init__(self, **kwargs):
     routes = [
@@ -36,6 +42,17 @@ class Application(Application):
       (r"/socket", Connection),
       (r"/", GameHandler),
     ]
+
+    if kwargs["debug"]:
+      routes.extend([
+        (r"/_debug/sqltap", SQLTapDebugHandler)
+      ])
+
+      import sqltap
+      from collections import deque
+
+      self._sqltap_stats = deque(maxlen=1000)
+      self.sqltap_profiler = sqltap.start(collect_fn=self._sqltap_stats.append)
 
     super().__init__(
         routes,
