@@ -74,9 +74,12 @@ class Entity(Base):
   def routing_key(self):
     return "entity.{id}".format(id=self.id)
 
-  __mapper_args__ = {
-      "polymorphic_on": type
-  }
+  @declared_attr
+  def __mapper_args__(cls):
+    return {
+        "polymorphic_on": cls.type,
+        "polymorphic_identity": cls.__name__
+    }
 
 
 Entity.__table_args__ = (
@@ -100,10 +103,6 @@ class Actor(Entity):
   facial = sqlalchemy.Column(String, nullable=True)
 
   speed = 2 # should probably not be hardcoded
-
-  __mapper_args__ = {
-      "polymorphic_identity": __tablename__
-  }
 
   def to_protobuf(self):
     protobuf = super().to_protobuf()
@@ -129,10 +128,6 @@ class Player(Actor):
                               nullable=False)
 
   online = sqlalchemy.Column(Boolean, nullable=False, default=False)
-
-  __mapper_args__ = {
-      "polymorphic_identity": __tablename__
-  }
 
   def to_protobuf(self):
     protobuf = super().to_protobuf()

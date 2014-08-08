@@ -1,5 +1,5 @@
 from .models.realm import Terrain
-from .models.fixtures import Fixture
+from .models.fixtures import FixtureType
 
 
 def get_exports(application):
@@ -7,6 +7,6 @@ def get_exports(application):
   return {
       "terrain": {terrain.id: terrain.to_js()
           for terrain in sqla.query(Terrain)},
-      "fixtureTypes": {fixture.NAME: fixture.to_js()
-          for fixture in Fixture.__subclasses__()}
+      "fixtureTypes": {fixtureType.id: fixtureType.to_js()
+          for fixtureType in sqla.query(FixtureType)}
   }

@@ -7,7 +7,7 @@ from elpizo import make_application
 from elpizo.models.base import Base, User
 from elpizo.models.entities import Entity, Player
 from elpizo.models.realm import Realm, Region, Terrain
-from elpizo.models.fixtures import Tree
+from elpizo.models.fixtures import Fixture, Tree
 from elpizo.tools import mapgen
 
 
@@ -52,6 +52,8 @@ def initialize_realm(app):
 
 def initialize_fixtures(app, realm):
   sqla = app.sqla_factory()
+
+  Fixture.initialize_type_table(sqla)
 
   sqla.add(Tree(realm=realm, ax=7, ay=7))
   sqla.commit()

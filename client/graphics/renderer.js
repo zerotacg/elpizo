@@ -355,7 +355,7 @@ export class Renderer extends EventEmitter {
 }
 
 Renderer.SPRITES = {
-    actors: (actor) => {
+    Actor: (actor) => {
       var names = ["body." + actor.body];
 
       if (actor.facial) {
@@ -368,12 +368,12 @@ Renderer.SPRITES = {
       return names;
     },
 
-    fixtures: (fixture) => {
+    Fixture: (fixture) => {
       return [fixture.fixtureType.name];
     }
 };
 
-Renderer.SPRITES.players = Renderer.SPRITES.actors;
+Renderer.SPRITES.Player = Renderer.SPRITES.Actor;
 
 Renderer.TILE_SIZE = 32;
 

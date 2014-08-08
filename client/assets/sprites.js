@@ -46,7 +46,7 @@ function makeHumanoidSpriteDef(resourceName) {
 }
 
 export default = {
-  "tree": {
+  "Tree": {
       standing: {
           n: new SpriteDef(
               "sprites.tree.small.oak", 96, 96, 0,

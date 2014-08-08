@@ -78,11 +78,11 @@ export class Realm {
     }
 
     if (this.getAllEntities().filter(
-        (entity) => entity.type == "fixtures").some((entity) => {
-      return location.ax >= entity.location.ax + entity.aLeft &&
-             location.ax < entity.location.ax + entity.aRight &&
-             location.ay >= entity.location.ay + entity.aTop &&
-             location.ay < entity.location.ay + entity.aBottom;
+        (entity) => entity.type == "Fixture").some((entity) => {
+      return location.ax >= entity.location.ax + entity.fixtureType.size.aLeft &&
+             location.ax < entity.location.ax + entity.fixtureType.size.aRight &&
+             location.ay >= entity.location.ay + entity.fixtureType.size.aTop &&
+             location.ay < entity.location.ay + entity.fixtureType.size.aBottom;
     })) {
       return false;
     }
@@ -342,7 +342,7 @@ export class Fixture extends Entity {
     super(message);
     message = message.fixtureExt;
 
-    this.fixtureType = exports.fixtureTypes[message.fixtureType];
+    this.fixtureType = exports.fixtureTypes[message.fixtureTypeId];
     this.aLeft = message.aLeft;
     this.aTop = message.aTop;
     this.aRight = message.aRight;
@@ -351,7 +351,7 @@ export class Fixture extends Entity {
 }
 
 Entity.TYPES = {
-    actors: Actor,
-    players: Player,
-    fixtures: Fixture
+    Actor: Actor,
+    Player: Player,
+    Fixture: Fixture
 };
