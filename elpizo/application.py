@@ -29,7 +29,48 @@ class ExportsHandler(RequestHandler):
 class SQLTapDebugHandler(RequestHandler):
   def get(self):
     import sqltap
-    self.finish(sqltap.report(self.application._sqltap_stats))
+    from sqlalchemy.sql import Select
+    from sqlalchemy.ext.compiler import compiles
+    from sqlalchemy.sql.expression import Executable, ClauseElement, \
+                                          _literal_as_text
+
+    class explain(Executable, ClauseElement):
+      def __init__(self, stmt, analyze=False):
+        self.statement = _literal_as_text(stmt)
+        self.analyze = analyze
+
+    @compiles(explain)
+    def pg_explain(element, compiler, **kw):
+      text = "EXPLAIN "
+      if element.analyze:
+        text += "ANALYZE "
+      text += compiler.process(element.statement)
+      return text
+
+    stats = self.application._sqltap_stats
+    engine = self.application.sqla_factory.bind
+
+    query_plans = {}
+
+    self.application._sqltap_profiler.stop()
+    for stat in list(stats):
+      if isinstance(stat.text, Select):
+        k = str(stat.text)
+        if k not in query_plans:
+          _, clause, multiparams, params, results = stat.user_context
+          result = engine.execute(explain(stat.text, analyze=True), multiparams)
+          query_plans[k] = [c for c, in result.fetchall()]
+
+        plan = query_plans[k]
+
+        stat.text = """\
+{query}
+
+{plan}
+""".format(query=stat.text, plan="\n".join(["-- " + line for line in plan]))
+    self.application._sqltap_profiler.start()
+
+    self.finish(sqltap.report(stats))
 
 
 class Application(Application):
@@ -52,7 +93,9 @@ class Application(Application):
       from collections import deque
 
       self._sqltap_stats = deque(maxlen=1000)
-      self.sqltap_profiler = sqltap.start(collect_fn=self._sqltap_stats.append)
+      self._sqltap_profiler = sqltap.start(
+          user_context_fn=lambda *args: tuple(args),
+          collect_fn=self._sqltap_stats.append)
 
     super().__init__(
         routes,
