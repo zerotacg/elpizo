@@ -17,6 +17,8 @@ export function install(game) {
       return;
     }
 
+    // TODO: check region and entities to be purged here, so we don't keep track
+    // of everything.
     game.realm.addRegion(new Region(message.region));
   });
 

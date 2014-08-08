@@ -31,8 +31,7 @@ export class Game extends EventEmitter {
     handlers.install(this);
 
     this.renderer.on("viewportChange", (bounds) => {
-      this.protocol.send(
-          new game_pb2.ViewportPacket(this.renderer.getAbsoluteWorldBounds()));
+      this.protocol.send(new game_pb2.ViewportPacket(bounds));
     });
 
     Promise.all([
