@@ -83,6 +83,7 @@ class Fixture(Entity):
     point = func.point(ax, ay)
 
     return (cls.realm_id == realm_id) & \
+        (FixtureType.id == cls.fixture_type_id) & \
         (FixtureType.bbox).op("@>")(point - offset)
 
   @classmethod
