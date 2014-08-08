@@ -54,7 +54,7 @@ class Region(Base):
   realm_id = sqlalchemy.Column(Integer,
                                sqlalchemy.ForeignKey("realms.id"),
                                nullable=False,
-                               primary_key=True)
+                               primary_key=True, index=True)
   realm = relationship("Realm", backref="regions")
 
   arx = sqlalchemy.Column(Integer, nullable=False, primary_key=True)
@@ -114,6 +114,10 @@ class Region(Base):
                                                 arx=self.arx, ary=self.ary),
         corners=self.corners)
 
-Region.__table_args__ = (
+  __table_args__ = (
+      sqlalchemy.Index("ix_region_location", realm_id, arx, ary),
+  )
+
+Region.__table_args__ += (
     sqlalchemy.Index("ix_regions_bbox", Region.bbox, postgresql_using="gist"),
 )

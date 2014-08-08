@@ -44,7 +44,7 @@ class Entity(Base):
 
   realm_id = sqlalchemy.Column(Integer,
                                sqlalchemy.ForeignKey("realms.id"),
-                               nullable=False)
+                               nullable=False, index=True)
   arx = sqlalchemy.Column(Integer, nullable=False)
   ary = sqlalchemy.Column(Integer, nullable=False)
 
@@ -104,8 +104,9 @@ class Entity(Base):
     }
 
   __table_args__ = (
+      sqlalchemy.Index("ix_entities_region_location", realm_id, arx, ary),
       sqlalchemy.ForeignKeyConstraint(
-          ["realm_id", "arx", "ary"],
+          [realm_id, arx, ary],
           [Region.realm_id, Region.arx, Region.ary],
           name="entities_location_fk"),
   )
