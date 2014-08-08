@@ -60,10 +60,10 @@ def socket_move(ctx, message):
                         nw, ne, sw, se
                    ]))}
 
-  mask = passabilities.get(nw, False) << 3 | \
-         passabilities.get(ne, False) << 2 | \
-         passabilities.get(se, False) << 1 | \
-         passabilities.get(sw, False) << 0
+  mask = ((passabilities.get(nw, False) >> direction) & 0b1) << 3 | \
+         ((passabilities.get(ne, False) >> direction) & 0b1) << 2 | \
+         ((passabilities.get(se, False) >> direction) & 0b1) << 1 | \
+         ((passabilities.get(sw, False) >> direction) & 0b1) << 0
 
   # colliding with terrain
   if not {

@@ -36,7 +36,8 @@ class Terrain(Base):
 
   id = basic_primary_key()
   name = sqlalchemy.Column(String, unique=True, nullable=False)
-  passable = sqlalchemy.Column(Boolean, nullable=False)
+  # bits are in WSEN order (counter-clockwise from N, LSB first)
+  passable = sqlalchemy.Column(Integer, nullable=False)
 
   def to_js(self):
     return {

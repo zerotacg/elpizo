@@ -25,10 +25,10 @@ def initialize_realm(app):
   realm = Realm(name="Windvale", aw=128, ah=128)
   sqla.add(realm)
 
-  ocean = Terrain(name="ocean", passable=False)
+  ocean = Terrain(name="ocean", passable=0b0000)
   sqla.add(ocean)
 
-  grassland = Terrain(name="grassland", passable=True)
+  grassland = Terrain(name="grassland", passable=0b1111)
   sqla.add(grassland)
 
   sqla.commit()

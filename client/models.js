@@ -70,10 +70,10 @@ export class Realm {
     return this.getRegion(coords.absoluteToContainingRegion(location));
   }
 
-  isPassable(location) {
+  isPassable(location, direction) {
     var region = this.getClosestRegion(location);
     if (region === null ||
-        !region.isPassable(coords.absoluteToRelative(location))) {
+        !region.isPassable(coords.absoluteToRelative(location), direction)) {
       return false;
     }
 
@@ -170,7 +170,7 @@ export class Region {
     return terrain;
   }
 
-  isPassable(location) {
+  isPassable(location, direction) {
     var nw = this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
                           (location.rx + 0)];
     var ne = this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
@@ -180,10 +180,10 @@ export class Region {
     var se = this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
                           (location.rx + 1)];
 
-    var mask = (nw !== null ? nw.passable : false) << 3 |
-               (ne !== null ? ne.passable : false) << 2 |
-               (se !== null ? se.passable : false) << 1 |
-               (sw !== null ? sw.passable : false) << 0;
+    var mask = (nw !== null ? (nw.passable >> direction) & 0x1 : false) << 3 |
+               (ne !== null ? (ne.passable >> direction) & 0x1 : false) << 2 |
+               (se !== null ? (se.passable >> direction) & 0x1 : false) << 1 |
+               (sw !== null ? (sw.passable >> direction) & 0x1 : false) << 0;
 
     return ({
         0x0: false,
@@ -265,7 +265,7 @@ export class Actor extends Entity {
     if (!this.realm.isPassable({
         ax: Math.round(this.location.ax + unit.ax),
         ay: Math.round(this.location.ay + unit.ay)
-    })) {
+    }, direction)) {
       this.remainder = 0;
       this.moving = lastDirection !== this.direction;
     } else {
