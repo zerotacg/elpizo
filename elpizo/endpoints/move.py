@@ -8,10 +8,10 @@ from ..models.fixtures import Fixture
 
 def get_direction_vector(d):
   return {
-    0: ( 0, -1), # N
-    1: (-1,  0), # W
-    2: ( 0,  1), # S
-    3: ( 1,  0)  # E
+      0: ( 0, -1), # N
+      1: (-1,  0), # W
+      2: ( 0,  1), # S
+      3: ( 1,  0)  # E
   }[d]
 
 
