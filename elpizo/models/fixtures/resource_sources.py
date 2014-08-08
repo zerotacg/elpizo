@@ -1,4 +1,4 @@
-from .entities import Fixture
+from . import Fixture
 
 
 class Tree(Fixture):

@@ -2,13 +2,14 @@ import json
 import logging
 import os
 import pika
+import venusian
 
 from pika.adapters.tornado_connection import TornadoConnection
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from tornado.web import Application, RequestHandler, StaticFileHandler
 
-from . import endpoints
+from . import endpoints, models
 from .exports import get_exports
 from .mint import Mint
 from .net import Connection
@@ -44,7 +45,7 @@ class Application(Application):
     self.amqp = TornadoConnection(pika.ConnectionParameters(
         self.settings["amqp_server"]), stop_ioloop_on_close=False)
 
-    from .models import base, entities, fixtures, realm
+    venusian.Scanner().scan(models)
     self.sqla_factory = scoped_session(
         sessionmaker(bind=create_engine(self.settings["dsn"])))
 

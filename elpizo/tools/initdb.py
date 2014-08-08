@@ -4,10 +4,10 @@ from itertools import product
 import json
 
 from elpizo import make_application
-from elpizo.models.base import Base, User
-from elpizo.models.entities import Entity, Player, Fixture
+from elpizo.models.actors import Player
+from elpizo.models.base import Base, User, Entity
 from elpizo.models.realm import Realm, Region, Terrain
-from elpizo.models import fixtures
+from elpizo.models.fixtures import Fixture, resource_sources
 from elpizo.tools import mapgen
 
 
@@ -55,7 +55,7 @@ def initialize_fixtures(app, realm):
 
   Fixture.initialize_type_table(sqla)
 
-  sqla.add(fixtures.Tree(realm=realm, ax=7, ay=7))
+  sqla.add(resource_sources.Tree(realm=realm, ax=7, ay=7))
   sqla.commit()
 
   logging.info("Created fixtures.")

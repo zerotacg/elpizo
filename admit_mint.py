@@ -10,7 +10,7 @@ import logging
 
 from elpizo.mint import Mint
 from elpizo.models.base import User
-from elpizo.models.entities import Player
+from elpizo.models.actors import Player
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
