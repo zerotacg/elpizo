@@ -15,4 +15,6 @@ def socket_chat(ctx, message):
     ctx.error("unknown chat namespace: {ns}".format(ns=ns))
     return
 
-  ctx.publish(target, game_pb2.ChatPacket(target=target, text=text))
+  ctx.publish(target, game_pb2.ChatPacket(target=target,
+                                          actor_name=ctx.player.name,
+                                          text=text))

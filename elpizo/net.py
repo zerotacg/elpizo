@@ -49,7 +49,7 @@ class Protocol(object):
         payload=message.SerializeToString())
 
     if origin is not None:
-      packet.origin.MergeFrom(origin)
+      packet.origin = origin
 
     return packet.SerializeToString()
 
@@ -207,8 +207,7 @@ class Context(object):
     self.protocol.send(origin, message)
 
   def publish(self, routing_key, message):
-    self.protocol.publish(routing_key,
-                          self.player.to_origin_protobuf(), message)
+    self.protocol.publish(routing_key, self.player.id, message)
 
   def unsubscribe(self, routing_key):
     self.protocol.unsubscribe(self.player, routing_key)

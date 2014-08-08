@@ -70,9 +70,6 @@ class Entity(Base):
                            location=self.location_to_protobuf(),
                            direction=self.direction)
 
-  def to_origin_protobuf(self):
-    return game_pb2.Origin(id=self.id, name=self.name)
-
   @property
   def routing_key(self):
     return "entity.{id}".format(id=self.id)

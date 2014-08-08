@@ -67,9 +67,7 @@ export class Protocol extends EventEmitter {
 
     this.transport.on("message", (packet) => {
       var message = PACKETS[packet.type].decode(packet.payload);
-      console.log("<--", packet.type,
-                  packet.origin !== null ? packet.origin.toRaw() : null,
-                  message.toRaw());
+      console.log("<--", packet.type, packet.origin, message.toRaw());
       this.emit(packet.type, packet.origin, message);
     });
   }

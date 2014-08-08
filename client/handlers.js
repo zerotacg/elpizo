@@ -33,19 +33,19 @@ export function install(game) {
   });
 
   protocol.on(Packet.Type.AVATAR, (origin, message) => {
-    game.setAvatarById(origin.id);
+    game.setAvatarById(origin);
   });
 
   protocol.on(Packet.Type.MOVE, (origin, message) => {
-    game.realm.getEntity(origin.id).moveInDirection(message.direction);
+    game.realm.getEntity(origin).moveInDirection(message.direction);
   });
 
   protocol.on(Packet.Type.STOP_MOVE, (origin, message) => {
-    game.realm.getEntity(origin.id).moving = false;
+    game.realm.getEntity(origin).moving = false;
   });
 
   protocol.on(Packet.Type.TELEPORT, (origin, message) => {
-    var entity = game.realm.getEntity(origin.id);
+    var entity = game.realm.getEntity(origin);
 
     if (message.location.realmId !== game.realm.id) {
       console.warn("Got invalid teleport realm ID (" +

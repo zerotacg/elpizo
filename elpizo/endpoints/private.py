@@ -16,7 +16,7 @@ def on_open(ctx):
   # Send realm information.
   ctx.send(None, game_pb2.RealmPacket(realm=ctx.player.realm.to_protobuf()))
   ctx.send(None, game_pb2.EntityPacket(entity=ctx.player.to_protobuf()))
-  ctx.send(ctx.player.to_origin_protobuf(), game_pb2.AvatarPacket())
+  ctx.send(ctx.player.id, game_pb2.AvatarPacket())
 
 
 def on_close(ctx):

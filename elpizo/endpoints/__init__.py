@@ -3,7 +3,7 @@ from ..game_pb2 import Packet
 
 
 def basic_mq_endpoint(ctx, origin, message):
-  if origin.id != ctx.player.id:
+  if origin != ctx.player.id:
     ctx.send(origin, message)
 
 
