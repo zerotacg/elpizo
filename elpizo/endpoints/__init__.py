@@ -17,7 +17,7 @@ def configure(application):
       private.on_close
   ]
 
-  application.sockjs_endpoints = {
+  application.ws_endpoints = {
       Packet.CHAT: chat.socket_chat,
       Packet.VIEWPORT: private.viewport,
       Packet.MOVE: move.socket_move,

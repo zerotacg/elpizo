@@ -97,7 +97,7 @@ class Protocol(object):
   def on_ws_message(self, packet):
     type, origin, message = self.deserialize_packet(packet)
     ctx = self.make_context()
-    self.application.sockjs_endpoints[type](ctx, message)
+    self.application.ws_endpoints[type](ctx, message)
 
   def on_amqp_message(self, channel, method, properties, body):
     type, origin, message = self.deserialize_packet(body)
