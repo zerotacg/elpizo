@@ -1,5 +1,5 @@
 from .models.realm import Terrain
-from .models.fixtures import FixtureType
+from .models.entities import FixtureType
 
 
 def get_exports(application):
