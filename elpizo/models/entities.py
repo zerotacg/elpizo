@@ -22,7 +22,7 @@ class Entity(Base):
 
   realm_id = sqlalchemy.Column(Integer,
                                sqlalchemy.ForeignKey("realms.id"),
-                               nullable=False, index=True)
+                               nullable=False)
   arx = sqlalchemy.Column(Integer, nullable=False)
   ary = sqlalchemy.Column(Integer, nullable=False)
 
@@ -81,8 +81,15 @@ class Entity(Base):
         "polymorphic_identity": cls.__name__
     }
 
+  __table_args__ = (
+    sqlalchemy.ForeignKeyConstraint(
+        ["realm_id", "arx", "ary"],
+        [Region.realm_id, Region.arx, Region.ary],
+        name="entities_location_fk"),
+  )
 
-Entity.__table_args__ = (
+
+Entity.__table_args__ += (
     sqlalchemy.Index("ix_entities_point", Entity.point,
                      postgresql_using="gist"),
 )
