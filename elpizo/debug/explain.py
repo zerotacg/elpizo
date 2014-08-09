@@ -49,6 +49,7 @@ def format_field(key, value):
     value = reindent_cond(value)
 
   value = str(value) \
+      .replace("&", "&amp;") \
       .replace("<", "&lt;") \
       .replace(">", "&gt;") \
       .replace("\n", "<BR />")
