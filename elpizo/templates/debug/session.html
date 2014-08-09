@@ -16,14 +16,14 @@
 </p>
 
 <h2>WebSocket Traffic</h2>
-<table>
+<table class="sortable">
   <tr>
-    <th>i</th>
+    <th class="sorttable_numeric">i</th>
     <th>dir</th>
     <th>type</th>
-    <th>origin</th>
+    <th class="sorttable_numeric">origin</th>
     <th>message (first 100 bytes)</th>
-    <th>duration</th>
+    <th class="sorttable_numeric">duration</th>
   </tr>
   {% for i, packet in reversed(list(enumerate(session.packets["ws"]))) %}
   <tr class="{{"rx" if packet["received"] else "tx"}}">
@@ -42,15 +42,15 @@
 </table>
 
 <h2>AMQP Traffic</h2>
-<table>
+<table class="sortable">
   <tr>
-    <th>i</th>
+    <th class="sorttable_numeric">i</th>
     <th>dir</th>
     <th>routing key</th>
     <th>type</th>
-    <th>origin</th>
+    <th class="sorttable_numeric">origin</th>
     <th>message (first 100 bytes)</th>
-    <th>duration</th>
+    <th class="sorttable_numeric">duration</th>
   </tr>
   {% for i, packet in reversed(list(enumerate(session.packets["amqp"]))) %}
   <tr class="{{"rx" if packet["received"] else "tx"}}">

@@ -30,13 +30,13 @@
 <pre>{{packet["message"]}}</pre>
 
 <h2>SQL Queries</h2>
-<table>
+<table class="sortable">
   <tr>
-    <th>i</th>
+    <th class="sorttable_numeric">i</th>
     <th>text</th>
     <th>multiparams</th>
     <th>params</th>
-    <th>duration</th>
+    <th class="sorttable_numeric">duration</th>
   </tr>
   {% for query_index, query_stat in enumerate(packet["query_stats"]) %}
   <tr>
