@@ -27,7 +27,12 @@ def pg_explain(element, compiler, **kw):
 
 class SQLTapDebugHandler(RequestHandler):
   def get(self):
-    stats = self.application._sqltap_stats
+    clear = self.get_argument("clear", "no clear") != "no clear"
+
+    stats = list(self.application._sqltap_stats)
+    if clear:
+      self.application._sqltap_stats.clear()
+
     engine = self.application.sqla_factory.bind
 
     query_plans = {}
