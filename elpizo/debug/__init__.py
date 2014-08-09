@@ -68,39 +68,47 @@ def install(application, routes):
 
   def wrap_on_ws_message(f):
     def _wrapper(self, type, origin, message):
+      packet = {
+          "received": True,
+          "type": get_packet_name(type),
+          "origin": "",
+          "message": message
+      }
+      debug_context.get_session(self).packets["ws"].append(packet)
+
       start_time = time.monotonic()
       profiler = create_profiling_session()
       with profiler:
         r = f(self, type, origin, message)
       end_time = time.monotonic()
 
-      debug_context.get_session(self).packets["ws"].append({
-          "received": True,
-          "type": get_packet_name(type),
-          "origin": "",
-          "message": message,
-          "duration": end_time - start_time,
-          "query_stats": profiler.collect()
+      packet.update({
+          "query_stats": profiler.collect(),
+          "duration": end_time - start_time
       })
       return r
     return _wrapper
 
   def wrap_on_amqp_message(f):
     def _wrapper(self, type, origin, message):
+      packet = {
+          "received": True,
+          "routing_key": "",
+          "type": get_packet_name(type),
+          "origin": origin,
+          "message": message
+      }
+      debug_context.get_session(self).packets["amqp"].append(packet)
+
       start_time = time.monotonic()
       profiler = create_profiling_session()
       with profiler:
         r = f(self, type, origin, message)
       end_time = time.monotonic()
 
-      debug_context.get_session(self).packets["amqp"].append({
-          "received": True,
-          "routing_key": "",
-          "type": get_packet_name(type),
-          "origin": origin,
-          "message": message,
-          "duration": end_time - start_time,
-          "query_stats": profiler.collect()
+      packet.update({
+          "query_stats": profiler.collect(),
+          "duration": end_time - start_time
       })
       return r
     return _wrapper
