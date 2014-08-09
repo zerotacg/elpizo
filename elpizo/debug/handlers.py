@@ -7,7 +7,7 @@ from tornado.web import RequestHandler
 
 from .explain import explain_query
 
-from ..models.base import User
+from ..models.base import User, Entity
 from ..models.actors import Player
 
 
@@ -104,3 +104,10 @@ class AdmitHandler(RequestHandler):
         rsa_key_size=mint.rsa_key_size * 8,
         signer=mint.signer.__class__.__name__,
         hash=mint.hashfunc.__name__)
+
+
+class EntityHandler(RequestHandler):
+  def get(self, id):
+    sqla = self.application.sqla_factory()
+
+    self.render("debug/entity.html", entity=sqla.query(Entity).get(id))

@@ -1,0 +1,34 @@
+{% extends "_layout.html" %}
+{% block body %}
+{% from elpizo.models.actors import Player %}
+{% from elpizo.models.fixtures import Fixture %}
+
+<h1>
+  <a href="/_debug/">Debug Console</a>
+  / Entities
+  / {{entity.id}}
+</h1>
+
+<h2>Public Protobuf</h2>
+<p>
+  <pre>{{entity.to_protobuf()}}</pre>
+</p>
+
+{% if isinstance(entity, Fixture) %}
+<h2>Fixture</h2>
+<dl>
+  <dt>type</dt>
+  <dd>{{entity.__class__.__name__}}</dd>
+</dl>
+{% elif isinstance(entity, Player) %}
+<h2>Player</h2>
+<dl>
+  <dt>user</dt>
+  <dd>{{entity.user.name}}</dd>
+
+  <dt>online</dt>
+  <dd>{{entity.online}}</dd>
+</dl>
+{% end %}
+
+{% end %}

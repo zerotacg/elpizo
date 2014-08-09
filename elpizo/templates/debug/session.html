@@ -2,7 +2,8 @@
 {% block body %}
 <h1>
   <a href="/_debug/">Debug Console</a>
-  / {% if session.protocol is None %}<del>{% end %}Session {{session.id}}{% if session.protocol is None %}</del>{% end %}
+  / Sessions
+  / {% if session.protocol is None %}<del>{% end %}{{session.id}}{% if session.protocol is None %}</del>{% end %}
 </h1>
 
 <dl>
@@ -10,7 +11,7 @@
   <dd>{{player.user.name}}</dd>
 </dl>
 
-<h2>Public Protobuf</h2>
+<h2>Public Protobuf (<a href="/_debug/entities/{{player.id}}/">inspect</a>)</h2>
 <p>
   <pre>{{player.to_protobuf()}}</pre>
 </p>
@@ -34,7 +35,7 @@
       {% if packet["received"] %}c-&gt;s{% else %}s-&gt;c{% end %}
     </td>
     <td>{{packet["type"]}}</td>
-    <td>{{packet["origin"]}}</td>
+    <td><a href="/_debug/entities/{{packet["origin"]}}/">{{packet["origin"]}}</a></td>
     <td><pre>{{str(packet["message"])[:100]}}</pre></td>
     <td>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</td>
   </tr>
@@ -62,7 +63,7 @@
     </td>
     <td>{{packet["routing_key"]}}</td>
     <td>{{packet["type"]}}</td>
-    <td>{{packet["origin"]}}</td>
+    <td><a href="/_debug/entities/{{packet["origin"]}}/">{{packet["origin"]}}</a></td>
     <td><pre>{{str(packet["message"])[:100]}}</pre></td>
     <td>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</td>
   </tr>

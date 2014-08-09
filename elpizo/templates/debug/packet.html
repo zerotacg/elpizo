@@ -2,8 +2,11 @@
 {% block body %}
 <h1>
   <a href="/_debug/">Debug Console</a>
-  / {% if session.protocol is None %}<del>{% end %}<a href="/_debug/sessions/{{session.id}}/">Session {{session.id}}</a>{% if session.protocol is None %}</del>{% end %}
-  / {{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}} Packet {{i}}
+  / Sessions
+  / {% if session.protocol is None %}<del>{% end %}<a href="/_debug/sessions/{{session.id}}/">{{session.id}}</a>{% if session.protocol is None %}</del>{% end %}
+  / Packets
+  / {{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}}
+  / {{i}}
 </h1>
 
 <dl class="{{"rx" if packet["received"] else "tx"}}">
@@ -11,7 +14,7 @@
   <dd>{{packet["type"]}}</dd>
 
   <dt>origin</dt>
-  <dd>{{packet["origin"]}}</dd>
+  <dd><a href="/_debug/entities/{{packet["origin"]}}/">{{packet["origin"]}}</a></dd>
 
   <dt>direction</dt>
   <dd>
