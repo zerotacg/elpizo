@@ -28,14 +28,17 @@ class MainHandler(RequestHandler):
 class SessionHandler(RequestHandler):
   def get(self, id):
     session = self.debug_context.sessions[id]
-    player = session.get_player(self.application.sqla_factory())
+    sqla = self.application.sqla_factory()
+
+    player = sqla.query(Player).get(session.player_id)
+
     self.render("debug/session.html", session=session, player=player)
 
 
 class PacketViewHandler(RequestHandler):
   def get(self, session_id, mode, i):
     session = self.debug_context.sessions[session_id]
-    packet = session.debug_context.packets[mode][int(i)]
+    packet = session.packets[mode][int(i)]
     self.render("debug/packet.html",
                 session=session, packet=packet, i=i, mode=mode)
 
@@ -43,10 +46,10 @@ class PacketViewHandler(RequestHandler):
 class QueryViewHandler(RequestHandler):
   def get(self, session_id, mode, packet_index, query_index):
     session = self.debug_context.sessions[session_id]
-    packet = session.debug_context.packets[mode][int(packet_index)]
+    packet = session.packets[mode][int(packet_index)]
 
     session = self.debug_context.sessions[session_id]
-    packet = session.debug_context.packets[mode][int(packet_index)]
+    packet = session.packets[mode][int(packet_index)]
     query = packet["query_stats"][int(query_index)]
 
     _, _, multiparams, params, _ = query.user_context

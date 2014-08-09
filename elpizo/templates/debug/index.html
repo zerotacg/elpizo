@@ -1,6 +1,8 @@
 {% extends "_layout.html" %}
 {% block body %}
-<h1>Debug Console</h1>
+<h1>
+  Debug Console
+</h1>
 
 <form action="admit/">
   <label>user <input name="user"></label>
@@ -12,7 +14,11 @@
 <ul>
   {% for id, session in ctx.sessions.items() %}
   <li>
-    <a href="sessions/{{id}}/">{{id}}</a>
+    <a href="sessions/{{id}}/">
+      {% if session.protocol is None %}<del>{% end %}
+        {{id}}
+      {% if session.protocol is None %}</del>{% end %}
+    </a>
   </li>
   {% end %}
 </ul>

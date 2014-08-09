@@ -1,10 +1,11 @@
 {% extends "_layout.html" %}
 {% block body %}
-<h1>Query {{query_index}} for {{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}} Packet {{packet_index}} for Session #{{session.user_id}}</h1>
-
-<p>
-  <a href="../..">back to packet</a>
-</p>
+<h1>
+  <a href="/_debug/">Debug Console</a>
+  / {% if session.protocol is None %}<del>{% end %}<a href="/_debug/sessions/{{session.id}}/">Session {{session.id}}</a>{% if session.protocol is None %}</del>{% end %}
+  / <a href="/_debug/sessions/{{session.id}}/packets/{{mode}}/{{packet_index}}/">{{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}} Packet {{packet_index}}</a>
+  / Query {{query_index}}
+</h1>
 
 <dl>
   <dt>multiparams</dt>

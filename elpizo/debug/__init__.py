@@ -7,16 +7,31 @@ from . import handlers
 
 
 class DebugContext(object):
-  def __init__(self):
+  def __init__(self, application):
+    self.application = application
     self.sessions = {}
+
+  def add_session(self, protocol, sqla):
+    ctx = ProtocolDebugContext(protocol, self.application.sqla_factory())
+    self.sessions[ctx.id] = ctx
+
+  def get_session(self, protocol):
+    return self.sessions[hex(id(protocol))]
 
 
 class ProtocolDebugContext(object):
-  def __init__(self):
+  def __init__(self, protocol, sqla):
+    self.id = hex(id(protocol))
+    self.protocol = protocol
+    self.player_id = protocol.get_player(sqla).id
+
     self.packets = {
         "ws": [],
         "amqp": []
     }
+
+  def kill(self):
+    self.protocol = None
 
 
 def create_profiling_session():
@@ -24,15 +39,15 @@ def create_profiling_session():
 
 
 def install(application, routes):
-  debug_context = DebugContext()
+  debug_context = DebugContext(application)
   application.debug_context = debug_context
 
   routes.extend([
       (r"/_debug/", handlers.MainHandler),
       (r"/_debug/admit/", handlers.AdmitHandler),
-      (r"/_debug/sessions/(\d+)/", handlers.SessionHandler),
-      (r"/_debug/sessions/(\d+)/packets/(ws|amqp)/(\d+)/", handlers.PacketViewHandler),
-      (r"/_debug/sessions/(\d+)/packets/(ws|amqp)/(\d+)/queries/(\d+)/", handlers.QueryViewHandler),
+      (r"/_debug/sessions/(0x[0-9a-f]+)/", handlers.SessionHandler),
+      (r"/_debug/sessions/(0x[0-9a-f]+)/packets/(ws|amqp)/(\d+)/", handlers.PacketViewHandler),
+      (r"/_debug/sessions/(0x[0-9a-f]+)/packets/(ws|amqp)/(\d+)/queries/(\d+)/", handlers.QueryViewHandler),
   ])
 
   def get_packet_name(code):
@@ -41,14 +56,13 @@ def install(application, routes):
   # instrument Protocol
   def wrap_on_open(f):
     def _wrapper(self):
-      debug_context.sessions[str(self.user_id)] = self
-      self.debug_context = ProtocolDebugContext()
+      debug_context.add_session(self, application.sqla_factory())
       return f(self)
     return _wrapper
 
   def wrap_on_close(f):
     def _wrapper(self):
-      del debug_context.sessions[str(self.user_id)]
+      debug_context.get_session(self).kill()
       return f(self)
     return _wrapper
 
@@ -60,7 +74,7 @@ def install(application, routes):
         r = f(self, type, origin, message)
       end_time = time.monotonic()
 
-      self.debug_context.packets["ws"].append({
+      debug_context.get_session(self).packets["ws"].append({
           "received": True,
           "type": get_packet_name(type),
           "origin": "",
@@ -79,7 +93,7 @@ def install(application, routes):
         r = f(self, type, origin, message)
       end_time = time.monotonic()
 
-      self.debug_context.packets["amqp"].append({
+      debug_context.get_session(self).packets["amqp"].append({
           "received": True,
           "routing_key": "",
           "type": get_packet_name(type),
@@ -97,7 +111,7 @@ def install(application, routes):
       r = f(self, routing_key, origin, message)
       end_time = time.monotonic()
 
-      self.debug_context.packets["amqp"].append({
+      debug_context.get_session(self).packets["amqp"].append({
           "received": False,
           "routing_key": routing_key,
           "type": get_packet_name(message.DESCRIPTOR.GetOptions().Extensions[
@@ -116,7 +130,7 @@ def install(application, routes):
       r = f(self, origin, message)
       end_time = time.monotonic()
 
-      self.debug_context.packets["ws"].append({
+      debug_context.get_session(self).packets["ws"].append({
           "received": False,
           "type": get_packet_name(message.DESCRIPTOR.GetOptions().Extensions[
               game_pb2.packet_type]),

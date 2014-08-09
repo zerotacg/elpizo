@@ -1,10 +1,10 @@
 {% extends "_layout.html" %}
 {% block body %}
-<h1>{{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}} Packet {{i}} for Session #{{session.user_id}}</h1>
-
-<p>
-  <a href="../../..">back to session</a>
-</p>
+<h1>
+  <a href="/_debug/">Debug Console</a>
+  / {% if session.protocol is None %}<del>{% end %}<a href="/_debug/sessions/{{session.id}}/">Session {{session.id}}</a>{% if session.protocol is None %}</del>{% end %}
+  / {{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}} Packet {{i}}
+</h1>
 
 <dt>
   <dt>type</dt>

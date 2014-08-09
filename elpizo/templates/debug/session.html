@@ -1,13 +1,16 @@
 {% extends "_layout.html" %}
 {% block body %}
 <h1>
-  Session {{session.user_id}} for {{player.user.name}}
+  <a href="/_debug/">Debug Console</a>
+  / {% if session.protocol is None %}<del>{% end %}Session {{session.id}}{% if session.protocol is None %}</del>{% end %}
 </h1>
 
-<p>
-  <a href="../..">back to home</a>
-</p>
+<dt>
+  <dt>user name</dt>
+  <dd>{{player.user.name}}</dd>
+</dt>
 
+<h2>Public Protobuf</h2>
 <p>
   <pre>{{player.to_protobuf()}}</pre>
 </p>
@@ -23,7 +26,7 @@
     <th>message (first 100 bytes)</th>
     <th>duration</th>
   </tr>
-  {% for i, packet in reversed(list(enumerate(session.debug_context.packets["amqp"]))) %}
+  {% for i, packet in reversed(list(enumerate(session.packets["amqp"]))) %}
   <tr>
     <td>
       <a href="packets/amqp/{{i}}/">{{i}}</a>
@@ -50,7 +53,7 @@
     <th>message (first 100 bytes)</th>
     <th>duration</th>
   </tr>
-  {% for i, packet in reversed(list(enumerate(session.debug_context.packets["ws"]))) %}
+  {% for i, packet in reversed(list(enumerate(session.packets["ws"]))) %}
   <tr>
     <td>
       <a href="packets/ws/{{i}}/">{{i}}</a>
