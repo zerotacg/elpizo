@@ -17,11 +17,8 @@ class Actor(Entity):
 
   id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
                          primary_key=True)
-  level = sqlalchemy.Column(Integer, nullable=False, default=0)
 
-  hp = sqlalchemy.Column(Integer, nullable=False, default=0)
-  mp = sqlalchemy.Column(Integer, nullable=False, default=0)
-  xp = sqlalchemy.Column(Integer, nullable=False, default=0)
+  health = sqlalchemy.Column(Integer, nullable=False, default=0)
 
   body = sqlalchemy.Column(String, nullable=False)
   facial = sqlalchemy.Column(String, nullable=True)
@@ -30,8 +27,8 @@ class Actor(Entity):
 
   def to_protobuf(self):
     protobuf = super().to_protobuf()
-    message = game_pb2.Actor(level=self.level, hp=self.hp, mp=self.mp,
-                             xp=self.xp, body=self.body, speed=self.speed)
+    message = game_pb2.Actor(health=self.health, body=self.body,
+                             speed=self.speed)
 
     if self.facial is not None:
       message.facial = self.facial

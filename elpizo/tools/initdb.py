@@ -67,35 +67,35 @@ def initialize_players(app, realm):
   victor_hugo = User(name="victor_hugo")
   sqla.add(victor_hugo)
 
-  valjean = Player(name="Valjean", level=1, user=victor_hugo,
+  valjean = Player(name="Valjean", user=victor_hugo,
                    body="male.light",
                    facial="beard.brown",
                    direction=1,
-                   hp=100, mp=100, xp=100,
+                   health=10,
                    realm=realm, arx=0, ary=0, rx=0, ry=0)
   sqla.add(valjean)
 
   dumas = User(name="dumas")
   sqla.add(dumas)
 
-  athos = Player(name="Athos", level=1, user=dumas,
+  athos = Player(name="Athos", user=dumas,
                  body="male.light",
                  direction=1,
-                 hp=100, mp=100, xp=10,
+                 health=10,
                  realm=realm, arx=0, ary=0, rx=0, ry=0)
   sqla.add(athos)
 
-  aramis = Player(name="Aramis", level=1, user=dumas,
+  aramis = Player(name="Aramis", user=dumas,
                   body="male.light",
                   direction=1,
-                  hp=100, mp=100, xp=10,
+                  health=10,
                   realm=realm, arx=0, ary=0, rx=0, ry=0)
   sqla.add(aramis)
 
-  porthos = Player(name="Porthos", level=1, user=dumas,
+  porthos = Player(name="Porthos", user=dumas,
                    body="male.light",
                    direction=1,
-                   hp=100, mp=100, xp=10,
+                   health=10,
                    realm=realm, arx=0, ary=0, rx=0, ry=0)
   sqla.add(porthos)
 

@@ -67,15 +67,10 @@ message Actor {
   }
 
   optional uint32 level = 1;
-  optional uint32 hp = 2;
-  optional uint32 max_hp = 3;
-  optional uint32 mp = 4;
-  optional uint32 max_mp = 5;
-  optional uint32 xp = 6;
-  optional uint32 max_xp = 7;
-  optional string body = 8;
-  optional string facial = 9;
-  optional uint32 speed = 10;
+  optional uint32 health = 2;
+  optional string body = 3;
+  optional string facial = 4;
+  optional uint32 speed = 5;
 }
 
 message Player {
