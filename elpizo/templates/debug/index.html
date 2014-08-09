@@ -4,6 +4,8 @@
   Debug Console
 </h1>
 
+<h2>Admit</h2>
+<p>Mint a token for the given user name and player name.</p>
 <form action="admit/">
   <label>user <input name="user"></label>
   <label>player <input name="player"></label>
@@ -11,8 +13,10 @@
 </form>
 
 <h2>Sessions</h2>
+<p>All sessions, active and <del>inactive</del>.</p>
 <ul>
-  {% for id, session in ctx.sessions.items() %}
+  {% for id, session in sorted(ctx.sessions.items(),
+                               key=lambda kv: kv[1].protocol is None) %}
   <li>
     <a href="sessions/{{id}}/">
       {% if session.protocol is None %}<del>{% end %}
@@ -24,9 +28,16 @@
 </ul>
 
 <h2>Inspect Entity</h2>
-
+<p>Inspect an entity by its ID.</p>
 <form action="entities/" onsubmit="window.location.href=this.action + this.elements.id.value + '/'; return false;">
   <label>id <input name="id"></label>
   <button type="submit">inspect</button>
 </form>
+
+<h2>Inspect Item</h2>
+<p>Inspect an item by its ID.</p>
+<form action="items/" onsubmit="window.location.href=this.action + this.elements.id.value + '/'; return false;">
+  <label>id <input name="id"></label>
+  <button type="submit">inspect</button>
+</form
 {% end %}
