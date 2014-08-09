@@ -38,7 +38,8 @@ class SQLTapDebugHandler(RequestHandler):
         k = str(stat.text)
         if k not in query_plans:
           _, clause, multiparams, params, results = stat.user_context
-          result = engine.execute(explain(stat.text, analyze=True), multiparams)
+          result = engine.execute(explain(stat.text, analyze=True),
+                                  *multiparams, **params)
           query_plans[k] = [c for c, in result.fetchall()]
 
         plan = query_plans[k]
