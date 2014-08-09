@@ -1,6 +1,12 @@
 {% extends "_layout.html" %}
 {% block body %}
-<h1>Elpizo Debug Console</h1>
+<h1>Debug Console</h1>
+
+<form action="admit/">
+  <label>user <input name="user"></label>
+  <label>player <input name="player"></label>
+  <button type="submit">mint</button>
+</form>
 
 <h2>Sessions</h2>
 <ul>

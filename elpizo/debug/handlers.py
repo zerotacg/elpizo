@@ -72,8 +72,6 @@ class AdmitHandler(RequestHandler):
   def get(self):
     sqla = self.application.sqla_factory()
 
-    self.set_header("Content-Type", "text/plain")
-
     mint = self.application.mint
 
     user_name = self.get_argument("user")
@@ -95,20 +93,9 @@ class AdmitHandler(RequestHandler):
     token = mint.mint(credentials.encode("utf-8"))
     self.set_cookie("elpizo_token", base64.b64encode(token))
 
-    self.finish("""\
-# credentials
-{credentials}
-
-# token
-{token}
-
-# mint info
-rsa key size: {rsa_key_size}
-signer: {signer}
-hash: {hash}
-""".format(
+    self.render("debug/admit.html",
         credentials=mint.unmint(token).decode("utf-8"),
         token=email.base64mime.body_encode(token).strip(),
         rsa_key_size=mint.rsa_key_size * 8,
         signer=mint.signer.__class__.__name__,
-        hash=mint.hashfunc.__name__))
+        hash=mint.hashfunc.__name__)
