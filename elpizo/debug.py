@@ -1,5 +1,4 @@
 import sqltap
-from collections import deque
 
 from sqlalchemy.sql import Select
 from sqlalchemy.ext.compiler import compiles
@@ -38,7 +37,7 @@ class SQLTapDebugHandler(RequestHandler):
     query_plans = {}
 
     self.application._sqltap_profiler.stop()
-    for stat in list(stats):
+    for stat in stats:
       if isinstance(stat.text, Select):
         k = str(stat.text)
         if k not in query_plans:
@@ -64,7 +63,7 @@ def install(application, routes):
     (r"/_debug/sql", SQLTapDebugHandler),
   ])
 
-  application._sqltap_stats = deque(maxlen=1000)
+  application._sqltap_stats = []
   application._sqltap_profiler = sqltap.start(
       user_context_fn=lambda *args: tuple(args),
       collect_fn=application._sqltap_stats.append)
