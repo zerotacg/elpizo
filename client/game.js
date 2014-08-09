@@ -52,6 +52,7 @@ export class Game extends EventEmitter {
   }
 
   setAvatarById(id) {
+    console.log("Hello! Your player id is:", id);
     this.me = this.realm.getEntity(id);
   }
 
