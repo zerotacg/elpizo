@@ -1,0 +1,41 @@
+{% extends "_layout.html" %}
+{% block body %}
+<h1>{{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}} Packet {{i}} for Session #{{session.user_id}}</h1>
+
+<p>
+  <a href="../../..">back to session</a>
+</p>
+
+<dt>
+  <dt>type</dt>
+  <dd>{{packet["type"]}}</dd>
+
+  <dt>direction</dt>
+  <dd>server {% if packet["received"] %}&lt;-{% else %}-&gt;{% end %} {{({"ws": "client", "amqp": "queue"})[mode]}}</dd>
+
+  <dt>duration</dt>
+  <dd>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</dd>
+</dt>
+
+<h2>Packet Body</h2>
+<pre>{{packet["message"]}}</pre>
+
+<h2>SQL Profile</h2>
+<table>
+  <tr>
+    <th>i</th>
+    <th>text</th>
+    <th>duration</th>
+  </tr>
+  {% for query_index, query_stat in enumerate(packet["query_stats"]) %}
+  <tr>
+    <td>
+      <a href="queries/{{query_index}}/">{{query_index}}</a>
+    </td>
+    <td><pre>{{query_stat.text}}</pre></td>
+    <td>{{"{:.2f}".format(query_stat.duration * 1000)}} ms</td>
+  </tr>
+  {% end %}
+</table>
+
+{% end %}

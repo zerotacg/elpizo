@@ -1,0 +1,32 @@
+{% extends "_layout.html" %}
+{% block body %}
+<h1>Query {{query_index}} for {{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}} Packet {{packet_index}} for Session #{{session.user_id}}</h1>
+
+<p>
+  <a href="../..">back to packet</a>
+</p>
+
+<dl>
+  <dt>multiparams</dt>
+  <dd><pre>{{query.user_context[2]}}</pre></dd>
+
+  <dt>params</dt>
+  <dd><pre>{{query.user_context[3]}}</pre></dd>
+
+  <dt>duration</dt>
+  <dd>{{"{:.2f}".format(query.duration * 1000)}} ms</dd>
+</dl>
+
+<h2>Text</h2>
+<p>
+  <pre>{{query.text}}</pre>
+</p>
+
+<h2>Explain</h2>
+<p>
+{% autoescape None %}
+  {{explain}}
+{% autoescape %}
+</p>
+
+{% end %}

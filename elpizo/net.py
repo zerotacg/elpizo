@@ -37,8 +37,7 @@ class Protocol(object):
                                                  auto_delete=True)
 
     self.channel.basic_consume(
-        green.root(lambda *args, **kwargs: self.on_amqp_message(*args,
-                                                                **kwargs)),
+        green.root(self.on_raw_amqp_message),
         queue=queue_name, no_ack=True, exclusive=True)
 
     for on_open_hook in self.application.on_open_hooks:
@@ -96,15 +95,19 @@ class Protocol(object):
   def close(self):
     self.socket.close()
 
-  def on_ws_message(self, packet):
+  def on_raw_ws_message(self, packet):
     type, origin, message = self.deserialize_packet(packet)
-    ctx = self.make_context()
-    self.application.ws_endpoints[type](ctx, message)
+    self.on_ws_message(type, origin, message)
 
-  def on_amqp_message(self, channel, method, properties, body):
+  def on_raw_amqp_message(self, channel, method, properties, body):
     type, origin, message = self.deserialize_packet(body)
-    ctx = self.make_context()
-    self.application.amqp_endpoints[type](ctx, origin, message)
+    self.on_amqp_message(type, origin, message)
+
+  def on_ws_message(self, type, origin, message):
+    self.application.ws_endpoints[type](self.make_context(), message)
+
+  def on_amqp_message(self, type, origin, message):
+    self.application.amqp_endpoints[type](self.make_context(), origin, message)
 
   def on_close(self):
     for on_close_hook in self.application.on_close_hooks:
@@ -171,7 +174,7 @@ class Connection(WebSocketHandler):
     self.protocol_event.wait()
 
     try:
-      self.protocol.on_ws_message(packet)
+      self.protocol.on_raw_ws_message(packet)
     except Exception as e:
       self.error(exc_info=sys.exc_info())
       logging.error("Error in on_message for WebSocket connection", exc_info=e)
