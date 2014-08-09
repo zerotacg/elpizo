@@ -6,16 +6,19 @@
   / {{({"ws": "WebSocket", "amqp": "AMQP"})[mode]}} Packet {{i}}
 </h1>
 
-<dt>
+<dl class="{{"rx" if packet["received"] else "tx"}}">
   <dt>type</dt>
   <dd>{{packet["type"]}}</dd>
+
+  <dt>origin</dt>
+  <dd>{{packet["origin"]}}</dd>
 
   <dt>direction</dt>
   <dd>server {% if packet["received"] %}&lt;-{% else %}-&gt;{% end %} {{({"ws": "client", "amqp": "queue"})[mode]}}</dd>
 
   <dt>duration</dt>
   <dd>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</dd>
-</dt>
+</dl>
 
 <h2>Packet Body</h2>
 <pre>{{packet["message"]}}</pre>

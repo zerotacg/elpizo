@@ -5,10 +5,10 @@
   / {% if session.protocol is None %}<del>{% end %}Session {{session.id}}{% if session.protocol is None %}</del>{% end %}
 </h1>
 
-<dt>
+<dl>
   <dt>user name</dt>
   <dd>{{player.user.name}}</dd>
-</dt>
+</dl>
 
 <h2>Public Protobuf</h2>
 <p>
@@ -27,7 +27,7 @@
     <th>duration</th>
   </tr>
   {% for i, packet in reversed(list(enumerate(session.packets["amqp"]))) %}
-  <tr>
+  <tr class="{{"rx" if packet["received"] else "tx"}}">
     <td>
       <a href="packets/amqp/{{i}}/">{{i}}</a>
     </td>
@@ -54,7 +54,7 @@
     <th>duration</th>
   </tr>
   {% for i, packet in reversed(list(enumerate(session.packets["ws"]))) %}
-  <tr>
+  <tr class="{{"rx" if packet["received"] else "tx"}}">
     <td>
       <a href="packets/ws/{{i}}/">{{i}}</a>
     </td>
