@@ -36,8 +36,10 @@ class Protocol(object):
                                                  exclusive=True,
                                                  auto_delete=True)
 
-    self.channel.basic_consume(green.root(self.on_amqp_message),
-                               queue=queue_name, no_ack=True, exclusive=True)
+    self.channel.basic_consume(
+        green.root(lambda *args, **kwargs: self.on_amqp_message(*args,
+                                                                **kwargs)),
+        queue=queue_name, no_ack=True, exclusive=True)
 
     for on_open_hook in self.application.on_open_hooks:
       on_open_hook(self.make_context())

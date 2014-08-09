@@ -26,53 +26,6 @@ class ExportsHandler(RequestHandler):
     self.finish("window._exports=" + json.dumps(get_exports(self.application)))
 
 
-class SQLTapDebugHandler(RequestHandler):
-  def get(self):
-    import sqltap
-    from sqlalchemy.sql import Select
-    from sqlalchemy.ext.compiler import compiles
-    from sqlalchemy.sql.expression import Executable, ClauseElement, \
-                                          _literal_as_text
-
-    class explain(Executable, ClauseElement):
-      def __init__(self, stmt, analyze=False):
-        self.statement = _literal_as_text(stmt)
-        self.analyze = analyze
-
-    @compiles(explain)
-    def pg_explain(element, compiler, **kw):
-      text = "EXPLAIN "
-      if element.analyze:
-        text += "ANALYZE "
-      text += compiler.process(element.statement)
-      return text
-
-    stats = self.application._sqltap_stats
-    engine = self.application.sqla_factory.bind
-
-    query_plans = {}
-
-    self.application._sqltap_profiler.stop()
-    for stat in list(stats):
-      if isinstance(stat.text, Select):
-        k = str(stat.text)
-        if k not in query_plans:
-          _, clause, multiparams, params, results = stat.user_context
-          result = engine.execute(explain(stat.text, analyze=True), multiparams)
-          query_plans[k] = [c for c, in result.fetchall()]
-
-        plan = query_plans[k]
-
-        stat.text = """\
-{query}
-
-{plan}
-""".format(query=stat.text, plan="\n".join(["-- " + line for line in plan]))
-    self.application._sqltap_profiler.start()
-
-    self.finish(sqltap.report(stats))
-
-
 class Application(Application):
   def __init__(self, **kwargs):
     routes = [
@@ -85,17 +38,8 @@ class Application(Application):
     ]
 
     if kwargs["debug"]:
-      routes.extend([
-        (r"/_debug/sqltap", SQLTapDebugHandler)
-      ])
-
-      import sqltap
-      from collections import deque
-
-      self._sqltap_stats = deque(maxlen=1000)
-      self._sqltap_profiler = sqltap.start(
-          user_context_fn=lambda *args: tuple(args),
-          collect_fn=self._sqltap_stats.append)
+      from . import debug
+      debug.install(self, routes)
 
     super().__init__(
         routes,
