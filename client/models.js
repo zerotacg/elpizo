@@ -310,10 +310,12 @@ export class Actor extends Entity {
                       null;
 
       if (direction !== null) {
+        var wasMoving = this.moving;
+
         if (this.moveInDirection(direction)) {
           // Send a move packet only if we've successfully moved.
           protocol.send(new game_pb2.MovePacket({direction: direction}));
-        } else {
+        } else if (wasMoving) {
           // Otherwise, we're trying to move in a direction that's obstructed so
           // we stop moving and send StopMoves.
           this.moving = false;
