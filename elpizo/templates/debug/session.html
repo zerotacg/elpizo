@@ -15,6 +15,32 @@
   <pre>{{player.to_protobuf()}}</pre>
 </p>
 
+<h2>WebSocket Traffic</h2>
+<table>
+  <tr>
+    <th>i</th>
+    <th>dir</th>
+    <th>type</th>
+    <th>origin</th>
+    <th>message (first 100 bytes)</th>
+    <th>duration</th>
+  </tr>
+  {% for i, packet in reversed(list(enumerate(session.packets["ws"]))) %}
+  <tr class="{{"rx" if packet["received"] else "tx"}}">
+    <td>
+      <a href="packets/ws/{{i}}/">{{i}}</a>
+    </td>
+    <td>
+      s{% if packet["received"] %}&lt;-{% else %}-&gt;{% end %}c
+    </td>
+    <td>{{packet["type"]}}</td>
+    <td>{{packet["origin"]}}</td>
+    <td><pre>{{str(packet["message"])[:100]}}</pre></td>
+    <td>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</td>
+  </tr>
+  {% end %}
+</table>
+
 <h2>AMQP Traffic</h2>
 <table>
   <tr>
@@ -43,29 +69,4 @@
   {% end %}
 </table>
 
-<h2>WebSocket Traffic</h2>
-<table>
-  <tr>
-    <th>i</th>
-    <th>dir</th>
-    <th>type</th>
-    <th>origin</th>
-    <th>message (first 100 bytes)</th>
-    <th>duration</th>
-  </tr>
-  {% for i, packet in reversed(list(enumerate(session.packets["ws"]))) %}
-  <tr class="{{"rx" if packet["received"] else "tx"}}">
-    <td>
-      <a href="packets/ws/{{i}}/">{{i}}</a>
-    </td>
-    <td>
-      s{% if packet["received"] %}&lt;-{% else %}-&gt;{% end %}c
-    </td>
-    <td>{{packet["type"]}}</td>
-    <td>{{packet["origin"]}}</td>
-    <td><pre>{{str(packet["message"])[:100]}}</pre></td>
-    <td>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</td>
-  </tr>
-  {% end %}
-</table>
 {% end %}
