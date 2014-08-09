@@ -1,7 +1,13 @@
+import base64
+import email
 import subprocess
 
-from .explain import explain_query
 from tornado.web import RequestHandler
+
+from .explain import explain_query
+
+from ..models.base import User
+from ..models.actors import Player
 
 
 class RequestHandler(RequestHandler):
@@ -60,3 +66,49 @@ class QueryViewHandler(RequestHandler):
                 packet_index=packet_index, query_index=query_index,
                 query=packet["query_stats"][int(query_index)],
                 explain=img)
+
+
+class AdmitHandler(RequestHandler):
+  def get(self):
+    sqla = self.application.sqla_factory()
+
+    self.set_header("Content-Type", "text/plain")
+
+    mint = self.application.mint
+
+    user_name = self.get_argument("user")
+    player_name = self.get_argument("player")
+
+    player = sqla.query(Player) \
+        .filter(Player.name == player_name,
+                User.name == user_name,
+                Player.user_id == User.id) \
+        .one()
+
+    user = player.user
+    user.current_player = player
+
+    sqla.commit()
+
+    credentials = "user.{}".format(user.id)
+
+    token = mint.mint(credentials.encode("utf-8"))
+    self.set_cookie("elpizo_token", base64.b64encode(token))
+
+    self.finish("""\
+# credentials
+{credentials}
+
+# token
+{token}
+
+# mint info
+rsa key size: {rsa_key_size}
+signer: {signer}
+hash: {hash}
+""".format(
+        credentials=mint.unmint(token).decode("utf-8"),
+        token=email.base64mime.body_encode(token).strip(),
+        rsa_key_size=mint.rsa_key_size * 8,
+        signer=mint.signer.__class__.__name__,
+        hash=mint.hashfunc.__name__))

@@ -29,6 +29,7 @@ def install(application, routes):
 
   routes.extend([
       (r"/_debug/", handlers.MainHandler),
+      (r"/_debug/admit/", handlers.AdmitHandler),
       (r"/_debug/sessions/(\d+)/", handlers.SessionHandler),
       (r"/_debug/sessions/(\d+)/packets/(ws|amqp)/(\d+)/", handlers.PacketViewHandler),
       (r"/_debug/sessions/(\d+)/packets/(ws|amqp)/(\d+)/queries/(\d+)/", handlers.QueryViewHandler),
