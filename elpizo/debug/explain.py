@@ -4,7 +4,6 @@ import sqlparse
 from io import StringIO
 
 from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.sql import Select
 from sqlalchemy.sql.expression import Executable, ClauseElement, \
                                       _literal_as_text
 
@@ -142,6 +141,8 @@ class ExplainClause(Executable, ClauseElement):
   def __init__(self, stmt):
     self.statement = _literal_as_text(stmt)
 
+  def __getattr__(self, key):
+    return getattr(self.statement, key)
 
 @compiles(ExplainClause)
 def pg_explain(element, compiler, **kw):
@@ -149,9 +150,6 @@ def pg_explain(element, compiler, **kw):
 
 
 def explain_query(engine, query, multiparams, params):
-  if not isinstance(query, Select):
-    return None
-
   (plan,), = engine.execute(ExplainClause(query), *multiparams, **params) \
       .fetchone()
 
