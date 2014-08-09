@@ -25,6 +25,8 @@
   <tr>
     <th>i</th>
     <th>text</th>
+    <th>multiparams</th>
+    <th>params</th>
     <th>duration</th>
   </tr>
   {% for query_index, query_stat in enumerate(packet["query_stats"]) %}
@@ -33,6 +35,8 @@
       <a href="queries/{{query_index}}/">{{query_index}}</a>
     </td>
     <td><pre>{{query_stat.text}}</pre></td>
+    <td><pre>{{query_stat.user_context[2]}}</pre></td>
+    <td><pre>{{query_stat.user_context[3]}}</pre></td>
     <td>{{"{:.2f}".format(query_stat.duration * 1000)}} ms</td>
   </tr>
   {% end %}
