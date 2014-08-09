@@ -31,7 +31,7 @@
       <a href="packets/ws/{{i}}/">{{i}}</a>
     </td>
     <td>
-      s{% if packet["received"] %}&lt;-{% else %}-&gt;{% end %}c
+      {% if packet["received"] %}c-&gt;s{% else %}s-&gt;c{% end %}
     </td>
     <td>{{packet["type"]}}</td>
     <td>{{packet["origin"]}}</td>
@@ -58,7 +58,7 @@
       <a href="packets/amqp/{{i}}/">{{i}}</a>
     </td>
     <td>
-      s{% if packet["received"] %}&lt;-{% else %}-&gt;{% end %}q
+      {% if packet["received"] %}q-&gt;s{% else %}s-&gt;q{% end %}
     </td>
     <td>{{packet["routing_key"]}}</td>
     <td>{{packet["type"]}}</td>

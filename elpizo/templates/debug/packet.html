@@ -14,7 +14,13 @@
   <dd>{{packet["origin"]}}</dd>
 
   <dt>direction</dt>
-  <dd>server {% if packet["received"] %}&lt;-{% else %}-&gt;{% end %} {{({"ws": "client", "amqp": "queue"})[mode]}}</dd>
+  <dd>
+    {% if packet["received"] %}
+      {{({"ws": "client", "amqp": "queue"})[mode]}} -&gt; server
+    {% else %}
+      server -&gt; {{({"ws": "client", "amqp": "queue"})[mode]}}
+    {% end %}
+  </dd>
 
   <dt>duration</dt>
   <dd>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</dd>
