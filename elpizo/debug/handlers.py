@@ -1,6 +1,7 @@
 import base64
 import email
 import subprocess
+import traceback
 
 from tornado.web import RequestHandler
 
@@ -68,6 +69,7 @@ class QueryViewHandler(RequestHandler):
                 session=session, packet=packet, mode=mode,
                 packet_index=packet_index, query_index=query_index,
                 query=packet["query_stats"][int(query_index)],
+                stack="".join(traceback.format_list(query.stack)),
                 explain=img)
 
 
