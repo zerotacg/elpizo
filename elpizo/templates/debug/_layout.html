@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Elpizo Debug Console</title>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/default.min.css">
     <style>
     body {
       font-family: monospace;
@@ -25,9 +26,16 @@
     .rx {
       background: cyan;
     }
+
+    .hljs {
+      background: none;
+      padding: 0;
+    }
     </style>
   </head>
   <body>
-  {% block body %}{% end %}
+    {% block body %}{% end %}
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>
