@@ -119,7 +119,14 @@ message MovePacket {
   // Direction: Server <-> Client
   option (packet_type) = MOVE;
 
-  optional uint32 direction = 1;
+  enum Direction {
+    NORTH = 0;
+    WEST = 1;
+    SOUTH = 2;
+    EAST = 3;
+  }
+
+  optional Direction direction = 1;
 }
 
 message AvatarPacket {
