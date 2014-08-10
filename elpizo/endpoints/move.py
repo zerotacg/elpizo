@@ -42,7 +42,8 @@ def socket_move(ctx, message):
 
   try:
     region = ctx.sqla.query(Region) \
-        .filter(Region.bbox_contains(new_ax, new_ay)) \
+        .filter(Region.realm_id == ctx.player.realm_id,
+                Region.bbox_contains(new_ax, new_ay)) \
         .one()
   except NoResultFound:
     # colliding with the edge of the world

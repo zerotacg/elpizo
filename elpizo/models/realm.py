@@ -79,7 +79,7 @@ class Region(Base):
   @hybrid.hybrid_property
   def bbox(self):
     return func.box(func.point(self.a_left, self.a_top),
-                    func.point(self.a_right, self.a_bottom))
+                    func.point(self.a_right - 1, self.a_bottom - 1))
 
   # The array contains integers in the Terrain table.
   corners = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
