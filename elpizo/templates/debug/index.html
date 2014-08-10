@@ -5,12 +5,23 @@
 </h1>
 
 <h2>Admit</h2>
+{% if can_mint %}
 <p>Mint a token for the given user name and player name.</p>
+<p>
+  <span style="color:red"><strong>WARNING:</strong></span> Make sure this is off
+  in production -- set mint_public_key to actually be the public key to disable.
+</p>
 <form action="admit/">
   <label>user <input name="user"></label>
   <label>player <input name="player"></label>
   <button type="submit">mint</button>
 </form>
+{% else %}
+<p>
+  <strong>Disabled.</strong> Set mint_public_key to the mint's private key to
+  allow debug minting.
+</p>
+{% end %}
 
 <h2>Sessions</h2>
 <p>All sessions, active and <del>inactive</del>.</p>

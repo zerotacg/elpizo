@@ -18,6 +18,8 @@ class Mint(object):
 
     rsa = RSA.importKey(key_file.read())
 
+    self.can_mint = rsa.has_private()
+
     self.rsa_key_size = (rsa.size() + 1) // 8
     self.signer = PKCS1_PSS.new(rsa)
 
