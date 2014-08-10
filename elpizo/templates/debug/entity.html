@@ -21,7 +21,7 @@
   <dd>{{entity.__class__.__name__}}</dd>
 </dl>
 {% elif isinstance(entity, Player) %}
-<h2>Player</h2>
+<h2>Player (<a href="/_debug/admit/?user={{entity.user.name}}&amp;player={{entity.name}}">admit</a>)</h2>
 <dl>
   <dt>user</dt>
   <dd>{{entity.user.name}}</dd>

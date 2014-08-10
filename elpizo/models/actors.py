@@ -23,6 +23,7 @@ class Actor(Entity):
   gender = sqlalchemy.Column(String, nullable=False)
   body = sqlalchemy.Column(String, nullable=False)
   facial = sqlalchemy.Column(String, nullable=True)
+  hair = sqlalchemy.Column(String, nullable=True)
 
   speed = 2 # should probably not be hardcoded
 
@@ -33,6 +34,9 @@ class Actor(Entity):
 
     if self.facial is not None:
       message.facial = self.facial
+
+    if self.hair is not None:
+      message.hair = self.hair
 
     protobuf.Extensions[game_pb2.Actor.actor_ext].MergeFrom(message)
     return protobuf

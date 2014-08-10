@@ -46,6 +46,11 @@ export class Renderer extends EventEmitter {
     this.entityCanvas.style.zIndex = 1;
     this.el.appendChild(this.entityCanvas);
 
+    this.xrayCanvas = this.createCanvas();
+    this.xrayCanvas.style.zIndex = 2;
+    this.xrayCanvas.style.opacity = 0.25;
+    this.el.appendChild(this.xrayCanvas);
+
     this.aTopLeft = {
         ax: 0,
         ay: 0
@@ -110,6 +115,9 @@ export class Renderer extends EventEmitter {
 
     this.entityCanvas.width = sw;
     this.entityCanvas.height = sh;
+
+    this.xrayCanvas.width = sw;
+    this.xrayCanvas.height = sh;
 
     this.emit("viewportChange", this.getAbsoluteWorldBounds());
   }
@@ -222,6 +230,10 @@ export class Renderer extends EventEmitter {
     this.prepareContext(ctx);
     ctx.clearRect(0, 0, this.entityCanvas.width, this.entityCanvas.height);
 
+    var xrayCtx = this.xrayCanvas.getContext("2d");
+    this.prepareContext(xrayCtx);
+    xrayCtx.clearRect(0, 0, this.xrayCanvas.width, this.xrayCanvas.height);
+
     var aWorldBounds = this.getAbsoluteWorldBounds();
 
     var numBuckets = Math.ceil(aWorldBounds.aBottom - aWorldBounds.aTop);
@@ -237,14 +249,12 @@ export class Renderer extends EventEmitter {
 
     // Render in two passes - opaque items in the first pass, and xrayable in
     // the second.
-    ctx.globalAlpha = 1.0;
     sortedEntities.forEach((entity) => {
       this.renderEntity(entity, ctx, dt, false);
     });
 
-    ctx.globalAlpha = 0.25;
     sortedEntities.forEach((entity) => {
-      this.renderEntity(entity, ctx, 0, true);
+      this.renderEntity(entity, xrayCtx, 0, true);
     });
   }
 
