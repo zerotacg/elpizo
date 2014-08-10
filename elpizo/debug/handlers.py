@@ -26,7 +26,8 @@ class RequestHandler(RequestHandler):
 class MainHandler(RequestHandler):
   def get(self):
     sqla = self.application.sqla_factory()
-    self.render("debug/index.html", realms=sqla.query(Realm))
+    self.render("debug/index.html",
+                realms=sqla.query(Realm), users=sqla.query(User))
 
 
 class SessionHandler(RequestHandler):
