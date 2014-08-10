@@ -34,7 +34,7 @@ export class Transport extends EventEmitter {
   }
 
   send(packet) {
-    this.socket.send(packet.encode().buffer);
+    this.socket.send(packet.encodeAB());
   }
 
   close() {
