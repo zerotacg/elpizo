@@ -13,6 +13,8 @@ message Packet {
     STOP_MOVE = 8;
     TELEPORT = 9;
     STATUS = 10;
+    PICK_UP = 11;
+    DESPAWN_ENTITY = 12;
   }
 
   optional Type type = 1;
@@ -214,4 +216,18 @@ message StatusPacket {
   option (packet_type) = STATUS;
 
   optional bool online = 1;
+}
+
+message PickUpPacket {
+  // Sent by the client to pick up the item at the origin's current location.
+  //
+  // Direction: Client -> Server
+  option (packet_type) = PICK_UP;
+}
+
+message DespawnEntityPacket {
+  // Sent by the server to despawn the origin from the world.
+  //
+  // Direction: Server -> Client
+  option (packet_type) = DESPAWN_ENTITY;
 }

@@ -57,7 +57,7 @@ def initialize_fixtures(app, realm):
   Fixture.initialize_type_table(sqla)
 
   sqla.add(resource_sources.Tree(realm=realm, ax=7, ay=7))
-  sqla.add(Drop(item=restorative.Carrot(), realm=realm, ax=10, ay=10))
+  sqla.add(Drop(item=restorative.Carrot(), realm=realm, ax=1, ay=0))
   sqla.commit()
 
   logging.info("Created fixtures.")

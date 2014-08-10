@@ -15,7 +15,8 @@ def on_open(ctx):
 
   # Send realm information.
   ctx.send(None, game_pb2.RealmPacket(realm=ctx.player.realm.to_protobuf()))
-  ctx.send(None, game_pb2.EntityPacket(entity=ctx.player.to_protobuf()))
+  ctx.send(ctx.player.id,
+           game_pb2.EntityPacket(entity=ctx.player.to_protobuf()))
   ctx.send(ctx.player.id, game_pb2.AvatarPacket())
 
 
@@ -52,7 +53,7 @@ def viewport(ctx, message):
 
     for entity in region.entities:
       if entity is not ctx.player:
-        ctx.send(None, game_pb2.EntityPacket(entity=entity.to_protobuf()))
+        ctx.send(entity.id, game_pb2.EntityPacket(entity=entity.to_protobuf()))
 
   for removed_region_key in set(last_regions.keys()) - set(regions.keys()):
     region = regions[removed_region_key]

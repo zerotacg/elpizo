@@ -305,29 +305,53 @@ export class Actor extends Entity {
   }
 
   updateAsAvatar(dt, inputState, protocol) {
-    if (this.remainder === 0) {
-      var direction = inputState.isHeld(Key.LEFT) ? Directions.W :
-                      inputState.isHeld(Key.UP) ? Directions.N :
-                      inputState.isHeld(Key.RIGHT) ? Directions.E :
-                      inputState.isHeld(Key.DOWN) ? Directions.S :
-                      null;
+    if (this.remainder > 0) {
+      return;
+    }
 
-      if (direction !== null) {
-        var wasMoving = this.moving;
+    // Check for movement.
+    var direction = inputState.isHeld(Key.LEFT) ? Directions.W :
+                    inputState.isHeld(Key.UP) ? Directions.N :
+                    inputState.isHeld(Key.RIGHT) ? Directions.E :
+                    inputState.isHeld(Key.DOWN) ? Directions.S :
+                    null;
 
-        if (this.moveInDirection(direction)) {
-          // Send a move packet only if we've successfully moved.
-          protocol.send(new game_pb2.MovePacket({direction: direction}));
-        } else if (wasMoving) {
-          // Otherwise, we're trying to move in a direction that's obstructed so
-          // we stop moving and send StopMoves.
-          this.moving = false;
-          protocol.send(new game_pb2.StopMovePacket());
-        }
-      } else if (this.moving) {
-          // We've stopped moving entirely.
-          this.moving = false;
-          protocol.send(new game_pb2.StopMovePacket());
+    if (direction !== null) {
+      var wasMoving = this.moving;
+
+      if (this.moveInDirection(direction)) {
+        // Send a move packet only if we've successfully moved.
+        protocol.send(new game_pb2.MovePacket({direction: direction}));
+      } else if (wasMoving) {
+        // Otherwise, we're trying to move in a direction that's obstructed so
+        // we stop moving and send StopMoves.
+        this.moving = false;
+        protocol.send(new game_pb2.StopMovePacket());
+      }
+    } else if (this.moving) {
+        // We've stopped moving entirely.
+        this.moving = false;
+        protocol.send(new game_pb2.StopMovePacket());
+    }
+
+    // Check for interactions.
+    if (inputState.unstick(Key.Z)) {
+      var contacts = this.realm.getAllEntities().filter((entity) =>
+          entity.location.ax === this.location.ax &&
+          entity.location.ay === this.location.ay &&
+          entity !== this);
+
+      if (contacts.length > 1) {
+        console.warn("I don't know how to handle this!");
+        return;
+      }
+
+      var head = contacts[0];
+      switch (head.type) {
+        case "Drop":
+          // Attempt to pick up the drop.
+          protocol.send(new game_pb2.PickUpPacket());
+          break;
       }
     }
   }

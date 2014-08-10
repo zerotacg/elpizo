@@ -64,4 +64,17 @@ export function install(game) {
     };
     entity.direction = message.direction;
   });
+
+  protocol.on(Packet.Type.DESPAWN_ENTITY, (origin, message) => {
+    var entity = game.realm.getEntity(origin);
+
+    if (entity.realm.id !== game.realm.id) {
+      console.warn("Got invalid entity realm ID (" +
+                   entity.location.realmId + ") for current realm (" +
+                   game.realm.id + "), discarding.");
+      return;
+    }
+
+    game.realm.removeEntity(entity);
+  });
 }
