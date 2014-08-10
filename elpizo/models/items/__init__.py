@@ -8,6 +8,7 @@ from sqlalchemy.orm import backref, relationship, remote, foreign
 from sqlalchemy.types import *
 
 from ... import game_pb2
+
 from .. import Base, basic_primary_key
 from ..base import Entity
 from ..actors import Player
@@ -31,6 +32,9 @@ class Item(Base):
         "polymorphic_identity": cls.__name__
     }
 
+  def to_protobuf(self):
+    return game_pb2.Item(id=self.id, type=self.type)
+
 
 class Drop(Entity):
   __tablename__ = "drops"
@@ -40,3 +44,10 @@ class Drop(Entity):
   item_id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("items.id"),
                               nullable=False, unique=True)
   item = relationship("Item", backref="drop")
+
+  def to_protobuf(self):
+    protobuf = super().to_protobuf()
+    message = game_pb2.Drop(item=self.item.to_protobuf())
+
+    protobuf.Extensions[game_pb2.Drop.drop_ext].MergeFrom(message)
+    return protobuf

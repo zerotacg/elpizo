@@ -1,7 +1,7 @@
 import {EventEmitter} from "events";
 
 import {Directions} from "../models";
-import {countingSort, repeat} from "../util/collections";
+import {repeat} from "../util/collections";
 import {hasOwnProp, extend} from "../util/objects";
 module coords from "../util/coords";
 
@@ -238,14 +238,20 @@ export class Renderer extends EventEmitter {
 
     var numBuckets = Math.ceil(aWorldBounds.aBottom - aWorldBounds.aTop);
 
-    // We use counting sort to render entities as it is asymptotically better
-    // than Array#sort (O(n) + constant factor of bucket allocation).
-    var sortedEntities = countingSort(
-        numBuckets, (entity) =>
-            Math.floor(entity.location.ay - this.aTopLeft.ay),
-        realm.getAllEntities().filter(
+    var sortedEntities = realm.getAllEntities()
+        .filter(
             (entity) => entity.location.ay >= aWorldBounds.aTop &&
-                        entity.location.ay < aWorldBounds.aBottom));
+                        entity.location.ay < aWorldBounds.aBottom)
+        .sort((a, b) => {
+            // Always sort drops below everything else.
+            if (a.type === "Drop") {
+              return -1;
+            } else if (b.type === "Drop") {
+              return 1;
+            }
+
+            return a.location.ay - b.location.ay;
+        });
 
     // Render in two passes - opaque items in the first pass, and xrayable in
     // the second.
@@ -354,7 +360,7 @@ export class Renderer extends EventEmitter {
     ctx.translate(sOffset.sx, sOffset.sy);
     this.entitySprites[entity.id].forEach((sprite) => {
       ctx.save();
-      ctx.translate(-sprite.def.center.sx, -sprite.def.center.sy);
+      ctx.translate(-sprite.def.offset.sx, -sprite.def.offset.sy);
       if (!xraying || sprite.def.xrayable) {
         sprite.render(this.resources, dt, ctx);
       }
@@ -387,7 +393,7 @@ Renderer.SPRITES = {
     },
 
     Drop: (drop) => {
-      return [["Item", drop.item.name].join(".")];
+      return [["Item", drop.item.type].join(".")];
     }
 };
 

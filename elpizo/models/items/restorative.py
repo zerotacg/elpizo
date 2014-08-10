@@ -1,5 +1,5 @@
 from . import Item
 
 
-class Potion(Item):
+class Carrot(Item):
   pass

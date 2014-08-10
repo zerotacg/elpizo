@@ -354,8 +354,25 @@ export class Fixture extends Entity {
   }
 }
 
+export class Item {
+  constructor(message) {
+    this.id = message.id;
+    this.type = message.type;
+  }
+}
+
+export class Drop extends Entity {
+  constructor(message) {
+    super(message);
+    message = message.dropExt;
+
+    this.item = new Item(message.item);
+  }
+}
+
 Entity.TYPES = {
     Actor: Actor,
     Player: Player,
-    Fixture: Fixture
+    Fixture: Fixture,
+    Drop: Drop
 };

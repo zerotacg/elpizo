@@ -8,6 +8,7 @@ from elpizo.models.actors import Player
 from elpizo.models.base import Base, User, Entity
 from elpizo.models.realm import Realm, Region, Terrain
 from elpizo.models.fixtures import Fixture, resource_sources
+from elpizo.models.items import restorative, Drop
 from elpizo.tools import mapgen
 
 
@@ -56,6 +57,7 @@ def initialize_fixtures(app, realm):
   Fixture.initialize_type_table(sqla)
 
   sqla.add(resource_sources.Tree(realm=realm, ax=7, ay=7))
+  sqla.add(Drop(item=restorative.Carrot(), realm=realm, ax=10, ay=10))
   sqla.commit()
 
   logging.info("Created fixtures.")

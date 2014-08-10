@@ -66,13 +66,12 @@ message Actor {
     optional Actor actor_ext = 101;
   }
 
-  optional uint32 level = 1;
-  optional uint32 health = 2;
-  optional string gender = 3;
-  optional string body = 4;
-  optional string facial = 5;
-  optional string hair = 6;
-  optional uint32 speed = 7;
+  optional uint32 health = 1;
+  optional string gender = 2;
+  optional string body = 3;
+  optional string facial = 4;
+  optional string hair = 5;
+  optional uint32 speed = 6;
 }
 
 message Player {
@@ -89,6 +88,19 @@ message Fixture {
   }
 
   optional uint32 fixture_type_id = 1;
+}
+
+message Item {
+  optional uint32 id = 1;
+  optional string type = 2;
+}
+
+message Drop {
+  extend Entity {
+    optional Drop drop_ext = 104;
+  }
+
+  optional Item item = 1;
 }
 
 message ErrorPacket {

@@ -1,14 +1,23 @@
 import {repeat} from "../util/collections";
 
 class SpriteDef {
-  constructor(resourceName, sw, sh, speedFactor, frames, center, xrayable) {
+  constructor(resourceName, sw, sh, speedFactor, frames, offset, xrayable) {
     this.resourceName = resourceName;
     this.sw = sw;
     this.sh = sh;
     this.speedFactor = speedFactor;
     this.frames = frames;
-    this.center = center;
+    this.offset = offset;
     this.xrayable = xrayable;
+  }
+}
+
+function makeStaticSpriteDef(resourceName, sw, sh, speedFactor, frames, offset) {
+  return {
+      standing: {
+          n: new SpriteDef(resourceName, sw, sh, speedFactor, frames, offset,
+                           false)
+      }
   }
 }
 
@@ -46,12 +55,13 @@ function makeHumanoidSpriteDef(resourceName) {
 }
 
 export default = {
-  "Fixture.Tree": {
-      standing: {
-          n: new SpriteDef("fixture/tree.png", 96, 96, 0,
-                           [{sx: 0, sy: 0}], {sx: 32, sy: 64}, false)
-      }
-  },
+  "Fixture.Tree":
+      makeStaticSpriteDef("fixture/tree.png", 96, 96, 0,
+                          [{sx: 0, sy: 0}], {sx: 32, sy: 64}),
+
+  "Item.Carrot":
+      makeStaticSpriteDef("item/carrot.png", 32, 32, 0,
+                          [{sx: 0, sy: 0}], {sx: 0, sy: 0}),
 
   "Body.Male.Light":
       makeHumanoidSpriteDef("body/male/light.png"),
