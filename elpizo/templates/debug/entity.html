@@ -9,6 +9,11 @@
   / {{entity.id}}
 </h1>
 
+<dl>
+  <dt>realm</dt>
+  <dd><a href="/_debug/realms/{{entity.realm.id}}/">{{entity.realm_id}} (name: {{entity.realm.name}})</a></dd>
+</dl>
+
 <h2>Public Protobuf</h2>
 <p>
   <pre>{{entity.to_protobuf()}}</pre>

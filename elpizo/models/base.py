@@ -51,7 +51,7 @@ class Entity(Base):
   rx = sqlalchemy.Column(Integer, nullable=False)
   ry = sqlalchemy.Column(Integer, nullable=False)
 
-  realm = relationship("Realm")
+  realm = relationship("Realm", backref="entities")
 
   region = relationship("Region",
       primaryjoin=

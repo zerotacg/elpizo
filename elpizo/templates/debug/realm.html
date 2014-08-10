@@ -1,0 +1,27 @@
+{% extends "_layout.html" %}
+{% block body %}
+
+<h1>
+  <a href="/_debug/">Debug Console</a>
+  / Realms
+  / {{realm.id}}
+</h1>
+
+<dl>
+  <dt>name</dt>
+  <dd>{{realm.name}}</dd>
+
+  <dt>aw</dt>
+  <dd>{{realm.aw}}</dd>
+
+  <dt>ah</dt>
+  <dd>{{realm.ah}}</dd>
+</dl>
+
+<h2>Entities</h2>
+<ul>
+  {% for entity in realm.entities %}
+  <li><a href="/_debug/entities/{{entity.id}}/">{{entity.id}} (type: {{entity.type}})</a></li>
+  {% end %}
+</ul>
+{% end %}

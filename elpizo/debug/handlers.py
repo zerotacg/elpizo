@@ -10,6 +10,7 @@ from .explain import explain_query
 from ..models.base import User, Entity
 from ..models.actors import Player
 from ..models.items import Item
+from ..models.realm import Realm
 
 
 class RequestHandler(RequestHandler):
@@ -24,7 +25,8 @@ class RequestHandler(RequestHandler):
 
 class MainHandler(RequestHandler):
   def get(self):
-    self.render("debug/index.html")
+    sqla = self.application.sqla_factory()
+    self.render("debug/index.html", realms=sqla.query(Realm))
 
 
 class SessionHandler(RequestHandler):
@@ -126,3 +128,10 @@ class UserHandler(RequestHandler):
     sqla = self.application.sqla_factory()
 
     self.render("debug/user.html", user=sqla.query(User).get(id))
+
+
+class RealmHandler(RequestHandler):
+  def get(self, id):
+    sqla = self.application.sqla_factory()
+
+    self.render("debug/realm.html", realm=sqla.query(Realm).get(id))

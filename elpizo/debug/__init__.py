@@ -50,7 +50,8 @@ def install(application, routes):
       (r"/_debug/sessions/(0x[0-9a-f]+)/packets/(ws|amqp)/(\d+)/queries/(\d+)/", handlers.QueryViewHandler),
       (r"/_debug/entities/(\d+)/", handlers.EntityHandler),
       (r"/_debug/items/(\d+)/", handlers.ItemHandler),
-      (r"/_debug/users/(\d+)/", handlers.UserHandler)
+      (r"/_debug/users/(\d+)/", handlers.UserHandler),
+      (r"/_debug/realms/(\d+)/", handlers.RealmHandler),
   ])
 
   def get_packet_name(code):

@@ -27,6 +27,13 @@
   {% end %}
 </ul>
 
+<h2>Realms</h2>
+<ul>
+  {% for realm in realms %}
+  <li><a href="realms/{{realm.id}}/">{{realm.id}} (name: {{realm.name}})</a></li>
+  {% end %}
+</ul>
+
 <h2>Inspect User</h2>
 <p>Inspect a user by their ID.</p>
 <form action="users/" onsubmit="window.location.href=this.action + this.elements.id.value + '/'; return false;">
