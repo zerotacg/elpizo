@@ -30,7 +30,9 @@ class Actor(Entity):
   def to_protobuf(self):
     protobuf = super().to_protobuf()
     message = game_pb2.Actor(health=self.health, gender=self.gender,
-                             body=self.body, speed=self.speed)
+                             body=self.body, speed=self.speed,
+                             inventory=[item.to_protobuf()
+                                        for item in self.inventory])
 
     if self.facial is not None:
       message.facial = self.facial

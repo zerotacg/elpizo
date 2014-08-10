@@ -11,7 +11,7 @@ from ... import game_pb2
 
 from .. import Base, basic_primary_key
 from ..base import Entity
-from ..actors import Player
+from ..actors import Actor, Player
 
 
 class Item(Base):
@@ -20,10 +20,10 @@ class Item(Base):
   id = basic_primary_key()
   type = sqlalchemy.Column(String, nullable=False)
 
-  owner_player_id = sqlalchemy.Column(Integer,
-                                      sqlalchemy.ForeignKey("players.id"),
-                                      nullable=True)
-  owner = relationship("Player", backref="inventory")
+  owner_actor_id = sqlalchemy.Column(Integer,
+                                     sqlalchemy.ForeignKey("actors.id"),
+                                     nullable=True)
+  owner = relationship("Actor", backref="inventory")
 
   @declared_attr
   def __mapper_args__(cls):

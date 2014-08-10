@@ -72,6 +72,8 @@ message Actor {
   optional string facial = 4;
   optional string hair = 5;
   optional uint32 speed = 6;
+
+  repeated Item inventory = 7;
 }
 
 message Player {

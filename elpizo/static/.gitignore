@@ -1,2 +1,5 @@
-*
-!.gitignore
+img
+css
+maps
+assets
+manifest.js
