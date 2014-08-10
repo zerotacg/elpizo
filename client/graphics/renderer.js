@@ -303,15 +303,6 @@ export class Renderer extends EventEmitter {
     return canvas;
   }
 
-  getSpriteDirection(direction) {
-    switch (direction) {
-      case Directions.N: return "n";
-      case Directions.W: return "w";
-      case Directions.S: return "s";
-      case Directions.E: return "e";
-    }
-  }
-
   renderEntity(entity, ctx) {
     var sOffset = this.absoluteToScreenCoords({
         ax: entity.location.ax - this.aTopLeft.ax,
