@@ -73,19 +73,36 @@ export class Game extends EventEmitter {
     if (this.me !== null) {
       this.me.updateAsAvatar(dt, this.inputState, this.protocol);
     }
+  }
 
-    // Now render.
+  render(dt) {
     this.renderer.render(dt);
   }
 
-  go() {
+  startUpdating() {
     var startTime = new Date().valueOf() / 1000;
     var cont = () => {
       var currentTime = new Date().valueOf() / 1000;
       this.update(currentTime - startTime);
       startTime = currentTime;
+      window.setTimeout(cont, 0);
+    };
+    cont();
+  }
+
+  startRendering() {
+    var startTime = new Date().valueOf() / 1000;
+    var cont = () => {
+      var currentTime = new Date().valueOf() / 1000;
+      this.render(currentTime - startTime);
+      startTime = currentTime;
       window.requestAnimationFrame(cont);
     };
     cont();
+  }
+
+  go() {
+    this.startUpdating();
+    this.startRendering();
   }
 }
