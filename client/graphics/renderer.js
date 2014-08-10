@@ -19,7 +19,7 @@ class Sprite {
     var frame = this.def.frames[Math.floor(this.frameIndex) %
                                 this.def.frames.length];
 
-    ctx.drawImage(resources.get(this.def.resourceName),
+    ctx.drawImage(resources.get("sprites/" + this.def.resourceName),
                   frame.sx, frame.sy,
                   this.def.sw, this.def.sh,
                   0, 0,
@@ -293,7 +293,7 @@ export class Renderer extends EventEmitter {
               ay: ry + dy / 2
           });
 
-          ctx.drawImage(this.resources.get("tiles." + texture),
+          ctx.drawImage(this.resources.get("tiles/" + texture),
                         u * Renderer.TILE_SIZE / 2, v * Renderer.TILE_SIZE / 2,
                         Renderer.TILE_SIZE / 2, Renderer.TILE_SIZE / 2,
                         s.sx, s.sy,
@@ -356,20 +356,28 @@ export class Renderer extends EventEmitter {
 
 Renderer.SPRITES = {
     Actor: (actor) => {
-      var names = ["body." + actor.body];
+      var names = [["Body", actor.gender, actor.body].join(".")];
 
       if (actor.facial) {
-        names.push("facial." + actor.facial);
+        names.push(["Facial", actor.gender, actor.facial].join("."));
       }
 
-      [].push.apply(names,
-                    actor.equipment.map((equipment) => equipment.type));
+      if (actor.hair) {
+        names.push(["Hair", actor.gender, actor.hair].join("."));
+      }
+
+      [].push.apply(names, actor.equipment.map((equipment) =>
+          ["Equipment", actor.gender, equipment.type].join(".")));
 
       return names;
     },
 
     Fixture: (fixture) => {
-      return [fixture.fixtureType.name];
+      return [["Fixture", fixture.fixtureType.name].join(".")];
+    },
+
+    Drop: (drop) => {
+      return [["Item", drop.item.name].join(".")];
     }
 };
 
@@ -378,15 +386,15 @@ Renderer.SPRITES.Player = Renderer.SPRITES.Actor;
 Renderer.TILE_SIZE = 32;
 
 Renderer.TILE_TEXTURE_MAPPINGS = {
-    "grassland": "grass",
-    "ocean": "water",
-    "river": "water",
-    "lakeshore": "water",
-    "grassland,lakeshore": "water-grass",
-    "lake": "water",
-    "beach": "beach",
-    "ocean,beach": "beach",
-    "subtropical_desert": "sand"
+    "grassland": "grass.png",
+    "ocean": "water.png",
+    "river": "water.png",
+    "lakeshore": "water.png",
+    "grassland,lakeshore": "water-grass.png",
+    "lake": "water.png",
+    "beach": "beach.png",
+    "ocean,beach": "beach.png",
+    "subtropical_desert": "sand.png"
 };
 
 Renderer.TILE_TEXTURE_COORDS = {

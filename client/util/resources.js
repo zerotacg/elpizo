@@ -39,3 +39,7 @@ export class Resources extends EventEmitter {
     return this._resources[name] || null;
   }
 }
+
+Resources.TYPES = {
+    image: loadImage
+};

@@ -1,5 +1,7 @@
 import time
 
+from sqlalchemy.orm.exc import NoResultFound
+
 from .. import game_pb2
 from ..green import sleep
 from ..models.realm import Region, Terrain
@@ -35,15 +37,20 @@ def socket_move(ctx, message):
   ctx.player.direction = direction
   ctx.sqla.commit()
 
-  ctx.player.ax += dax
-  ctx.player.ay += day
+  new_ax = ctx.player.ax + dax
+  new_ay = ctx.player.ay + day
 
-  region = ctx.player.region
-
-  # colliding with the edge of the world
-  if region is None:
+  try:
+    region = ctx.sqla.query(Region) \
+        .filter(Region.bbox_contains(new_ax, new_ay)) \
+        .one()
+  except NoResultFound:
+    # colliding with the edge of the world
     ctx.sqla.rollback()
     return
+
+  ctx.player.ax = new_ax
+  ctx.player.ay = new_ay
 
   nw = region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
                       (ctx.player.rx + 0)]

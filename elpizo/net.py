@@ -65,11 +65,7 @@ class Protocol(object):
                               binary=True)
 
   def get_player(self, sqla):
-    player = sqla.query(User) \
-        .get(self.user_id) \
-        .current_player
-    sqla.refresh(player)
-    return player
+    return sqla.query(User).get(self.user_id).current_player
 
   def publish(self, routing_key, origin, message):
     self.channel.basic_publish(

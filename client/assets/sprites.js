@@ -46,29 +46,28 @@ function makeHumanoidSpriteDef(resourceName) {
 }
 
 export default = {
-  "Tree": {
+  "Fixture.Tree": {
       standing: {
-          n: new SpriteDef(
-              "sprites.tree.small.oak", 96, 96, 0,
-              [{sx: 0, sy: 0}], {sx: 32, sy: 64}, false)
+          n: new SpriteDef("fixture/tree.png", 96, 96, 0,
+                           [{sx: 0, sy: 0}], {sx: 32, sy: 64}, false)
       }
   },
 
-  "body.male.light":
-      makeHumanoidSpriteDef("sprites.body.male.light"),
+  "Body.Male.Light":
+      makeHumanoidSpriteDef("body/male/light.png"),
 
-  "facial.beard.brown":
-      makeHumanoidSpriteDef("sprites.facial.beard.brown"),
+  "Facial.Male.BrownBeard":
+      makeHumanoidSpriteDef("facial/male/brown_beard.png"),
 
-  "hair.messy1.brown":
-      makeHumanoidSpriteDef("sprites.hair.messy1.brown"),
+  "Hair.Male.BrownMessy1":
+      makeHumanoidSpriteDef("hair/male/brown_messy_1.png"),
 
-  "torso.shirt.white_longsleeve_male":
-      makeHumanoidSpriteDef("sprites.torso.shirt.white_longsleeve_male"),
+  "Equipment.Male.WhiteLongsleeveShirt":
+      makeHumanoidSpriteDef("equipment/male/white_longsleeve_shirt.png"),
 
-  "legs.pants.teal_pants_male":
-      makeHumanoidSpriteDef("sprites.legs.pants.teal_pants_male"),
+  "Equipment.Male.TealPants":
+      makeHumanoidSpriteDef("equipment/male/teal_pants.png"),
 
-  "feet.shoes.brown_shoes_male":
-      makeHumanoidSpriteDef("sprites.feet.shoes.brown_shoes_male")
+  "Equipment.Male.BrownShoes":
+      makeHumanoidSpriteDef("equipment/male/brown_shoes.png")
 };

@@ -238,7 +238,9 @@ export class Actor extends Entity {
 
     this.equipment = [];
 
+    this.gender = message.gender;
     this.body = message.body;
+    this.hair = message.hair;
     this.facial = message.facial;
 
     // TODO: work this out

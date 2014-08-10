@@ -68,9 +68,11 @@ message Actor {
 
   optional uint32 level = 1;
   optional uint32 health = 2;
-  optional string body = 3;
-  optional string facial = 4;
-  optional uint32 speed = 5;
+  optional string gender = 3;
+  optional string body = 4;
+  optional string facial = 5;
+  optional string hair = 6;
+  optional uint32 speed = 7;
 }
 
 message Player {

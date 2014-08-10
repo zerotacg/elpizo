@@ -42,7 +42,14 @@ export class Game extends EventEmitter {
     });
   }
 
-  loadResources(bundle) {
+  loadFromManifest(manifest) {
+    var bundle = {};
+
+    Object.keys(manifest).forEach(function (fileName) {
+      var type = manifest[fileName];
+      bundle[fileName] = Resources.TYPES[type]("static/assets/" + fileName);
+    });
+
     this.resources.loadBundle(bundle);
   }
 

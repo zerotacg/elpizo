@@ -108,6 +108,10 @@ class Region(Base):
 
     return self.bbox.op("&&")(viewport_box)
 
+  @hybrid.hybrid_method
+  def bbox_contains(self, ax, ay):
+    return self.bbox.op("@>")(func.point(ax, ay))
+
   def to_protobuf(self):
     return game_pb2.Region(
         location=game_pb2.AbsoluteRealmLocation(realm_id=self.realm_id,

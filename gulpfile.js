@@ -20,11 +20,13 @@ var sourcemaps = require("gulp-sourcemaps");
 var uglify = require("gulp-uglify");
 var watchify = require("watchify");
 var through = require("through");
+var through2 = require("through2");
 var tmp = require("tmp");
 var argv = require("yargs").argv;
 
 var paths = {
   scripts: ["client/**/*.js", "client/**/*.jsx"],
+  assets: ["assets/**/*"],
   styles: ["client/style/**/*.less"],
   protos: ["proto/game.proto"]
 };
@@ -174,7 +176,48 @@ gulp.task("watchScripts", function () {
   return rebundle(bundler);
 });
 
+function generateManifest() {
+  var manifest = {};
+  var firstFile = null;
+
+  return through2.obj(function (file, enc, cb) {
+    if (firstFile === null) {
+      firstFile = file;
+    }
+
+    var fileName = path.relative("assets", file.relative);
+
+    switch (path.extname(file.relative)) {
+      case ".png":
+        manifest[fileName] = "image";
+        break;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(manifest, fileName)) {
+      this.push(file);
+    }
+
+    cb();
+  }, function (cb) {
+    this.push(new gutil.File({
+        cwd: firstFile.cwd,
+        base: firstFile.base,
+        path: path.join(firstFile.base, "manifest.js"),
+        contents: new Buffer("window._manifest=" +
+                             JSON.stringify(manifest, null, ''))
+    }));
+    cb();
+  });
+}
+
+gulp.task("assets", function () {
+  return gulp.src("./assets/**/*", { base: "./" })
+      .pipe(generateManifest())
+      .pipe(gulp.dest("elpizo/static"));
+});
+
 gulp.task("watch", function () {
+  gulp.watch(paths.assets, ["assets"]);
   gulp.watch(paths.styles, ["styles"]);
   gulp.watch(paths.protos, ["protos"]);
   gulp.start("watchScripts");
@@ -183,6 +226,7 @@ gulp.task("watch", function () {
 gulp.task("default", [
   "watch",
   "watchScripts",
+  "assets",
   "styles",
   "protos"
 ]);
