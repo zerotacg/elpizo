@@ -6,26 +6,7 @@ import {hasOwnProp, extend} from "../util/objects";
 module coords from "../util/coords";
 
 module sprites from "../assets/sprites";
-
-class Sprite {
-  constructor(def, speed) {
-    this.def = def;
-    this.speed = speed;
-    this.frameIndex = 0;
-  }
-
-  render(resources, dt, ctx) {
-    this.frameIndex += this.speed * this.def.speedFactor * dt;
-    var frame = this.def.frames[Math.floor(this.frameIndex) %
-                                this.def.frames.length];
-
-    ctx.drawImage(resources.get("sprites/" + this.def.resourceName),
-                  frame.sx, frame.sy,
-                  this.def.sw, this.def.sh,
-                  0, 0,
-                  this.def.sw, this.def.sh);
-  }
-}
+module models from "../models";
 
 export class Renderer extends EventEmitter {
   constructor(resources, parent) {
@@ -60,7 +41,7 @@ export class Renderer extends EventEmitter {
     this.realm = null;
 
     this.regionTerrainCache = {};
-    this.entitySprites = {};
+    this.elapsed = 0;
   }
 
   handleOnClick(e) {
@@ -167,7 +148,6 @@ export class Renderer extends EventEmitter {
 
   setRealm(realm) {
     this.realm = realm;
-    this.entitySprites = {};
     this.regionTerrainCache = {};
   }
 
@@ -176,8 +156,10 @@ export class Renderer extends EventEmitter {
       return;
     }
 
+    this.elapsed += dt;
+
     this.renderTerrain(this.realm);
-    this.renderEntities(this.realm, dt);
+    this.renderEntities(this.realm);
   }
 
   renderTerrain(realm) {
@@ -225,7 +207,7 @@ export class Renderer extends EventEmitter {
     }
   }
 
-  renderEntities(realm, dt) {
+  renderEntities(realm) {
     var ctx = this.entityCanvas.getContext("2d");
     this.prepareContext(ctx);
     ctx.clearRect(0, 0, this.entityCanvas.width, this.entityCanvas.height);
@@ -256,11 +238,11 @@ export class Renderer extends EventEmitter {
     // Render in two passes - opaque items in the first pass, and xrayable in
     // the second.
     sortedEntities.forEach((entity) => {
-      this.renderEntity(entity, ctx, dt, false);
-    });
+      this.renderEntity(entity, ctx);
 
-    sortedEntities.forEach((entity) => {
-      this.renderEntity(entity, xrayCtx, 0, true);
+      if (entity instanceof models.Actor) {
+        this.renderEntity(entity, xrayCtx);
+      }
     });
   }
 
@@ -330,27 +312,7 @@ export class Renderer extends EventEmitter {
     }
   }
 
-  getSpriteState(entity) {
-    return entity.moving ? "walking" : "standing";
-  }
-
-  renderEntity(entity, ctx, dt, xraying) {
-    var state = this.getSpriteState(entity);
-    var direction = this.getSpriteDirection(entity.direction);
-
-    var spriteDefs = Renderer.SPRITES[entity.type](entity).map((name) =>
-        sprites[name][state][direction]);
-
-    if (!hasOwnProp.call(this.entitySprites, entity.id) ||
-        this.entitySprites[entity.id].length != spriteDefs.length) {
-      this.entitySprites[entity.id] = repeat(spriteDefs.length, () =>
-          new Sprite(null, entity.speed || 0));
-    }
-
-    spriteDefs.forEach((spriteDef, i) => {
-      this.entitySprites[entity.id][i].def = spriteDef;
-    });
-
+  renderEntity(entity, ctx) {
     var sOffset = this.absoluteToScreenCoords({
         ax: entity.location.ax - this.aTopLeft.ax,
         ay: entity.location.ay - this.aTopLeft.ay
@@ -358,46 +320,51 @@ export class Renderer extends EventEmitter {
 
     ctx.save();
     ctx.translate(sOffset.sx, sOffset.sy);
-    this.entitySprites[entity.id].forEach((sprite) => {
-      ctx.save();
-      ctx.translate(-sprite.def.offset.sx, -sprite.def.offset.sy);
-      if (!xraying || sprite.def.xrayable) {
-        sprite.render(this.resources, dt, ctx);
-      }
-      ctx.restore();
-    });
+    Renderer.ENTITIES[entity.type](this.resources, ctx, entity, this.elapsed);
     ctx.restore();
   }
 }
 
-Renderer.SPRITES = {
-    Actor: (actor) => {
-      var names = [["Body", actor.gender, actor.body].join(".")];
+Renderer.ENTITIES = {
+    Actor: (resources, ctx, entity, elapsed) => {
+      var state = entity.moving ? "walking" : "standing";
+      var direction = entity.direction == Directions.N ? "n" :
+                      entity.direction == Directions.W ? "w" :
+                      entity.direction == Directions.S ? "s" :
+                      entity.direction == Directions.E ? "e" :
+                      null;
 
-      if (actor.facial) {
-        names.push(["Facial", actor.gender, actor.facial].join("."));
+      var names = [["Body", entity.gender, entity.body].join(".")];
+
+      if (entity.facial) {
+        names.push(["Facial", entity.gender, entity.facial].join("."));
       }
 
-      if (actor.hair) {
-        names.push(["Hair", actor.gender, actor.hair].join("."));
+      if (entity.hair) {
+        names.push(["Hair", entity.gender, entity.hair].join("."));
       }
 
-      [].push.apply(names, actor.equipment.map((equipment) =>
-          ["Equipment", actor.gender, equipment.type].join(".")));
+      [].push.apply(names, entity.equipment.map((equipment) =>
+          ["Equipment", entity.gender, equipment.type].join(".")));
 
-      return names;
+      names.forEach((name) => {
+          sprites[name][state][direction]
+              .render(resources, ctx, elapsed * entity.speed);
+      })
     },
 
-    Fixture: (fixture) => {
-      return [["Fixture", fixture.fixtureType.name].join(".")];
+    Fixture: (resources, ctx, entity, elapsed) => {
+      sprites[["Fixture", entity.fixtureType.name].join(".")]
+          .render(resources, ctx, elapsed);
     },
 
-    Drop: (drop) => {
-      return [["Item", drop.item.type].join(".")];
+    Drop: (resources, ctx, entity, elapsed) => {
+      sprites[["Item", entity.item.type].join(".")]
+          .render(resources, ctx, elapsed);
     }
 };
 
-Renderer.SPRITES.Player = Renderer.SPRITES.Actor;
+Renderer.ENTITIES.Player = Renderer.ENTITIES.Actor;
 
 Renderer.TILE_SIZE = 32;
 

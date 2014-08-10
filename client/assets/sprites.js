@@ -1,83 +1,94 @@
 import {repeat} from "../util/collections";
 
-class SpriteDef {
-  constructor(resourceName, sw, sh, speedFactor, frames, offset, xrayable) {
+class Sprite {
+  constructor(resourceName, sw, sh, speedFactor, frames, offset) {
     this.resourceName = resourceName;
     this.sw = sw;
     this.sh = sh;
     this.speedFactor = speedFactor;
     this.frames = frames;
     this.offset = offset;
-    this.xrayable = xrayable;
+  }
+
+  render(resources, ctx, elapsed) {
+    var frame = this.frames[
+        Math.floor(elapsed * this.speedFactor) %
+        this.frames.length];
+
+    ctx.save();
+    ctx.translate(-this.offset.sx, -this.offset.sy);
+    ctx.drawImage(resources.get("sprites/" + this.resourceName),
+                  frame.sx, frame.sy, this.sw, this.sh,
+                  0, 0, this.sw, this.sh);
+    ctx.restore();
   }
 }
 
-function makeStaticSpriteDef(resourceName, sw, sh, speedFactor, frames, offset) {
+function makeStaticSprite(resourceName, sw, sh, speedFactor, frames, offset) {
   return {
       standing: {
-          n: new SpriteDef(resourceName, sw, sh, speedFactor, frames, offset,
-                           false)
+          n: new Sprite(resourceName, sw, sh, speedFactor, frames, offset)
       }
   }
 }
 
-function makeHumanoidSpriteDef(resourceName) {
+function makeHumanoidSprite(resourceName) {
   return {
       standing: {
-          n: new SpriteDef(resourceName, 32, 64, 0, [{sx: 16, sy: 64 * 0}],
-                           {sx: 0, sy: 32}, true),
-          w: new SpriteDef(resourceName, 32, 64, 0, [{sx: 16, sy: 64 * 1}],
-                           {sx: 0, sy: 32}, true),
-          s: new SpriteDef(resourceName, 32, 64, 0, [{sx: 16, sy: 64 * 2}],
-                           {sx: 0, sy: 32}, true),
-          e: new SpriteDef(resourceName, 32, 64, 0, [{sx: 16, sy: 64 * 3}],
-                           {sx: 0, sy: 32}, true)
+          n: new Sprite(resourceName, 32, 64, 0, [{sx: 16, sy: 64 * 0}],
+                        {sx: 0, sy: 32}),
+          w: new Sprite(resourceName, 32, 64, 0, [{sx: 16, sy: 64 * 1}],
+                        {sx: 0, sy: 32}),
+          s: new Sprite(resourceName, 32, 64, 0, [{sx: 16, sy: 64 * 2}],
+                        {sx: 0, sy: 32}),
+          e: new Sprite(resourceName, 32, 64, 0, [{sx: 16, sy: 64 * 3}],
+                        {sx: 0, sy: 32})
       },
       walking: {
-          n: new SpriteDef(
+          n: new Sprite(
               resourceName, 32, 64, 4,
               repeat(8, (i) => ({sx: 16 + 64 * (i + 1), sy: 64 * 8})),
-              {sx: 0, sy: 32}, true),
-          w: new SpriteDef(
+              {sx: 0, sy: 32}),
+          w: new Sprite(
               resourceName, 32, 64, 4,
               repeat(8, (i) => ({sx: 16 + 64 * (i + 1), sy: 64 * 9})),
-              {sx: 0, sy: 32}, true),
-          s: new SpriteDef(
+              {sx: 0, sy: 32}),
+          s: new Sprite(
               resourceName, 32, 64, 4,
               repeat(8, (i) => ({sx: 16 + 64 * (i + 1), sy: 64 * 10})),
-              {sx: 0, sy: 32}, true),
-          e: new SpriteDef(
+              {sx: 0, sy: 32}),
+          e: new Sprite(
               resourceName, 32, 64, 4,
               repeat(8, (i) => ({sx: 16 + 64 * (i + 1), sy: 64 * 11})),
-              {sx: 0, sy: 32}, true)
+              {sx: 0, sy: 32})
       }
   };
 }
 
 export default = {
   "Fixture.Tree":
-      makeStaticSpriteDef("fixture/tree.png", 96, 96, 0,
-                          [{sx: 0, sy: 0}], {sx: 32, sy: 64}),
+      new Sprite("fixture/tree.png", 96, 96, 0, [{sx: 0, sy: 0}],
+                 {sx: 32, sy: 64}),
 
   "Item.Carrot":
-      makeStaticSpriteDef("item/carrot.png", 32, 32, 0,
-                          [{sx: 0, sy: 0}], {sx: 0, sy: 0}),
+      new Sprite("item/carrot.png", 32, 32, 0, [{sx: 0, sy: 0}],
+                 {sx: 0, sy: 0}),
 
   "Body.Male.Light":
-      makeHumanoidSpriteDef("body/male/light.png"),
+      makeHumanoidSprite("body/male/light.png"),
 
   "Facial.Male.BrownBeard":
-      makeHumanoidSpriteDef("facial/male/brown_beard.png"),
+      makeHumanoidSprite("facial/male/brown_beard.png"),
 
   "Hair.Male.BrownMessy1":
-      makeHumanoidSpriteDef("hair/male/brown_messy_1.png"),
+      makeHumanoidSprite("hair/male/brown_messy_1.png"),
 
   "Equipment.Male.WhiteLongsleeveShirt":
-      makeHumanoidSpriteDef("equipment/male/white_longsleeve_shirt.png"),
+      makeHumanoidSprite("equipment/male/white_longsleeve_shirt.png"),
 
   "Equipment.Male.TealPants":
-      makeHumanoidSpriteDef("equipment/male/teal_pants.png"),
+      makeHumanoidSprite("equipment/male/teal_pants.png"),
 
   "Equipment.Male.BrownShoes":
-      makeHumanoidSpriteDef("equipment/male/brown_shoes.png")
+      makeHumanoidSprite("equipment/male/brown_shoes.png")
 };
