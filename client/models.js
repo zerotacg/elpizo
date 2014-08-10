@@ -341,6 +341,10 @@ export class Actor extends Entity {
           entity.location.ay === this.location.ay &&
           entity !== this);
 
+      if (contacts.length === 0) {
+        return;
+      }
+
       if (contacts.length > 1) {
         console.warn("I don't know how to handle this!");
         return;
