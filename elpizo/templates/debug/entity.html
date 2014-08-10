@@ -2,6 +2,7 @@
 {% block body %}
 {% from elpizo.models.actors import Player, Actor %}
 {% from elpizo.models.fixtures import Fixture %}
+{% from elpizo.models.items import Drop %}
 
 <h1>
   <a href="/_debug/">Debug Console</a>
@@ -45,6 +46,14 @@
 
   <dt>online</dt>
   <dd>{{entity.online}}</dd>
+</dl>
+{% end %}
+
+{% if isinstance(entity, Drop) %}
+<h2>Drop</h2>
+<dl>
+  <dt>item</dt>
+  <dd><a href="/_debug/items/{{entity.item.id}}/">{{entity.item.id}} (type: {{entity.item.type}})</a></dd>
 </dl>
 {% end %}
 
