@@ -2,6 +2,7 @@ import {EventEmitter} from "events";
 
 import {nubBy, repeat} from "./util/collections";
 import {hasOwnProp} from "./util/objects";
+import {Key} from "./util/input";
 
 module game_pb2 from "./game_pb2";
 module exports from "./constants/exports";
@@ -305,10 +306,10 @@ export class Actor extends Entity {
 
   updateAsAvatar(dt, inputState, protocol) {
     if (this.remainder === 0) {
-      var direction = inputState.isPressed(37) ? Directions.W :
-                      inputState.isPressed(38) ? Directions.N :
-                      inputState.isPressed(39) ? Directions.E :
-                      inputState.isPressed(40) ? Directions.S :
+      var direction = inputState.isHeld(Key.LEFT) ? Directions.W :
+                      inputState.isHeld(Key.UP) ? Directions.N :
+                      inputState.isHeld(Key.RIGHT) ? Directions.E :
+                      inputState.isHeld(Key.DOWN) ? Directions.S :
                       null;
 
       if (direction !== null) {
