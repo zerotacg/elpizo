@@ -3,6 +3,7 @@ import {EventEmitter} from "events";
 import {Directions} from "../models";
 import {repeat} from "../util/collections";
 import {hasOwnProp, extend} from "../util/objects";
+import {debounce} from "../util/functions";
 module coords from "../util/coords";
 
 module sprites from "../assets/sprites";
@@ -42,6 +43,10 @@ export class Renderer extends EventEmitter {
 
     this.regionTerrainCache = {};
     this.elapsed = 0;
+
+    window.onresize = debounce(() => {
+      this.refit();
+    }, 500);
   }
 
   handleOnClick(e) {
@@ -103,6 +108,10 @@ export class Renderer extends EventEmitter {
     this.emit("viewportChange", this.getAbsoluteWorldBounds());
   }
 
+  refit() {
+    this.setScreenViewportSize(window.innerWidth, window.innerHeight);
+  }
+
   getScreenViewportSize() {
     return {
         sw: this.sBounds.width,
@@ -120,8 +129,8 @@ export class Renderer extends EventEmitter {
     return {
         aLeft: this.aTopLeft.ax,
         aTop: this.aTopLeft.ay,
-        aRight: this.aTopLeft.ax + absoluteWorldBounds.ax,
-        aBottom: this.aTopLeft.ay + absoluteWorldBounds.ay,
+        aRight: this.aTopLeft.ax + Math.ceil(absoluteWorldBounds.ax),
+        aBottom: this.aTopLeft.ay + Math.ceil(absoluteWorldBounds.ay),
     };
   }
 

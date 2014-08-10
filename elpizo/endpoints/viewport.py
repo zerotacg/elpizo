@@ -56,5 +56,5 @@ def viewport(ctx, message):
         ctx.send(entity.id, game_pb2.EntityPacket(entity=entity.to_protobuf()))
 
   for removed_region_key in set(last_regions.keys()) - set(regions.keys()):
-    region = regions[removed_region_key]
+    region = last_regions[removed_region_key]
     ctx.unsubscribe(region.routing_key)

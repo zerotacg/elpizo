@@ -25,7 +25,7 @@ var tmp = require("tmp");
 var argv = require("yargs").argv;
 
 var paths = {
-  scripts: ["client/**/*.js", "client/**/*.jsx"],
+  scripts: ["client/**/*.js"],
   assets: ["assets/**/*"],
   styles: ["client/style/**/*.less"],
   protos: ["proto/game.proto"]
@@ -114,7 +114,7 @@ function configureBundler(bundler) {
     .transform(progress)
     .transform(reactify)
     .transform(debowerify)
-    .require("./client/main.jsx", {
+    .require("./client/main.js", {
         entry: true
     });
 }

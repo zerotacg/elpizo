@@ -1,3 +1,5 @@
+module React from "react";
+
 import {EventEmitter} from "events";
 import {Promise} from "es6-promise";
 
@@ -5,6 +7,7 @@ import {Renderer} from "./graphics/renderer";
 import {Transport, Protocol} from "./util/net";
 import {Resources} from "./util/resources";
 import {InputState} from "./util/input";
+import {UI} from "./ui/main.react";
 
 module game_pb2 from "./game_pb2";
 module handlers from "./handlers";
@@ -27,6 +30,12 @@ export class Game extends EventEmitter {
     this.resources = new Resources();
     this.renderer = new Renderer(this.resources, parent);
     this.inputState = new InputState(window);
+
+    this.uiRoot = document.createElement("div");
+    this.uiRoot.className = "ui-root";
+    parent.appendChild(this.uiRoot);
+
+    this.uiRootComponent = UI({game: this});
 
     handlers.install(this);
 
@@ -93,6 +102,8 @@ export class Game extends EventEmitter {
   startRendering() {
     var startTime = new Date().valueOf() / 1000;
     var cont = () => {
+      React.renderComponent(this.uiRootComponent, this.uiRoot);
+
       var currentTime = new Date().valueOf() / 1000;
       this.render(currentTime - startTime);
       startTime = currentTime;
@@ -102,6 +113,7 @@ export class Game extends EventEmitter {
   }
 
   go() {
+    this.renderer.refit();
     this.startUpdating();
     this.startRendering();
   }

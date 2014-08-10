@@ -7,14 +7,13 @@ def on_open(ctx):
 
 
 def socket_chat(ctx, message):
-  text = message["text"]
-
   ns, _ = message.target.split(".")
 
   if ns not in ["chatroom", "conversation"]:
     ctx.error("unknown chat namespace: {ns}".format(ns=ns))
     return
 
-  ctx.publish(target, game_pb2.ChatPacket(target=target,
-                                          actor_name=ctx.player.name,
-                                          text=text))
+  ctx.publish(message.target,
+              game_pb2.ChatPacket(target=message.target,
+                                  actor_name=ctx.player.name,
+                                  text=message.text))

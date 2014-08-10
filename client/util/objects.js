@@ -11,13 +11,3 @@ export function extend(dest, src) {
 
   return dest;
 }
-
-export var nextMonotonicId = (function () {
-  var id = 0;
-
-  return function () {
-    var i = id;
-    ++id;
-    return "monotonic-id-" + i;
-  }
-})();
