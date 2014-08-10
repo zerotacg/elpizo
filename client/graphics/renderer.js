@@ -320,13 +320,13 @@ export class Renderer extends EventEmitter {
 
     ctx.save();
     ctx.translate(sOffset.sx, sOffset.sy);
-    Renderer.ENTITIES[entity.type](this.resources, ctx, entity, this.elapsed);
+    Renderer.ENTITIES[entity.type](entity, this.resources, ctx, this.elapsed);
     ctx.restore();
   }
 }
 
 Renderer.ENTITIES = {
-    Actor: (resources, ctx, entity, elapsed) => {
+    Actor: (entity, resources, ctx, elapsed) => {
       var state = entity.moving ? "walking" : "standing";
       var direction = entity.direction == Directions.N ? "n" :
                       entity.direction == Directions.W ? "w" :
@@ -353,12 +353,12 @@ Renderer.ENTITIES = {
       })
     },
 
-    Fixture: (resources, ctx, entity, elapsed) => {
+    Fixture: (entity, resources, ctx, elapsed) => {
       sprites[["Fixture", entity.fixtureType.name].join(".")]
           .render(resources, ctx, elapsed);
     },
 
-    Drop: (resources, ctx, entity, elapsed) => {
+    Drop: (entity, resources, ctx, elapsed) => {
       sprites[["Item", entity.item.type].join(".")]
           .render(resources, ctx, elapsed);
     }
