@@ -355,7 +355,7 @@ export class Actor extends Entity {
       switch (head.type) {
         case "Drop":
           // Attempt to pick up the drop.
-          protocol.send(new game_pb2.PickUpPacket());
+          protocol.send(new game_pb2.PickUpPacket({dropId: head.id}));
           break;
       }
     }

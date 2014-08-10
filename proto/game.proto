@@ -212,10 +212,12 @@ message StatusPacket {
 }
 
 message PickUpPacket {
-  // Sent by the client to pick up the item at the origin's current location.
+  // Sent by the client to pick up an item at the origin's current location.
   //
   // Direction: Client -> Server
   option (packet_type) = PICK_UP;
+
+  optional uint32 drop_id = 1;
 }
 
 message DespawnEntityPacket {
