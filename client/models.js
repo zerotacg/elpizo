@@ -239,6 +239,7 @@ export class Actor extends Entity {
 
     this.equipment = [];
 
+    this.name = message.name;
     this.gender = message.gender;
     this.body = message.body;
     this.hair = message.hair;
@@ -361,15 +362,6 @@ export class Actor extends Entity {
   }
 }
 
-export class Player extends Actor {
-  constructor(message) {
-    super(message);
-    message = message.playerExt;
-
-    this.name = message.name;
-  }
-}
-
 export class Fixture extends Entity {
   constructor(message) {
     super(message);
@@ -401,7 +393,7 @@ export class Drop extends Entity {
 
 Entity.TYPES = {
     Actor: Actor,
-    Player: Player,
+    Player: Actor,
     Fixture: Fixture,
     Drop: Drop
 };

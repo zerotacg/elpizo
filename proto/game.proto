@@ -68,22 +68,15 @@ message Actor {
     optional Actor actor_ext = 101;
   }
 
-  optional uint32 health = 1;
-  optional string gender = 2;
-  optional string body = 3;
-  optional string facial = 4;
-  optional string hair = 5;
-  optional uint32 speed = 6;
-
-  repeated Item inventory = 7;
-}
-
-message Player {
-  extend Entity {
-    optional Player player_ext = 102;
-  }
-
   optional string name = 1;
+  optional uint32 health = 2;
+  optional string gender = 3;
+  optional string body = 4;
+  optional string facial = 5;
+  optional string hair = 6;
+  optional uint32 speed = 7;
+
+  repeated Item inventory = 8;
 }
 
 message Fixture {

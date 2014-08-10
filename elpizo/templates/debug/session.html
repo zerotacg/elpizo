@@ -8,10 +8,13 @@
 
 <dl>
   <dt>user name</dt>
-  <dd>{{player.user.name}}</dd>
+  <dd><a href="/_debug/users/{{player.user.id}}/">{{player.user.id}} (name: {{player.user.name}})</a></dd>
+
+  <dt>player</dt>
+  <dd><a href="/_debug/entities/{{player.id}}/">{{player.id}} (name: {{player.name}})</a></dd>
 </dl>
 
-<h2>Public Protobuf (<a href="/_debug/entities/{{player.id}}/">inspect</a>)</h2>
+<h2>Public Protobuf</h2>
 <p>
   <pre>{{player.to_protobuf()}}</pre>
 </p>

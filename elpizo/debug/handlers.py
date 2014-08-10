@@ -9,6 +9,7 @@ from .explain import explain_query
 
 from ..models.base import User, Entity
 from ..models.actors import Player
+from ..models.items import Item
 
 
 class RequestHandler(RequestHandler):
@@ -111,3 +112,17 @@ class EntityHandler(RequestHandler):
     sqla = self.application.sqla_factory()
 
     self.render("debug/entity.html", entity=sqla.query(Entity).get(id))
+
+
+class ItemHandler(RequestHandler):
+  def get(self, id):
+    sqla = self.application.sqla_factory()
+
+    self.render("debug/item.html", item=sqla.query(Item).get(id))
+
+
+class UserHandler(RequestHandler):
+  def get(self, id):
+    sqla = self.application.sqla_factory()
+
+    self.render("debug/user.html", user=sqla.query(User).get(id))

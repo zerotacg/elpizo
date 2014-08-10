@@ -27,6 +27,13 @@
   {% end %}
 </ul>
 
+<h2>Inspect User</h2>
+<p>Inspect a user by their ID.</p>
+<form action="users/" onsubmit="window.location.href=this.action + this.elements.id.value + '/'; return false;">
+  <label>id <input name="id"></label>
+  <button type="submit">inspect</button>
+</form>
+
 <h2>Inspect Entity</h2>
 <p>Inspect an entity by its ID.</p>
 <form action="entities/" onsubmit="window.location.href=this.action + this.elements.id.value + '/'; return false;">
