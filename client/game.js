@@ -6,7 +6,7 @@ import {Promise} from "es6-promise";
 import {Renderer} from "./graphics/renderer";
 import {Transport, Protocol} from "./util/net";
 import {Resources} from "./util/resources";
-import {InputState} from "./util/input";
+import {InputState, Key} from "./util/input";
 import {UI} from "./ui/main.react";
 
 module game_pb2 from "./game_pb2";
@@ -73,6 +73,11 @@ export class Game extends EventEmitter {
   }
 
   update(dt) {
+    if (this.inputState.unstick(Key.RETURN)) {
+      window.setTimeout(() => this.uiRoot.querySelector(".chat input").focus(),
+                        0);
+    }
+
     // Update the realm first.
     if (this.realm !== null) {
       this.realm.update(dt);

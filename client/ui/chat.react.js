@@ -64,20 +64,20 @@ export var Chat = React.createClass({
     var pendingMessage = this.state.pendingMessage;
     this.setState({pendingMessage: ""});
 
-    if (pendingMessage.trim().length === 0) {
-      return;
+    if (pendingMessage.trim().length > 0) {
+      this.addMessage({
+          origin: this.props.game.me.name,
+          text: pendingMessage,
+          isStatus: false
+      });
+
+      this.props.game.protocol.send(new ChatPacket({
+          target: "chatroom.global",
+          text: pendingMessage
+      }));
     }
 
-    this.addMessage({
-        origin: this.props.game.me.name,
-        text: pendingMessage,
-        isStatus: false
-    });
-
-    this.props.game.protocol.send(new ChatPacket({
-        target: "chatroom.global",
-        text: pendingMessage
-    }));
+    this.getDOMNode().querySelector("input").blur();
   },
 
   render: function () {
