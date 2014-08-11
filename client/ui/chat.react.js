@@ -2,6 +2,7 @@
 
 module React from "react";
 import {Packet, ChatPacket} from "../game_pb2";
+import {makeColorForString} from "../util/colors";
 
 export var Chat = React.createClass({
   getInitialState: function () {
@@ -83,7 +84,7 @@ export var Chat = React.createClass({
   render: function () {
     var messages = this.state.messages.map((message) => {
       return <li key={message.id} className={message.isStatus ? "status" : ""}>
-        <span className="origin">{message.origin}</span> <span>{message.text}</span>
+        <span className="origin" style={{color: makeColorForString(message.origin)}}>{message.origin}</span> <span>{message.text}</span>
       </li>;
     });
 

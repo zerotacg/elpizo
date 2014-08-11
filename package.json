@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "dependencies": {
     "browserify": "^4.2.1",
+    "chroma-js": "^0.5.7",
     "debowerify": "^0.8.1",
     "es6-module-jstransform": "^0.1.4",
     "es6-promise": "^1.0.0",

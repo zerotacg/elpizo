@@ -2,6 +2,7 @@ import {EventEmitter} from "events";
 
 import {Directions} from "../models";
 import {repeat} from "../util/collections";
+import {makeColorForString} from "../util/colors";
 import {hasOwnProp, extend} from "../util/objects";
 import {debounce} from "../util/functions";
 module coords from "../util/coords";
@@ -47,6 +48,8 @@ export class Renderer extends EventEmitter {
     window.onresize = debounce(() => {
       this.refit();
     }, 500);
+
+    this.style = window.getComputedStyle(this.el);
   }
 
   handleOnClick(e) {
@@ -59,10 +62,13 @@ export class Renderer extends EventEmitter {
     });
   }
 
-  prepareContext(ctx) {
+  prepareContext(canvas) {
+    var ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
     ctx.webkitImageSmoothingEnabled = false;
     ctx.mozImageSmoothingEnabled = false;
+    ctx.font = this.style.font;
+    return ctx;
   }
 
   createCanvas() {
@@ -177,7 +183,7 @@ export class Renderer extends EventEmitter {
     var regionScreenSize =
         this.absoluteToScreenCoords({ax: coords.REGION_SIZE, ay: coords.REGION_SIZE});
 
-    var ctx = this.terrainCanvas.getContext("2d");
+    var ctx = this.prepareContext(this.terrainCanvas);
     ctx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
 
     var sOffset = this.absoluteToScreenCoords({
@@ -217,12 +223,10 @@ export class Renderer extends EventEmitter {
   }
 
   renderEntities(realm) {
-    var ctx = this.entityCanvas.getContext("2d");
-    this.prepareContext(ctx);
+    var ctx = this.prepareContext(this.entityCanvas);
     ctx.clearRect(0, 0, this.entityCanvas.width, this.entityCanvas.height);
 
-    var xrayCtx = this.xrayCanvas.getContext("2d");
-    this.prepareContext(xrayCtx);
+    var xrayCtx = this.prepareContext(this.xrayCanvas);
     xrayCtx.clearRect(0, 0, this.xrayCanvas.width, this.xrayCanvas.height);
 
     var aWorldBounds = this.getAbsoluteWorldBounds();
@@ -235,9 +239,9 @@ export class Renderer extends EventEmitter {
                         entity.location.ay < aWorldBounds.aBottom)
         .sort((a, b) => {
             // Always sort drops below everything else.
-            if (a.type === "Drop") {
+            if (a instanceof models.Drop) {
               return -1;
-            } else if (b.type === "Drop") {
+            } else if (b instanceof models.Drop) {
               return 1;
             }
 
@@ -265,8 +269,7 @@ export class Renderer extends EventEmitter {
     canvas.width = size.sx;
     canvas.height = size.sy;
 
-    var ctx = canvas.getContext("2d");
-    this.prepareContext(ctx);
+    var ctx = this.prepareContext(canvas);
 
     region.terrain.forEach((terrain, i) => {
       var rx = i % coords.REGION_SIZE;
@@ -361,10 +364,17 @@ Renderer.ENTITIES = {
     Drop: (entity, resources, ctx, elapsed) => {
       sprites[["Item", entity.item.type].join(".")]
           .render(resources, ctx, elapsed);
+    },
+
+    Player: (entity, resources, ctx, elapsed) => {
+      Renderer.ENTITIES.Actor(entity, resources, ctx, elapsed);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "black";
+      ctx.fillText(entity.name, 17, -23);
+      ctx.fillStyle = makeColorForString(entity.name);
+      ctx.fillText(entity.name, 16, -24);
     }
 };
-
-Renderer.ENTITIES.Player = Renderer.ENTITIES.Actor;
 
 Renderer.TILE_SIZE = 32;
 

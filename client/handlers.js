@@ -1,4 +1,4 @@
-module exports from "./constants/exports";
+module exports from "./exports";
 import {Realm, Region, Entity, Directions} from "./models";
 
 import {Packet} from "./game_pb2";

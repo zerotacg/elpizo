@@ -5,7 +5,7 @@ import {hasOwnProp} from "./util/objects";
 import {Key} from "./util/input";
 
 module game_pb2 from "./game_pb2";
-module exports from "./constants/exports";
+module exports from "./exports";
 module coords from "./util/coords";
 
 export var Directions = {
