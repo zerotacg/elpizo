@@ -288,10 +288,14 @@ export class Renderer extends EventEmitter {
       terrain.forEach((layer) => {
         var texture = Renderer.TILE_TEXTURE_MAPPINGS[layer.name];
         Renderer.TILE_TEXTURE_COORDS[layer.mask].forEach((offset, index) => {
+          if (offset === -1) {
+            return;
+          }
+
           // The offset selects which tile from the atlas to use. It assumes the
-          // atlas is 6 half-tiles wide.
-          var u = offset % 6;
-          var v = Math.floor(offset / 6);
+          // atlas is 4 half-tiles wide.
+          var u = offset % 4;
+          var v = Math.floor(offset / 4);
 
           // dx and dy indicate how many half-tiles in the half-tile needs to be
           // offset by. They should be in clockwise order, starting from NW.
@@ -381,29 +385,23 @@ Renderer.TILE_SIZE = 32;
 Renderer.TILE_TEXTURE_MAPPINGS = {
     "grassland": "grass.png",
     "ocean": "water.png",
-    "river": "water.png",
-    "lakeshore": "water.png",
-    "grassland,lakeshore": "water-grass.png",
-    "lake": "water.png",
-    "beach": "beach.png",
-    "ocean,beach": "beach.png",
-    "subtropical_desert": "sand.png"
 };
 
 Renderer.TILE_TEXTURE_COORDS = {
-  0x1: [28, 29, 34, 35], // ne convex corner
-  0x2: [24, 25, 30, 31], // nw convex corner
-  0x3: [26, 27, 32, 32], // going n
-  0x4: [48, 49, 54, 55], // sw convex corner
-  0x5: [16,  3, 22,  9], // saddle ne->sw
-  0x6: [36, 37, 42, 43], // going w
-  0x7: [16, 17, 22, 23], // nw concave corner
-  0x8: [52, 53, 58, 59], // se convex corner
-  0x9: [40, 41, 46, 47], // going e
-  0xa: [ 4, 15, 10, 21], // saddle nw->se
-  0xb: [14, 15, 20, 21], // ne concave corner
-  0xc: [50, 51, 56, 57], // going s
-  0xd: [ 2,  3,  8,  9], // se concave corner
-  0xe: [ 4,  5, 10, 11], // sw concave corner
-  0xf: [38, 39, 44, 45], // all
+  0x0: [ 0,  0,  0,  0], // none
+  0x1: [-1, -1, 11, -1], // ne convex corner
+  0x2: [-1, -1, -1,  8], // nw convex corner
+  0x3: [-1, -1,  9, 10], // going n
+  0x4: [-1, 20, -1, -1], // sw convex corner
+  0x5: [-1, 20, 11, -1], // saddle ne->sw
+  0x6: [-1, 12, -1, 16], // going w
+  0x7: [-1, 16, 10,  2], // nw concave corner
+  0x8: [23, -1, -1, -1], // se convex corner
+  0x9: [15, -1, 19, -1], // going e
+  0xa: [23, -1, -1,  8], // saddle nw->se
+  0xb: [19, -1,  3,  9], // ne concave corner
+  0xc: [21, 22, -1, -1], // going s
+  0xd: [ 7, 21, 15, -1], // se concave corner
+  0xe: [22,  6, -1, 12], // sw concave corner
+  0xf: [13, 14, 17, 18], // all
 };

@@ -192,12 +192,12 @@ export class Region {
         0x2: false,
         0x3: true,
         0x4: false,
-        0x5: true,
+        0x5: false,
         0x6: false,
         0x7: true,
         0x8: false,
         0x9: false,
-        0xa: true,
+        0xa: false,
         0xb: true,
         0xc: false,
         0xd: false,
@@ -212,7 +212,7 @@ Region.TERRAIN_PREDECENCES = [
     "ocean", "beach",
     "subtropical_desert", "tropical_seasonal_forest", "grassland",
     "tropical_rain_forest",
-    "lake", "river", "lakeshore"
+    "lake", "river", "lakeshore", "wall"
 ];
 
 export class Entity extends EventEmitter {

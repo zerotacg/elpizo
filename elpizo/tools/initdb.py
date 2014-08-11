@@ -26,8 +26,8 @@ def initialize_realm(app):
   realm = Realm(name="Windvale", aw=128, ah=128)
   sqla.add(realm)
 
-  ocean = Terrain(name="ocean", passable=0b0000)
-  sqla.add(ocean)
+  wall = Terrain(name="wall", passable=0b0000)
+  sqla.add(wall)
 
   grassland = Terrain(name="grassland", passable=0b1111)
   sqla.add(grassland)
@@ -40,10 +40,16 @@ def initialize_realm(app):
     for arx in range(realm.aw // Region.SIZE):
       region = Region(arx=arx, ary=ary, realm=realm,
                       corners=[grassland.id] * ((16 + 1) * (16 + 1)))
-      region.corners[3 * 17 + 1] = ocean.id
-      region.corners[3 * 17 + 2] = ocean.id
-      region.corners[4 * 17 + 1] = ocean.id
-      region.corners[4 * 17 + 2] = ocean.id
+      region.corners[3 * 17 + 1] = wall.id
+      region.corners[3 * 17 + 2] = wall.id
+      region.corners[3 * 17 + 3] = wall.id
+      region.corners[4 * 17 + 1] = wall.id
+      region.corners[4 * 17 + 2] = wall.id
+      region.corners[4 * 17 + 3] = wall.id
+      region.corners[5 * 17 + 1] = wall.id
+      region.corners[5 * 17 + 2] = wall.id
+      region.corners[5 * 17 + 3] = wall.id
+
       sqla.add(region)
 
   sqla.commit()
