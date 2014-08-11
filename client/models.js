@@ -363,9 +363,20 @@ export class Drop extends Entity {
   }
 }
 
+export class Building extends Entity {
+  constructor(message) {
+    super(message);
+    message = message.buildingExt;
+
+    this.aWidth = message.aWidth;
+    this.aHeight = message.aHeight;
+  }
+}
+
 Entity.TYPES = {
     Actor: Actor,
     Player: Actor,
     Fixture: Fixture,
-    Drop: Drop
+    Drop: Drop,
+    Building: Building
 };

@@ -5,7 +5,7 @@ import json
 
 from elpizo import make_application
 from elpizo.models.actors import Player
-from elpizo.models.base import Base, User, Entity
+from elpizo.models.base import Base, User, Entity, Building
 from elpizo.models.realm import Realm, Region, Terrain
 from elpizo.models.fixtures import Fixture, resource_sources
 from elpizo.models.items import restorative, Drop
@@ -40,16 +40,6 @@ def initialize_realm(app):
     for arx in range(realm.aw // Region.SIZE):
       region = Region(arx=arx, ary=ary, realm=realm,
                       tiles=[grassland.id] * ((16 + 1) * (16 + 1)))
-      region.tiles[3 * 17 + 1] = wall.id
-      region.tiles[3 * 17 + 2] = wall.id
-      region.tiles[3 * 17 + 3] = wall.id
-      region.tiles[4 * 17 + 1] = wall.id
-      #region.tiles[4 * 17 + 2] = wall.id
-      region.tiles[4 * 17 + 3] = wall.id
-      region.tiles[5 * 17 + 1] = wall.id
-      region.tiles[5 * 17 + 2] = wall.id
-      region.tiles[5 * 17 + 3] = wall.id
-
       sqla.add(region)
 
   sqla.commit()
@@ -64,6 +54,7 @@ def initialize_fixtures(app, realm):
 
   sqla.add(resource_sources.Tree(realm=realm, ax=7, ay=7))
   sqla.add(Drop(item=restorative.Carrot(), realm=realm, ax=1, ay=0))
+  sqla.add(Building(realm=realm, ax=2, ay=2, a_width=5, a_height=5))
   sqla.commit()
 
   logging.info("Created fixtures.")

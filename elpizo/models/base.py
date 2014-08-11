@@ -116,3 +116,33 @@ Entity.__table_args__ += (
     sqlalchemy.Index("ix_entities_point", Entity.point,
                      postgresql_using="gist"),
 )
+
+
+class Building(Entity):
+  __tablename__ = "buildings"
+
+  id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
+                         primary_key=True)
+
+  a_width = sqlalchemy.Column(Integer, nullable=False)
+  a_height = sqlalchemy.Column(Integer, nullable=False)
+
+  @hybrid.hybrid_property
+  def bbox(self):
+    # Buildings must not exceed one region in size (or they may not be
+    # consistently rendered).
+    return func.box(func.point(0, 0),
+                    func.point(self.a_width, self.a_height))
+
+  def to_protobuf(self):
+    protobuf = super().to_protobuf()
+    message = game_pb2.Building(a_width=self.a_width, a_height=self.a_height)
+
+    protobuf.Extensions[game_pb2.Building.building_ext].MergeFrom(message)
+    return protobuf
+
+
+Building.__table_args__ = (
+    sqlalchemy.Index("ix_buildings_bbox", Building.bbox,
+                     postgresql_using="gist"),
+)

@@ -328,13 +328,13 @@ export class Renderer extends EventEmitter {
     ctx.save();
     ctx.translate(sOffset.sx - Renderer.TILE_SIZE / 2,
                   sOffset.sy - Renderer.TILE_SIZE / 2);
-    Renderer.ENTITIES[entity.type](entity, this.resources, ctx, this.elapsed);
+    Renderer.ENTITIES[entity.type](this, entity, ctx);
     ctx.restore();
   }
 }
 
 Renderer.ENTITIES = {
-    Actor: (entity, resources, ctx, elapsed) => {
+    Actor: (renderer, entity, ctx) => {
       var state = entity.moving ? "walking" : "standing";
       var direction = entity.direction == Directions.N ? "n" :
                       entity.direction == Directions.W ? "w" :
@@ -357,27 +357,42 @@ Renderer.ENTITIES = {
 
       names.forEach((name) => {
           sprites[name][state][direction]
-              .render(resources, ctx, elapsed * entity.speed);
+              .render(renderer.resources, ctx, renderer.elapsed * entity.speed);
       })
     },
 
-    Fixture: (entity, resources, ctx, elapsed) => {
+    Fixture: (renderer, entity, ctx) => {
       sprites[["Fixture", entity.fixtureType.name].join(".")]
-          .render(resources, ctx, elapsed);
+          .render(renderer.resources, ctx, renderer.elapsed);
     },
 
-    Drop: (entity, resources, ctx, elapsed) => {
+    Drop: (renderer, entity, ctx) => {
       sprites[["Item", entity.item.type].join(".")]
-          .render(resources, ctx, elapsed);
+          .render(renderer.resources, ctx, renderer.elapsed);
     },
 
-    Player: (entity, resources, ctx, elapsed) => {
-      Renderer.ENTITIES.Actor(entity, resources, ctx, elapsed);
+    Player: (renderer, entity, ctx) => {
+      Renderer.ENTITIES.Actor(renderer, entity, ctx);
       ctx.textAlign = "center";
       ctx.fillStyle = "black";
       ctx.fillText(entity.name, 17, -23);
       ctx.fillStyle = makeColorForString(entity.name);
       ctx.fillText(entity.name, 16, -24);
+    },
+
+    Building: (renderer, entity, ctx) => {
+      ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
+      ctx.strokeStyle = "rgba(255, 0, 0, 0.75)";
+
+      var sSize = renderer.absoluteToScreenCoords({
+          ax: entity.aWidth,
+          ay: entity.aHeight
+      });
+      ctx.fillRect(0, 0, sSize.sx, sSize.sy);
+      ctx.strokeRect(0, 0, sSize.sx, sSize.sy);
+      ctx.fillStyle = "rgba(255, 0, 0, 0.75)";
+      ctx.textAlign = "center";
+      ctx.fillText("(id: " + entity.id + ")", sSize.sx / 2, sSize.sy / 2);
     }
 };
 
