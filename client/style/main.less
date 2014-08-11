@@ -67,7 +67,7 @@ input {
     }
 
     input {
-      background: rgba(0, 0, 0, 0.25);
+      background: transparent;
       border: 1px solid rgba(255, 255, 255, 0.25);
       padding: 0 8px;
 
@@ -77,6 +77,13 @@ input {
 
       width: 100%;
       height: 28px;
+
+      opacity: 0.75;
+
+      &:focus, &:hover {
+        background: rgba(0, 0, 0, 0.25);
+        opacity: 1.0;
+      }
     }
   }
 }
