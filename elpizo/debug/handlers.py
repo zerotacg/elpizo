@@ -10,13 +10,16 @@ from .explain import explain_query
 from ..models.base import User, Entity
 from ..models.actors import Player
 from ..models.items import Item
-from ..models.realm import Realm
+from ..models.realm import Realm, Region, Terrain
 
 
 class RequestHandler(RequestHandler):
   @property
   def debug_context(self):
     return self.application.debug_context
+
+  def prepare(self):
+    self.sqla = self.application.sqla_factory()
 
   def render(self, *args, **kwargs):
     kwargs["ctx"] = self.debug_context
@@ -25,23 +28,21 @@ class RequestHandler(RequestHandler):
 
 class MainHandler(RequestHandler):
   def get(self):
-    sqla = self.application.sqla_factory()
     self.render("debug/index.html",
-                realms=sqla.query(Realm), users=sqla.query(User),
+                realms=self.sqla.query(Realm), users=self.sqla.query(User),
                 can_mint=self.application.mint.can_mint)
 
 
 class SessionHandler(RequestHandler):
   def get(self, id):
     session = self.debug_context.sessions[id]
-    sqla = self.application.sqla_factory()
 
-    player = sqla.query(Player).get(session.player_id)
+    player = self.sqla.query(Player).get(session.player_id)
 
     self.render("debug/session.html", session=session, player=player)
 
 
-class PacketViewHandler(RequestHandler):
+class PacketHandler(RequestHandler):
   def get(self, session_id, mode, i):
     session = self.debug_context.sessions[session_id]
     packet = session.packets[mode][int(i)]
@@ -49,7 +50,7 @@ class PacketViewHandler(RequestHandler):
                 session=session, packet=packet, i=i, mode=mode)
 
 
-class QueryViewHandler(RequestHandler):
+class QueryHandler(RequestHandler):
   def get(self, session_id, mode, packet_index, query_index):
     session = self.debug_context.sessions[session_id]
     packet = session.packets[mode][int(packet_index)]
@@ -59,8 +60,7 @@ class QueryViewHandler(RequestHandler):
     query = packet["query_stats"][int(query_index)]
 
     _, _, multiparams, params, _ = query.user_context
-    graph = explain_query(self.application.sqla_factory(), query.text,
-                          multiparams, params)
+    graph = explain_query(self.sqla, query.text, multiparams, params)
 
     if graph is not None:
       img, _ = subprocess.Popen(["dot", "-Tsvg"],
@@ -80,14 +80,12 @@ class QueryViewHandler(RequestHandler):
 
 class AdmitHandler(RequestHandler):
   def get(self):
-    sqla = self.application.sqla_factory()
-
     mint = self.application.mint
 
     user_name = self.get_argument("user")
     player_name = self.get_argument("player")
 
-    player = sqla.query(Player) \
+    player = self.sqla.query(Player) \
         .filter(Player.name == player_name,
                 User.name == user_name,
                 Player.user_id == User.id) \
@@ -96,7 +94,7 @@ class AdmitHandler(RequestHandler):
     user = player.user
     user.current_player = player
 
-    sqla.commit()
+    self.sqla.commit()
 
     credentials = "user.{}".format(user.id)
 
@@ -113,27 +111,37 @@ class AdmitHandler(RequestHandler):
 
 class EntityHandler(RequestHandler):
   def get(self, id):
-    sqla = self.application.sqla_factory()
-
-    self.render("debug/entity.html", entity=sqla.query(Entity).get(id))
+    self.render("debug/entity.html", entity=self.sqla.query(Entity).get(id))
 
 
 class ItemHandler(RequestHandler):
   def get(self, id):
-    sqla = self.application.sqla_factory()
-
-    self.render("debug/item.html", item=sqla.query(Item).get(id))
+    self.render("debug/item.html", item=self.sqla.query(Item).get(id))
 
 
 class UserHandler(RequestHandler):
   def get(self, id):
-    sqla = self.application.sqla_factory()
-
-    self.render("debug/user.html", user=sqla.query(User).get(id))
+    self.render("debug/user.html", user=self.sqla.query(User).get(id))
 
 
 class RealmHandler(RequestHandler):
   def get(self, id):
-    sqla = self.application.sqla_factory()
+    self.render("debug/realm.html", realm=self.sqla.query(Realm).get(id))
 
-    self.render("debug/realm.html", realm=sqla.query(Realm).get(id))
+
+class RegionHandler(RequestHandler):
+  def get(self, realm_id, arx, ary):
+    region = self.sqla.query(Region).filter(
+        Region.realm_id == realm_id,
+        Region.arx == arx,
+        Region.ary == ary
+    ).one()
+    self.render("debug/region.html",
+                region=region,
+                corners=[self.sqla.query(Terrain).get(corner)
+                         for corner in region.corners])
+
+
+class TerrainHandler(RequestHandler):
+  def get(self, id):
+    self.render("debug/terrain.html", terrain=self.sqla.query(Terrain).get(id))

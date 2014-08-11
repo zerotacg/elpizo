@@ -1,0 +1,42 @@
+{% extends "_layout.html" %}
+{% block body %}
+{% from elpizo.models.realm import Region %}
+
+<h1>
+  <a href="/_debug/">Debug Console</a>
+  / Realms
+  / <a href="/_debug/realms/{{region.realm.id}}/">{{region.realm.id}}</a>
+  / Regions
+  / {{region.arx}},{{region.ary}}
+</h1>
+
+<table>
+  {% for ry in range(Region.SIZE + 1) %}
+  <tr>
+    {% for rx in range(Region.SIZE + 1) %}
+    {% set terrain = corners[ry * (Region.SIZE + 1) + rx] %}
+    <td>
+      <table>
+        <tr>
+          <td></td>
+          <td style="background:{{"green" if (terrain.passable >> 0) & 0b1 else "red"}}"></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td style="background:{{"green" if (terrain.passable >> 1) & 0b1 else "red"}}"></td>
+          <td><a href="/_debug/terrain/{{terrain.id}}/">{{terrain.id}}</a></td>
+          <td style="background:{{"green" if (terrain.passable >> 2) & 0b1 else "red"}}"></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td style="background:{{"green" if (terrain.passable >> 3) & 0b1 else "red"}}"></td>
+          <td></td>
+        </tr>
+      </table>
+    </td>
+    {% end %}
+  </tr>
+  {% end %}
+</table>
+
+{% end %}

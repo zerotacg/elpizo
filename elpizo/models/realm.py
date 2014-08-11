@@ -55,10 +55,11 @@ class Region(Base):
                                sqlalchemy.ForeignKey("realms.id"),
                                nullable=False,
                                primary_key=True, index=True)
-  realm = relationship("Realm", backref="regions")
 
   arx = sqlalchemy.Column(Integer, nullable=False, primary_key=True)
   ary = sqlalchemy.Column(Integer, nullable=False, primary_key=True)
+
+  realm = relationship("Realm", backref=backref("regions", order_by=(ary, arx)))
 
   @hybrid.hybrid_property
   def a_left(self):

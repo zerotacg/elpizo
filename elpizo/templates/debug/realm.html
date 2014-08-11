@@ -23,10 +23,28 @@
   <pre>{{realm.to_protobuf()}}</pre>
 </p>
 
+<h2>Regions</h2>
+<table>
+  {% set last_ary = 0 %}
+  <tr>
+    {% for region in realm.regions %}
+    {% if last_ary != region.ary %}
+  </tr><tr>
+    {% end %}
+    <td>
+      <a href="regions/{{region.arx}},{{region.ary}}/">{{region.arx}},{{region.ary}}</a>
+    </td>
+    {% set last_ary = region.ary %}
+  {% end %}
+  </tr>
+</table>
+
 <h2>Entities</h2>
 <ul>
   {% for entity in realm.entities %}
-  <li><a href="/_debug/entities/{{entity.id}}/">{{entity.id}} (type: {{entity.type}})</a></li>
+  <li>
+    <a href="/_debug/entities/{{entity.id}}/">{{entity.id}} (type: {{entity.type}}, location: ({{entity.ax}},{{entity.ay}}))</a>
+  </li>
   {% end %}
 </ul>
 {% end %}

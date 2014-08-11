@@ -11,8 +11,8 @@ class DebugContext(object):
     self.application = application
     self.sessions = {}
 
-  def add_session(self, protocol, sqla):
-    ctx = ProtocolDebugContext(protocol, self.application.sqla_factory())
+  def add_session(self, protocol):
+    ctx = ProtocolDebugContext(protocol)
     self.sessions[ctx.id] = ctx
 
   def get_session(self, protocol):
@@ -20,9 +20,11 @@ class DebugContext(object):
 
 
 class ProtocolDebugContext(object):
-  def __init__(self, protocol, sqla):
+  def __init__(self, protocol):
     self.id = hex(id(protocol))
     self.protocol = protocol
+
+    sqla = self.protocol.application.sqla_factory()
     self.player_id = protocol.get_player(sqla).id
 
     self.packets = {
@@ -46,12 +48,14 @@ def install(application, routes):
       (r"/_debug/", handlers.MainHandler),
       (r"/_debug/admit/", handlers.AdmitHandler),
       (r"/_debug/sessions/(0x[0-9a-f]+)/", handlers.SessionHandler),
-      (r"/_debug/sessions/(0x[0-9a-f]+)/packets/(ws|amqp)/(\d+)/", handlers.PacketViewHandler),
-      (r"/_debug/sessions/(0x[0-9a-f]+)/packets/(ws|amqp)/(\d+)/queries/(\d+)/", handlers.QueryViewHandler),
+      (r"/_debug/sessions/(0x[0-9a-f]+)/packets/(ws|amqp)/(\d+)/", handlers.PacketHandler),
+      (r"/_debug/sessions/(0x[0-9a-f]+)/packets/(ws|amqp)/(\d+)/queries/(\d+)/", handlers.QueryHandler),
       (r"/_debug/entities/(\d+)/", handlers.EntityHandler),
       (r"/_debug/items/(\d+)/", handlers.ItemHandler),
       (r"/_debug/users/(\d+)/", handlers.UserHandler),
       (r"/_debug/realms/(\d+)/", handlers.RealmHandler),
+      (r"/_debug/realms/(\d+)/regions/(\d+),(\d+)/", handlers.RegionHandler),
+      (r"/_debug/terrain/(\d+)/", handlers.TerrainHandler),
   ])
 
   def get_packet_name(code):
@@ -60,7 +64,7 @@ def install(application, routes):
   # instrument Protocol
   def wrap_on_open(f):
     def _wrapper(self):
-      debug_context.add_session(self, application.sqla_factory())
+      debug_context.add_session(self)
       return f(self)
     return _wrapper
 

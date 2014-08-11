@@ -41,7 +41,8 @@ class Protocol(object):
         queue=queue_name, no_ack=True, exclusive=True)
 
     for on_open_hook in self.application.on_open_hooks:
-      on_open_hook(self.make_context())
+      with self.make_context() as ctx:
+        on_open_hook(ctx)
 
   @classmethod
   def serialize_packet(cls, origin, message):
@@ -100,14 +101,17 @@ class Protocol(object):
     self.on_amqp_message(type, origin, message)
 
   def on_ws_message(self, type, origin, message):
-    self.application.ws_endpoints[type](self.make_context(), message)
+    with self.make_context() as ctx:
+      self.application.ws_endpoints[type](ctx, message)
 
   def on_amqp_message(self, type, origin, message):
-    self.application.amqp_endpoints[type](self.make_context(), origin, message)
+    with self.make_context() as ctx:
+      self.application.amqp_endpoints[type](ctx, origin, message)
 
   def on_close(self):
     for on_close_hook in self.application.on_close_hooks:
-      on_close_hook(self.make_context())
+      with self.make_context() as ctx:
+        on_close_hook(ctx)
 
 
 for name, descriptor in game_pb2.DESCRIPTOR.message_types_by_name.items():
@@ -191,7 +195,6 @@ class Context(object):
   def __init__(self, protocol, player):
     self.protocol = protocol
     self.player = player
-    self.sqla = self.application.sqla_factory()
 
   @property
   def application(self):
@@ -218,3 +221,11 @@ class Context(object):
 
   def close(self):
     self.protocol.close()
+
+  def __enter__(self):
+    self.sqla = self.application.sqla_factory()
+    return self
+
+  def __exit__(self, type, value, traceback):
+    if value is not None:
+      self.sqla.rollback()
