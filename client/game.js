@@ -39,8 +39,12 @@ export class Game extends EventEmitter {
 
     handlers.install(this);
 
-    this.renderer.on("viewportChange", (bounds) => {
-      this.protocol.send(new game_pb2.ViewportPacket(bounds));
+    this.renderer.on("refit", (bounds) => {
+      if (this.me !== null) {
+        this.renderer.center(this.me.location);
+        this.protocol.send(new game_pb2.ViewportPacket(
+            this.renderer.getAbsoluteViewportBounds()));
+      }
     });
 
     Promise.all([
@@ -70,6 +74,18 @@ export class Game extends EventEmitter {
   setAvatarById(id) {
     console.log("Hello! Your player id is:", id);
     this.me = this.realm.getEntity(id);
+    this.renderer.center(this.me.location);
+      this.protocol.send(new game_pb2.ViewportPacket(
+          this.renderer.getAbsoluteViewportBounds()));
+
+    this.me.on("moveStep", () => {
+      this.renderer.center(this.me.location);
+    });
+
+    this.me.on("moveEnd", () => {
+      this.protocol.send(new game_pb2.ViewportPacket(
+          this.renderer.getAbsoluteViewportBounds()));
+    });
   }
 
   update(dt) {

@@ -23,7 +23,7 @@ def socket_move(ctx, message):
 
   dt = now - last_move_time
 
-  if dt < 1 / ctx.player.speed * 0.8:  # compensate for slow connections by 0.8
+  if dt < 1 / ctx.player.speed * 0.5:  # compensate for slow connections by 0.5
     ctx.send(ctx.player.id, game_pb2.TeleportPacket(
         location=ctx.player.location_to_protobuf(),
         direction=ctx.player.direction))

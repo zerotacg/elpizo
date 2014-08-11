@@ -77,4 +77,8 @@ export function install(game) {
 
     game.realm.removeEntity(entity);
   });
+
+  protocol.on(Packet.Type.INVENTORY, (origin, message) => {
+    console.warn("NOT IMPLEMENTED: INVENTORY");
+  });
 }

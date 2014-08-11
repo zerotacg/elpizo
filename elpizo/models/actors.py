@@ -25,7 +25,7 @@ class Actor(Entity):
   facial = sqlalchemy.Column(String, nullable=True)
   hair = sqlalchemy.Column(String, nullable=True)
 
-  speed = 2 # should probably not be hardcoded
+  speed = 5 # should probably not be hardcoded
 
   def to_protobuf(self):
     protobuf = super().to_protobuf()

@@ -62,6 +62,14 @@ export class Renderer extends EventEmitter {
     });
   }
 
+  center(aPosition) {
+    var bounds = this.getAbsoluteViewportBounds();
+
+    this.setAbsoluteTopLeft(
+        aPosition.ax - Math.round((bounds.aRight - bounds.aLeft) / 2),
+        aPosition.ay - Math.round((bounds.aBottom - bounds.aTop) / 2));
+  }
+
   prepareContext(canvas) {
     var ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = false;
@@ -97,6 +105,11 @@ export class Renderer extends EventEmitter {
     };
   }
 
+  setAbsoluteTopLeft(ax, ay) {
+    this.aTopLeft.ax = ax;
+    this.aTopLeft.ay = ay;
+  }
+
   setScreenViewportSize(sw, sh) {
     this.el.style.width = sw + "px";
     this.el.style.height = sh + "px";
@@ -110,12 +123,11 @@ export class Renderer extends EventEmitter {
 
     this.xrayCanvas.width = sw;
     this.xrayCanvas.height = sh;
-
-    this.emit("viewportChange", this.getAbsoluteWorldBounds());
   }
 
   refit() {
     this.setScreenViewportSize(window.innerWidth, window.innerHeight);
+    this.emit("refit", this.getScreenViewportSize());
   }
 
   getScreenViewportSize() {
@@ -125,23 +137,27 @@ export class Renderer extends EventEmitter {
     };
   }
 
-  getAbsoluteWorldBounds() {
-    var viewport = this.getScreenViewportSize();
-    var absoluteWorldBounds = this.screenToAbsoluteCoords({
-        sx: viewport.sw,
-        sy: viewport.sh
+  getAbsoluteViewportBounds() {
+    var viewportSize = this.getScreenViewportSize();
+    var absoluteViewportSize = this.screenToAbsoluteCoords({
+        sx: viewportSize.sw,
+        sy: viewportSize.sh
     });
 
     return {
         aLeft: this.aTopLeft.ax,
         aTop: this.aTopLeft.ay,
-        aRight: this.aTopLeft.ax + Math.ceil(absoluteWorldBounds.ax),
-        aBottom: this.aTopLeft.ay + Math.ceil(absoluteWorldBounds.ay),
+        aRight: this.aTopLeft.ax + Math.ceil(absoluteViewportSize.ax),
+        aBottom: this.aTopLeft.ay + Math.ceil(absoluteViewportSize.ay),
     };
   }
 
+  getAbsoluteCacheBounds() {
+
+  }
+
   getRegionWorldBounds() {
-    var aBounds = this.getAbsoluteWorldBounds();
+    var aBounds = this.getAbsoluteViewportBounds();
 
     var arTopLeft = coords.absoluteToContainingRegion({
         ax: aBounds.aLeft,
@@ -218,6 +234,8 @@ export class Renderer extends EventEmitter {
 
         var buffer = this.regionTerrainCache[key];
         ctx.drawImage(buffer, sLeft, sTop);
+        ctx.strokeStyle = "red";
+        ctx.strokeRect(sLeft, sTop, buffer.width, buffer.height);
       }
     }
   }
@@ -229,14 +247,11 @@ export class Renderer extends EventEmitter {
     var xrayCtx = this.prepareContext(this.xrayCanvas);
     xrayCtx.clearRect(0, 0, this.xrayCanvas.width, this.xrayCanvas.height);
 
-    var aWorldBounds = this.getAbsoluteWorldBounds();
+    var aWorldBounds = this.getAbsoluteViewportBounds();
 
     var numBuckets = Math.ceil(aWorldBounds.aBottom - aWorldBounds.aTop);
 
     var sortedEntities = realm.getAllEntities()
-        .filter(
-            (entity) => entity.location.ay >= aWorldBounds.aTop &&
-                        entity.location.ay < aWorldBounds.aBottom)
         .sort((a, b) => {
             // Always sort drops below everything else.
             if (a instanceof models.Drop) {

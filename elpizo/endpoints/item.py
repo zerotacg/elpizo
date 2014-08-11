@@ -20,5 +20,7 @@ def socket_pick_up(ctx, message):
   ctx.protocol.publish(ctx.player.region.routing_key, drop.id,
                        game_pb2.DespawnEntityPacket())
 
+  ctx.send(None, game_pb2.InventoryPacket(item=drop.item.to_protobuf()))
+
   ctx.sqla.delete(drop)
   ctx.sqla.commit()

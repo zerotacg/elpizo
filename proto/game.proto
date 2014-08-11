@@ -15,6 +15,7 @@ message Packet {
     STATUS = 10;
     PICK_UP = 11;
     DESPAWN_ENTITY = 12;
+    INVENTORY = 13;
   }
 
   optional Type type = 1;
@@ -234,4 +235,14 @@ message DespawnEntityPacket {
   //
   // Direction: Server -> Client
   option (packet_type) = DESPAWN_ENTITY;
+}
+
+message InventoryPacket {
+  // Sent by the server to indicate an item has been collected into the player's
+  // inventory.
+  //
+  // Direction: Server -> Client
+  option (packet_type) = INVENTORY;
+
+  optional Item item = 1;
 }

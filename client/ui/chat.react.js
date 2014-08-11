@@ -15,11 +15,13 @@ export var Chat = React.createClass({
   componentWillMount: function () {
     this.props.game.protocol.on(Packet.Type.STATUS, this.onStatus);
     this.props.game.protocol.on(Packet.Type.CHAT, this.onChat);
+    this.props.game.protocol.on(Packet.Type.INVENTORY, this.onInventory);
   },
 
   componentWillUnmount: function () {
     this.props.game.protocol.removeListener(Packet.Type.STATUS, this.onStatus);
     this.props.game.protocol.removeListener(Packet.Type.CHAT, this.onChat);
+    this.props.game.protocol.removeListener(Packet.Type.INVENTORY, this.onInventory);
   },
 
   componentDidUpdate: function (prevProps, prevState) {
@@ -46,6 +48,13 @@ export var Chat = React.createClass({
         origin: message.actorName,
         text: message.text,
         isStatus: false
+    });
+  },
+
+  onInventory: function (origin, message) {
+    this.addMessage({
+        origin: null,
+        text: "You picked up: " + message.item.type
     });
   },
 
@@ -83,8 +92,13 @@ export var Chat = React.createClass({
 
   render: function () {
     var messages = this.state.messages.map((message) => {
+      var maybeOrigin = message.origin &&
+          <span className="origin" style={{color: makeColorForString(message.origin)}}>
+              {message.origin}
+          </span>;
+
       return <li key={message.id} className={message.isStatus ? "status" : ""}>
-        <span className="origin" style={{color: makeColorForString(message.origin)}}>{message.origin}</span> <span>{message.text}</span>
+        {maybeOrigin} <span>{message.text}</span>
       </li>;
     });
 
