@@ -138,8 +138,8 @@ class RegionHandler(RequestHandler):
     ).one()
     self.render("debug/region.html",
                 region=region,
-                corners=[self.sqla.query(Terrain).get(corner)
-                         for corner in region.corners])
+                tiles=[self.sqla.query(Terrain).get(tile)
+                         for tile in region.tiles])
 
 
 class TerrainHandler(RequestHandler):

@@ -122,7 +122,7 @@ export class Region {
         arx: message.location.arx,
         ary: message.location.ary
     };
-    this.corners = message.corners.map((id) => exports.terrain[id]);
+    this.tiles = message.tiles.map((id) => exports.terrain[id]);
     this.terrain = this.computeTerrain();
   }
 
@@ -131,16 +131,16 @@ export class Region {
   }
 
   computeTerrain() {
-    // Compute terrain from corners, using a modified version of the Marching
+    // Compute terrain from tiles, using a modified version of the Marching
     // Squares algorithm.
     var terrain = new Array(coords.REGION_SIZE * coords.REGION_SIZE);
 
     for (var rt = 0; rt < coords.REGION_SIZE; ++rt) {
       for (var rs = 0; rs < coords.REGION_SIZE; ++rs) {
-        var nw = this.corners[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 0)];
-        var ne = this.corners[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 1)];
-        var sw = this.corners[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 0)];
-        var se = this.corners[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 1)];
+        var nw = this.tiles[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 0)];
+        var ne = this.tiles[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 1)];
+        var sw = this.tiles[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 0)];
+        var se = this.tiles[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 1)];
 
         var types = nubBy([nw, ne, sw, se]
             .filter((corner) => corner !== null)
@@ -172,38 +172,10 @@ export class Region {
   }
 
   isPassable(location, direction) {
-    var nw = this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
-                          (location.rx + 0)];
-    var ne = this.corners[(location.ry + 0) * (coords.REGION_SIZE + 1) +
-                          (location.rx + 1)];
-    var sw = this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
-                          (location.rx + 0)];
-    var se = this.corners[(location.ry + 1) * (coords.REGION_SIZE + 1) +
-                          (location.rx + 1)];
+    var tile = this.tiles[location.ry * (coords.REGION_SIZE + 1) +
+                          location.rx];
 
-    var mask = (nw !== null ? (nw.passable >> direction) & 0x1 : false) << 3 |
-               (ne !== null ? (ne.passable >> direction) & 0x1 : false) << 2 |
-               (se !== null ? (se.passable >> direction) & 0x1 : false) << 1 |
-               (sw !== null ? (sw.passable >> direction) & 0x1 : false) << 0;
-
-    return ({
-        0x0: false,
-        0x1: false,
-        0x2: false,
-        0x3: true,
-        0x4: false,
-        0x5: false,
-        0x6: false,
-        0x7: true,
-        0x8: false,
-        0x9: false,
-        0xa: false,
-        0xb: true,
-        0xc: false,
-        0xd: false,
-        0xe: false,
-        0xf: true
-    })[mask];
+    return !!((tile.passable >> direction) & 0x1);
   }
 }
 

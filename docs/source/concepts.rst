@@ -5,30 +5,24 @@ Realms
 ------
 Realms are disconnected maps that players can travel within. They are associated
 with a set of terrain tables, which are used to represent the base map for a
-realm. The terrain tables store corners and tiles as arrays as two columns per
-region, indexed by absolute region space. This is a denormalized design which
-trades off efficiency for data consistency (arguably, this is the antipattern
-known as "jaywalking") -- however, it is unlikely that individual corners will
-ever need to be queried in a relational manner.
+realm. The terrain tables store tiles as arrays as a column per region, indexed
+by absolute region space. This is a denormalized design which trades off
+efficiency for data consistency (arguably, this is the antipattern known as
+"jaywalking") -- however, it is unlikely that individual tiles will ever need to
+be queried in a relational manner.
 
 Tiles
 ~~~~~
 Tiles are the locations where entities (buildings, actors, etc.) can be placed
-in a realm. Tiles contain no terrain information and is inferred strictly from
-the corners-in-regions table (i.e. they don't actually exist physically). The
-tiles are computed on the client side.
+in a realm. In the database, tiles are duplicated along the east and south edges
+in order to allow the client to render from a single region -- care must be
+taken to ensure consistency when editing tiles.
 
 Corners
 ~~~~~~~
-Corners are the dual of tiles and contain terrain information about the corners
-of tiles. This is such that the Marching Squares algorithm can deduce what
-transitions occur on a specific tile by interpolating from tile corners. Tile
-terrains can always be inferred from their corners.
-
-Tile corners may be duplicated at region boundaries (17 x 4 in total) -- this is
-such that tiles for a single region can always be computed from a single row
-from the region table. Care must be taken to ensure region boundary tile corners
-are consistent with each other.
+Corners are the dual of tiles and exist only for rendering. Their configurations
+are computed by the Marching Squares algorithm (see below). Physically, they are
+offset a half tile from the left and a half tile from the top.
 
 Marching Squares
 ++++++++++++++++
@@ -39,10 +33,8 @@ In parallel, each tile is mapped over to find the tile's four corners. Then, the
 terrains of the four corners are independently sorted in order of precedence,
 and the following is computed for each terrain type in order::
 
-  m = (corner_nw in A) << 3 |
-      (corner_ne in A) << 2 |
-      (corner_se in A) << 1 |
-      (corner_sw in A) << 0
+  m = (tile_nw in A) << 3 | (tile_ne in A) << 2 |
+      (tile_se in A) << 1 | (tile_sw in A) << 0
 
 The resulting value, ``m``, is the *mask value* and is located in a lookup table
 to determine how the tile should be rendered. The terrain layer with the lowest
@@ -50,19 +42,19 @@ precedence should always be rendered as "all", and no terrain layers should have
 a mask value of 0.
 
 ======= ===================================================
-Mask    Configuration (``x`` denotes corner on layer above)
+Mask    Configuration (``x`` denotes tile on layer above)
 ------- ---------------------------------------------------
 ``0x0`` none::
 
             o  o
             o  o
 ------- ---------------------------------------------------
-``0x1`` NE convex corner::
+``0x1`` NE convex tile::
 
             o  o
             x  o
 ------- ---------------------------------------------------
-``0x2`` NW convex corner::
+``0x2`` NW convex tile::
 
             o  o
             o  x
@@ -72,7 +64,7 @@ Mask    Configuration (``x`` denotes corner on layer above)
             o  o
             x  x
 ------- ---------------------------------------------------
-``0x4`` SW convex corner::
+``0x4`` SW convex tile::
 
             o  x
             o  o
@@ -87,12 +79,12 @@ Mask    Configuration (``x`` denotes corner on layer above)
             o  x
             o  x
 ------- ---------------------------------------------------
-``0x7`` NW concave corner::
+``0x7`` NW concave tile::
 
             o  x
             x  x
 ------- ---------------------------------------------------
-``0x8`` SE convex corner::
+``0x8`` SE convex tile::
 
             x  o
             o  o
@@ -107,7 +99,7 @@ Mask    Configuration (``x`` denotes corner on layer above)
             x  o
             o  x
 ------- ---------------------------------------------------
-``0xb`` NE concave corner::
+``0xb`` NE concave tile::
 
             x  o
             x  x
@@ -117,12 +109,12 @@ Mask    Configuration (``x`` denotes corner on layer above)
             x  x
             o  o
 ------- ---------------------------------------------------
-``0xd`` SE concave corner::
+``0xd`` SE concave tile::
 
             x  x
             x  o
 ------- ---------------------------------------------------
-``0xe`` SW concave corner::
+``0xe`` SW concave tile::
 
             x  x
             o  x
@@ -135,12 +127,11 @@ Mask    Configuration (``x`` denotes corner on layer above)
 
 Region
 ~~~~~~
-Regions partition tiles and corners into large chunks (16x16 and 17x17,
-respectively), such that the client does not need to request each tile
-individually. The client can subscribe to receive messages from a single region
-and discard the messages it doesn't need server-side, such that subscribing to
-regional message queues is not linear in proportion the number of tiles
-occupying the viewport.
+Regions partition tiles into large chunks (17x17), such that the client does not
+need to request each tile individually. The client can subscribe to receive
+messages from a single region and discard the messages it doesn't need
+server-side, such that subscribing to regional message queues is not linear in
+proportion the number of tiles occupying the viewport.
 
 Additionally, regions may correspond to pre-rendered chunks of terrain.
 
@@ -167,8 +158,8 @@ the coordinate (17, 1) cannot appear in the region (0, 0, 16, 16)).
 Additionally, distinct coordinate systems for corners and tiles discourages
 blind transformations from one to another.
 
-The bare coordinate systems (*x*, *y*) and (*s*, *t*) should not be used --
-variables, columns, and fields should never bear these names.
+The bare coordinate system (*x*, *y*) should not be used -- variables, columns,
+and fields should never bear these names.
 
 Position information is always stored as a realm reference, absolute region
 coordinates, then relative tile coordinates. Absolute tile coordinates can
@@ -180,12 +171,6 @@ Tiles form a Cartesian coordinate system, relative to the most north-west tile
 of their region, extending to the most south-east tile. Their position is the
 midpoint of their four surrounding corner coordinates. They are bounded from 0
 to the region size. They do not have physical storage.
-
-Relative Corner Coordinates (*rs*, *rt*)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Corners also form a Cartesian coordinate system, relative to the north-west
-corner of their region, extending to the south-east corner. They are bounded
-from 0 to the region size + 1 and stored in the corners column of a region.
 
 Absolute Region Coordinates (*arx*, *ary*)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -199,12 +184,6 @@ Absolute Tile Coordinates (*ax*, *ay*)
 Absolute tile coordinates are computed by finding the coordinate of their parent
 region, multiplying by the region size, and adding the relative tile coordinate.
 These are always computed.
-
-Absolute Corner Coordinates (*as*, *at*)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Absolute corner coordinates are computed by finding the coordinate of their
-parent region, multiplying by the region size, and adding the relative corner
-coordinate. These are always computed.
 
 Screen Coordinates (*sx*, *sy*)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

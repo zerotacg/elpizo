@@ -39,16 +39,16 @@ def initialize_realm(app):
   for ary in range(realm.ah // Region.SIZE):
     for arx in range(realm.aw // Region.SIZE):
       region = Region(arx=arx, ary=ary, realm=realm,
-                      corners=[grassland.id] * ((16 + 1) * (16 + 1)))
-      region.corners[3 * 17 + 1] = wall.id
-      region.corners[3 * 17 + 2] = wall.id
-      region.corners[3 * 17 + 3] = wall.id
-      region.corners[4 * 17 + 1] = wall.id
-      region.corners[4 * 17 + 2] = wall.id
-      region.corners[4 * 17 + 3] = wall.id
-      region.corners[5 * 17 + 1] = wall.id
-      region.corners[5 * 17 + 2] = wall.id
-      region.corners[5 * 17 + 3] = wall.id
+                      tiles=[grassland.id] * ((16 + 1) * (16 + 1)))
+      region.tiles[3 * 17 + 1] = wall.id
+      region.tiles[3 * 17 + 2] = wall.id
+      region.tiles[3 * 17 + 3] = wall.id
+      region.tiles[4 * 17 + 1] = wall.id
+      #region.tiles[4 * 17 + 2] = wall.id
+      region.tiles[4 * 17 + 3] = wall.id
+      region.tiles[5 * 17 + 1] = wall.id
+      region.tiles[5 * 17 + 2] = wall.id
+      region.tiles[5 * 17 + 3] = wall.id
 
       sqla.add(region)
 

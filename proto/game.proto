@@ -40,7 +40,7 @@ message AbsoluteRealmLocation {
 
 message Region {
   optional AbsoluteRealmLocation location = 1;
-  repeated uint32 corners = 2;
+  repeated uint32 tiles = 2;
 }
 
 message Realm {

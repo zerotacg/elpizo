@@ -83,7 +83,7 @@ class Region(Base):
                     func.point(self.a_right - 1, self.a_bottom - 1))
 
   # The array contains integers in the Terrain table.
-  corners = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
+  tiles = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
 
   @property
   def key(self):
@@ -117,7 +117,7 @@ class Region(Base):
     return game_pb2.Region(
         location=game_pb2.AbsoluteRealmLocation(realm_id=self.realm_id,
                                                 arx=self.arx, ary=self.ary),
-        corners=self.corners)
+        tiles=self.tiles)
 
   __table_args__ = (
       sqlalchemy.Index("ix_region_location", realm_id, arx, ary),

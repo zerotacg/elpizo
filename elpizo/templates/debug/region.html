@@ -14,7 +14,7 @@
   {% for ry in range(Region.SIZE + 1) %}
   <tr>
     {% for rx in range(Region.SIZE + 1) %}
-    {% set terrain = corners[ry * (Region.SIZE + 1) + rx] %}
+    {% set terrain = tiles[ry * (Region.SIZE + 1) + rx] %}
     <td>
       <table>
         <tr>

@@ -53,45 +53,10 @@ def socket_move(ctx, message):
   ctx.player.ax = new_ax
   ctx.player.ay = new_ay
 
-  nw = region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
-                      (ctx.player.rx + 0)]
-  ne = region.corners[(ctx.player.ry + 0) * (Region.SIZE + 1) +
-                      (ctx.player.rx + 1)]
-  sw = region.corners[(ctx.player.ry + 1) * (Region.SIZE + 1) +
-                      (ctx.player.rx + 0)]
-  se = region.corners[(ctx.player.ry + 1) * (Region.SIZE + 1) +
-                      (ctx.player.rx + 1)]
-
-  passabilities = {terrain.id: terrain.passable
-                   for terrain
-                   in ctx.sqla.query(Terrain).filter(Terrain.id.in_([
-                        nw, ne, sw, se
-                   ]))}
-
-  mask = ((passabilities.get(nw, False) >> direction) & 0b1) << 3 | \
-         ((passabilities.get(ne, False) >> direction) & 0b1) << 2 | \
-         ((passabilities.get(se, False) >> direction) & 0b1) << 1 | \
-         ((passabilities.get(sw, False) >> direction) & 0b1) << 0
+  tile = region.tiles[ctx.player.ry * (Region.SIZE + 1) + ctx.player.rx]
 
   # colliding with terrain
-  if not {
-      0x0: False,
-      0x1: False,
-      0x2: False,
-      0x3: True,
-      0x4: False,
-      0x5: False,
-      0x6: False,
-      0x7: True,
-      0x8: False,
-      0x9: False,
-      0xa: False,
-      0xb: True,
-      0xc: False,
-      0xd: False,
-      0xe: False,
-      0xf: True
-  }[mask]:
+  if not ((ctx.sqla.query(Terrain).get(tile).passable >> direction) & 0b1):
     ctx.sqla.rollback()
     return
 

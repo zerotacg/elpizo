@@ -326,7 +326,8 @@ export class Renderer extends EventEmitter {
     });
 
     ctx.save();
-    ctx.translate(sOffset.sx, sOffset.sy);
+    ctx.translate(sOffset.sx - Renderer.TILE_SIZE / 2,
+                  sOffset.sy - Renderer.TILE_SIZE / 2);
     Renderer.ENTITIES[entity.type](entity, this.resources, ctx, this.elapsed);
     ctx.restore();
   }
@@ -385,6 +386,7 @@ Renderer.TILE_SIZE = 32;
 Renderer.TILE_TEXTURE_MAPPINGS = {
     "grassland": "grass.png",
     "ocean": "water.png",
+    "wall": "wall.png",
 };
 
 Renderer.TILE_TEXTURE_COORDS = {
