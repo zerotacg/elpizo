@@ -74,25 +74,40 @@ export class Realm {
   }
 
   retain(bbox) {
+    var arTopLeft = coords.absoluteToContainingRegion({
+        ax: bbox.aLeft,
+        ay: bbox.aTop
+    });
+
+    var arBottomRight = coords.absoluteToContainingRegion({
+        ax: bbox.aRight + coords.REGION_SIZE,
+        ay: bbox.aBottom + coords.REGION_SIZE
+    });
+
     Object.keys(this.regions).map((k) => {
       var region = this.regions[k];
-      var aRegionCoords = coords.regionToAbsolute(region.location);
-      var aRegionBbox = {
-          aLeft: aRegionCoords.ax,
-          aTop: aRegionCoords.ay,
-          aRight: aRegionCoords.ax + coords.REGION_SIZE,
-          aBottom: aRegionCoords.ay + coords.REGION_SIZE
-      };
 
-      if (!(bbox.aLeft < aRegionBbox.aRight &&
-            bbox.aRight > aRegionBbox.aLeft &&
-            bbox.aTop < aRegionBbox.aBottom &&
-            bbox.aBottom > aRegionBbox.aTop)) {
+      if (region.location.arx < arTopLeft.arx ||
+          region.location.arx >= arBottomRight.arx ||
+          region.location.ary < arTopLeft.ary ||
+          region.location.ary >= arBottomRight.ary) {
         delete this.regions[k];
       }
     });
 
-    // TODO: retain entities
+    Object.keys(this.entities).map((k) => {
+      var entity = this.entities[k];
+
+      var arEntityLocation = coords.absoluteToContainingRegion(
+          entity.location);
+
+      if (arEntityLocation.arx < arTopLeft.arx ||
+          arEntityLocation.arx >= arBottomRight.arx ||
+          arEntityLocation.ary < arTopLeft.ary ||
+          arEntityLocation.ary >= arBottomRight.ary) {
+        delete this.entities[k];
+      }
+    });
   }
 
   getClosestRegion(location) {

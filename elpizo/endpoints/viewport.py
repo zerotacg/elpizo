@@ -51,10 +51,14 @@ def viewport(ctx, message):
     ctx.send(None, game_pb2.RegionPacket(region=region.to_protobuf()))
     ctx.subscribe(region.routing_key)
 
-    for entity in region.entities:
-      if entity is not ctx.player:
-        ctx.send(entity.id, game_pb2.EntityPacket(entity=entity.to_protobuf()))
-
   for removed_region_key in set(last_regions.keys()) - set(regions.keys()):
     region = last_regions[removed_region_key]
     ctx.unsubscribe(region.routing_key)
+
+  # Always send the full list of entities, as it may have become inconsistent.
+  #
+  # Maybe this can be optimized for edge regions?
+  for region in regions.values():
+    for entity in region.entities:
+      if entity is not ctx.player:
+        ctx.send(entity.id, game_pb2.EntityPacket(entity=entity.to_protobuf()))
