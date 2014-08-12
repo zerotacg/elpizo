@@ -61,6 +61,21 @@ export class Renderer extends EventEmitter {
     };
   }
 
+  damage(region) {
+    // Evict a region and its neighbors from the cache ("damaging"). In theory,
+    // the renderer should keep track of damaged regions itself, so this is a
+    // horrible hack.
+    for (var ary = region.location.ary - 1;
+         ary <= region.location.ary + 1;
+         ++ary) {
+      for (var arx = region.location.arx - 1;
+           arx <= region.location.arx + 1;
+           ++arx) {
+        delete this.regionTerrainCache[arx + "," + ary];
+      }
+    }
+  }
+
   handleOnClick(e) {
     var sx = e.clientX - this.sBounds.left;
     var sy = e.clientY - this.sBounds.top;
@@ -163,17 +178,12 @@ export class Renderer extends EventEmitter {
 
   getAbsoluteCacheBounds() {
     var viewport = this.getAbsoluteViewportBounds();
-    var aWidth = viewport.aRight - viewport.aLeft;
-    var aHeight = viewport.aBottom - viewport.aTop;
-
-    var aPaddingH = Math.round(aWidth / 2);
-    var aPaddingV = Math.round(aHeight/ 2);
 
     return {
-        aLeft: viewport.aLeft - aPaddingH,
-        aRight: viewport.aRight + aPaddingH,
-        aTop: viewport.aTop - aPaddingV,
-        aBottom: viewport.aBottom + aPaddingV
+        aLeft: viewport.aLeft - coords.REGION_SIZE / 2,
+        aRight: viewport.aRight + coords.REGION_SIZE / 2,
+        aTop: viewport.aTop - coords.REGION_SIZE / 2,
+        aBottom: viewport.aBottom + coords.REGION_SIZE / 2
     }
   }
 
@@ -206,17 +216,20 @@ export class Renderer extends EventEmitter {
   }
 
   renderTerrain(realm) {
+    var arWorldBounds = this.getRegionWorldBounds();
+
     if (realm !== this.currentRealm) {
       this.regionTerrainCache = {};
+      this.currentRealm = realm;
+    } else {
+      // Evict parts of the terrain cache to keep it synchronized with realm
+      // regions.
+      Object.keys(this.regionTerrainCache).forEach((k) => {
+        if (!realm.regions[k]) {
+          delete this.regionTerrainCache[k];
+        }
+      });
     }
-    this.currentRealm = realm;
-
-    // Evict the terrain cache to keep in synchronized with realm regions.
-    Object.keys(this.regionTerrainCache).forEach((k) => {
-      if (!realm.regions[k]) {
-        delete this.regionTerrainCache[k];
-      }
-    });
 
     var screenViewportSize = this.getScreenViewportSize();
 
@@ -233,9 +246,7 @@ export class Renderer extends EventEmitter {
         ay: -this.aTopLeft.ay
     });
 
-    var arWorldBounds = this.getRegionWorldBounds();
-
-    // Only render the chunks in bounded by the viewport.
+    // Only render the regions bounded by the viewport.
     for (var ary = arWorldBounds.arTop; ary < arWorldBounds.arBottom; ++ary) {
       for (var arx = arWorldBounds.arLeft; arx < arWorldBounds.arRight; ++arx) {
         var sPosition = this.absoluteToScreenCoords(
@@ -321,9 +332,9 @@ export class Renderer extends EventEmitter {
 
     var ctx = this.prepareContext(canvas);
 
-    region.terrain.forEach((terrain, i) => {
-      var rx = i % coords.REGION_SIZE;
-      var ry = Math.floor(i / coords.REGION_SIZE);
+    region.computeTerrain().forEach((terrain, i) => {
+      var rx = i % (coords.REGION_SIZE + 1);
+      var ry = Math.floor(i / (coords.REGION_SIZE + 1));
 
       // If we have a tile named all the terrain joined together, we use that
       // instead of compositing terrain.
@@ -358,10 +369,14 @@ export class Renderer extends EventEmitter {
           });
 
           ctx.drawImage(this.resources.get("tiles/" + texture),
-                        u * Renderer.TILE_SIZE / 2, v * Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2, Renderer.TILE_SIZE / 2,
-                        s.sx, s.sy,
-                        Renderer.TILE_SIZE / 2, Renderer.TILE_SIZE / 2);
+                        u * Renderer.TILE_SIZE / 2,
+                        v * Renderer.TILE_SIZE / 2,
+                        Renderer.TILE_SIZE / 2,
+                        Renderer.TILE_SIZE / 2,
+                        s.sx - Renderer.TILE_SIZE / 2,
+                        s.sy - Renderer.TILE_SIZE / 2,
+                        Renderer.TILE_SIZE / 2,
+                        Renderer.TILE_SIZE / 2);
         });
       });
     });
@@ -376,8 +391,7 @@ export class Renderer extends EventEmitter {
     });
 
     ctx.save();
-    ctx.translate(sOffset.sx - Renderer.TILE_SIZE / 2,
-                  sOffset.sy - Renderer.TILE_SIZE / 2);
+    ctx.translate(sOffset.sx, sOffset.sy);
     Renderer.ENTITIES[entity.type](this, entity, ctx);
     ctx.restore();
   }

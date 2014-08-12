@@ -9,6 +9,7 @@ import {Resources} from "./util/resources";
 import {InputState, Key} from "./util/input";
 import {UI} from "./ui/main.react";
 
+module coords from "./util/coords";
 module game_pb2 from "./game_pb2";
 module handlers from "./handlers";
 
@@ -82,9 +83,16 @@ export class Game extends EventEmitter {
     });
 
     this.me.on("moveEnd", () => {
-      this.realm.retain(this.renderer.getAbsoluteCacheBounds());
-      this.protocol.send(new game_pb2.ViewportPacket(
-          this.renderer.getAbsoluteCacheBounds()));
+      var prevLoc = coords.absoluteToContainingRegion(
+          this.me.getPreviousLocation());
+      var newLoc = coords.absoluteToContainingRegion(
+          this.me.location);
+
+      if (prevLoc.arx !== newLoc.arx || prevLoc.ary !== newLoc.ary) {
+        this.realm.retain(this.renderer.getAbsoluteCacheBounds());
+        this.protocol.send(new game_pb2.ViewportPacket(
+            this.renderer.getAbsoluteCacheBounds()));
+      }
     });
   }
 

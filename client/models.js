@@ -56,10 +56,12 @@ export class Realm {
 
   addRegion(region) {
     this.regions[region.getKey()] = region;
+    region.realm = this;
   }
 
   removeRegion(region) {
     delete this.regions[region.getKey()];
+    delete region.realm;
   }
 
   getRegion(location) {
@@ -149,7 +151,6 @@ export class Region {
         ary: message.location.ary
     };
     this.tiles = message.tiles.map((id) => exports.terrain[id]);
-    this.terrain = this.computeTerrain();
   }
 
   getKey() {
@@ -159,38 +160,160 @@ export class Region {
   computeTerrain() {
     // Compute terrain from tiles, using a modified version of the Marching
     // Squares algorithm.
-    var terrain = new Array(coords.REGION_SIZE * coords.REGION_SIZE);
+    var terrain = new Array((coords.REGION_SIZE + 1) *
+                            (coords.REGION_SIZE + 1));
 
-    for (var rt = 0; rt < coords.REGION_SIZE; ++rt) {
-      for (var rs = 0; rs < coords.REGION_SIZE; ++rs) {
-        var nw = this.tiles[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 0)];
-        var ne = this.tiles[(rt + 0) * (coords.REGION_SIZE + 1) + (rs + 1)];
-        var sw = this.tiles[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 0)];
-        var se = this.tiles[(rt + 1) * (coords.REGION_SIZE + 1) + (rs + 1)];
+    var tilesWithEdges = repeat((coords.REGION_SIZE + 2) *
+                                (coords.REGION_SIZE + 2),
+                                () => null);
+
+    // Copy the current realm tiles into tilesWithEdges.
+    for (var ry = 0; ry < coords.REGION_SIZE; ++ry) {
+      for (var rx = 0; rx < coords.REGION_SIZE; ++rx) {
+        tilesWithEdges[(ry + 1) * (coords.REGION_SIZE + 2) +
+                       (rx + 1)] =
+            this.tiles[ry * coords.REGION_SIZE + rx]
+      }
+    }
+
+    // Get the 8 neighboring regions.
+    var nRegion = this.realm.getRegion({arx: this.location.arx,
+                                        ary: this.location.ary - 1});
+    if (nRegion !== null) {
+      // Copy the last row of the north region into the edges array.
+      for (var rx = 0; rx < coords.REGION_SIZE; ++rx) {
+        tilesWithEdges[0 * (coords.REGION_SIZE + 2) +
+                       (rx + 1)] =
+            nRegion.tiles[(coords.REGION_SIZE - 1) * coords.REGION_SIZE +
+                          rx];
+      }
+    }
+
+    var nwRegion = this.realm.getRegion({arx: this.location.arx - 1,
+                                         ary: this.location.ary - 1});
+    if (nwRegion !== null) {
+      // Copy the south-east-most tile into the north-west corner.
+      tilesWithEdges[0 * (coords.REGION_SIZE + 2) +
+                     0] =
+          nwRegion.tiles[(coords.REGION_SIZE - 1) * coords.REGION_SIZE +
+                         (coords.REGION_SIZE - 1)];
+    }
+
+    var wRegion = this.realm.getRegion({arx: this.location.arx - 1,
+                                        ary: this.location.ary});
+    if (wRegion !== null) {
+      // Copy the last column of the west region into the edges array.
+      for (var ry = 0; ry < coords.REGION_SIZE; ++ry) {
+        tilesWithEdges[(ry + 1) * (coords.REGION_SIZE + 2) +
+                       0] =
+            wRegion.tiles[ry * coords.REGION_SIZE +
+                          (coords.REGION_SIZE - 1)];
+      }
+    }
+
+    var swRegion = this.realm.getRegion({arx: this.location.arx - 1,
+                                         ary: this.location.ary + 1});
+    if (swRegion !== null) {
+      // Copy the north-east-most tile into the south-west corner.
+      tilesWithEdges[(coords.REGION_SIZE + 1) * (coords.REGION_SIZE + 2) +
+                     0] =
+          swRegion.tiles[0 * coords.REGION_SIZE +
+                         (coords.REGION_SIZE - 1)];
+    }
+
+    var sRegion = this.realm.getRegion({arx: this.location.arx,
+                                        ary: this.location.ary + 1});
+    if (sRegion !== null) {
+      // Copy the first row of the south region into the edges array.
+      for (var rx = 0; rx < coords.REGION_SIZE; ++rx) {
+        tilesWithEdges[(coords.REGION_SIZE + 1) * (coords.REGION_SIZE + 2) +
+                       (rx + 1)] =
+            sRegion.tiles[0 * coords.REGION_SIZE +
+                          rx];
+      }
+    }
+
+    var seRegion = this.realm.getRegion({arx: this.location.arx + 1,
+                                         ary: this.location.ary + 1});
+    if (seRegion !== null) {
+      // Copy the north-west-most tile into the south-east corner.
+      tilesWithEdges[(coords.REGION_SIZE + 1) * (coords.REGION_SIZE + 2) +
+                     (coords.REGION_SIZE + 1)] =
+          seRegion.tiles[0 * coords.REGION_SIZE +
+                         0];
+    }
+
+    var eRegion = this.realm.getRegion({arx: this.location.arx + 1,
+                                        ary: this.location.ary});
+    if (eRegion !== null) {
+      // Copy the first column of the east region into the edges array.
+      for (var ry = 0; ry < coords.REGION_SIZE; ++ry) {
+        tilesWithEdges[(ry + 1) * (coords.REGION_SIZE + 2) +
+                       (coords.REGION_SIZE + 1)] =
+            eRegion.tiles[ry * coords.REGION_SIZE +
+                          0];
+      }
+    }
+
+    var neRegion = this.realm.getRegion({arx: this.location.arx + 1,
+                                         ary: this.location.ary - 1});
+    if (neRegion !== null) {
+      // Copy the south-west-most tile into the north-east corner.
+      tilesWithEdges[0 * (coords.REGION_SIZE + 2) +
+                     (coords.REGION_SIZE + 1)] =
+          neRegion.tiles[(coords.REGION_SIZE - 1) * coords.REGION_SIZE +
+                         0];
+    }
+
+    for (var ry = 0; ry < coords.REGION_SIZE + 2; ++ry) {
+      for (var rx = 0; rx < coords.REGION_SIZE + 2; ++rx) {
+        var nw = (rx + 0) >= 0 && (rx + 0) < (coords.REGION_SIZE + 2) &&
+                 (ry + 0) >= 0 && (ry + 0) < (coords.REGION_SIZE + 2)
+                     ? tilesWithEdges[(ry + 0) * (coords.REGION_SIZE + 2) +
+                                      (rx + 0)]
+                     : null;
+
+        var ne = (rx + 1) >= 0 && (rx + 1) < (coords.REGION_SIZE + 2) &&
+                 (ry + 0) >= 0 && (ry + 0) < (coords.REGION_SIZE + 2)
+                     ? tilesWithEdges[(ry + 0) * (coords.REGION_SIZE + 2) +
+                                      (rx + 1)]
+                     : null;
+
+        var sw = (rx + 0) >= 0 && (rx + 0) < (coords.REGION_SIZE + 2) &&
+                 (ry + 1) >= 0 && (ry + 1) < (coords.REGION_SIZE + 2)
+                     ? tilesWithEdges[(ry + 1) * (coords.REGION_SIZE + 2) +
+                                      (rx + 0)]
+                     : null;
+
+        var se = (rx + 1) >= 0 && (rx + 1) < (coords.REGION_SIZE + 2) &&
+                 (ry + 1) >= 0 && (ry + 1) < (coords.REGION_SIZE + 2)
+                     ? tilesWithEdges[(ry + 1) * (coords.REGION_SIZE + 2) +
+                                      (rx + 1)]
+                     : null;
 
         var types = nubBy([nw, ne, sw, se]
-            .filter((corner) => corner !== null)
+            .filter((tile) => tile !== null)
             .sort((a, b) =>
                 Region.TERRAIN_PREDECENCES.indexOf(a.name) -
                     Region.TERRAIN_PREDECENCES.indexOf(b.name)),
-            (corner) => corner.name);
+            (tile) => tile.name);
 
-        terrain[rt * coords.REGION_SIZE + rs] = types.map((corner, i) => {
-          // Terrain blends may exist (e.g. ocean into river), and this ensures
-          // that two terrain blending are treated similarly to two terrain of
-          // the same type.
-          var above = types.slice(i).concat(
-              Region.TERRAIN_BLENDS[corner.name] || []);
+        terrain[ry * (coords.REGION_SIZE + 1) + rx] =
+            types.map((tile, i) => {
+              // Terrain blends may exist (e.g. ocean into river), and this ensures
+              // that two terrain blending are treated similarly to two terrain of
+              // the same type.
+              var above = types.slice(i).concat(
+                  Region.TERRAIN_BLENDS[tile.name] || []);
 
-          return {
-              name: corner.name,
-              mask: ((above.indexOf(nw) !== -1) << 3) |
-                    ((above.indexOf(ne) !== -1) << 2) |
-                    ((above.indexOf(se) !== -1) << 1) |
-                    ((above.indexOf(sw) !== -1) << 0),
-              passable: corner.passable
-          };
-        });
+              return {
+                  name: tile.name,
+                  mask: ((above.indexOf(nw) !== -1) << 3) |
+                        ((above.indexOf(ne) !== -1) << 2) |
+                        ((above.indexOf(se) !== -1) << 1) |
+                        ((above.indexOf(sw) !== -1) << 0)
+              };
+            });
       }
     }
 
@@ -198,19 +321,17 @@ export class Region {
   }
 
   isPassable(location, direction) {
-    var tile = this.tiles[location.ry * (coords.REGION_SIZE + 1) +
-                          location.rx];
-
+    var tile = this.tiles[location.ry * coords.REGION_SIZE + location.rx];
     return !!((tile.passable >> direction) & 0x1);
   }
 }
 
 Region.TERRAIN_BLENDS = {};
 Region.TERRAIN_PREDECENCES = [
-    "ocean", "beach",
+    "beach",
     "subtropical_desert", "tropical_seasonal_forest", "grassland",
     "tropical_rain_forest",
-    "lake", "river", "lakeshore", "wall"
+    "lake", "river", "lakeshore", "ocean"
 ];
 
 export class Entity extends EventEmitter {
@@ -248,6 +369,18 @@ export class Actor extends Entity {
 
     this.moving = false;
     this.remainder = 0;
+  }
+
+  getPreviousLocation() {
+    var ad = this.getDirectionVector();
+    return {
+        ax: this.location.ax - ad.ax,
+        ay: this.location.ay - ad.ay
+    }
+  }
+
+  getDirectionVector() {
+    return getDirectionVector(this.direction);
   }
 
   moveInDirection(direction) {

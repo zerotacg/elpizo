@@ -2,6 +2,7 @@ import logging
 from lxml import etree
 from itertools import product
 import json
+import random
 
 from elpizo import make_application
 from elpizo.models.actors import Player
@@ -26,8 +27,8 @@ def initialize_realm(app):
   realm = Realm(name="Windvale", aw=128, ah=128)
   sqla.add(realm)
 
-  wall = Terrain(name="wall", passable=0b0000)
-  sqla.add(wall)
+  ocean = Terrain(name="ocean", passable=0b0000)
+  sqla.add(ocean)
 
   grassland = Terrain(name="grassland", passable=0b1111)
   sqla.add(grassland)
@@ -39,7 +40,8 @@ def initialize_realm(app):
   for ary in range(realm.ah // Region.SIZE):
     for arx in range(realm.aw // Region.SIZE):
       region = Region(arx=arx, ary=ary, realm=realm,
-                      tiles=[grassland.id] * ((16 + 1) * (16 + 1)))
+                      tiles=[random.choice([grassland, grassland]).id
+                             for _ in range(16 * 16)])
       sqla.add(region)
 
   sqla.commit()

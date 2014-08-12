@@ -12,7 +12,7 @@ class DebugContext(object):
     self.sessions = {}
 
   def add_session(self, protocol):
-    ctx = ProtocolDebugContext(protocol)
+    ctx = ProtocolDebugContext(self, protocol)
     self.sessions[ctx.id] = ctx
 
   def get_session(self, protocol):
@@ -20,8 +20,9 @@ class DebugContext(object):
 
 
 class ProtocolDebugContext(object):
-  def __init__(self, protocol):
+  def __init__(self, parent, protocol):
     self.id = hex(id(protocol))
+    self.parent = parent
     self.protocol = protocol
 
     sqla = self.protocol.application.sqla_factory()

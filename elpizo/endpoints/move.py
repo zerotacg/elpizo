@@ -53,7 +53,7 @@ def socket_move(ctx, message):
   ctx.player.ax = new_ax
   ctx.player.ay = new_ay
 
-  tile = region.tiles[ctx.player.ry * (Region.SIZE + 1) + ctx.player.rx]
+  tile = region.tiles[ctx.player.ry * Region.SIZE + ctx.player.rx]
 
   # colliding with terrain
   if not ((ctx.sqla.query(Terrain).get(tile).passable >> direction) & 0b1):

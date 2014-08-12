@@ -11,10 +11,10 @@
 </h1>
 
 <table>
-  {% for ry in range(Region.SIZE + 1) %}
+  {% for ry in range(Region.SIZE) %}
   <tr>
-    {% for rx in range(Region.SIZE + 1) %}
-    {% set terrain = tiles[ry * (Region.SIZE + 1) + rx] %}
+    {% for rx in range(Region.SIZE) %}
+    {% set terrain = tiles[ry * Region.SIZE + rx] %}
     <td>
       <table>
         <tr>

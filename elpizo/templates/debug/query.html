@@ -1,5 +1,6 @@
 {% extends "_layout.html" %}
 {% block body %}
+{% from sqlalchemy.sql import Select %}
 <h1>
   <a href="/_debug/">Debug Console</a>
   / Sessions
@@ -31,6 +32,26 @@
 <p>
   <pre>{{stack}}</pre>
 </p>
+
+{% if isinstance(query.text, Select) %}
+<h2>SELECT</h2>
+{% set q = session.parent.application.sqla_factory.bind.execute(
+    query.text, *query.user_context[2], **query.user_context[3]) %}
+<table>
+  <tr>
+    {% for key in q.keys() %}
+      <th>{{key}}</th>
+    {% end %}
+  </tr>
+  {% for row in q %}
+  <tr>
+    {% for col in row %}
+      <td>{{col}}</td>
+    {% end %}
+  </tr>
+  {% end %}
+</table>
+{% end %}
 
 <h2>Explain</h2>
 <p>
