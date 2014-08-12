@@ -74,6 +74,8 @@ export class Realm {
   }
 
   retain(bbox) {
+    // This should only be called at region boundaries, to ensure that
+    // off-screen regions aren't culled away prematurely.
     var arTopLeft = coords.absoluteToContainingRegion({
         ax: bbox.aLeft,
         ay: bbox.aTop
