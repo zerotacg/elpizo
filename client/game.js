@@ -74,8 +74,8 @@ export class Game extends EventEmitter {
     console.log("Hello! Your player id is:", id);
     this.me = this.realm.getEntity(id);
     this.renderer.center(this.me.location);
-      this.protocol.send(new game_pb2.ViewportPacket(
-          this.renderer.getAbsoluteCacheBounds()));
+    this.protocol.send(new game_pb2.ViewportPacket(
+        this.renderer.getAbsoluteCacheBounds()));
 
     this.me.on("moveStep", () => {
       this.renderer.center(this.me.location);

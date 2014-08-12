@@ -52,6 +52,13 @@ export class Renderer extends EventEmitter {
     }, 500);
 
     this.style = window.getComputedStyle(this.el);
+
+    this.sBounds = {
+        left: 0,
+        top: 0,
+        width: 0,
+        height: 0
+    };
   }
 
   handleOnClick(e) {
