@@ -180,10 +180,10 @@ export class Renderer extends EventEmitter {
     var viewport = this.getAbsoluteViewportBounds();
 
     return {
-        aLeft: viewport.aLeft - coords.REGION_SIZE / 2,
-        aRight: viewport.aRight + coords.REGION_SIZE / 2,
-        aTop: viewport.aTop - coords.REGION_SIZE / 2,
-        aBottom: viewport.aBottom + coords.REGION_SIZE / 2
+        aLeft: viewport.aLeft - coords.REGION_SIZE,
+        aRight: viewport.aRight + coords.REGION_SIZE,
+        aTop: viewport.aTop - coords.REGION_SIZE,
+        aBottom: viewport.aBottom + coords.REGION_SIZE
     }
   }
 
