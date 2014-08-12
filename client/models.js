@@ -67,6 +67,32 @@ export class Realm {
     return hasOwnProp.call(this.regions, key) ? this.regions[key] : null;
   }
 
+  getAllRegions() {
+    return Object.keys(this.regions).map((k) => this.regions[k]);
+  }
+
+  retain(bbox) {
+    Object.keys(this.regions).map((k) => {
+      var region = this.regions[k];
+      var aRegionCoords = coords.regionToAbsolute(region.location);
+      var aRegionBbox = {
+          aLeft: aRegionCoords.ax,
+          aTop: aRegionCoords.ay,
+          aRight: aRegionCoords.ax + coords.REGION_SIZE,
+          aBottom: aRegionCoords.ay + coords.REGION_SIZE
+      };
+
+      if (!(bbox.aLeft < aRegionBbox.aRight &&
+            bbox.aRight > aRegionBbox.aLeft &&
+            bbox.aTop < aRegionBbox.aBottom &&
+            bbox.aBottom > aRegionBbox.aTop)) {
+        delete this.regions[k];
+      }
+    });
+
+    // TODO: retain entities
+  }
+
   getClosestRegion(location) {
     return this.getRegion(coords.absoluteToContainingRegion(location));
   }

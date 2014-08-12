@@ -29,6 +29,10 @@ input:-moz-placeholder, textarea:-moz-placeholder {
   color: inherit;
 }
 
+a {
+  color: #ddd;
+}
+
 .renderer, .ui-root {
   position: absolute;
   left: 0;
@@ -96,6 +100,20 @@ input:-moz-placeholder, textarea:-moz-placeholder {
         background: rgba(0, 0, 0, 0.25);
         opacity: 1.0;
       }
+    }
+  }
+
+  .debug {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+
+    font-family: monospace;
+
+    dl {
+      margin: 0;
     }
   }
 }

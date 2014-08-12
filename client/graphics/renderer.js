@@ -14,6 +14,8 @@ export class Renderer extends EventEmitter {
   constructor(resources, parent) {
     super();
 
+    this.debug = false;
+
     this.el = document.createElement("div");
     this.el.classList.add("renderer");
     this.el.style.position = "relative";
@@ -40,7 +42,7 @@ export class Renderer extends EventEmitter {
     };
 
     this.resources = resources;
-    this.realm = null;
+    this.currentRealm = null;
 
     this.regionTerrainCache = {};
     this.elapsed = 0;
@@ -153,7 +155,19 @@ export class Renderer extends EventEmitter {
   }
 
   getAbsoluteCacheBounds() {
+    var viewport = this.getAbsoluteViewportBounds();
+    var aWidth = viewport.aRight - viewport.aLeft;
+    var aHeight = viewport.aBottom - viewport.aTop;
 
+    var aPaddingH = Math.round(aWidth / 2);
+    var aPaddingV = Math.round(aHeight/ 2);
+
+    return {
+        aLeft: viewport.aLeft - aPaddingH,
+        aRight: viewport.aRight + aPaddingH,
+        aTop: viewport.aTop - aPaddingV,
+        aBottom: viewport.aBottom + aPaddingV
+    }
   }
 
   getRegionWorldBounds() {
@@ -177,27 +191,32 @@ export class Renderer extends EventEmitter {
     };
   }
 
-  setRealm(realm) {
-    this.realm = realm;
-    this.regionTerrainCache = {};
-  }
-
-  render(dt) {
-    if (this.realm === null) {
-      return;
-    }
-
+  render(realm, dt) {
     this.elapsed += dt;
 
-    this.renderTerrain(this.realm);
-    this.renderEntities(this.realm);
+    this.renderTerrain(realm);
+    this.renderEntities(realm);
   }
 
   renderTerrain(realm) {
+    if (realm !== this.currentRealm) {
+      this.regionTerrainCache = {};
+    }
+    this.currentRealm = realm;
+
+    // Evict the terrain cache to keep in synchronized with realm regions.
+    Object.keys(this.regionTerrainCache).forEach((k) => {
+      if (!realm.regions[k]) {
+        delete this.regionTerrainCache[k];
+      }
+    });
+
     var screenViewportSize = this.getScreenViewportSize();
 
-    var regionScreenSize =
-        this.absoluteToScreenCoords({ax: coords.REGION_SIZE, ay: coords.REGION_SIZE});
+    var regionScreenSize = this.absoluteToScreenCoords({
+        ax: coords.REGION_SIZE,
+        ay: coords.REGION_SIZE
+    });
 
     var ctx = this.prepareContext(this.terrainCanvas);
     ctx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
@@ -233,9 +252,18 @@ export class Renderer extends EventEmitter {
         }
 
         var buffer = this.regionTerrainCache[key];
-        ctx.drawImage(buffer, sLeft, sTop);
-        ctx.strokeStyle = "red";
-        ctx.strokeRect(sLeft, sTop, buffer.width, buffer.height);
+        ctx.save();
+        ctx.translate(sLeft, sTop);
+        ctx.drawImage(buffer, 0, 0);
+
+        if (this.debug) {
+          ctx.strokeStyle = "red";
+          ctx.fillStyle = "red";
+          ctx.strokeRect(0, 0, buffer.width, buffer.height);
+          ctx.textAlign = "center";
+          ctx.fillText(key, buffer.width / 2, buffer.height / 2);
+        }
+        ctx.restore();
       }
     }
   }

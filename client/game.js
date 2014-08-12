@@ -43,7 +43,7 @@ export class Game extends EventEmitter {
       if (this.me !== null) {
         this.renderer.center(this.me.location);
         this.protocol.send(new game_pb2.ViewportPacket(
-            this.renderer.getAbsoluteViewportBounds()));
+            this.renderer.getAbsoluteCacheBounds()));
       }
     });
 
@@ -68,7 +68,6 @@ export class Game extends EventEmitter {
 
   setRealm(realm) {
     this.realm = realm;
-    this.renderer.setRealm(realm);
   }
 
   setAvatarById(id) {
@@ -76,15 +75,16 @@ export class Game extends EventEmitter {
     this.me = this.realm.getEntity(id);
     this.renderer.center(this.me.location);
       this.protocol.send(new game_pb2.ViewportPacket(
-          this.renderer.getAbsoluteViewportBounds()));
+          this.renderer.getAbsoluteCacheBounds()));
 
     this.me.on("moveStep", () => {
       this.renderer.center(this.me.location);
     });
 
     this.me.on("moveEnd", () => {
+      this.realm.retain(this.renderer.getAbsoluteCacheBounds());
       this.protocol.send(new game_pb2.ViewportPacket(
-          this.renderer.getAbsoluteViewportBounds()));
+          this.renderer.getAbsoluteCacheBounds()));
     });
   }
 
@@ -106,7 +106,9 @@ export class Game extends EventEmitter {
   }
 
   render(dt) {
-    this.renderer.render(dt);
+    if (this.realm !== null) {
+      this.renderer.render(this.realm, dt);
+    }
   }
 
   startUpdating() {

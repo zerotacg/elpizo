@@ -96,18 +96,9 @@ class Region(Base):
 
   @hybrid.hybrid_method
   def bounded_by(self, a_left, a_top, a_right, a_bottom):
-    # We want to select 1.5x the viewport area.
-    a_width = a_right - a_left
-    a_height = a_bottom - a_top
-
-    a_padding_w = a_width // 2
-    a_padding_h = a_height // 2
-
-    viewport_box = func.box(
-        func.point(a_left - a_padding_w, a_top - a_padding_h),
-        func.point(a_right + a_padding_w, a_bottom + a_padding_h))
-
-    return self.bbox.op("&&")(viewport_box)
+    return self.bbox.op("&&")(func.box(
+        func.point(a_left, a_top),
+        func.point(a_right, a_bottom)))
 
   @hybrid.hybrid_method
   def bbox_contains(self, ax, ay):
