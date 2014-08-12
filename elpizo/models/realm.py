@@ -95,7 +95,7 @@ class Region(Base):
     return "region.{key}".format(key=self.key)
 
   @hybrid.hybrid_method
-  def bounded_by(self, a_left, a_top, a_right, a_bottom):
+  def intersects(self, a_left, a_top, a_right, a_bottom):
     return self.bbox.op("&&")(func.box(
         func.point(a_left, a_top),
         func.point(a_right, a_bottom)))

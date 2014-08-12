@@ -83,6 +83,11 @@ class Entity(Base):
   def point(self):
     return func.point(self.ax, self.ay)
 
+  @hybrid.hybrid_method
+  def contained_by(self, a_left, a_top, a_bottom, a_right):
+    return func.box(func.point(a_left, a_top),
+                    func.point(a_bottom - 1, a_right - 1)).op("@>")(self.point)
+
   def location_to_protobuf(self):
     return game_pb2.AbsoluteLocation(realm_id=self.realm_id,
                                      ax=self.ax, ay=self.ay)

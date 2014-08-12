@@ -12,6 +12,11 @@ export var Debug = React.createClass({
     };
   },
 
+  componentWillMount: function () {
+    var game = this.props.game;
+    game.renderer.debug = this.state.enabled;
+  },
+
   render: function () {
     if (!this.state.enabled) {
       return <div className="debug">
@@ -72,12 +77,12 @@ export var Debug = React.createClass({
   toggleShowRegions: function (e) {
     e.preventDefault();
     this.setState({showRegions: !this.state.showRegions});
-    var game = this.props.game;
-    game.renderer.debug = !game.renderer.debug;
   },
 
   toggleDebugStats: function (e) {
     e.preventDefault();
     this.setState({enabled: !this.state.enabled});
+    var game = this.props.game;
+    game.renderer.debug = !game.renderer.debug;
   }
 });

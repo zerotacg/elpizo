@@ -1,4 +1,5 @@
 from .. import game_pb2
+from ..models.base import Entity
 from ..models.realm import Region
 
 
@@ -35,14 +36,14 @@ def viewport(ctx, message):
   if last_viewport is not None:
     last_regions = {region.key: region
         for region in ctx.sqla.query(Region).filter(
-        Region.bounded_by(last_viewport.a_left, last_viewport.a_top,
+        Region.intersects(last_viewport.a_left, last_viewport.a_top,
                           last_viewport.a_right, last_viewport.a_bottom))}
   else:
     last_regions = {}
 
   regions = {region.key: region
       for region in ctx.sqla.query(Region).filter(
-      Region.bounded_by(message.a_left, message.a_top,
+      Region.intersects(message.a_left, message.a_top,
                         message.a_right, message.a_bottom))}
 
   for added_region_key in set(regions.keys()) - set(last_regions.keys()):
@@ -58,7 +59,8 @@ def viewport(ctx, message):
   # Always send the full list of entities, as it may have become inconsistent.
   #
   # Maybe this can be optimized for edge regions?
-  for region in regions.values():
-    for entity in region.entities:
-      if entity is not ctx.player:
-        ctx.send(entity.id, game_pb2.EntityPacket(entity=entity.to_protobuf()))
+  for entity in ctx.sqla.query(Entity).filter(
+      Entity.contained_by(message.a_left, message.a_top,
+                          message.a_right, message.a_bottom),
+      Entity.id != ctx.player.id):
+    ctx.send(entity.id, game_pb2.EntityPacket(entity=entity.to_protobuf()))
