@@ -43,10 +43,11 @@ def initialize_realm(app):
                       tiles=[random.choice([grassland, grassland]).id
                              for _ in range(16 * 16)],
                       heightmap=[0] * (16 * 16))
-      region.heightmap[1] = 2
-      region.heightmap[2] = 2
-      region.heightmap[3] = 2
-      region.heightmap[4] = 1
+      region.heightmap[0 * 16 + 1] = 2
+      region.heightmap[0 * 16 + 2] = 2
+      region.heightmap[1 * 16 + 2] = 2
+      region.heightmap[1 * 16 + 3] = 2
+      region.heightmap[1 * 16 + 4] = 2
       sqla.add(region)
 
   sqla.commit()

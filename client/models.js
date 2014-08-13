@@ -115,7 +115,7 @@ export class Realm {
     }
 
     if (this.getAllEntities().filter(
-        (entity) => entity.type == "Fixture").some((entity) => {
+        (entity) => entity instanceof Fixture).some((entity) => {
       return location.ax >= entity.location.ax + entity.fixtureType.size.aLeft &&
              location.ax < entity.location.ax + entity.fixtureType.size.aRight &&
              location.ay >= entity.location.ay + entity.fixtureType.size.aTop &&
@@ -335,6 +335,15 @@ export class Region {
 
     var tiles = this.tiles.getColumn(location.rx, 0);
     var heights = this.heightmap.getColumn(location.rx, 0);
+
+    // If we have a region south of us, we want to factor it into computations
+    // as well.
+    var sRegion = this.realm.getRegion({arx: this.location.arx,
+                                        ary: this.location.ary + 1});
+    if (sRegion !== null) {
+      [].push.apply(tiles, sRegion.tiles.getColumn(location.rx, 0));
+      [].push.apply(heights, sRegion.heightmap.getColumn(location.rx, 0));
+    }
 
     return tiles.every((tile, y) => {
       var height = heights[y];

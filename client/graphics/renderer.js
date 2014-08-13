@@ -261,8 +261,9 @@ export class Renderer extends EventEmitter {
         ay: -this.aTopLeft.ay
     });
 
-    // Only render the regions bounded by the viewport.
-    for (var ary = arWorldBounds.arTop; ary < arWorldBounds.arBottom; ++ary) {
+    // Only render the regions bounded by the viewport. The vertical bounds has
+    // one additional region to allow for rendering cliffs.
+    for (var ary = arWorldBounds.arTop; ary < arWorldBounds.arBottom + 1; ++ary) {
       for (var arx = arWorldBounds.arLeft; arx < arWorldBounds.arRight; ++arx) {
         var sPosition = this.absoluteToScreenCoords(
             coords.regionToAbsolute({arx: arx, ary: ary}));
@@ -373,19 +374,21 @@ export class Renderer extends EventEmitter {
           }
 
           terrain.forEach((layer, layerIndex) => {
-            var texture = Renderer.TILE_TEXTURE_MAPPINGS[layer.name];
+            var texture = this.resources.get(
+                "tiles/" + Renderer.TILE_TEXTURE_MAPPINGS[layer.name]);
+
             Renderer.TILE_TEXTURE_COORDS[layer.mask].forEach((offset, index) => {
               if (offset === -1) {
                 return;
               }
 
-              // The offset selects which tile from the atlas to use. It assumes the
-              // atlas is 4 half-tiles wide.
+              // The offset selects which tile from the atlas to use. It assumes
+              // the atlas is 4 half-tiles wide.
               var u = offset % 4;
               var v = Math.floor(offset / 4);
 
-              // dx and dy indicate how many half-tiles in the half-tile needs to be
-              // offset by. They should be in clockwise order, starting from NW.
+              // dx and dy indicate how many half-tiles in the half-tile needs
+              // to be offset by. They are in clockwise order, starting from NW.
               var dx = [0, 1, 0, 1][index];
               var dy = [0, 0, 1, 1][index];
 
@@ -394,15 +397,13 @@ export class Renderer extends EventEmitter {
                   ay: ry + dy / 2 - z
               });
 
-              ctx.drawImage(this.resources.get("tiles/" + texture),
-                            u * Renderer.TILE_SIZE / 2,
-                            v * Renderer.TILE_SIZE / 2,
-                            Renderer.TILE_SIZE / 2,
-                            Renderer.TILE_SIZE / 2,
-                            s.sx - Renderer.TILE_SIZE / 2,
-                            s.sy - Renderer.TILE_SIZE / 2,
-                            Renderer.TILE_SIZE / 2,
-                            Renderer.TILE_SIZE / 2);
+              var halfSize = Renderer.TILE_SIZE / 2;
+
+              ctx.drawImage(texture,
+                            u * halfSize, v * halfSize,
+                            halfSize, halfSize,
+                            s.sx - halfSize, s.sy - halfSize,
+                            halfSize, halfSize);
 
               if (z > 0 && layerIndex === 0 && dy === 1) {
                 // Draw z-wall.
@@ -411,30 +412,11 @@ export class Renderer extends EventEmitter {
                     ay: ry + dy / 2 - z + 1
                 });
 
-                ctx.drawImage(this.resources.get("tiles/" + texture),
-                              u * Renderer.TILE_SIZE / 2,
-                              6 * Renderer.TILE_SIZE / 2,
-                              Renderer.TILE_SIZE / 2,
-                              Renderer.TILE_SIZE / 2,
-                              s.sx - Renderer.TILE_SIZE / 2,
-                              s.sy - Renderer.TILE_SIZE / 2,
-                              Renderer.TILE_SIZE / 2,
-                              Renderer.TILE_SIZE / 2);
-
-                s = this.absoluteToScreenCoords({
-                    ax: rx + dx / 2,
-                    ay: ry + dy / 2 + 0.5
-                });
-
-                ctx.drawImage(this.resources.get("tiles/" + texture),
-                              u * Renderer.TILE_SIZE / 2,
-                              9 * Renderer.TILE_SIZE / 2,
-                              Renderer.TILE_SIZE / 2,
-                              Renderer.TILE_SIZE / 2,
-                              s.sx - Renderer.TILE_SIZE / 2,
-                              s.sy - Renderer.TILE_SIZE / 2,
-                              Renderer.TILE_SIZE / 2,
-                              Renderer.TILE_SIZE / 2);
+                ctx.drawImage(texture,
+                              u * halfSize, 6 * halfSize,
+                              halfSize, halfSize,
+                              s.sx - halfSize, s.sy - halfSize,
+                              halfSize, halfSize);
 
                 for (var k = 0; k < z - 1; ++k) {
                   s = this.absoluteToScreenCoords({
@@ -442,26 +424,29 @@ export class Renderer extends EventEmitter {
                       ay: ry + dy / 2 - z + 1 + k + 0.5
                   });
 
-                  ctx.drawImage(this.resources.get("tiles/" + texture),
-                                u * Renderer.TILE_SIZE / 2,
-                                7 * Renderer.TILE_SIZE / 2,
-                                Renderer.TILE_SIZE / 2,
-                                Renderer.TILE_SIZE / 2,
-                                s.sx - Renderer.TILE_SIZE / 2,
-                                s.sy - Renderer.TILE_SIZE / 2,
-                                Renderer.TILE_SIZE / 2,
-                                Renderer.TILE_SIZE / 2);
+                  ctx.drawImage(texture,
+                                u * halfSize, 7 * halfSize,
+                                halfSize, halfSize,
+                                s.sx - halfSize, s.sy - halfSize,
+                                halfSize, halfSize);
 
-                  ctx.drawImage(this.resources.get("tiles/" + texture),
-                                u * Renderer.TILE_SIZE / 2,
-                                8 * Renderer.TILE_SIZE / 2,
-                                Renderer.TILE_SIZE / 2,
-                                Renderer.TILE_SIZE / 2,
-                                s.sx - Renderer.TILE_SIZE / 2,
-                                s.sy,
-                                Renderer.TILE_SIZE / 2,
-                                Renderer.TILE_SIZE / 2);
+                  ctx.drawImage(texture,
+                                u * halfSize, 8 * halfSize,
+                                halfSize, halfSize,
+                                s.sx - halfSize, s.sy,
+                                halfSize, halfSize);
                 }
+
+                s = this.absoluteToScreenCoords({
+                    ax: rx + dx / 2,
+                    ay: ry + dy / 2 + 0.5
+                });
+
+                ctx.drawImage(texture,
+                              u * halfSize, 9 * halfSize,
+                              halfSize, halfSize,
+                              s.sx - halfSize, s.sy - halfSize,
+                              halfSize, halfSize);
               }
             });
           });
