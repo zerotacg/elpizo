@@ -1,4 +1,4 @@
-export var REGION_SIZE = 16;
+export var REGION_SIZE = 8;
 
 export function absoluteToContainingRegion(position) {
   return {
