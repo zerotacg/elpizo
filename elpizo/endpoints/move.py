@@ -61,8 +61,16 @@ def socket_move(ctx, message):
 
   tile = region.tiles[entity_for_update.ry * Region.SIZE + entity_for_update.rx]
 
+  tile_column = [tile for i, tile in enumerate(region.tiles)
+                 if i % Region.SIZE == new_ax]
+  height_column = [height for i, height in enumerate(region.heightmap)
+                   if i % Region.SIZE == new_ax]
+
   # colliding with terrain
-  if not ((ctx.sqla.query(Terrain).get(tile).passable >> direction) & 0b1):
+  if not all(height_column[y] == 0 or
+             new_ay < y - height_column[y] or
+             new_ay > y for y, tile in enumerate(tile_column)) \
+      or not ((ctx.sqla.query(Terrain).get(tile).passable >> direction) & 0b1):
     ctx.sqla.rollback()
     return
 

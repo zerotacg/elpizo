@@ -84,6 +84,7 @@ class Region(Base):
 
   # The array contains integers in the Terrain table.
   tiles = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
+  heightmap = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
 
   @property
   def key(self):
@@ -108,7 +109,7 @@ class Region(Base):
     return game_pb2.Region(
         location=game_pb2.AbsoluteRealmLocation(realm_id=self.realm_id,
                                                 arx=self.arx, ary=self.ary),
-        tiles=self.tiles)
+        tiles=self.tiles, heightmap=self.heightmap)
 
   __table_args__ = (
       sqlalchemy.Index("ix_region_location", realm_id, arx, ary),
@@ -116,4 +117,10 @@ class Region(Base):
 
 Region.__table_args__ += (
     sqlalchemy.Index("ix_regions_bbox", Region.bbox, postgresql_using="gist"),
+    sqlalchemy.CheckConstraint("regions_tiles_size",
+                               func.array_length(Region.tiles, 1)
+                                   == Region.SIZE * Region.SIZE),
+    sqlalchemy.CheckConstraint("regions_heightmap_size",
+                               func.array_length(Region.heightmap, 1)
+                                   == Region.SIZE * Region.SIZE),
 )

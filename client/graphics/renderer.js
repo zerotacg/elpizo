@@ -286,15 +286,17 @@ export class Renderer extends EventEmitter {
 
         var buffer = this.regionTerrainCache[key];
         ctx.save();
-        ctx.translate(sLeft, sTop);
+        ctx.translate(sLeft, sTop - buffer.height + regionScreenSize.sy);
         ctx.drawImage(buffer, 0, 0);
 
         if (this.debug) {
+          ctx.translate(0, buffer.height - regionScreenSize.sy);
           ctx.strokeStyle = "red";
           ctx.fillStyle = "red";
-          ctx.strokeRect(0, 0, buffer.width, buffer.height);
+          ctx.strokeRect(0, 0,
+                         regionScreenSize.sx, regionScreenSize.sy);
           ctx.textAlign = "center";
-          ctx.fillText(key, buffer.width / 2, buffer.height / 2);
+          ctx.fillText(key, regionScreenSize.sx / 2, regionScreenSize.sy / 2);
         }
         ctx.restore();
       }
@@ -336,73 +338,153 @@ export class Renderer extends EventEmitter {
   }
 
   renderRegionTerrainAsBuffer(region) {
+    var map = region.computeTerrain();
+
     var canvas = document.createElement("canvas");
     var size = this.absoluteToScreenCoords({
         ax: coords.REGION_SIZE,
-        ay: coords.REGION_SIZE
+        ay: coords.REGION_SIZE + map.length
     });
 
     canvas.width = size.sx;
     canvas.height = size.sy;
 
+    var sCanvasOffset = this.absoluteToScreenCoords({
+        ax: 0,
+        ay: map.length
+    });
+
     var ctx = this.prepareContext(canvas);
+    ctx.translate(0, sCanvasOffset.sy);
 
-    region.computeTerrain().forEach((terrain, i) => {
-      var rx = i % (coords.REGION_SIZE + 1);
-      var ry = Math.floor(i / (coords.REGION_SIZE + 1));
+    for (var ry = 0; ry < coords.REGION_SIZE + 1; ++ry) {
+      for (var rx = 0; rx < coords.REGION_SIZE + 1; ++rx) {
+        map.forEach((levels, z) => {
+          var terrain = levels[ry * (coords.REGION_SIZE + 1) + rx];
 
-      // If we have a tile named all the terrain joined together, we use that
-      // instead of compositing terrain.
-      var combinedTileName = terrain.map((terrain) => terrain.name).join(",");
-      if (hasOwnProp.call(Renderer.TILE_TEXTURE_MAPPINGS, combinedTileName)) {
-        terrain = [{
-            name: combinedTileName,
-            mask: terrain[terrain.length - 1].mask
-        }];
-      }
-
-      terrain.forEach((layer) => {
-        var texture = Renderer.TILE_TEXTURE_MAPPINGS[layer.name];
-        Renderer.TILE_TEXTURE_COORDS[layer.mask].forEach((offset, index) => {
-          if (offset === -1) {
-            return;
+          // If we have a tile named all the terrain joined together, we use that
+          // instead of compositing terrain.
+          var combinedTileName = terrain.map((terrain) => terrain.name).join(",");
+          if (hasOwnProp.call(Renderer.TILE_TEXTURE_MAPPINGS, combinedTileName)) {
+            terrain = [{
+                name: combinedTileName,
+                mask: terrain[terrain.length - 1].mask
+            }];
           }
 
-          // The offset selects which tile from the atlas to use. It assumes the
-          // atlas is 4 half-tiles wide.
-          var u = offset % 4;
-          var v = Math.floor(offset / 4);
+          terrain.forEach((layer, layerIndex) => {
+            var texture = Renderer.TILE_TEXTURE_MAPPINGS[layer.name];
+            Renderer.TILE_TEXTURE_COORDS[layer.mask].forEach((offset, index) => {
+              if (offset === -1) {
+                return;
+              }
 
-          // dx and dy indicate how many half-tiles in the half-tile needs to be
-          // offset by. They should be in clockwise order, starting from NW.
-          var dx = [0, 1, 0, 1][index];
-          var dy = [0, 0, 1, 1][index];
+              // The offset selects which tile from the atlas to use. It assumes the
+              // atlas is 4 half-tiles wide.
+              var u = offset % 4;
+              var v = Math.floor(offset / 4);
 
-          var s = this.absoluteToScreenCoords({
-              ax: rx + dx / 2,
-              ay: ry + dy / 2
+              // dx and dy indicate how many half-tiles in the half-tile needs to be
+              // offset by. They should be in clockwise order, starting from NW.
+              var dx = [0, 1, 0, 1][index];
+              var dy = [0, 0, 1, 1][index];
+
+              var s = this.absoluteToScreenCoords({
+                  ax: rx + dx / 2,
+                  ay: ry + dy / 2 - z
+              });
+
+              ctx.drawImage(this.resources.get("tiles/" + texture),
+                            u * Renderer.TILE_SIZE / 2,
+                            v * Renderer.TILE_SIZE / 2,
+                            Renderer.TILE_SIZE / 2,
+                            Renderer.TILE_SIZE / 2,
+                            s.sx - Renderer.TILE_SIZE / 2,
+                            s.sy - Renderer.TILE_SIZE / 2,
+                            Renderer.TILE_SIZE / 2,
+                            Renderer.TILE_SIZE / 2);
+
+              if (z > 0 && layerIndex === 0 && dy === 1) {
+                // Draw z-wall.
+                s = this.absoluteToScreenCoords({
+                    ax: rx + dx / 2,
+                    ay: ry + dy / 2 - z + 1
+                });
+
+                ctx.drawImage(this.resources.get("tiles/" + texture),
+                              u * Renderer.TILE_SIZE / 2,
+                              6 * Renderer.TILE_SIZE / 2,
+                              Renderer.TILE_SIZE / 2,
+                              Renderer.TILE_SIZE / 2,
+                              s.sx - Renderer.TILE_SIZE / 2,
+                              s.sy - Renderer.TILE_SIZE / 2,
+                              Renderer.TILE_SIZE / 2,
+                              Renderer.TILE_SIZE / 2);
+
+                s = this.absoluteToScreenCoords({
+                    ax: rx + dx / 2,
+                    ay: ry + dy / 2 + 0.5
+                });
+
+                ctx.drawImage(this.resources.get("tiles/" + texture),
+                              u * Renderer.TILE_SIZE / 2,
+                              9 * Renderer.TILE_SIZE / 2,
+                              Renderer.TILE_SIZE / 2,
+                              Renderer.TILE_SIZE / 2,
+                              s.sx - Renderer.TILE_SIZE / 2,
+                              s.sy - Renderer.TILE_SIZE / 2,
+                              Renderer.TILE_SIZE / 2,
+                              Renderer.TILE_SIZE / 2);
+
+                for (var k = 0; k < z - 1; ++k) {
+                  s = this.absoluteToScreenCoords({
+                      ax: rx + dx / 2,
+                      ay: ry + dy / 2 - z + 1 + k + 0.5
+                  });
+
+                  ctx.drawImage(this.resources.get("tiles/" + texture),
+                                u * Renderer.TILE_SIZE / 2,
+                                7 * Renderer.TILE_SIZE / 2,
+                                Renderer.TILE_SIZE / 2,
+                                Renderer.TILE_SIZE / 2,
+                                s.sx - Renderer.TILE_SIZE / 2,
+                                s.sy - Renderer.TILE_SIZE / 2,
+                                Renderer.TILE_SIZE / 2,
+                                Renderer.TILE_SIZE / 2);
+
+                  ctx.drawImage(this.resources.get("tiles/" + texture),
+                                u * Renderer.TILE_SIZE / 2,
+                                8 * Renderer.TILE_SIZE / 2,
+                                Renderer.TILE_SIZE / 2,
+                                Renderer.TILE_SIZE / 2,
+                                s.sx - Renderer.TILE_SIZE / 2,
+                                s.sy,
+                                Renderer.TILE_SIZE / 2,
+                                Renderer.TILE_SIZE / 2);
+                }
+              }
+            });
           });
-
-          ctx.drawImage(this.resources.get("tiles/" + texture),
-                        u * Renderer.TILE_SIZE / 2,
-                        v * Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2,
-                        s.sx - Renderer.TILE_SIZE / 2,
-                        s.sy - Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2);
         });
-      });
-    });
+      }
+    }
 
     return canvas;
   }
 
   renderEntity(entity, ctx) {
+    var region = entity.realm.getRegion(coords.absoluteToContainingRegion(
+        entity.location));
+
+    var rCoords = coords.absoluteToRelative(entity.location);
+    var hOffset = region !== null
+        ? region.heightmap.getCell(Math.round(rCoords.rx),
+                                   Math.round(rCoords.ry))
+        : 0;
+
     var sOffset = this.absoluteToScreenCoords({
         ax: entity.location.ax - this.aTopLeft.ax,
-        ay: entity.location.ay - this.aTopLeft.ay
+        ay: entity.location.ay - this.aTopLeft.ay - hOffset
     });
 
     ctx.save();

@@ -161,6 +161,8 @@ export class Region {
     this.tiles = new Grid(coords.REGION_SIZE, coords.REGION_SIZE,
                           message.tiles.map((id) =>
                             id !== 0 ? exports.terrain[id] : null));
+    this.heightmap = new Grid(coords.REGION_SIZE, coords.REGION_SIZE,
+                              message.heightmap);
   }
 
   getKey() {
@@ -177,9 +179,16 @@ export class Region {
                                   coords.REGION_SIZE + 2);
     tilesWithEdges.fill(null);
 
+    var heightmapWithEdges = new Grid(coords.REGION_SIZE + 2,
+                                      coords.REGION_SIZE + 2);
+    heightmapWithEdges.fill(null);
+
+
     // Copy the current realm tiles into tilesWithEdges.
     tilesWithEdges.setImage(1, 1, coords.REGION_SIZE, coords.REGION_SIZE,
                             this.tiles);
+    heightmapWithEdges.setImage(1, 1, coords.REGION_SIZE, coords.REGION_SIZE,
+                                this.heightmap);
 
     // Get the 8 neighboring regions.
     var nRegion = this.realm.getRegion({arx: this.location.arx,
@@ -188,6 +197,8 @@ export class Region {
       // Copy the last row of the north region into the edges array.
       tilesWithEdges.setRow(1, 0,
                             nRegion.tiles.getRow(coords.REGION_SIZE - 1));
+      heightmapWithEdges.setRow(1, 0,
+                                nRegion.heightmap.getRow(coords.REGION_SIZE - 1));
     }
 
     var nwRegion = this.realm.getRegion({arx: this.location.arx - 1,
@@ -197,6 +208,9 @@ export class Region {
       tilesWithEdges.setCell(0, 0,
                              nwRegion.tiles.getCell(coords.REGION_SIZE - 1,
                                                     coords.REGION_SIZE - 1));
+      heightmapWithEdges.setCell(0, 0,
+                                 nwRegion.heightmap.getCell(coords.REGION_SIZE - 1,
+                                                            coords.REGION_SIZE - 1));
     }
 
     var wRegion = this.realm.getRegion({arx: this.location.arx - 1,
@@ -205,6 +219,8 @@ export class Region {
       // Copy the last column of the west region into the edges array.
       tilesWithEdges.setColumn(0, 1,
                                wRegion.tiles.getColumn(coords.REGION_SIZE - 1));
+      heightmapWithEdges.setColumn(0, 1,
+                                   wRegion.heightmap.getColumn(coords.REGION_SIZE - 1));
     }
 
     var swRegion = this.realm.getRegion({arx: this.location.arx - 1,
@@ -214,6 +230,9 @@ export class Region {
       tilesWithEdges.setCell(0, coords.REGION_SIZE + 1,
                              swRegion.tiles.getCell(coords.REGION_SIZE - 1,
                                                     0));
+      heightmapWithEdges.setCell(0, coords.REGION_SIZE + 1,
+                                 swRegion.heightmap.getCell(coords.REGION_SIZE - 1,
+                                                            0));
     }
 
     var sRegion = this.realm.getRegion({arx: this.location.arx,
@@ -222,6 +241,8 @@ export class Region {
       // Copy the first row of the south region into the edges array.
       tilesWithEdges.setRow(1, coords.REGION_SIZE + 1,
                             sRegion.tiles.getRow(0));
+      heightmapWithEdges.setRow(1, coords.REGION_SIZE + 1,
+                                sRegion.heightmap.getRow(0));
     }
 
     var seRegion = this.realm.getRegion({arx: this.location.arx + 1,
@@ -231,6 +252,9 @@ export class Region {
       tilesWithEdges.setCell(coords.REGION_SIZE + 1, coords.REGION_SIZE + 1,
                              seRegion.tiles.getCell(0,
                                                     0));
+      heightmapWithEdges.setCell(coords.REGION_SIZE + 1, coords.REGION_SIZE + 1,
+                             seRegion.heightmap.getCell(0,
+                                                        0));
     }
 
     var eRegion = this.realm.getRegion({arx: this.location.arx + 1,
@@ -239,6 +263,8 @@ export class Region {
       // Copy the first column of the east region into the edges array.
       tilesWithEdges.setColumn(coords.REGION_SIZE + 1, 1,
                                eRegion.tiles.getColumn(0));
+      heightmapWithEdges.setColumn(coords.REGION_SIZE + 1, 1,
+                                   eRegion.heightmap.getColumn(0));
     }
 
     var neRegion = this.realm.getRegion({arx: this.location.arx + 1,
@@ -248,46 +274,72 @@ export class Region {
       tilesWithEdges.setCell(coords.REGION_SIZE + 1, 0,
                              neRegion.tiles.getCell(0,
                                                     coords.REGION_SIZE - 1));
+      heightmapWithEdges.setCell(coords.REGION_SIZE + 1, 0,
+                                 neRegion.heightmap.getCell(0,
+                                                            coords.REGION_SIZE - 1));
     }
 
-    for (var ry = 0; ry < coords.REGION_SIZE + 2; ++ry) {
-      for (var rx = 0; rx < coords.REGION_SIZE + 2; ++rx) {
-        var nw = tilesWithEdges.getCell(rx + 0, ry + 0);
-        var ne = tilesWithEdges.getCell(rx + 1, ry + 0);
-        var sw = tilesWithEdges.getCell(rx + 0, ry + 1);
-        var se = tilesWithEdges.getCell(rx + 1, ry + 1);
+    // Find the heighest point -- that will be the maximum height.
+    var maxHeight = Math.max.apply(null, heightmapWithEdges.xs);
+    var levels = repeat(maxHeight + 1, () =>
+        repeat((coords.REGION_SIZE + 2) * (coords.REGION_SIZE + 2),
+            () => []));
 
-        var types = nubBy([nw, ne, sw, se]
-            .filter((tile) => tile !== null)
-            .sort((a, b) =>
-                Region.TERRAIN_PREDECENCES.indexOf(a.name) -
-                    Region.TERRAIN_PREDECENCES.indexOf(b.name)),
-            (tile) => tile.name);
+    for (var z = 0; z < maxHeight + 1; ++z) {
+      for (var ry = 0; ry < coords.REGION_SIZE + 2; ++ry) {
+        for (var rx = 0; rx < coords.REGION_SIZE + 2; ++rx) {
+          var nw = heightmapWithEdges.getCell(rx + 0, ry + 0) === z
+              ? tilesWithEdges.getCell(rx + 0, ry + 0)
+              : null;
+          var ne = heightmapWithEdges.getCell(rx + 1, ry + 0) === z
+              ? tilesWithEdges.getCell(rx + 1, ry + 0)
+              : null;
+          var sw = heightmapWithEdges.getCell(rx + 0, ry + 1) === z
+              ? tilesWithEdges.getCell(rx + 0, ry + 1)
+              : null;
+          var se = heightmapWithEdges.getCell(rx + 1, ry + 1) === z
+              ? tilesWithEdges.getCell(rx + 1, ry + 1)
+              : null;
 
-        terrain[ry * (coords.REGION_SIZE + 1) + rx] = types.map((tile, i) => {
-          // Terrain blends may exist (e.g. ocean into river), and this ensures
-          // that two terrain blending are treated similarly to two terrain of
-          // the same type.
-          var above = types.slice(i).concat(
-              Region.TERRAIN_BLENDS[tile.name] || []);
+          var types = nubBy([nw, ne, sw, se]
+              .filter((tile) => tile !== null)
+              .sort((a, b) =>
+                  Region.TERRAIN_PREDECENCES.indexOf(a.name) -
+                      Region.TERRAIN_PREDECENCES.indexOf(b.name)),
+              (tile) => tile.name);
 
-          return {
-              name: tile.name,
-              mask: ((above.indexOf(nw) !== -1) << 3) |
-                    ((above.indexOf(ne) !== -1) << 2) |
-                    ((above.indexOf(se) !== -1) << 1) |
-                    ((above.indexOf(sw) !== -1) << 0)
-          };
-        });
+          levels[z][ry * (coords.REGION_SIZE + 1) + rx] = types.map((tile, i) => {
+            // Terrain blends may exist (e.g. ocean into river), and this
+            // ensures that two terrain blending are treated similarly to two
+            // terrains of the same type.
+            var above = types.slice(i).concat(
+                Region.TERRAIN_BLENDS[tile.name] || []);
+
+            return {
+                name: tile.name,
+                mask: ((above.indexOf(nw) !== -1) << 3) |
+                      ((above.indexOf(ne) !== -1) << 2) |
+                      ((above.indexOf(se) !== -1) << 1) |
+                      ((above.indexOf(sw) !== -1) << 0)
+            };
+          });
+        }
       }
     }
 
-    return terrain;
+    return levels;
   }
 
   isPassable(location, direction) {
     var tile = this.tiles.getCell(location.rx, location.ry);
-    return !!((tile.passable >> direction) & 0x1);
+
+    var tiles = this.tiles.getColumn(location.rx, 0);
+    var heights = this.heightmap.getColumn(location.rx, 0);
+
+    return tiles.every((tile, y) => {
+      var height = heights[y];
+      return height == 0 || location.ry < y - height || location.ry > y;
+    }) && !!((tile.passable >> direction) & 0x1);
   }
 }
 
