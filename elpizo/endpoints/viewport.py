@@ -36,15 +36,21 @@ def viewport(ctx, message):
   if last_viewport is not None:
     last_regions = {region.key: region
         for region in ctx.sqla.query(Region).filter(
-        Region.intersects(last_viewport.a_left, last_viewport.a_top,
-                          last_viewport.a_right, last_viewport.a_bottom))}
+            Region.intersects(
+                last_viewport.ar_left * 16,
+                last_viewport.ar_top * 16,
+                (last_viewport.ar_right - 1) * 16,
+                (last_viewport.ar_bottom - 1) * 16))}
   else:
     last_regions = {}
 
   regions = {region.key: region
       for region in ctx.sqla.query(Region).filter(
-      Region.intersects(message.a_left, message.a_top,
-                        message.a_right, message.a_bottom))}
+            Region.intersects(
+                message.ar_left * 16,
+                message.ar_top * 16,
+                (message.ar_right - 1) * 16,
+                (message.ar_bottom - 1) * 16))}
 
   for added_region_key in set(regions.keys()) - set(last_regions.keys()):
     region = regions[added_region_key]
@@ -60,7 +66,7 @@ def viewport(ctx, message):
   #
   # Maybe this can be optimized for edge regions?
   for entity in ctx.sqla.query(Entity).filter(
-      Entity.contained_by(message.a_left, message.a_top,
-                          message.a_right, message.a_bottom),
+      Entity.contained_by(message.ar_left * 16, (message.ar_top - 1) * 16,
+                          message.ar_right * 16, (message.ar_bottom - 1) * 16),
       Entity.id != ctx.player.id):
     ctx.send(entity.id, game_pb2.EntityPacket(entity=entity.to_protobuf()))

@@ -43,8 +43,35 @@ export class Game extends EventEmitter {
     this.renderer.on("refit", (bounds) => {
       if (this.me !== null) {
         this.renderer.center(this.me.location);
+      }
+    });
+
+    this.renderer.on("viewportChange", (bounds, lastBounds) => {
+      if (this.realm === null) {
+        return;
+      }
+
+      var currentArTopLeft = coords.absoluteToContainingRegion(
+          {ax: bounds.aLeft,
+           ay: bounds.aTop});
+      var currentArBottomRight = coords.absoluteToContainingRegion(
+          {ax: bounds.aRight + coords.REGION_SIZE,
+           ay: bounds.aBottom + coords.REGION_SIZE})
+
+      var lastArTopLeft = coords.absoluteToContainingRegion(
+          {ax: lastBounds.aLeft,
+           ay: lastBounds.aTop});
+      var lastArBottomRight = coords.absoluteToContainingRegion(
+          {ax: lastBounds.aRight + coords.REGION_SIZE,
+           ay: lastBounds.aBottom + coords.REGION_SIZE})
+
+      if (currentArTopLeft.arx !== lastArTopLeft.arx ||
+          currentArTopLeft.ary !== lastArTopLeft.ary ||
+          currentArBottomRight.arx !== lastArBottomRight.arx ||
+          currentArBottomRight.ary !== lastArBottomRight.ary) {
+        this.realm.retainRegions(this.renderer.getRegionCacheBounds());
         this.protocol.send(new game_pb2.ViewportPacket(
-            this.renderer.getAbsoluteCacheBounds()));
+            this.renderer.getRegionCacheBounds()));
       }
     });
 
@@ -76,24 +103,7 @@ export class Game extends EventEmitter {
     this.me = this.realm.getEntity(id);
     this.renderer.center(this.me.location);
     this.protocol.send(new game_pb2.ViewportPacket(
-        this.renderer.getAbsoluteCacheBounds()));
-
-    this.me.on("moveStep", () => {
-      this.renderer.center(this.me.location);
-    });
-
-    this.me.on("moveEnd", () => {
-      var prevLoc = coords.absoluteToContainingRegion(
-          this.me.getPreviousLocation());
-      var newLoc = coords.absoluteToContainingRegion(
-          this.me.location);
-
-      if (prevLoc.arx !== newLoc.arx || prevLoc.ary !== newLoc.ary) {
-        this.realm.retain(this.renderer.getAbsoluteCacheBounds());
-        this.protocol.send(new game_pb2.ViewportPacket(
-            this.renderer.getAbsoluteCacheBounds()));
-      }
-    });
+        this.renderer.getRegionCacheBounds()));
   }
 
   update(dt) {
@@ -110,6 +120,7 @@ export class Game extends EventEmitter {
     // Handle avatar updates.
     if (this.me !== null) {
       this.me.updateAsAvatar(dt, this.inputState, this.protocol);
+      this.renderer.center(this.me.location);
     }
   }
 

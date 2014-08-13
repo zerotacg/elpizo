@@ -130,11 +130,15 @@ export class Renderer extends EventEmitter {
   }
 
   setAbsoluteTopLeft(ax, ay) {
+    var previous = this.getAbsoluteViewportBounds();
     this.aTopLeft.ax = ax;
     this.aTopLeft.ay = ay;
+    this.emit("viewportChange", this.getAbsoluteViewportBounds(), previous);
   }
 
   setScreenViewportSize(sw, sh) {
+    var previous = this.getAbsoluteViewportBounds();
+
     this.el.style.width = sw + "px";
     this.el.style.height = sh + "px";
     this.sBounds = this.el.getBoundingClientRect();
@@ -147,6 +151,7 @@ export class Renderer extends EventEmitter {
 
     this.xrayCanvas.width = sw;
     this.xrayCanvas.height = sh;
+    this.emit("viewportChange", this.getAbsoluteViewportBounds(), previous);
   }
 
   refit() {
@@ -176,14 +181,24 @@ export class Renderer extends EventEmitter {
     };
   }
 
-  getAbsoluteCacheBounds() {
+  getRegionCacheBounds() {
     var viewport = this.getAbsoluteViewportBounds();
 
+    var arTopLeft = coords.absoluteToContainingRegion({
+        ax: viewport.aLeft - coords.REGION_SIZE,
+        ay: viewport.aTop - coords.REGION_SIZE
+    });
+
+    var arBottomRight = coords.absoluteToContainingRegion({
+        ax: viewport.aRight + coords.REGION_SIZE,
+        ay: viewport.aBottom + coords.REGION_SIZE
+    });
+
     return {
-        aLeft: viewport.aLeft - coords.REGION_SIZE,
-        aRight: viewport.aRight + coords.REGION_SIZE,
-        aTop: viewport.aTop - coords.REGION_SIZE,
-        aBottom: viewport.aBottom + coords.REGION_SIZE
+        arLeft: arTopLeft.arx,
+        arTop: arTopLeft.ary,
+        arRight: arBottomRight.arx + 1,
+        arBottom: arBottomRight.ary + 1
     }
   }
 

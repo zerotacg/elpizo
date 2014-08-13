@@ -73,26 +73,16 @@ export class Realm {
     return Object.keys(this.regions).map((k) => this.regions[k]);
   }
 
-  retain(bbox) {
+  retainRegions(bbox) {
     // This should only be called at region boundaries, to ensure that
     // off-screen regions aren't culled away prematurely.
-    var arTopLeft = coords.absoluteToContainingRegion({
-        ax: bbox.aLeft,
-        ay: bbox.aTop
-    });
-
-    var arBottomRight = coords.absoluteToContainingRegion({
-        ax: bbox.aRight + coords.REGION_SIZE,
-        ay: bbox.aBottom + coords.REGION_SIZE
-    });
-
     Object.keys(this.regions).map((k) => {
       var region = this.regions[k];
 
-      if (region.location.arx < arTopLeft.arx ||
-          region.location.arx >= arBottomRight.arx ||
-          region.location.ary < arTopLeft.ary ||
-          region.location.ary >= arBottomRight.ary) {
+      if (region.location.arx < bbox.arLeft ||
+          region.location.arx >= bbox.arRight ||
+          region.location.ary < bbox.arTop ||
+          region.location.ary >= bbox.arBottom) {
         delete this.regions[k];
       }
     });
@@ -103,10 +93,10 @@ export class Realm {
       var arEntityLocation = coords.absoluteToContainingRegion(
           entity.location);
 
-      if (arEntityLocation.arx < arTopLeft.arx ||
-          arEntityLocation.arx >= arBottomRight.arx ||
-          arEntityLocation.ary < arTopLeft.ary ||
-          arEntityLocation.ary >= arBottomRight.ary) {
+      if (arEntityLocation.arx < bbox.arLeft ||
+          arEntityLocation.arx >= bbox.arRight ||
+          arEntityLocation.ary < bbox.arTop ||
+          arEntityLocation.ary >= bbox.arBottom) {
         delete this.entities[k];
       }
     });

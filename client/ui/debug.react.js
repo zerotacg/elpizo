@@ -27,7 +27,7 @@ export var Debug = React.createClass({
     var game = this.props.game;
 
     var viewportBounds = game.renderer.getAbsoluteViewportBounds();
-    var cacheBounds = game.renderer.getAbsoluteCacheBounds();
+    var cacheBounds = game.renderer.getRegionCacheBounds();
 
     var maybeRegions = null;
     if (this.state.showRegions && game.realm !== null) {
@@ -57,7 +57,7 @@ export var Debug = React.createClass({
         <dd>({viewportBounds.aLeft.toFixed(2)}, {viewportBounds.aTop.toFixed(2)}, {viewportBounds.aRight.toFixed(2)}, {viewportBounds.aBottom.toFixed(2)})</dd>
 
         <dt>Cache Bounds</dt>
-        <dd>({cacheBounds.aLeft.toFixed(2)}, {cacheBounds.aTop.toFixed(2)}, {cacheBounds.aRight.toFixed(2)}, {cacheBounds.aBottom.toFixed(2)})</dd>
+        <dd>({cacheBounds.arLeft.toFixed(2)}, {cacheBounds.arTop.toFixed(2)}, {cacheBounds.arRight.toFixed(2)}, {cacheBounds.arBottom.toFixed(2)})</dd>
 
         <dt># Regions Loaded</dt>
         <dd>

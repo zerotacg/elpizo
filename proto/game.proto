@@ -179,10 +179,10 @@ message ViewportPacket {
   // Direction: Server <- Client
   option (packet_type) = VIEWPORT;
 
-  optional sint32 a_left = 1;
-  optional sint32 a_top = 2;
-  optional sint32 a_right = 3;
-  optional sint32 a_bottom = 4;
+  optional sint32 ar_left = 1;
+  optional sint32 ar_top = 2;
+  optional sint32 ar_right = 3;
+  optional sint32 ar_bottom = 4;
 }
 
 message EntityPacket {
