@@ -409,7 +409,7 @@ export class Renderer extends EventEmitter {
                 // Draw z-wall.
                 s = this.absoluteToScreenCoords({
                     ax: rx + dx / 2,
-                    ay: ry + dy / 2 - z + 1.0
+                    ay: ry + dy / 2 - z + 1
                 });
 
                 ctx.drawImage(texture,

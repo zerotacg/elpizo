@@ -49,7 +49,7 @@ class Terrain(Base):
 class Region(Base):
   __tablename__ = "regions"
 
-  SIZE = 8
+  SIZE = 16
 
   realm_id = sqlalchemy.Column(Integer,
                                sqlalchemy.ForeignKey("realms.id"),
