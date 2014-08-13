@@ -264,22 +264,21 @@ export class Region {
                     Region.TERRAIN_PREDECENCES.indexOf(b.name)),
             (tile) => tile.name);
 
-        terrain[ry * (coords.REGION_SIZE + 1) + rx] =
-            types.map((tile, i) => {
-              // Terrain blends may exist (e.g. ocean into river), and this ensures
-              // that two terrain blending are treated similarly to two terrain of
-              // the same type.
-              var above = types.slice(i).concat(
-                  Region.TERRAIN_BLENDS[tile.name] || []);
+        terrain[ry * (coords.REGION_SIZE + 1) + rx] = types.map((tile, i) => {
+          // Terrain blends may exist (e.g. ocean into river), and this ensures
+          // that two terrain blending are treated similarly to two terrain of
+          // the same type.
+          var above = types.slice(i).concat(
+              Region.TERRAIN_BLENDS[tile.name] || []);
 
-              return {
-                  name: tile.name,
-                  mask: ((above.indexOf(nw) !== -1) << 3) |
-                        ((above.indexOf(ne) !== -1) << 2) |
-                        ((above.indexOf(se) !== -1) << 1) |
-                        ((above.indexOf(sw) !== -1) << 0)
-              };
-            });
+          return {
+              name: tile.name,
+              mask: ((above.indexOf(nw) !== -1) << 3) |
+                    ((above.indexOf(ne) !== -1) << 2) |
+                    ((above.indexOf(se) !== -1) << 1) |
+                    ((above.indexOf(sw) !== -1) << 0)
+          };
+        });
       }
     }
 
