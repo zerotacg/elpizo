@@ -4,6 +4,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from .. import game_pb2
 from ..green import sleep
+from ..models.base import Entity
 from ..models.realm import Region, Terrain
 from ..models.fixtures import Fixture
 
@@ -18,31 +19,36 @@ def get_direction_vector(d):
 
 
 def socket_move(ctx, message):
+  entity_for_update = ctx.sqla.query(Entity) \
+      .filter(Entity.id == ctx.player.id) \
+      .with_lockmode("update") \
+      .one()
+
   last_move_time = ctx.transient_storage.get("last_move_time", 0)
   now = time.monotonic()
 
   dt = now - last_move_time
 
-  if dt < 1 / ctx.player.speed * 0.5:  # compensate for slow connections by 0.5
-    ctx.send(ctx.player.id, game_pb2.TeleportPacket(
-        location=ctx.player.location_to_protobuf(),
-        direction=ctx.player.direction))
+  if dt < 1 / entity_for_update.speed * 0.5:  # compensate for slow connections by 0.5
+    ctx.send(entity_for_update.id, game_pb2.TeleportPacket(
+        location=entity_for_update.location_to_protobuf(),
+        direction=entity_for_update.direction))
     return
 
-  ctx.publish(ctx.player.region.routing_key, message)
+  ctx.publish(entity_for_update.region.routing_key, message)
 
   direction = message.direction
 
   dax, day = get_direction_vector(direction)
-  ctx.player.direction = direction
+  entity_for_update.direction = direction
   ctx.sqla.commit()
 
-  new_ax = ctx.player.ax + dax
-  new_ay = ctx.player.ay + day
+  new_ax = entity_for_update.ax + dax
+  new_ay = entity_for_update.ay + day
 
   try:
     region = ctx.sqla.query(Region) \
-        .filter(Region.realm_id == ctx.player.realm_id,
+        .filter(Region.realm_id == entity_for_update.realm_id,
                 Region.bbox_contains(new_ax, new_ay)) \
         .one()
   except NoResultFound:
@@ -50,10 +56,10 @@ def socket_move(ctx, message):
     ctx.sqla.rollback()
     return
 
-  ctx.player.ax = new_ax
-  ctx.player.ay = new_ay
+  entity_for_update.ax = new_ax
+  entity_for_update.ay = new_ay
 
-  tile = region.tiles[ctx.player.ry * Region.SIZE + ctx.player.rx]
+  tile = region.tiles[entity_for_update.ry * Region.SIZE + entity_for_update.rx]
 
   # colliding with terrain
   if not ((ctx.sqla.query(Terrain).get(tile).passable >> direction) & 0b1):
@@ -62,7 +68,8 @@ def socket_move(ctx, message):
 
   # colliding with a fixture
   if ctx.sqla.query(ctx.sqla.query(Fixture).filter(
-      Fixture.bbox_contains(ctx.player.realm_id, ctx.player.ax, ctx.player.ay)
+      Fixture.bbox_contains(entity_for_update.realm_id,
+                            entity_for_update.ax, entity_for_update.ay)
   ).exists()).scalar():
     ctx.sqla.rollback()
     return
