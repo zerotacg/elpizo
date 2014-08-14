@@ -64,7 +64,7 @@ function makeHumanoidSprite(resourceName) {
   };
 }
 
-function makeTileSheet(resourceName, offset) {
+function makeTileSheet(resourceName) {
   var SIZE = {sw: 16, sh: 16};
 
   return {
@@ -72,92 +72,92 @@ function makeTileSheet(resourceName, offset) {
     neConvexCorner: [
       null,
       null,
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 32}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 32}], {sx: 0, sy: 0}, 0),
       null
     ],
     nwConvexCorner: [
       null,
       null,
       null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 32}], offset, 0)
+      new Sprite(resourceName, SIZE, [{sx:  0, sy: 32}], {sx: 0, sy: 0}, 0)
     ],
     goingN: [
       null,
       null,
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 32}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 32}], offset, 0)
+      new Sprite(resourceName, SIZE, [{sx: 16, sy: 32}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 32, sy: 32}], {sx: 0, sy: 0}, 0)
     ],
     swConvexCorner: [
       null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 80}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx:  0, sy: 80}], {sx: 0, sy: 0}, 0),
       null,
       null
     ],
     saddleNeSw: [
       null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 80}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 32}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx:  0, sy: 80}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 32}], {sx: 0, sy: 0}, 0),
       null
     ],
     goingW: [
       null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 48}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx:  0, sy: 48}], {sx: 0, sy: 0}, 0),
       null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 64}], offset, 0)
+      new Sprite(resourceName, SIZE, [{sx:  0, sy: 64}], {sx: 0, sy: 0}, 0)
     ],
     nwConcaveCorner: [
       null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 64}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 32}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy:  0}], offset, 0)
+      new Sprite(resourceName, SIZE, [{sx:  0, sy: 64}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 32, sy: 32}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 32, sy:  0}], {sx: 0, sy: 0}, 0)
     ],
     seConvexCorner: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 80}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 80}], {sx: 0, sy: 0}, 0),
       null,
       null,
       null
     ],
     goingE: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 48}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 48}], {sx: 0, sy: 0}, 0),
       null,
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 64}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 64}], {sx: 0, sy: 0}, 0),
       null
     ],
     saddleNwSe: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 80}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 80}], {sx: 0, sy: 0}, 0),
       null,
       null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 32}], offset, 0)
+      new Sprite(resourceName, SIZE, [{sx:  0, sy: 32}], {sx: 0, sy: 0}, 0)
     ],
-    seConvexCorner: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 64}], offset, 0),
+    neConcaveCorner: [
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 64}], {sx: 0, sy: 0}, 0),
       null,
-      new Sprite(resourceName, SIZE, [{sx: 48, sy:  0}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 32}], offset, 0)
+      new Sprite(resourceName, SIZE, [{sx: 48, sy:  0}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 16, sy: 32}], {sx: 0, sy: 0}, 0)
     ],
     goingS: [
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 80}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 80}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx: 16, sy: 80}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 32, sy: 80}], {sx: 0, sy: 0}, 0),
       null,
       null
     ],
     seConcaveCorner: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 16}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 80}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 48}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 16}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 16, sy: 80}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 48, sy: 48}], {sx: 0, sy: 0}, 0),
       null
     ],
     swConcaveCorner: [
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 80}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 16}], offset, 0),
+      new Sprite(resourceName, SIZE, [{sx: 32, sy: 80}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 32, sy: 16}], {sx: 0, sy: 0}, 0),
       null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 48}], offset, 0)
+      new Sprite(resourceName, SIZE, [{sx:  0, sy: 48}], {sx: 0, sy: 0}, 0)
     ],
     full: [
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 48}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 48}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 64}], offset, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 64}], offset, 0)
+      new Sprite(resourceName, SIZE, [{sx: 16, sy: 48}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 32, sy: 48}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 16, sy: 64}], {sx: 0, sy: 0}, 0),
+      new Sprite(resourceName, SIZE, [{sx: 32, sy: 64}], {sx: 0, sy: 0}, 0)
     ]
   };
 }
@@ -190,5 +190,8 @@ export default = {
       makeHumanoidSprite("equipment/male/brown_shoes.png"),
 
   "Tiles.Grassland":
-      makeTileSheet("tiles/grass.png", {sx: 0, sy: 0})
+      makeTileSheet("tiles/grass.png"),
+
+  "Tiles.GrasslandWall":
+      makeTileSheet("tiles/grassland_wall.png")
 };

@@ -7,7 +7,7 @@ import random
 from elpizo import make_application
 from elpizo.models.actors import Player
 from elpizo.models.base import Base, User, Entity, Building
-from elpizo.models.realm import Realm, Region, RegionLayer
+from elpizo.models.realm import Realm, Region, RegionLayer, Terrain
 from elpizo.models.fixtures import Fixture, resource_sources
 from elpizo.models.items import restorative, Drop
 from elpizo.tools import mapgen
@@ -24,9 +24,19 @@ def initialize_schema(app):
 def initialize_realm(app):
   sqla = app.sqla_factory()
 
-  realm = Realm(name="Windvale", aw=128, ah=128,
-                terrain_layers=["Ocean", "Grassland"])
+  realm = Realm(name="Windvale", aw=128, ah=128)
   sqla.add(realm)
+  sqla.commit()
+
+  ocean = Terrain(name="Ocean")
+  sqla.add(ocean)
+
+  grassland = Terrain(name="Grassland")
+  sqla.add(grassland)
+
+  grassland_wall = Terrain(name="GrasslandWall")
+  sqla.add(grassland_wall)
+
   sqla.commit()
 
   logging.info("Created realm.")
@@ -58,40 +68,74 @@ def initialize_realm(app):
           elif a_t == realm.ah:
             corner = 0xc
           corners.append(corner)
+      grass_layer = RegionLayer(terrain=grassland, corners=corners)
 
-      grass_layer = RegionLayer(terrain_index=1, corners=corners)
+      platform_corners = [0x0] * (17 * 17)
+      platform_corners[4 + 4 * (Region.SIZE + 1)] = 0x2
+      platform_corners[5 + 4 * (Region.SIZE + 1)] = 0x3
+      platform_corners[6 + 4 * (Region.SIZE + 1)] = 0x3
+      platform_corners[7 + 4 * (Region.SIZE + 1)] = 0x1
 
-      platform_corners = []
+      platform_corners[4 + 5 * (Region.SIZE + 1)] = 0x6
+      platform_corners[5 + 5 * (Region.SIZE + 1)] = 0xf
+      platform_corners[6 + 5 * (Region.SIZE + 1)] = 0xf
+      platform_corners[7 + 5 * (Region.SIZE + 1)] = 0x9
 
-      for rt in range(Region.SIZE + 1):
-        for rs in range(Region.SIZE + 1):
-          corner = 0xf
+      platform_corners[4 + 6 * (Region.SIZE + 1)] = 0x6
+      platform_corners[5 + 6 * (Region.SIZE + 1)] = 0xf
+      platform_corners[6 + 6 * (Region.SIZE + 1)] = 0xf
+      platform_corners[7 + 6 * (Region.SIZE + 1)] = 0x9
 
-          if rs < 4 or rs >= 8 or rt < 4 or rt >= 8:
-            corner = 0x0
-          elif rs == 4 and rt == 4:
-            corner = 0x2
-          elif rs == 7 and rt == 4:
-            corner = 0x1
-          elif rs == 4 and rt == 7:
-            corner = 0x4
-          elif rs == 7 and rt == 7:
-            corner = 0x8
-          elif rs == 4:
-            corner = 0x6
-          elif rt == 4:
-            corner = 0x3
-          elif rs == 7:
-            corner = 0x9
-          elif rt == 7:
-            corner = 0xc
-          platform_corners.append(corner)
+      platform_corners[4 + 7 * (Region.SIZE + 1)] = 0x4
+      platform_corners[5 + 7 * (Region.SIZE + 1)] = 0xe
+      platform_corners[6 + 7 * (Region.SIZE + 1)] = 0xd
+      platform_corners[7 + 7 * (Region.SIZE + 1)] = 0x8
 
-      platform_layer = RegionLayer(terrain_index=1, corners=platform_corners)
+      platform_corners[5 + 8 * (Region.SIZE + 1)] = 0x6
+      platform_corners[6 + 8 * (Region.SIZE + 1)] = 0x9
+
+      platform_layer = RegionLayer(terrain=grassland, corners=platform_corners)
+
+      wall_corners = [0x0] * (17 * 17)
+      wall_corners[4 + 7 * (Region.SIZE + 1)] = 0x2
+      wall_corners[4 + 8 * (Region.SIZE + 1)] = 0x4
+      wall_corners[5 + 7 * (Region.SIZE + 1)] = 0x1
+      wall_corners[5 + 8 * (Region.SIZE + 1)] = 0x8
+
+      wall_corners[6 + 7 * (Region.SIZE + 1)] = 0x2
+      wall_corners[6 + 8 * (Region.SIZE + 1)] = 0x4
+      wall_corners[7 + 7 * (Region.SIZE + 1)] = 0x1
+      wall_corners[7 + 8 * (Region.SIZE + 1)] = 0x8
+      wall_layer = RegionLayer(terrain=grassland_wall, corners=wall_corners)
+
+      passabilities = [0b1111] * (16 * 16)
+
+      passabilities[4 + 3 * Region.SIZE] = 0b1110
+      passabilities[5 + 3 * Region.SIZE] = 0b1110
+      passabilities[6 + 3 * Region.SIZE] = 0b1110
+
+      passabilities[3 + 4 * Region.SIZE] = 0b1101
+      passabilities[4 + 4 * Region.SIZE] = 0b0011
+      passabilities[5 + 4 * Region.SIZE] = 0b1011
+      passabilities[6 + 4 * Region.SIZE] = 0b1001
+      passabilities[7 + 4 * Region.SIZE] = 0b0111
+
+      passabilities[3 + 5 * Region.SIZE] = 0b1101
+      passabilities[4 + 5 * Region.SIZE] = 0b0111
+      passabilities[6 + 5 * Region.SIZE] = 0b1101
+      passabilities[7 + 5 * Region.SIZE] = 0b0111
+
+      passabilities[3 + 6 * Region.SIZE] = 0b1101
+      passabilities[4 + 6 * Region.SIZE] = 0b0110
+      passabilities[6 + 6 * Region.SIZE] = 0b1100
+      passabilities[7 + 6 * Region.SIZE] = 0b0111
+
+      passabilities[4 + 7 * Region.SIZE] = 0b0000
+      passabilities[6 + 7 * Region.SIZE] = 0b0000
 
       region = Region(arx=arx, ary=ary, realm=realm,
-                      layers=[grass_layer, platform_layer],
-                      passabilities=[0b1111] * (16 * 16))
+                      layers=[grass_layer, platform_layer, wall_layer],
+                      passabilities=passabilities)
       sqla.add(region)
 
   sqla.commit()

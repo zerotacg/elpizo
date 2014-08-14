@@ -324,8 +324,7 @@ export class Renderer extends EventEmitter {
     for (var rt = 0; rt < coords.REGION_SIZE + 1; ++rt) {
       for (var rs = 0; rs < coords.REGION_SIZE + 1; ++rs) {
         region.layers.forEach((layer) => {
-          var terrain = region.realm.terrainLayers[layer.terrainIndex];
-          var spriteSet = sprites["Tiles." + terrain];
+          var spriteSet = sprites["Tiles." + layer.terrain.name];
 
           spriteSet[Renderer.TILE_TEXTURE_COORDS[layer.corners.getCell(rs, rt)]]
               .forEach((sprite, index) => {
@@ -371,7 +370,10 @@ export class Renderer extends EventEmitter {
           var passability = region.passabilities.getCell(rx, ry);
           for (var i = 0; i < 4; ++i) {
             var dv = models.getDirectionVector(i);
-            var isPassable = !!(passability & 0x1);
+            var isPassable = region.isPassable({rx: rx, ry: ry}, i);
+
+            dv.ax = -dv.ax;
+            dv.ay = -dv.ay;
 
             if (!isPassable) {
               ctx.fillRect(sx + (dv.ax + 1) * (halfTileSize - 4 - Math.abs(dv.ay) * 6),

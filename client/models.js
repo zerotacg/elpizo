@@ -185,7 +185,7 @@ Region.TERRAIN_PREDECENCES = [
 
 export class Layer {
   constructor(message) {
-    this.terrainIndex = message.terrainIndex;
+    this.terrain = exports.terrain[message.terrainId];
     this.corners = new Grid(coords.REGION_SIZE + 1, coords.REGION_SIZE + 1,
                             message.corners);
   }

@@ -13,6 +13,18 @@ from .. import game_pb2
 from . import Base, basic_primary_key
 
 
+class Terrain(Base):
+  __tablename__ = "terrain"
+
+  id = basic_primary_key()
+  name = sqlalchemy.Column(String, nullable=False)
+
+  def to_js(self):
+    return {
+        "name": self.name
+    }
+
+
 class Realm(Base):
   __tablename__ = "realms"
 
@@ -22,8 +34,6 @@ class Realm(Base):
   aw = sqlalchemy.Column(Integer, nullable=False)
   ah = sqlalchemy.Column(Integer, nullable=False)
 
-  terrain_layers = sqlalchemy.Column(postgresql.ARRAY(String), nullable=False)
-
   @property
   def routing_key(self):
     return "realm.{realm_id}".format(realm_id=self.id)
@@ -31,8 +41,7 @@ class Realm(Base):
   def to_protobuf(self):
     return game_pb2.Realm(id=self.id, name=self.name,
                           size=game_pb2.Realm.AbsoluteSize(aw=self.aw,
-                                                           ah=self.ah),
-                          terrain_layers=self.terrain_layers)
+                                                           ah=self.ah))
 
 
 class Region(Base):
@@ -50,7 +59,14 @@ class Region(Base):
 
   realm = relationship("Realm", backref=backref("regions", order_by=(ary, arx)))
 
-  # bits are in ESWN order (counter-clockwise from N, LSB first)
+  # There are two interpretations of how this bit mask works:
+  #
+  # * ESWN: Passability is defined by which direction you pass into the tile --
+  #   e.g. if the N bit is 0, then you cannot pass into the tile if you were
+  #   facing north.
+  #
+  # * WNES: Passability is defined by which direction you approach the tile from
+  #   -- e.g. if the W bit is 0, then you cannot enter the tile from the west.
   passabilities = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
 
   @hybrid.hybrid_property
@@ -116,7 +132,9 @@ class RegionLayer(Base):
 
   region_id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("regions.id"),
                                 nullable=False, primary_key=True)
-  terrain_index = sqlalchemy.Column(Integer, nullable=False)
+  terrain_id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("terrain.id"),
+                                 nullable=False)
+  terrain = relationship("Terrain")
   corners = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
   layer_index = sqlalchemy.Column(Integer, nullable=False, primary_key=True)
 
@@ -127,7 +145,7 @@ class RegionLayer(Base):
                       collection_class=ordering_list("layer_index")))
 
   def to_protobuf(self):
-    return game_pb2.Region.Layer(terrain_index=self.terrain_index,
+    return game_pb2.Region.Layer(terrain_id=self.terrain_id,
                                  corners=self.corners)
 
   __table_args__ = (
