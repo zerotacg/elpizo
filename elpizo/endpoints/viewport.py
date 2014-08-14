@@ -43,8 +43,7 @@ def viewport(ctx, message):
                     last_viewport.ar_left * Region.SIZE,
                     last_viewport.ar_top * Region.SIZE,
                     (last_viewport.ar_right - 1) * Region.SIZE,
-                    (last_viewport.ar_bottom - 1) * Region.SIZE))
-            .options(joinedload(Region.layers))}
+                    (last_viewport.ar_bottom - 1) * Region.SIZE))}
   else:
     last_regions = {}
 
