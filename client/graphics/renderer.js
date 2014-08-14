@@ -61,21 +61,6 @@ export class Renderer extends EventEmitter {
     this.regionTerrainCache = {};
   }
 
-  damage(region) {
-    // Evict a region and its neighbors from the cache ("damaging"). In theory,
-    // the renderer should keep track of damaged regions itself, so this is a
-    // horrible hack.
-    for (var ary = region.location.ary - 1;
-         ary <= region.location.ary + 1;
-         ++ary) {
-      for (var arx = region.location.arx - 1;
-           arx <= region.location.arx + 1;
-           ++arx) {
-        delete this.regionTerrainCache[arx + "," + ary];
-      }
-    }
-  }
-
   handleOnClick(e) {
     var sx = e.clientX - this.sBounds.left;
     var sy = e.clientY - this.sBounds.top;
@@ -340,19 +325,13 @@ export class Renderer extends EventEmitter {
       for (var rs = 0; rs < coords.REGION_SIZE + 1; ++rs) {
         region.layers.forEach((layer) => {
           var terrain = region.realm.terrainLayers[layer.terrainIndex];
-          var texture = this.resources.get("tiles/" +
-              Renderer.TILE_TEXTURE_MAPPINGS[terrain]);
+          var spriteSet = sprites["Tiles." + terrain];
 
-          Renderer.TILE_TEXTURE_COORDS[layer.corners.getCell(rs, rt)]
-              .forEach((offset, index) => {
-            if (offset === -1) {
+          spriteSet[Renderer.TILE_TEXTURE_COORDS[layer.corners.getCell(rs, rt)]]
+              .forEach((sprite, index) => {
+            if (sprite === null) {
               return;
             }
-
-            // The offset selects which tile from the atlas to use. It assumes
-            // the atlas is 4 half-tiles wide.
-            var u = offset % 4;
-            var v = Math.floor(offset / 4);
 
             // dx and dy indicate how many half-tiles in the half-tile needs to
             // be offset by. They should be in clockwise order, starting from
@@ -365,11 +344,10 @@ export class Renderer extends EventEmitter {
                 ay: rt + dy / 2
             });
 
-            ctx.drawImage(texture,
-                          u * halfTileSize, v * halfTileSize,
-                          halfTileSize, halfTileSize,
-                          s.sx - halfTileSize, s.sy - halfTileSize,
-                          halfTileSize, halfTileSize);
+            ctx.save();
+            ctx.translate(s.sx - halfTileSize, s.sy - halfTileSize);
+            sprite.render(this.resources, ctx, this.elapsed);
+            ctx.restore();
           });
         });
       }
@@ -493,27 +471,21 @@ Renderer.ENTITIES = {
 
 Renderer.TILE_SIZE = 32;
 
-Renderer.TILE_TEXTURE_MAPPINGS = {
-    "grassland": "grass.png",
-    "ocean": "water.png",
-    "wall": "wall.png",
-};
-
 Renderer.TILE_TEXTURE_COORDS = {
-  0x0: [ 0,  0,  0,  0], // none
-  0x1: [-1, -1, 11, -1], // ne convex corner
-  0x2: [-1, -1, -1,  8], // nw convex corner
-  0x3: [-1, -1,  9, 10], // going n
-  0x4: [-1, 20, -1, -1], // sw convex corner
-  0x5: [-1, 20, 11, -1], // saddle ne->sw
-  0x6: [-1, 12, -1, 16], // going w
-  0x7: [-1, 16, 10,  2], // nw concave corner
-  0x8: [23, -1, -1, -1], // se convex corner
-  0x9: [15, -1, 19, -1], // going e
-  0xa: [23, -1, -1,  8], // saddle nw->se
-  0xb: [19, -1,  3,  9], // ne concave corner
-  0xc: [21, 22, -1, -1], // going s
-  0xd: [ 7, 21, 15, -1], // se concave corner
-  0xe: [22,  6, -1, 12], // sw concave corner
-  0xf: [13, 14, 17, 18], // all
+    0x0: "none",
+    0x1: "neConvexCorner",
+    0x2: "nwConvexCorner",
+    0x3: "goingN",
+    0x4: "swConvexCorner",
+    0x5: "saddleNeSw",
+    0x6: "goingW",
+    0x7: "nwConcaveCorner",
+    0x8: "seConvexCorner",
+    0x9: "goingE",
+    0xa: "saddleNwSe",
+    0xb: "neConcaveCorner",
+    0xc: "goingS",
+    0xd: "seConcaveCorner",
+    0xe: "swConcaveCorner",
+    0xf: "full"
 };

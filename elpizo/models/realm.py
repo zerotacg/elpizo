@@ -4,6 +4,7 @@ from sqlalchemy import func, inspect
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext import hybrid
 from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.ext.orderinglist import ordering_list
 from sqlalchemy.orm import backref, relationship, Session, remote, foreign
 from sqlalchemy.types import *
 
@@ -115,12 +116,15 @@ class RegionLayer(Base):
 
   region_id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("regions.id"),
                                 nullable=False, primary_key=True)
-  terrain_index = sqlalchemy.Column(Integer, nullable=False, primary_key=True)
+  terrain_index = sqlalchemy.Column(Integer, nullable=False)
   corners = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
+  layer_index = sqlalchemy.Column(Integer, nullable=False, primary_key=True)
 
-  region = relationship("Region",
-                        backref=backref("layers",
-                                        order_by="RegionLayer.terrain_index"))
+  region = relationship(
+      "Region",
+      backref=backref("layers",
+                      order_by="RegionLayer.layer_index",
+                      collection_class=ordering_list("layer_index")))
 
   def to_protobuf(self):
     return game_pb2.Region.Layer(terrain_index=self.terrain_index,

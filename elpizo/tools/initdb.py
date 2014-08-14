@@ -25,7 +25,7 @@ def initialize_realm(app):
   sqla = app.sqla_factory()
 
   realm = Realm(name="Windvale", aw=128, ah=128,
-                terrain_layers=["ocean", "grassland"])
+                terrain_layers=["Ocean", "Grassland"])
   sqla.add(realm)
   sqla.commit()
 
@@ -60,8 +60,37 @@ def initialize_realm(app):
           corners.append(corner)
 
       grass_layer = RegionLayer(terrain_index=1, corners=corners)
+
+      platform_corners = []
+
+      for rt in range(Region.SIZE + 1):
+        for rs in range(Region.SIZE + 1):
+          corner = 0xf
+
+          if rs < 4 or rs >= 8 or rt < 4 or rt >= 8:
+            corner = 0x0
+          elif rs == 4 and rt == 4:
+            corner = 0x2
+          elif rs == 7 and rt == 4:
+            corner = 0x1
+          elif rs == 4 and rt == 7:
+            corner = 0x4
+          elif rs == 7 and rt == 7:
+            corner = 0x8
+          elif rs == 4:
+            corner = 0x6
+          elif rt == 4:
+            corner = 0x3
+          elif rs == 7:
+            corner = 0x9
+          elif rt == 7:
+            corner = 0xc
+          platform_corners.append(corner)
+
+      platform_layer = RegionLayer(terrain_index=1, corners=platform_corners)
+
       region = Region(arx=arx, ary=ary, realm=realm,
-                      layers=[grass_layer],
+                      layers=[grass_layer, platform_layer],
                       passabilities=[0b1111] * (16 * 16))
       sqla.add(region)
 

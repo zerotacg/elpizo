@@ -19,7 +19,6 @@ export function install(game) {
 
     var region = new Region(message.region);
     game.realm.addRegion(region);
-    game.renderer.damage(region);
   });
 
   protocol.on(Packet.Type.ENTITY, (origin, message) => {
