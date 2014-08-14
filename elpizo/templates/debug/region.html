@@ -14,22 +14,22 @@
   {% for ry in range(Region.SIZE) %}
   <tr>
     {% for rx in range(Region.SIZE) %}
-    {% set terrain = tiles[ry * Region.SIZE + rx] %}
+    {% set passability = region.passabilities[ry * Region.SIZE + rx] %}
     <td>
       <table>
         <tr>
           <td></td>
-          <td style="background:{{"green" if (terrain.passable >> 0) & 0b1 else "red"}}"></td>
+          <td style="background:{{"green" if (passability >> 0) & 0b1 else "red"}}"></td>
           <td></td>
         </tr>
         <tr>
-          <td style="background:{{"green" if (terrain.passable >> 1) & 0b1 else "red"}}"></td>
-          <td><a href="/_debug/terrain/{{terrain.id}}/">{{terrain.id}}</a></td>
-          <td style="background:{{"green" if (terrain.passable >> 2) & 0b1 else "red"}}"></td>
+          <td style="background:{{"green" if (passability >> 1) & 0b1 else "red"}}"></td>
+          <td></td>
+          <td style="background:{{"green" if (passability >> 2) & 0b1 else "red"}}"></td>
         </tr>
         <tr>
           <td></td>
-          <td style="background:{{"green" if (terrain.passable >> 3) & 0b1 else "red"}}"></td>
+          <td style="background:{{"green" if (passability >> 3) & 0b1 else "red"}}"></td>
           <td></td>
         </tr>
       </table>
@@ -38,5 +38,12 @@
   </tr>
   {% end %}
 </table>
+
+<h2>Layers</h2>
+<ul>
+{% for layer in region.layers %}
+  <li>{{region.realm.terrain_layers[layer.terrain_index]}}</li>
+{% end %}
+</ul>
 
 {% end %}

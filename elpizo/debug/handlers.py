@@ -10,7 +10,7 @@ from .explain import explain_query
 from ..models.base import User, Entity
 from ..models.actors import Player
 from ..models.items import Item
-from ..models.realm import Realm, Region, Terrain
+from ..models.realm import Realm, Region
 
 
 class RequestHandler(RequestHandler):
@@ -136,12 +136,4 @@ class RegionHandler(RequestHandler):
         Region.arx == arx,
         Region.ary == ary
     ).one()
-    self.render("debug/region.html",
-                region=region,
-                tiles=[self.sqla.query(Terrain).get(tile)
-                         for tile in region.tiles])
-
-
-class TerrainHandler(RequestHandler):
-  def get(self, id):
-    self.render("debug/terrain.html", terrain=self.sqla.query(Terrain).get(id))
+    self.render("debug/region.html", region=region)

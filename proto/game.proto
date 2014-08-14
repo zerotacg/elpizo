@@ -41,7 +41,14 @@ message AbsoluteRealmLocation {
 
 message Region {
   optional AbsoluteRealmLocation location = 1;
-  repeated uint32 tiles = 2;
+
+  message Layer {
+    optional uint32 terrain_index = 1;
+    repeated uint32 corners = 2;
+  }
+
+  repeated Layer layers = 2;
+  repeated uint32 passabilities = 4;
 }
 
 message Realm {
@@ -53,6 +60,7 @@ message Realm {
   optional uint32 id = 1;
   optional string name = 2;
   optional AbsoluteSize size = 3;
+  repeated string terrain_layers = 4;
 }
 
 message Entity {

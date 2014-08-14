@@ -31,11 +31,6 @@ export class Renderer extends EventEmitter {
     this.entityCanvas.style.zIndex = 1;
     this.el.appendChild(this.entityCanvas);
 
-    this.xrayCanvas = this.createCanvas();
-    this.xrayCanvas.style.zIndex = 2;
-    this.xrayCanvas.style.opacity = 0.25;
-    this.el.appendChild(this.xrayCanvas);
-
     this.aTopLeft = {
         ax: 0,
         ay: 0
@@ -96,9 +91,6 @@ export class Renderer extends EventEmitter {
 
   prepareContext(canvas) {
     var ctx = canvas.getContext("2d");
-    ctx.imageSmoothingEnabled = false;
-    ctx.webkitImageSmoothingEnabled = false;
-    ctx.mozImageSmoothingEnabled = false;
     ctx.font = this.style.font;
     return ctx;
   }
@@ -149,8 +141,6 @@ export class Renderer extends EventEmitter {
     this.entityCanvas.width = sw;
     this.entityCanvas.height = sh;
 
-    this.xrayCanvas.width = sw;
-    this.xrayCanvas.height = sh;
     this.emit("viewportChange", this.getAbsoluteViewportBounds(), previous);
   }
 
@@ -305,9 +295,6 @@ export class Renderer extends EventEmitter {
     var ctx = this.prepareContext(this.entityCanvas);
     ctx.clearRect(0, 0, this.entityCanvas.width, this.entityCanvas.height);
 
-    var xrayCtx = this.prepareContext(this.xrayCanvas);
-    xrayCtx.clearRect(0, 0, this.xrayCanvas.width, this.xrayCanvas.height);
-
     var aWorldBounds = this.getAbsoluteViewportBounds();
 
     var numBuckets = Math.ceil(aWorldBounds.aBottom - aWorldBounds.aTop);
@@ -324,14 +311,8 @@ export class Renderer extends EventEmitter {
             return a.location.ay - b.location.ay;
         });
 
-    // Render in two passes - opaque items in the first pass, and xrayable in
-    // the second.
     sortedEntities.forEach((entity) => {
       this.renderEntity(entity, ctx);
-
-      if (entity instanceof models.Actor) {
-        this.renderEntity(entity, xrayCtx);
-      }
     });
   }
 
@@ -345,56 +326,48 @@ export class Renderer extends EventEmitter {
     canvas.width = size.sx;
     canvas.height = size.sy;
 
+    var halfTileSize = Renderer.TILE_SIZE / 2;
+
     var ctx = this.prepareContext(canvas);
 
-    region.computeTerrain().forEach((terrain, i) => {
-      var rx = i % (coords.REGION_SIZE + 1);
-      var ry = Math.floor(i / (coords.REGION_SIZE + 1));
+    for (var rt = 0; rt < coords.REGION_SIZE + 1; ++rt) {
+      for (var rs = 0; rs < coords.REGION_SIZE + 1; ++rs) {
+        region.layers.forEach((layer) => {
+          var terrain = region.realm.terrainLayers[layer.terrainIndex];
+          var texture = this.resources.get("tiles/" +
+              Renderer.TILE_TEXTURE_MAPPINGS[terrain]);
 
-      // If we have a tile named all the terrain joined together, we use that
-      // instead of compositing terrain.
-      var combinedTileName = terrain.map((terrain) => terrain.name).join(",");
-      if (hasOwnProp.call(Renderer.TILE_TEXTURE_MAPPINGS, combinedTileName)) {
-        terrain = [{
-            name: combinedTileName,
-            mask: terrain[terrain.length - 1].mask
-        }];
-      }
+          Renderer.TILE_TEXTURE_COORDS[layer.corners.getCell(rs, rt)]
+              .forEach((offset, index) => {
+            if (offset === -1) {
+              return;
+            }
 
-      terrain.forEach((layer) => {
-        var texture = Renderer.TILE_TEXTURE_MAPPINGS[layer.name];
-        Renderer.TILE_TEXTURE_COORDS[layer.mask].forEach((offset, index) => {
-          if (offset === -1) {
-            return;
-          }
+            // The offset selects which tile from the atlas to use. It assumes
+            // the atlas is 4 half-tiles wide.
+            var u = offset % 4;
+            var v = Math.floor(offset / 4);
 
-          // The offset selects which tile from the atlas to use. It assumes the
-          // atlas is 4 half-tiles wide.
-          var u = offset % 4;
-          var v = Math.floor(offset / 4);
+            // dx and dy indicate how many half-tiles in the half-tile needs to
+            // be offset by. They should be in clockwise order, starting from
+            // NW.
+            var dx = [0, 1, 0, 1][index];
+            var dy = [0, 0, 1, 1][index];
 
-          // dx and dy indicate how many half-tiles in the half-tile needs to be
-          // offset by. They should be in clockwise order, starting from NW.
-          var dx = [0, 1, 0, 1][index];
-          var dy = [0, 0, 1, 1][index];
+            var s = this.absoluteToScreenCoords({
+                ax: rs + dx / 2,
+                ay: rt + dy / 2
+            });
 
-          var s = this.absoluteToScreenCoords({
-              ax: rx + dx / 2,
-              ay: ry + dy / 2
+            ctx.drawImage(texture,
+                          u * halfTileSize, v * halfTileSize,
+                          halfTileSize, halfTileSize,
+                          s.sx - halfTileSize, s.sy - halfTileSize,
+                          halfTileSize, halfTileSize);
           });
-
-          ctx.drawImage(this.resources.get("tiles/" + texture),
-                        u * Renderer.TILE_SIZE / 2,
-                        v * Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2,
-                        s.sx - Renderer.TILE_SIZE / 2,
-                        s.sy - Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2,
-                        Renderer.TILE_SIZE / 2);
         });
-      });
-    });
+      }
+    }
 
     return canvas;
   }

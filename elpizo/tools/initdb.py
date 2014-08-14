@@ -7,7 +7,7 @@ import random
 from elpizo import make_application
 from elpizo.models.actors import Player
 from elpizo.models.base import Base, User, Entity, Building
-from elpizo.models.realm import Realm, Region, Terrain
+from elpizo.models.realm import Realm, Region, RegionLayer
 from elpizo.models.fixtures import Fixture, resource_sources
 from elpizo.models.items import restorative, Drop
 from elpizo.tools import mapgen
@@ -24,24 +24,45 @@ def initialize_schema(app):
 def initialize_realm(app):
   sqla = app.sqla_factory()
 
-  realm = Realm(name="Windvale", aw=128, ah=128)
+  realm = Realm(name="Windvale", aw=128, ah=128,
+                terrain_layers=["ocean", "grassland"])
   sqla.add(realm)
-
-  ocean = Terrain(name="ocean", passable=0b0000)
-  sqla.add(ocean)
-
-  grassland = Terrain(name="grassland", passable=0b1111)
-  sqla.add(grassland)
-
   sqla.commit()
 
   logging.info("Created realm.")
 
   for ary in range(realm.ah // Region.SIZE):
     for arx in range(realm.aw // Region.SIZE):
+      corners = []
+
+      for rt in range(Region.SIZE + 1):
+        for rs in range(Region.SIZE + 1):
+          a_s = arx * Region.SIZE + rs
+          a_t = ary * Region.SIZE + rt
+
+          corner = 0xf
+          if a_s == 0 and a_t == 0:
+            corner = 0x2
+          elif a_s == realm.aw and a_t == 0:
+            corner = 0x1
+          elif a_s == 0 and a_t == realm.ah:
+            corner = 0x4
+          elif a_s == realm.aw and a_t == realm.ah:
+            corner = 0x8
+          elif a_s == 0:
+            corner = 0x6
+          elif a_t == 0:
+            corner = 0x3
+          elif a_s == realm.aw:
+            corner = 0x9
+          elif a_t == realm.ah:
+            corner = 0xc
+          corners.append(corner)
+
+      grass_layer = RegionLayer(terrain_index=1, corners=corners)
       region = Region(arx=arx, ary=ary, realm=realm,
-                      tiles=[random.choice([grassland, grassland]).id
-                             for _ in range(16 * 16)])
+                      layers=[grass_layer],
+                      passabilities=[0b1111] * (16 * 16))
       sqla.add(region)
 
   sqla.commit()

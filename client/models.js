@@ -50,6 +50,7 @@ export class Realm {
         aw: message.size.aw,
         ah: message.size.ah
     };
+    this.terrainLayers = message.terrainLayers;
 
     this.regions = {};
     this.entities = {};
@@ -158,136 +159,19 @@ export class Region {
         arx: message.location.arx,
         ary: message.location.ary
     };
-    this.tiles = new Grid(coords.REGION_SIZE, coords.REGION_SIZE,
-                          message.tiles.map((id) =>
-                            id !== 0 ? exports.terrain[id] : null));
+    this.layers = message.layers.map((layer) =>
+        new Layer(layer));
+    this.passabilities = new Grid(coords.REGION_SIZE, coords.REGION_SIZE,
+                                  message.passabilities);
   }
 
   getKey() {
     return [this.location.arx, this.location.ary].join(",");
   }
 
-  computeTerrain() {
-    // Compute terrain from tiles, using a modified version of the Marching
-    // Squares algorithm.
-    var terrain = new Array((coords.REGION_SIZE + 1) *
-                            (coords.REGION_SIZE + 1));
-
-    var tilesWithEdges = new Grid(coords.REGION_SIZE + 2,
-                                  coords.REGION_SIZE + 2);
-    tilesWithEdges.fill(null);
-
-    // Copy the current realm tiles into tilesWithEdges.
-    tilesWithEdges.setImage(1, 1, coords.REGION_SIZE, coords.REGION_SIZE,
-                            this.tiles);
-
-    // Get the 8 neighboring regions.
-    var nRegion = this.realm.getRegion({arx: this.location.arx,
-                                        ary: this.location.ary - 1});
-    if (nRegion !== null) {
-      // Copy the last row of the north region into the edges array.
-      tilesWithEdges.setRow(1, 0,
-                            nRegion.tiles.getRow(coords.REGION_SIZE - 1));
-    }
-
-    var nwRegion = this.realm.getRegion({arx: this.location.arx - 1,
-                                         ary: this.location.ary - 1});
-    if (nwRegion !== null) {
-      // Copy the south-east-most tile into the north-west corner.
-      tilesWithEdges.setCell(0, 0,
-                             nwRegion.tiles.getCell(coords.REGION_SIZE - 1,
-                                                    coords.REGION_SIZE - 1));
-    }
-
-    var wRegion = this.realm.getRegion({arx: this.location.arx - 1,
-                                        ary: this.location.ary});
-    if (wRegion !== null) {
-      // Copy the last column of the west region into the edges array.
-      tilesWithEdges.setColumn(0, 1,
-                               wRegion.tiles.getColumn(coords.REGION_SIZE - 1));
-    }
-
-    var swRegion = this.realm.getRegion({arx: this.location.arx - 1,
-                                         ary: this.location.ary + 1});
-    if (swRegion !== null) {
-      // Copy the north-east-most tile into the south-west corner.
-      tilesWithEdges.setCell(0, coords.REGION_SIZE + 1,
-                             swRegion.tiles.getCell(coords.REGION_SIZE - 1,
-                                                    0));
-    }
-
-    var sRegion = this.realm.getRegion({arx: this.location.arx,
-                                        ary: this.location.ary + 1});
-    if (sRegion !== null) {
-      // Copy the first row of the south region into the edges array.
-      tilesWithEdges.setRow(1, coords.REGION_SIZE + 1,
-                            sRegion.tiles.getRow(0));
-    }
-
-    var seRegion = this.realm.getRegion({arx: this.location.arx + 1,
-                                         ary: this.location.ary + 1});
-    if (seRegion !== null) {
-      // Copy the north-west-most tile into the south-east corner.
-      tilesWithEdges.setCell(coords.REGION_SIZE + 1, coords.REGION_SIZE + 1,
-                             seRegion.tiles.getCell(0,
-                                                    0));
-    }
-
-    var eRegion = this.realm.getRegion({arx: this.location.arx + 1,
-                                        ary: this.location.ary});
-    if (eRegion !== null) {
-      // Copy the first column of the east region into the edges array.
-      tilesWithEdges.setColumn(coords.REGION_SIZE + 1, 1,
-                               eRegion.tiles.getColumn(0));
-    }
-
-    var neRegion = this.realm.getRegion({arx: this.location.arx + 1,
-                                         ary: this.location.ary - 1});
-    if (neRegion !== null) {
-      // Copy the north-west-most tile into the south-east corner.
-      tilesWithEdges.setCell(coords.REGION_SIZE + 1, 0,
-                             neRegion.tiles.getCell(0,
-                                                    coords.REGION_SIZE - 1));
-    }
-
-    for (var ry = 0; ry < coords.REGION_SIZE + 2; ++ry) {
-      for (var rx = 0; rx < coords.REGION_SIZE + 2; ++rx) {
-        var nw = tilesWithEdges.getCell(rx + 0, ry + 0);
-        var ne = tilesWithEdges.getCell(rx + 1, ry + 0);
-        var sw = tilesWithEdges.getCell(rx + 0, ry + 1);
-        var se = tilesWithEdges.getCell(rx + 1, ry + 1);
-
-        var types = nubBy([nw, ne, sw, se]
-            .filter((tile) => tile !== null)
-            .sort((a, b) =>
-                Region.TERRAIN_PREDECENCES.indexOf(a.name) -
-                    Region.TERRAIN_PREDECENCES.indexOf(b.name)),
-            (tile) => tile.name);
-
-        terrain[ry * (coords.REGION_SIZE + 1) + rx] = types.map((tile, i) => {
-          // Terrain blends may exist (e.g. ocean into river), and this ensures
-          // that two terrain blending are treated similarly to two terrain of
-          // the same type.
-          var above = types.slice(i).concat(
-              Region.TERRAIN_BLENDS[tile.name] || []);
-
-          return {
-              name: tile.name,
-              mask: ((above.indexOf(nw) !== -1) << 3) |
-                    ((above.indexOf(ne) !== -1) << 2) |
-                    ((above.indexOf(se) !== -1) << 1) |
-                    ((above.indexOf(sw) !== -1) << 0)
-          };
-        });
-      }
-    }
-
-    return terrain;
-  }
-
   isPassable(location, direction) {
-    var tile = this.tiles.getCell(location.rx, location.ry);
-    return !!((tile.passable >> direction) & 0x1);
+    return !!((this.passabilities.getCell(location.rx, location.ry) >>
+        direction) & 0x1);
   }
 }
 
@@ -298,6 +182,14 @@ Region.TERRAIN_PREDECENCES = [
     "tropical_rain_forest",
     "lake", "river", "lakeshore", "ocean"
 ];
+
+export class Layer {
+  constructor(message) {
+    this.terrainIndex = message.terrainIndex;
+    this.corners = new Grid(coords.REGION_SIZE + 1, coords.REGION_SIZE + 1,
+                            message.corners);
+  }
+}
 
 export class Entity extends EventEmitter {
   constructor(message) {

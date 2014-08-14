@@ -5,7 +5,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from .. import game_pb2
 from ..green import sleep
 from ..models.base import Entity
-from ..models.realm import Region, Terrain
+from ..models.realm import Region
 from ..models.fixtures import Fixture
 
 
@@ -59,10 +59,11 @@ def socket_move(ctx, message):
   entity_for_update.ax = new_ax
   entity_for_update.ay = new_ay
 
-  tile = region.tiles[entity_for_update.ry * Region.SIZE + entity_for_update.rx]
+  rx = new_ax % Region.SIZE
+  ry = new_ay % Region.SIZE
 
   # colliding with terrain
-  if not ((ctx.sqla.query(Terrain).get(tile).passable >> direction) & 0b1):
+  if not ((region.passabilities[ry * Region.SIZE + rx] >> direction) & 0b1):
     ctx.sqla.rollback()
     return
 

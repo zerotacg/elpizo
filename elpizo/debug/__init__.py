@@ -56,7 +56,6 @@ def install(application, routes):
       (r"/_debug/users/(\d+)/", handlers.UserHandler),
       (r"/_debug/realms/(\d+)/", handlers.RealmHandler),
       (r"/_debug/realms/(\d+)/regions/(\d+),(\d+)/", handlers.RegionHandler),
-      (r"/_debug/terrain/(\d+)/", handlers.TerrainHandler),
   ])
 
   def get_packet_name(code):
