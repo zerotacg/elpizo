@@ -56,6 +56,11 @@ export class Renderer extends EventEmitter {
     };
   }
 
+  setDebug(debug) {
+    this.debug = debug;
+    this.regionTerrainCache = {};
+  }
+
   damage(region) {
     // Evict a region and its neighbors from the cache ("damaging"). In theory,
     // the renderer should keep track of damaged regions itself, so this is a
@@ -284,6 +289,7 @@ export class Renderer extends EventEmitter {
           ctx.fillStyle = "red";
           ctx.strokeRect(0, 0, buffer.width, buffer.height);
           ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
           ctx.fillText(key, buffer.width / 2, buffer.height / 2);
         }
         ctx.restore();
@@ -369,6 +375,41 @@ export class Renderer extends EventEmitter {
       }
     }
 
+    if (this.debug) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
+      ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      for (var ry = 0; ry < coords.REGION_SIZE; ++ry) {
+        for (var rx = 0; rx < coords.REGION_SIZE; ++rx) {
+          var sx = rx * Renderer.TILE_SIZE;
+          var sy = ry * Renderer.TILE_SIZE;
+          ctx.strokeRect(sx, sy,
+                         Renderer.TILE_SIZE, Renderer.TILE_SIZE);
+          ctx.fillText(rx + "," + ry, sx + halfTileSize, sy + halfTileSize);
+
+          var passability = region.passabilities.getCell(rx, ry);
+          for (var i = 0; i < 4; ++i) {
+            var dv = models.getDirectionVector(i);
+            var isPassable = !!(passability & 0x1);
+
+            if (!isPassable) {
+              ctx.fillRect(sx + (dv.ax + 1) * (halfTileSize - 4 - Math.abs(dv.ay) * 6),
+                           sy + (dv.ay + 1) * (halfTileSize - 4 - Math.abs(dv.ax) * 6),
+                           8 + Math.abs(dv.ay) * 12,
+                           8 + Math.abs(dv.ax) * 12);
+            }
+
+            passability >>= 1;
+          }
+        }
+      }
+
+      ctx.restore();
+    }
+
     return canvas;
   }
 
@@ -426,6 +467,7 @@ Renderer.ENTITIES = {
     Player: (renderer, entity, ctx) => {
       Renderer.ENTITIES.Actor(renderer, entity, ctx);
       ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.fillStyle = "black";
       ctx.fillText(entity.name, 17, -23);
       ctx.fillStyle = makeColorForString(entity.name);
@@ -444,6 +486,7 @@ Renderer.ENTITIES = {
       ctx.strokeRect(0, 0, sSize.sx, sSize.sy);
       ctx.fillStyle = "rgba(255, 0, 0, 0.75)";
       ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
       ctx.fillText("(id: " + entity.id + ")", sSize.sx / 2, sSize.sy / 2);
     }
 };

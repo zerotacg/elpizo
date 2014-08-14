@@ -83,6 +83,6 @@ export var Debug = React.createClass({
     e.preventDefault();
     this.setState({enabled: !this.state.enabled});
     var game = this.props.game;
-    game.renderer.debug = !game.renderer.debug;
+    game.renderer.setDebug(!game.renderer.debug);
   }
 });
