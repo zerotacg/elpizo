@@ -70,6 +70,12 @@ export var Debug = React.createClass({
 
         <dt>Avatar Position</dt>
         <dd>{maybeAvatarPosition !== null ? maybeAvatarPosition : "(no avatar)"}</dd>
+
+        <dt><a href="/_debug/" target="_blank">Debug Console</a></dt>
+        <dd>
+          <a href={game.me !== null ? "/_debug/entities/" + game.me.id + "/" : null} target="_blank">Avatar</a>/
+          <a href={game.realm !== null ? "/_debug/realms/" + game.realm.id + "/" : null} target="_blank">Realm</a>
+        </dd>
       </dl>
     </div>;
   },
@@ -84,5 +90,8 @@ export var Debug = React.createClass({
     this.setState({enabled: !this.state.enabled});
     var game = this.props.game;
     game.renderer.setDebug(!game.renderer.debug);
+
+    window.history.replaceState({}, null,
+                                game.renderer.debug ? "/?debug" : "/");
   }
 });
