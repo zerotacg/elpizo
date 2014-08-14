@@ -25,11 +25,11 @@ class Protocol(object):
     self.channel = channel
     self.transient_storage = {}
 
-  def on_open(self):
-    player = self.get_player(self.application.sqla_factory())
+    self.player = self.get_player(self.application.sqla_factory())
 
-    # Set up the user's AMQP subscriptions
-    queue_name = player.user.queue_name
+  def on_open(self):
+    # Set up the user's AMQP subscriptions.
+    queue_name = self.player.user.queue_name
 
     green.async_task(self.channel.queue_delete)(queue=queue_name)
     green.async_task(self.channel.queue_declare)(queue=queue_name,
@@ -192,7 +192,10 @@ class Context(object):
   def __init__(self, protocol):
     self.protocol = protocol
     self.sqla = self.application.sqla_factory()
-    self.player = self.protocol.get_player(self.sqla)
+
+  @property
+  def player(self):
+    return self.protocol.player
 
   @property
   def application(self):
