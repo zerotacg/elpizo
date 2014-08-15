@@ -7,21 +7,13 @@ module coords from "../util/coords";
 export var Debug = React.createClass({
   getInitialState: function () {
     return {
-        enabled: window.location.search === "?debug",
         showRegions: false
     };
   },
 
-  componentWillMount: function () {
-    var game = this.props.game;
-    game.renderer.debug = this.state.enabled;
-  },
-
   render: function () {
-    if (!this.state.enabled) {
-      return <div className="debug">
-        <a href="#" onClick={this.toggleDebugStats}>debug</a>
-      </div>;
+    if (!this.props.game.debug) {
+      return null;
     }
 
     var game = this.props.game;
@@ -48,10 +40,6 @@ export var Debug = React.createClass({
     }
 
     return <div className="debug">
-      <div style={{"text-align": "right"}}>
-        <a href="#" onClick={this.toggleDebugStats}>hide</a>
-      </div>
-
       <table className="attrs">
         <tr>
           <th>Viewport Bounds</th>
@@ -97,14 +85,4 @@ export var Debug = React.createClass({
     e.preventDefault();
     this.setState({showRegions: !this.state.showRegions});
   },
-
-  toggleDebugStats: function (e) {
-    e.preventDefault();
-    this.setState({enabled: !this.state.enabled});
-    var game = this.props.game;
-    game.renderer.setDebug(!game.renderer.debug);
-
-    window.history.replaceState({}, null,
-                                game.renderer.debug ? "/?debug" : "/");
-  }
 });

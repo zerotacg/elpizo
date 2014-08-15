@@ -3,6 +3,13 @@
 module React from "react";
 import {Packet, ChatPacket} from "../game_pb2";
 import {makeColorForString} from "../util/colors";
+import {hasOwnProp} from "../util/objects";
+
+var COMMANDS = {
+  debug: (game) => {
+    game.setDebug(!game.debug);
+  }
+};
 
 export var Chat = React.createClass({
   getInitialState: function () {
@@ -46,7 +53,7 @@ export var Chat = React.createClass({
   onChat: function (origin, message) {
     this.addMessage({
         origin: message.actorName,
-        text: message.text,
+        text: text,
         isStatus: false
     });
   },
@@ -54,12 +61,13 @@ export var Chat = React.createClass({
   onInventory: function (origin, message) {
     this.addMessage({
         origin: null,
-        text: "You picked up: " + message.item.type
+        text: "You picked up: " + message.item.type,
+        isStatus: true
     });
   },
 
   addMessage: function (message) {
-    message.id = new Date().valueOf(),
+    message.id = new Date().valueOf();
     this.setState({
         messages: this.state.messages.concat([message])
     });
@@ -75,16 +83,34 @@ export var Chat = React.createClass({
     this.setState({pendingMessage: ""});
 
     if (pendingMessage.trim().length > 0) {
-      this.addMessage({
-          origin: this.props.game.me.name,
-          text: pendingMessage,
-          isStatus: false
-      });
+      if (pendingMessage[0] === "/" && pendingMessage[1] !== "/") {
+        var parts = pendingMessage.slice(1).split(/ /);
+        var commandName = parts[0].trim().toLowerCase();
+        var rest = parts.slice(1).join(" ").trim();
 
-      this.props.game.protocol.send(new ChatPacket({
-          target: "chatroom.global",
-          text: pendingMessage
-      }));
+        if (!hasOwnProp.call(COMMANDS, commandName)) {
+          this.addMessage({
+              origin: null,
+              text: "No such command: " + commandName,
+              isStatus: true
+          });
+        } else {
+          COMMANDS[commandName](this.props.game, rest);
+        }
+      } else {
+        pendingMessage = pendingMessage.replace(/^\/\//, "/");
+
+        this.addMessage({
+            origin: this.props.game.me.name,
+            text: pendingMessage,
+            isStatus: false
+        });
+
+        this.props.game.protocol.send(new ChatPacket({
+            target: "chatroom.global",
+            text: pendingMessage
+        }));
+      }
     }
 
     this.getDOMNode().querySelector("input").blur();

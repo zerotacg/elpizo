@@ -51,7 +51,16 @@ export class Game extends EventEmitter {
 
     this.protocol.transport.on("open", this.onTransportOpen.bind(this));
     this.protocol.transport.on("close", this.onTransportClose.bind(this));
+
+    this.setDebug(window.location.search === "?debug");
     this.running = false;
+  }
+
+  setDebug(v) {
+    this.debug = v;
+    this.renderer.setDebug(v);
+    window.history.replaceState({}, null, this.debug ? "/?debug" : "/");
+
   }
 
   onRefit(bounds) {
