@@ -19,17 +19,17 @@
       <table>
         <tr>
           <td></td>
-          <td style="background:{{"green" if (passability >> 0) & 0b1 else "red"}}"></td>
-          <td></td>
-        </tr>
-        <tr>
-          <td style="background:{{"green" if (passability >> 1) & 0b1 else "red"}}"></td>
-          <td></td>
           <td style="background:{{"green" if (passability >> 2) & 0b1 else "red"}}"></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td style="background:{{"green" if (passability >> 3) & 0b1 else "red"}}"></td>
+          <td></td>
+          <td style="background:{{"green" if (passability >> 1) & 0b1 else "red"}}"></td>
         </tr>
         <tr>
           <td></td>
-          <td style="background:{{"green" if (passability >> 3) & 0b1 else "red"}}"></td>
+          <td style="background:{{"green" if (passability >> 0) & 0b1 else "red"}}"></td>
           <td></td>
         </tr>
       </table>
@@ -42,7 +42,7 @@
 <h2>Layers</h2>
 <ul>
 {% for layer in region.layers %}
-  <li>{{region.realm.terrain_layers[layer.terrain_index]}}</li>
+  <li>{{layer.terrain.name}}</li>
 {% end %}
 </ul>
 
