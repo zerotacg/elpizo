@@ -436,7 +436,8 @@ Renderer.ENTITIES = {
 
       names.forEach((name) => {
           sprites[name][state][direction]
-              .render(renderer.resources, ctx, renderer.elapsed * entity.speed);
+              .render(renderer.resources, ctx,
+                      renderer.elapsed * entity.getSpeed());
       })
     },
 

@@ -82,14 +82,13 @@ message Actor {
   optional string body = 4;
   optional string facial = 5;
   optional string hair = 6;
-  optional uint32 speed = 7;
 
-  optional Item head_item = 9;
-  optional Item torso_item = 10;
-  optional Item legs_item = 11;
-  optional Item feet_item = 12;
+  optional Item head_item = 7;
+  optional Item torso_item = 8;
+  optional Item legs_item = 9;
+  optional Item feet_item = 10;
 
-  repeated Item inventory = 13;
+  repeated Item inventory = 11;
 }
 
 message Fixture {

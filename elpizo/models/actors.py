@@ -53,13 +53,15 @@ class Actor(Entity):
       nullable=True)
   feet_item = relationship("Item", foreign_keys=[feet_item_id])
 
-  speed = 5 # should probably not be hardcoded
+  BASE_SPEED = 5
+
+  def get_speed(self):
+    return self.BASE_SPEED
 
   def to_protobuf(self):
     protobuf = super().to_protobuf()
     message = game_pb2.Actor(name=self.name, health=self.health,
                              gender=self.gender, body=self.body,
-                             speed=self.speed,
                              inventory=[item.to_protobuf()
                                         for item in self.inventory])
 

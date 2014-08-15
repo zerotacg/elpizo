@@ -224,9 +224,6 @@ export class Actor extends Entity {
     this.legsItem = message.legsItem && new Item(message.legsItem);
     this.feetItem = message.feetItem && new Item(message.feetItem);
 
-    // TODO: work this out
-    this.speed = message.speed;
-
     this.moving = false;
     this.remainder = 0;
   }
@@ -275,12 +272,16 @@ export class Actor extends Entity {
     return this.moving;
   }
 
+  getSpeed() {
+    return Actor.BASE_SPEED;
+  }
+
   update(dt) {
     super.update(dt);
 
     if (this.remainder > 0) {
       var unit = getDirectionVector(this.direction);
-      var aDistance = Math.min(this.speed * dt, this.remainder);
+      var aDistance = Math.min(this.getSpeed() * dt, this.remainder);
 
       this.location.ax += unit.ax * aDistance;
       this.location.ay += unit.ay * aDistance;
@@ -352,6 +353,8 @@ export class Actor extends Entity {
     }
   }
 }
+
+Actor.BASE_SPEED = 5;
 
 export class Fixture extends Entity {
   constructor(message) {
