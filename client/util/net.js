@@ -13,6 +13,7 @@ export class Transport extends EventEmitter {
     this.host = host;
     this.connect();
     this.opened = false;
+    this.currentRetryOperation = null;
   }
 
   connect() {
@@ -21,12 +22,10 @@ export class Transport extends EventEmitter {
 
     this.socket.onopen = (e) => {
       this.opened = true;
-      this.currentRetryOperation = null;
       this.emit("open");
     };
 
     this.socket.onclose = (e) => {
-      console.warn("Socket died.");
       this.emit("close");
 
       if (this.currentRetryOperation === null) {
@@ -40,6 +39,7 @@ export class Transport extends EventEmitter {
     };
 
     this.socket.onmessage = (e) => {
+      this.currentRetryOperation = null;
       this.emit("message", game_pb2.Packet.decode(e.data));
     };
   }
