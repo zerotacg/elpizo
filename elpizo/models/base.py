@@ -34,6 +34,10 @@ class User(Base):
   def queue_name(self):
     return "users.{id}".format(id=self.id)
 
+  @property
+  def routing_key(self):
+    return "users.{id}".format(id=self.id)
+
 
 class Entity(Base):
   __tablename__ = "entities"

@@ -7,6 +7,7 @@ from ..models.realm import Region
 
 def on_open(ctx):
   # Bind to the relevant channels.
+  ctx.subscribe(ctx.player.routing_key)
   ctx.subscribe(ctx.player.realm.routing_key)
 
   # Set the player to online.

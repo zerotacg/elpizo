@@ -29,7 +29,7 @@ class Protocol(object):
 
   def on_open(self):
     # Kindly ask any existing clients to kill their own sessions.
-    self.publish(self.player.routing_key, None,
+    self.publish(self.player.user.routing_key, None,
                  game_pb2.ErrorPacket(text="session collision"))
 
     # Set up the user's AMQP subscriptions.
@@ -44,7 +44,7 @@ class Protocol(object):
         green.root(self.on_raw_amqp_message),
         queue=queue_name, no_ack=True, exclusive=True)
 
-    self.subscribe(self.player.routing_key)
+    self.subscribe(self.player.user.routing_key)
 
     for on_open_hook in self.application.on_open_hooks:
       with Context(self) as ctx:
