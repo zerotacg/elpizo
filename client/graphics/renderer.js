@@ -81,7 +81,7 @@ export class Renderer extends EventEmitter {
 
   prepareContext(canvas) {
     var ctx = canvas.getContext("2d");
-    ctx.font = this.style.font;
+    ctx.font = this.style.fontSize + " " + this.style.fontFamily;
     return ctx;
   }
 
