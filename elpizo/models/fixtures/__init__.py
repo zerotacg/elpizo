@@ -25,7 +25,7 @@ class FixtureType(Base):
   def to_js(self):
     return {
         "name": self.name,
-        "size": {
+        "bbox": {
             "aLeft": self.a_left,
             "aTop": self.a_top,
             "aRight": self.a_right,

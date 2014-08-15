@@ -116,11 +116,12 @@ export class Realm {
     }
 
     if (this.getAllEntities().filter(
-        (entity) => entity.type == "Fixture").some((entity) => {
-      return location.ax >= entity.location.ax + entity.fixtureType.size.aLeft &&
-             location.ax < entity.location.ax + entity.fixtureType.size.aRight &&
-             location.ay >= entity.location.ay + entity.fixtureType.size.aTop &&
-             location.ay < entity.location.ay + entity.fixtureType.size.aBottom;
+        (entity) => !entity.isPassable(location, direction)).some((entity) => {
+      var bbox = entity.getBbox();
+      return location.ax >= entity.location.ax + bbox.aLeft &&
+             location.ax < entity.location.ax + bbox.aRight &&
+             location.ay >= entity.location.ay + bbox.aTop &&
+             location.ay < entity.location.ay + bbox.aBottom;
     })) {
       return false;
     }
@@ -204,7 +205,21 @@ export class Entity extends EventEmitter {
     this.direction = message.direction;
   }
 
+  contains(location) {
+    var bbox = this.getBbox();
+    return location.ax >= this.location.ax + bbox.aLeft &&
+           location.ax < this.location.ax + bbox.aRight &&
+           location.ay >= this.location.ay + bbox.aTop &&
+           location.ay < this.location.ay + bbox.aBottom;
+  }
+
   update(dt) {
+  }
+
+  onAdjacentInteract(protocol) {
+  }
+
+  onContainingInteract(protocol) {
   }
 }
 
@@ -238,6 +253,19 @@ export class Actor extends Entity {
 
   getDirectionVector() {
     return getDirectionVector(this.direction);
+  }
+
+  getBbox() {
+    return {
+        aLeft: 0,
+        aTop: 0,
+        aRight: 1,
+        aBottom: 1
+    };
+  }
+
+  isPassable(location, direction) {
+    return true;
   }
 
   moveInDirection(direction) {
@@ -328,27 +356,48 @@ export class Actor extends Entity {
     }
 
     // Check for interactions.
+    var dv = getDirectionVector(this.direction);
+
+    var interactions = [];
+
     if (inputState.unstick(Key.Z)) {
-      var contacts = this.realm.getAllEntities().filter((entity) =>
-          entity.location.ax === this.location.ax &&
-          entity.location.ay === this.location.ay &&
-          entity !== this);
+      this.realm.getAllEntities().forEach((entity) => {
+        if (entity === this) {
+          return;
+        }
 
-      if (contacts.length === 0) {
+        if (entity.contains(this.location)) {
+          interactions.push({
+              entity: entity,
+              contained: true
+          });
+        } else if (entity.contains({
+            ax: this.location.ax + dv.ax,
+            ay: this.location.ay + dv.ay
+        })) {
+          interactions.push({
+              entity: entity,
+              contained: false
+          });
+        }
+      });
+
+      console.log(interactions);
+
+      if (interactions.length === 0) {
         return;
       }
 
-      if (contacts.length > 1) {
-        console.warn("I don't know how to handle this!");
+      if (interactions.length > 1) {
+        console.warn("NOT IMPLEMENTED: MULTIPLE ENTITY INTERACTION");
         return;
       }
 
-      var head = contacts[0];
-      switch (head.type) {
-        case "Drop":
-          // Attempt to pick up the drop.
-          protocol.send(new game_pb2.PickUpPacket({dropId: head.id}));
-          break;
+      var head = interactions[0];
+      if (head.contained) {
+        head.entity.onContainingInteract(protocol);
+      } else {
+        head.entity.onAdjacentInteract(protocol);
       }
     }
   }
@@ -362,10 +411,18 @@ export class Fixture extends Entity {
     message = message.fixtureExt;
 
     this.fixtureType = exports.fixtureTypes[message.fixtureTypeId];
-    this.aLeft = message.aLeft;
-    this.aTop = message.aTop;
-    this.aRight = message.aRight;
-    this.aBottom = message.aBottom;
+  }
+
+  getBbox() {
+    return this.fixtureType.bbox;
+  }
+
+  isPassable(location, direction) {
+    return false;
+  }
+
+  onAdjacentInteract(protocol) {
+    console.warn("NOT IMPLEMENTED: FIXTURE INTERACTION");
   }
 }
 
@@ -383,6 +440,24 @@ export class Drop extends Entity {
 
     this.item = new Item(message.item);
   }
+
+  getBbox() {
+    return {
+        aLeft: 0,
+        aTop: 0,
+        aRight: 1,
+        aBottom: 1
+    };
+  }
+
+  isPassable(location, direction) {
+    return true;
+  }
+
+  onContainingInteract(protocol) {
+    // Attempt to pick up the drop.
+    protocol.send(new game_pb2.PickUpPacket({dropId: this.id}));
+  }
 }
 
 export class Building extends Entity {
@@ -392,6 +467,19 @@ export class Building extends Entity {
 
     this.aWidth = message.aWidth;
     this.aHeight = message.aHeight;
+  }
+
+  getBbox() {
+    return {
+        aLeft: 0,
+        aTop: 0,
+        aRight: this.aWidth,
+        aBottom: this.aHeight
+    };
+  }
+
+  isPassable(location, direction) {
+    return false;
   }
 }
 

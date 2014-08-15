@@ -82,6 +82,7 @@ def initialize_realm(app):
       platform_tiles[6 + 5 * Region.SIZE] = 24
 
       platform_tiles[4 + 6 * Region.SIZE] = 40
+      platform_tiles[5 + 6 * Region.SIZE] = 28
       platform_tiles[6 + 6 * Region.SIZE] = 38
 
       platform_layer = RegionLayer(terrain=grassland, tiles=platform_tiles)
