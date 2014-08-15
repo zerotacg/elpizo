@@ -28,7 +28,10 @@ export class Game extends EventEmitter {
 
     this.protocol = new Protocol(new Transport(
         "ws://" + window.location.host + "/socket"));
+
     this.resources = new Resources();
+    this.resourcesLoaded = false;
+
     this.renderer = new Renderer(this.resources, parent);
     this.inputState = new InputState(window);
 
@@ -38,49 +41,60 @@ export class Game extends EventEmitter {
 
     this.uiRootComponent = UI({game: this});
 
+    // Render the React components once.
+    this.renderReact();
+
     handlers.install(this);
 
-    this.renderer.on("refit", (bounds) => {
-      if (this.me !== null) {
-        this.renderer.center(this.me.location);
-      }
-    });
+    this.renderer.on("refit", this.onRefit.bind(this));
+    this.renderer.on("viewportChange", this.onViewportChange.bind(this));
 
-    this.renderer.on("viewportChange", (bounds, lastBounds) => {
-      if (this.realm === null) {
-        return;
-      }
+    this.protocol.transport.on("open", this.onTransportOpen.bind(this));
+    this.protocol.transport.on("close", this.onTransportClose.bind(this));
+    this.running = false;
+  }
 
-      var currentArTopLeft = coords.absoluteToContainingRegion(
-          {ax: bounds.aLeft,
-           ay: bounds.aTop});
-      var currentArBottomRight = coords.absoluteToContainingRegion(
-          {ax: bounds.aRight + coords.REGION_SIZE,
-           ay: bounds.aBottom + coords.REGION_SIZE})
+  onRefit(bounds) {
+    if (this.me !== null) {
+      this.renderer.center(this.me.location);
+    }
+  }
 
-      var lastArTopLeft = coords.absoluteToContainingRegion(
-          {ax: lastBounds.aLeft,
-           ay: lastBounds.aTop});
-      var lastArBottomRight = coords.absoluteToContainingRegion(
-          {ax: lastBounds.aRight + coords.REGION_SIZE,
-           ay: lastBounds.aBottom + coords.REGION_SIZE})
+  onViewportChange(bounds, lastBounds) {
+    if (this.realm === null) {
+      return;
+    }
 
-      if (currentArTopLeft.arx !== lastArTopLeft.arx ||
-          currentArTopLeft.ary !== lastArTopLeft.ary ||
-          currentArBottomRight.arx !== lastArBottomRight.arx ||
-          currentArBottomRight.ary !== lastArBottomRight.ary) {
-        this.realm.retainRegions(this.renderer.getRegionCacheBounds());
-        this.protocol.send(new game_pb2.ViewportPacket(
-            this.renderer.getRegionCacheBounds()));
-      }
-    });
+    var currentArTopLeft = coords.absoluteToContainingRegion(
+        {ax: bounds.aLeft,
+         ay: bounds.aTop});
+    var currentArBottomRight = coords.absoluteToContainingRegion(
+        {ax: bounds.aRight + coords.REGION_SIZE,
+         ay: bounds.aBottom + coords.REGION_SIZE})
 
-    Promise.all([
-        waitFor(this.protocol.transport, "open"),
-        waitFor(this.resources, "bundleLoaded")
-    ]).then(() => {
-      this.emit("ready");
-    });
+    var lastArTopLeft = coords.absoluteToContainingRegion(
+        {ax: lastBounds.aLeft,
+         ay: lastBounds.aTop});
+    var lastArBottomRight = coords.absoluteToContainingRegion(
+        {ax: lastBounds.aRight + coords.REGION_SIZE,
+         ay: lastBounds.aBottom + coords.REGION_SIZE})
+
+    if (currentArTopLeft.arx !== lastArTopLeft.arx ||
+        currentArTopLeft.ary !== lastArTopLeft.ary ||
+        currentArBottomRight.arx !== lastArBottomRight.arx ||
+        currentArBottomRight.ary !== lastArBottomRight.ary) {
+      this.realm.retainRegions(this.renderer.getRegionCacheBounds());
+      this.protocol.send(new game_pb2.ViewportPacket(
+          this.renderer.getRegionCacheBounds()));
+    }
+  }
+
+  onTransportOpen() {
+    this.go();
+  }
+
+  onTransportClose() {
+    this.stop();
   }
 
   loadFromManifest(manifest) {
@@ -91,7 +105,9 @@ export class Game extends EventEmitter {
       bundle[fileName] = Resources.TYPES[type]("static/assets/" + fileName);
     });
 
-    this.resources.loadBundle(bundle);
+    this.resources.loadBundle(bundle).then(() => {
+      this.resourcesLoaded = true;
+    });
   }
 
   setRealm(realm) {
@@ -130,13 +146,20 @@ export class Game extends EventEmitter {
     }
   }
 
+  renderReact() {
+    React.renderComponent(this.uiRootComponent, this.uiRoot);
+  }
+
   startUpdating() {
     var startTime = new Date().valueOf() / 1000;
     var cont = () => {
       var currentTime = new Date().valueOf() / 1000;
       this.update(currentTime - startTime);
       startTime = currentTime;
-      window.setTimeout(cont, 0);
+
+      if (this.running) {
+        window.setTimeout(cont, 0);
+      }
     };
     cont();
   }
@@ -144,19 +167,30 @@ export class Game extends EventEmitter {
   startRendering() {
     var startTime = new Date().valueOf() / 1000;
     var cont = () => {
-      React.renderComponent(this.uiRootComponent, this.uiRoot);
-
+      this.renderReact();
       var currentTime = new Date().valueOf() / 1000;
-      this.render(currentTime - startTime);
+
+      if (this.resourcesLoaded) {
+        this.render(currentTime - startTime);
+      }
+
       startTime = currentTime;
-      window.requestAnimationFrame(cont);
+
+      if (this.running) {
+        window.requestAnimationFrame(cont);
+      }
     };
     cont();
   }
 
   go() {
+    this.running = true;
     this.renderer.refit();
     this.startUpdating();
     this.startRendering();
+  }
+
+  stop() {
+    this.running = false;
   }
 }

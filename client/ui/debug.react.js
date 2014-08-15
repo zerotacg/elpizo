@@ -52,31 +52,44 @@ export var Debug = React.createClass({
         <a href="#" onClick={this.toggleDebugStats}>hide</a>
       </div>
 
-      <dl>
-        <dt>Viewport Bounds</dt>
-        <dd>({viewportBounds.aLeft.toFixed(2)}, {viewportBounds.aTop.toFixed(2)}, {viewportBounds.aRight.toFixed(2)}, {viewportBounds.aBottom.toFixed(2)})</dd>
+      <table className="attrs">
+        <tr>
+          <th>Viewport Bounds</th>
+          <td>({viewportBounds.aLeft.toFixed(2)}, {viewportBounds.aTop.toFixed(2)}, {viewportBounds.aRight.toFixed(2)}, {viewportBounds.aBottom.toFixed(2)})</td>
+        </tr>
 
-        <dt>Cache Bounds</dt>
-        <dd>({cacheBounds.arLeft.toFixed(2)}, {cacheBounds.arTop.toFixed(2)}, {cacheBounds.arRight.toFixed(2)}, {cacheBounds.arBottom.toFixed(2)})</dd>
+        <tr>
+          <th>Cache Bounds</th>
+          <td>({cacheBounds.arLeft.toFixed(2)}, {cacheBounds.arTop.toFixed(2)}, {cacheBounds.arRight.toFixed(2)}, {cacheBounds.arBottom.toFixed(2)})</td>
+        </tr>
 
-        <dt># Regions Loaded</dt>
-        <dd>
-          {game.realm !== null ? game.realm.getAllRegions().length : "(no realm)"} (<a href="#" onClick={this.toggleShowRegions}>{this.state.showRegions ? "hide" : "show"}</a>)
-          {maybeRegions}
-        </dd>
 
-        <dt># Entities Loaded</dt>
-        <dd>{game.realm !== null ? game.realm.getAllEntities().length : "(no realm)"}</dd>
+        <tr>
+          <th># Regions Loaded</th>
+          <td>
+            {game.realm !== null ? game.realm.getAllRegions().length : "(no realm)"} (<a href="#" onClick={this.toggleShowRegions}>{this.state.showRegions ? "hide" : "show"}</a>)
+            {maybeRegions}
+          </td>
+        </tr>
 
-        <dt>Avatar Position</dt>
-        <dd>{maybeAvatarPosition !== null ? maybeAvatarPosition : "(no avatar)"}</dd>
+        <tr>
+          <th># Entities Loaded</th>
+          <td>{game.realm !== null ? game.realm.getAllEntities().length : "(no realm)"}</td>
+        </tr>
 
-        <dt><a href="/_debug/" target="_blank">Debug Console</a></dt>
-        <dd>
-          <a href={game.me !== null ? "/_debug/entities/" + game.me.id + "/" : null} target="_blank">Avatar</a>/
-          <a href={game.realm !== null ? "/_debug/realms/" + game.realm.id + "/" : null} target="_blank">Realm</a>
-        </dd>
-      </dl>
+        <tr>
+          <th>Avatar Position</th>
+          <td>{maybeAvatarPosition !== null ? maybeAvatarPosition : "(no avatar)"}</td>
+        </tr>
+
+        <tr>
+          <th><a href="/_debug/" target="_blank">Debug Console</a></th>
+          <td>
+            <a href={game.me !== null ? "/_debug/entities/" + game.me.id + "/" : null} target="_blank">Avatar</a>/
+            <a href={game.realm !== null ? "/_debug/realms/" + game.realm.id + "/" : null} target="_blank">Realm</a>
+          </td>
+        </tr>
+      </table>
     </div>;
   },
 

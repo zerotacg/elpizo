@@ -1,3 +1,5 @@
+module retry from "retry";
+
 module game_pb2 from "../game_pb2";
 
 import {hasOwnProp} from "./objects";
@@ -19,13 +21,22 @@ export class Transport extends EventEmitter {
 
     this.socket.onopen = (e) => {
       this.opened = true;
+      this.currentRetryOperation = null;
       this.emit("open");
     };
 
     this.socket.onclose = (e) => {
       console.warn("Socket died.");
-      //this.connect();
       this.emit("close");
+
+      if (this.currentRetryOperation === null) {
+        this.currentRetryOperation = retry.operation();
+        this.currentRetryOperation.attempt(() => {
+          this.connect();
+        });
+      } else {
+        this.currentRetryOperation.retry(e);
+      }
     };
 
     this.socket.onmessage = (e) => {
