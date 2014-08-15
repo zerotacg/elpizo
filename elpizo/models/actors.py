@@ -25,6 +25,34 @@ class Actor(Entity):
   facial = sqlalchemy.Column(String, nullable=True)
   hair = sqlalchemy.Column(String, nullable=True)
 
+  head_item_id = sqlalchemy.Column(
+      Integer,
+      sqlalchemy.ForeignKey("items.id", use_alter=True,
+                            name="actors_head_item_id"),
+      nullable=True)
+  head_item = relationship("Item", foreign_keys=[head_item_id])
+
+  torso_item_id = sqlalchemy.Column(
+      Integer,
+      sqlalchemy.ForeignKey("items.id", use_alter=True,
+                            name="actors_torso_item_id"),
+      nullable=True)
+  torso_item = relationship("Item", foreign_keys=[torso_item_id])
+
+  legs_item_id = sqlalchemy.Column(
+      Integer,
+      sqlalchemy.ForeignKey("items.id", use_alter=True,
+                            name="actors_legs_item_id"),
+      nullable=True)
+  legs_item = relationship("Item", foreign_keys=[legs_item_id])
+
+  feet_item_id = sqlalchemy.Column(
+      Integer,
+      sqlalchemy.ForeignKey("items.id", use_alter=True,
+                            name="actors_feet_item_id"),
+      nullable=True)
+  feet_item = relationship("Item", foreign_keys=[feet_item_id])
+
   speed = 5 # should probably not be hardcoded
 
   def to_protobuf(self):
@@ -40,6 +68,18 @@ class Actor(Entity):
 
     if self.hair is not None:
       message.hair = self.hair
+
+    if self.head_item is not None:
+      message.head_item.MergeFrom(self.head_item.to_protobuf())
+
+    if self.torso_item is not None:
+      message.torso_item.MergeFrom(self.torso_item.to_protobuf())
+
+    if self.legs_item is not None:
+      message.legs_item.MergeFrom(self.legs_item.to_protobuf())
+
+    if self.feet_item is not None:
+      message.feet_item.MergeFrom(self.feet_item.to_protobuf())
 
     protobuf.Extensions[game_pb2.Actor.actor_ext].MergeFrom(message)
     return protobuf

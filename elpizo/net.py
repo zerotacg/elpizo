@@ -135,7 +135,7 @@ class Connection(WebSocketHandler):
 
     if self.application.settings.get("serve_traceback") and \
         exc_info is not None:
-      body += "\nTraceback:\n" +  "".join(traceback.format_exception(*exc_info))
+      body += "\n\n" + "".join(traceback.format_exception(*exc_info))
 
     self.write_message(
         Protocol.serialize_packet(None, game_pb2.ErrorPacket(text=body)),

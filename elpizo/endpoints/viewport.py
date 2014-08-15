@@ -5,31 +5,6 @@ from ..models.base import Entity
 from ..models.realm import Region
 
 
-def on_open(ctx):
-  # Bind to the relevant channels.
-  ctx.subscribe(ctx.player.routing_key)
-  ctx.subscribe(ctx.player.realm.routing_key)
-
-  # Set the player to online.
-  ctx.publish(ctx.player.realm.routing_key, game_pb2.StatusPacket(online=True))
-
-  ctx.player.online = True
-  ctx.sqla.commit()
-
-  # Send realm information.
-  ctx.send(None, game_pb2.RealmPacket(realm=ctx.player.realm.to_protobuf()))
-  ctx.send(ctx.player.id,
-           game_pb2.EntityPacket(entity=ctx.player.to_protobuf()))
-  ctx.send(ctx.player.id, game_pb2.AvatarPacket())
-
-
-def on_close(ctx):
-  ctx.publish(ctx.player.realm.routing_key, game_pb2.StatusPacket(online=False))
-
-  ctx.player.online = False
-  ctx.sqla.commit()
-
-
 def viewport(ctx, message):
   last_viewport = ctx.transient_storage.get("viewport")
 

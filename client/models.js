@@ -213,13 +213,16 @@ export class Actor extends Entity {
     super(message);
     message = message.actorExt;
 
-    this.equipment = [];
-
     this.name = message.name;
     this.gender = message.gender;
     this.body = message.body;
     this.hair = message.hair;
     this.facial = message.facial;
+
+    this.headItem = message.headItem && new Item(message.headItem);
+    this.torsoItem = message.torsoItem && new Item(message.torsoItem);
+    this.legsItem = message.legsItem && new Item(message.legsItem);
+    this.feetItem = message.feetItem && new Item(message.feetItem);
 
     // TODO: work this out
     this.speed = message.speed;

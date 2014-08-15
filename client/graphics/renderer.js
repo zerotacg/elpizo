@@ -425,8 +425,14 @@ Renderer.ENTITIES = {
         names.push(["Hair", entity.gender, entity.hair].join("."));
       }
 
-      [].push.apply(names, entity.equipment.map((equipment) =>
-          ["Equipment", entity.gender, equipment.type].join(".")));
+      [].push.apply(names, [
+          entity.headItem,
+          entity.torsoItem,
+          entity.legsItem,
+          entity.feetItem
+      ]
+          .filter((item) => item !== null)
+          .map((item) => ["Equipment", entity.gender, item.type].join(".")));
 
       names.forEach((name) => {
           sprites[name][state][direction]

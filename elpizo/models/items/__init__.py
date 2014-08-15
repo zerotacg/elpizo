@@ -23,7 +23,8 @@ class Item(Base):
   owner_actor_id = sqlalchemy.Column(Integer,
                                      sqlalchemy.ForeignKey("actors.id"),
                                      nullable=True)
-  owner = relationship("Actor", backref="inventory")
+  owner = relationship("Actor", foreign_keys=[owner_actor_id],
+                       backref="inventory")
 
   @declared_attr
   def __mapper_args__(cls):

@@ -9,7 +9,7 @@ from elpizo.models.actors import Player
 from elpizo.models.base import Base, User, Entity, Building
 from elpizo.models.realm import Realm, Region, RegionLayer, Terrain
 from elpizo.models.fixtures import Fixture, resource_sources
-from elpizo.models.items import restorative, Drop
+from elpizo.models.items import restorative, equipment, Drop
 from elpizo.tools import mapgen
 
 
@@ -162,14 +162,25 @@ def initialize_players(app, realm):
   victor_hugo = User(name="victor_hugo")
   sqla.add(victor_hugo)
 
+  white_longsleeve_shirt = equipment.WhiteLongsleeveShirt()
+  teal_pants = equipment.TealPants()
+  brown_shoes = equipment.BrownShoes()
+
   valjean = Player(name="Valjean", user=victor_hugo, gender="Male",
                    body="Light",
                    hair="BrownMessy1",
                    facial="BrownBeard",
                    direction=1,
                    health=10,
-                   realm=realm, arx=0, ary=0, rx=0, ry=0)
+                   realm=realm, arx=0, ary=0, rx=0, ry=0,
+                   inventory=[teal_pants, white_longsleeve_shirt, brown_shoes])
   sqla.add(valjean)
+  sqla.flush()
+
+  valjean.torso_item = white_longsleeve_shirt
+  valjean.legs_item = teal_pants
+  valjean.feet_item = brown_shoes
+  sqla.commit()
 
   dumas = User(name="dumas")
   sqla.add(dumas)
@@ -178,7 +189,7 @@ def initialize_players(app, realm):
                  body="Light",
                  direction=1,
                  health=10,
-                 realm=realm, arx=0, ary=0, rx=0, ry=0)
+                 realm=realm, arx=0, ary=0, rx=0, ry=0,)
   sqla.add(athos)
 
   aramis = Player(name="Aramis", user=dumas, gender="Male",
