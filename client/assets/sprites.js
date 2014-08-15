@@ -64,102 +64,30 @@ function makeHumanoidSprite(resourceName) {
   };
 }
 
-function makeTileSheet(resourceName) {
+var AUTOTILE_TEXCOORDS = [
+    [13, 14, 17, 18], [ 2, 14, 17, 18], [13,  3, 17, 18], [ 2,  3, 17, 18],
+    [13, 14, 17,  7], [ 2, 14, 17,  7], [13,  3, 17,  7], [ 2,  3, 17,  7],
+    [13, 14,  6, 18], [ 2, 14,  6, 18], [13,  3,  6, 18], [ 2,  3,  6, 18],
+    [13, 14,  6,  7], [ 2, 14,  6,  7], [13,  3,  6,  7], [ 2,  3,  6,  7],
+    [12, 14, 16, 18], [12,  3, 16, 18], [12, 14, 16,  7], [12,  3, 16,  7],
+    [ 9, 10, 17, 18], [ 9, 10, 17,  7], [ 9, 10,  6, 18], [ 9, 10,  6,  7],
+    [13, 15, 17, 19], [13, 15,  6, 19], [ 2, 15, 17, 19], [ 2, 15,  6, 19],
+    [13, 14, 21, 22], [ 2, 14, 21, 22], [13,  3, 21, 22], [ 2,  3, 21, 22],
+    [12, 15, 16, 19], [ 9, 10, 21, 22], [ 8,  9, 12, 13], [ 8,  9, 12,  7],
+    [10, 11, 14, 15], [10, 11,  6, 15], [18, 19, 22, 23], [ 2, 19, 22, 23],
+    [16, 17, 20, 21], [16,  3, 20, 21], [ 8, 11, 12, 15], [ 8,  9, 20, 21],
+    [16, 19, 20, 23], [10, 11, 22, 23], [ 8, 11, 20, 23], [ 0,  1,  4,  5]
+];
+
+function makeAutotile(resourceName) {
   var SIZE = {sw: 16, sh: 16};
 
-  return {
-    none: [null, null, null, null],
-    neConvexCorner: [
-      null,
-      null,
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 32}], {sx: 0, sy: 0}, 0),
-      null
-    ],
-    nwConvexCorner: [
-      null,
-      null,
-      null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 32}], {sx: 0, sy: 0}, 0)
-    ],
-    goingN: [
-      null,
-      null,
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 32}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 32}], {sx: 0, sy: 0}, 0)
-    ],
-    swConvexCorner: [
-      null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 80}], {sx: 0, sy: 0}, 0),
-      null,
-      null
-    ],
-    saddleNeSw: [
-      null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 80}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 32}], {sx: 0, sy: 0}, 0),
-      null
-    ],
-    goingW: [
-      null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 48}], {sx: 0, sy: 0}, 0),
-      null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 64}], {sx: 0, sy: 0}, 0)
-    ],
-    nwConcaveCorner: [
-      null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 64}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 32}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy:  0}], {sx: 0, sy: 0}, 0)
-    ],
-    seConvexCorner: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 80}], {sx: 0, sy: 0}, 0),
-      null,
-      null,
-      null
-    ],
-    goingE: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 48}], {sx: 0, sy: 0}, 0),
-      null,
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 64}], {sx: 0, sy: 0}, 0),
-      null
-    ],
-    saddleNwSe: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 80}], {sx: 0, sy: 0}, 0),
-      null,
-      null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 32}], {sx: 0, sy: 0}, 0)
-    ],
-    neConcaveCorner: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 64}], {sx: 0, sy: 0}, 0),
-      null,
-      new Sprite(resourceName, SIZE, [{sx: 48, sy:  0}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 32}], {sx: 0, sy: 0}, 0)
-    ],
-    goingS: [
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 80}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 80}], {sx: 0, sy: 0}, 0),
-      null,
-      null
-    ],
-    seConcaveCorner: [
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 16}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 80}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 48, sy: 48}], {sx: 0, sy: 0}, 0),
-      null
-    ],
-    swConcaveCorner: [
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 80}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 16}], {sx: 0, sy: 0}, 0),
-      null,
-      new Sprite(resourceName, SIZE, [{sx:  0, sy: 48}], {sx: 0, sy: 0}, 0)
-    ],
-    full: [
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 48}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 48}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 16, sy: 64}], {sx: 0, sy: 0}, 0),
-      new Sprite(resourceName, SIZE, [{sx: 32, sy: 64}], {sx: 0, sy: 0}, 0)
-    ]
-  };
+  return AUTOTILE_TEXCOORDS.map((coords) => {
+      return coords.map((i) =>
+          new Sprite(resourceName, SIZE,
+                     [{sx: (i % 4) * 16, sy: Math.floor(i / 4) * 16}],
+                     {sx: 0, sy: 0}, 0));
+  });
 }
 
 export default = {
@@ -190,8 +118,8 @@ export default = {
       makeHumanoidSprite("equipment/male/brown_shoes.png"),
 
   "Tiles.Grassland":
-      makeTileSheet("tiles/grass.png"),
+      makeAutotile("tiles/grass.png"),
 
   "Tiles.GrasslandWall":
-      makeTileSheet("tiles/grassland_wall.png")
+      makeAutotile("tiles/grassland_wall.png")
 };

@@ -50,24 +50,7 @@ def initialize_realm(app):
           a_s = arx * Region.SIZE + rs
           a_t = ary * Region.SIZE + rt
 
-          corner = 0xf
-          if a_s == 0 and a_t == 0:
-            corner = 0x2
-          elif a_s == realm.aw and a_t == 0:
-            corner = 0x1
-          elif a_s == 0 and a_t == realm.ah:
-            corner = 0x4
-          elif a_s == realm.aw and a_t == realm.ah:
-            corner = 0x8
-          elif a_s == 0:
-            corner = 0x6
-          elif a_t == 0:
-            corner = 0x3
-          elif a_s == realm.aw:
-            corner = 0x9
-          elif a_t == realm.ah:
-            corner = 0xc
-          corners.append(corner)
+          corners.append(0x0)
       grass_layer = RegionLayer(terrain=grassland, corners=corners)
 
       platform_corners = [0x0] * (17 * 17)
@@ -134,7 +117,7 @@ def initialize_realm(app):
       passabilities[6 + 7 * Region.SIZE] = 0b0000
 
       region = Region(arx=arx, ary=ary, realm=realm,
-                      layers=[grass_layer, platform_layer, wall_layer],
+                      layers=[grass_layer],#, platform_layer, wall_layer],
                       passabilities=passabilities)
       sqla.add(region)
 

@@ -14,15 +14,118 @@ be queried in a relational manner.
 Tiles
 ~~~~~
 Tiles are the locations where entities (buildings, actors, etc.) can be placed
-in a realm. In the database, tiles are duplicated along the east and south edges
-in order to allow the client to render from a single region -- care must be
-taken to ensure consistency when editing tiles.
+in a realm.
 
-Corners
-~~~~~~~
-Corners are the dual of tiles and exist only for rendering. Their configurations
-are computed by the Marching Squares algorithm (see below). Physically, they are
-offset a half tile from the left and a half tile from the top.
+Autotiles
++++++++++
+Autotiles are used for piecing parts of a tile sheet into individual tiles. They
+are partitioned into 24 parts, each of which are 16x16 (half the size of an
+actual tile).
+
+.. image:: autotile.png
+
+48 configurations of tiles are generated from the autotile using a predefined
+list of indices:
+
+====== ==================== =====================================
+Number Index List           Image
+------ -------------------- -------------------------------------
+0      ``[13, 14, 17, 18]`` .. image:: broken_tiles/broken_00.png
+------ -------------------- -------------------------------------
+1      ``[ 2, 14, 17, 18]`` .. image:: broken_tiles/broken_01.png
+------ -------------------- -------------------------------------
+2      ``[13,  3, 17, 18]`` .. image:: broken_tiles/broken_02.png
+------ -------------------- -------------------------------------
+3      ``[ 2,  3, 17, 18]`` .. image:: broken_tiles/broken_03.png
+------ -------------------- -------------------------------------
+4      ``[13, 14, 17,  7]`` .. image:: broken_tiles/broken_04.png
+------ -------------------- -------------------------------------
+5      ``[ 2, 14, 17,  7]`` .. image:: broken_tiles/broken_05.png
+------ -------------------- -------------------------------------
+6      ``[13,  3, 17,  7]`` .. image:: broken_tiles/broken_06.png
+------ -------------------- -------------------------------------
+7      ``[ 2,  3, 17,  7]`` .. image:: broken_tiles/broken_07.png
+------ -------------------- -------------------------------------
+8      ``[13, 14,  6, 18]`` .. image:: broken_tiles/broken_08.png
+------ -------------------- -------------------------------------
+9      ``[ 2, 14,  6, 18]`` .. image:: broken_tiles/broken_09.png
+------ -------------------- -------------------------------------
+10     ``[13,  3,  6, 18]`` .. image:: broken_tiles/broken_10.png
+------ -------------------- -------------------------------------
+11     ``[ 2,  3,  6, 18]`` .. image:: broken_tiles/broken_11.png
+------ -------------------- -------------------------------------
+12     ``[13, 14,  6,  7]`` .. image:: broken_tiles/broken_12.png
+------ -------------------- -------------------------------------
+13     ``[ 2, 14,  6,  7]`` .. image:: broken_tiles/broken_13.png
+------ -------------------- -------------------------------------
+14     ``[13,  3,  6,  7]`` .. image:: broken_tiles/broken_14.png
+------ -------------------- -------------------------------------
+15     ``[ 2,  3,  6,  7]`` .. image:: broken_tiles/broken_15.png
+------ -------------------- -------------------------------------
+16     ``[12, 14, 16, 18]`` .. image:: broken_tiles/broken_16.png
+------ -------------------- -------------------------------------
+17     ``[12,  3, 16, 18]`` .. image:: broken_tiles/broken_17.png
+------ -------------------- -------------------------------------
+18     ``[12, 14, 16,  7]`` .. image:: broken_tiles/broken_18.png
+------ -------------------- -------------------------------------
+19     ``[12,  3, 16,  7]`` .. image:: broken_tiles/broken_19.png
+------ -------------------- -------------------------------------
+20     ``[ 9, 10, 17, 18]`` .. image:: broken_tiles/broken_20.png
+------ -------------------- -------------------------------------
+21     ``[ 9, 10, 17,  7]`` .. image:: broken_tiles/broken_21.png
+------ -------------------- -------------------------------------
+22     ``[ 9, 10,  6, 18]`` .. image:: broken_tiles/broken_22.png
+------ -------------------- -------------------------------------
+23     ``[ 9, 10,  6,  7]`` .. image:: broken_tiles/broken_23.png
+------ -------------------- -------------------------------------
+24     ``[13, 15, 17, 19]`` .. image:: broken_tiles/broken_24.png
+------ -------------------- -------------------------------------
+25     ``[13, 15,  6, 19]`` .. image:: broken_tiles/broken_25.png
+------ -------------------- -------------------------------------
+26     ``[ 2, 15, 17, 19]`` .. image:: broken_tiles/broken_26.png
+------ -------------------- -------------------------------------
+27     ``[ 2, 15,  6, 19]`` .. image:: broken_tiles/broken_27.png
+------ -------------------- -------------------------------------
+28     ``[13, 14, 21, 22]`` .. image:: broken_tiles/broken_28.png
+------ -------------------- -------------------------------------
+29     ``[ 2, 14, 21, 22]`` .. image:: broken_tiles/broken_29.png
+------ -------------------- -------------------------------------
+30     ``[13,  3, 21, 22]`` .. image:: broken_tiles/broken_30.png
+------ -------------------- -------------------------------------
+31     ``[ 2,  3, 21, 22]`` .. image:: broken_tiles/broken_31.png
+------ -------------------- -------------------------------------
+32     ``[12, 15, 16, 19]`` .. image:: broken_tiles/broken_32.png
+------ -------------------- -------------------------------------
+33     ``[ 9, 10, 21, 22]`` .. image:: broken_tiles/broken_33.png
+------ -------------------- -------------------------------------
+34     ``[ 8,  9, 12, 13]`` .. image:: broken_tiles/broken_34.png
+------ -------------------- -------------------------------------
+35     ``[ 8,  9, 12,  7]`` .. image:: broken_tiles/broken_35.png
+------ -------------------- -------------------------------------
+36     ``[10, 11, 14, 15]`` .. image:: broken_tiles/broken_36.png
+------ -------------------- -------------------------------------
+37     ``[10, 11,  6, 15]`` .. image:: broken_tiles/broken_37.png
+------ -------------------- -------------------------------------
+38     ``[18, 19, 22, 23]`` .. image:: broken_tiles/broken_38.png
+------ -------------------- -------------------------------------
+39     ``[ 2, 19, 22, 23]`` .. image:: broken_tiles/broken_39.png
+------ -------------------- -------------------------------------
+40     ``[16, 17, 20, 21]`` .. image:: broken_tiles/broken_40.png
+------ -------------------- -------------------------------------
+41     ``[16,  3, 20, 21]`` .. image:: broken_tiles/broken_41.png
+------ -------------------- -------------------------------------
+42     ``[ 8, 11, 12, 15]`` .. image:: broken_tiles/broken_42.png
+------ -------------------- -------------------------------------
+43     ``[ 8,  9, 20, 21]`` .. image:: broken_tiles/broken_43.png
+------ -------------------- -------------------------------------
+44     ``[16, 19, 20, 23]`` .. image:: broken_tiles/broken_44.png
+------ -------------------- -------------------------------------
+45     ``[10, 11, 22, 23]`` .. image:: broken_tiles/broken_45.png
+------ -------------------- -------------------------------------
+46     ``[ 8, 11, 20, 23]`` .. image:: broken_tiles/broken_46.png
+------ -------------------- -------------------------------------
+47     ``[ 0,  1,  4,  5]`` .. image:: broken_tiles/broken_47.png
+====== ==================== =====================================
 
 Marching Squares
 ++++++++++++++++
@@ -127,7 +230,7 @@ Mask    Configuration (``x`` denotes tile on layer above)
 
 Region
 ~~~~~~
-Regions partition tiles into large chunks (17x17), such that the client does not
+Regions partition tiles into large chunks (16x16), such that the client does not
 need to request each tile individually. The client can subscribe to receive
 messages from a single region and discard the messages it doesn't need
 server-side, such that subscribing to regional message queues is not linear in

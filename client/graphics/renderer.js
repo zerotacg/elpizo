@@ -273,6 +273,7 @@ export class Renderer extends EventEmitter {
           ctx.strokeStyle = "red";
           ctx.fillStyle = "red";
           ctx.strokeRect(0, 0, buffer.width, buffer.height);
+          ctx.font = "24px sans-serif";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(key, buffer.width / 2, buffer.height / 2);
@@ -326,25 +327,18 @@ export class Renderer extends EventEmitter {
         region.layers.forEach((layer) => {
           var spriteSet = sprites["Tiles." + layer.terrain.name];
 
-          spriteSet[Renderer.TILE_TEXTURE_COORDS[layer.corners.getCell(rs, rt)]]
-              .forEach((sprite, index) => {
+          spriteSet[layer.corners.getCell(rs, rt)].forEach((sprite, index) => {
             if (sprite === null) {
               return;
             }
 
-            // dx and dy indicate how many half-tiles in the half-tile needs to
-            // be offset by. They should be in clockwise order, starting from
-            // NW.
-            var dx = [0, 1, 0, 1][index];
-            var dy = [0, 0, 1, 1][index];
-
             var s = this.absoluteToScreenCoords({
-                ax: rs + dx / 2,
-                ay: rt + dy / 2
+                ax: rs + (index % 2) / 2,
+                ay: rt + Math.floor(index / 2) / 2
             });
 
             ctx.save();
-            ctx.translate(s.sx - halfTileSize, s.sy - halfTileSize);
+            ctx.translate(s.sx, s.sy);
             sprite.render(this.resources, ctx, this.elapsed);
             ctx.restore();
           });
@@ -356,6 +350,7 @@ export class Renderer extends EventEmitter {
       ctx.save();
       ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
       ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
+      ctx.font = "12px sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
@@ -417,11 +412,11 @@ Renderer.ENTITIES = {
 
       var names = [["Body", entity.gender, entity.body].join(".")];
 
-      if (entity.facial) {
+      if (entity.facial !== null) {
         names.push(["Facial", entity.gender, entity.facial].join("."));
       }
 
-      if (entity.hair) {
+      if (entity.hair !== null) {
         names.push(["Hair", entity.gender, entity.hair].join("."));
       }
 
@@ -462,39 +457,25 @@ Renderer.ENTITIES = {
     },
 
     Building: (renderer, entity, ctx) => {
-      ctx.fillStyle = "rgba(255, 0, 0, 0.25)";
-      ctx.strokeStyle = "rgba(255, 0, 0, 0.75)";
+      // TODO: actually draw the building.
 
-      var sSize = renderer.absoluteToScreenCoords({
-          ax: entity.aWidth,
-          ay: entity.aHeight
-      });
-      ctx.fillRect(0, 0, sSize.sx, sSize.sy);
-      ctx.strokeRect(0, 0, sSize.sx, sSize.sy);
-      ctx.fillStyle = "rgba(255, 0, 0, 0.75)";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("(id: " + entity.id + ")", sSize.sx / 2, sSize.sy / 2);
+      if (renderer.debug) {
+        ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
+        ctx.strokeStyle = "rgba(0, 255, 0, 0.75)";
+
+        var sSize = renderer.absoluteToScreenCoords({
+            ax: entity.aWidth,
+            ay: entity.aHeight
+        });
+        ctx.fillRect(0, 0, sSize.sx, sSize.sy);
+        ctx.strokeRect(0, 0, sSize.sx, sSize.sy);
+        ctx.fillStyle = "rgba(0, 255, 0, 0.75)";
+        ctx.font = "18px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("(id: " + entity.id + ")", sSize.sx / 2, sSize.sy / 2);
+      }
     }
 };
 
 Renderer.TILE_SIZE = 32;
-
-Renderer.TILE_TEXTURE_COORDS = {
-    0x0: "none",
-    0x1: "neConvexCorner",
-    0x2: "nwConvexCorner",
-    0x3: "goingN",
-    0x4: "swConvexCorner",
-    0x5: "saddleNeSw",
-    0x6: "goingW",
-    0x7: "nwConcaveCorner",
-    0x8: "seConvexCorner",
-    0x9: "goingE",
-    0xa: "saddleNwSe",
-    0xb: "neConcaveCorner",
-    0xc: "goingS",
-    0xd: "seConcaveCorner",
-    0xe: "swConcaveCorner",
-    0xf: "full"
-};
