@@ -28,6 +28,10 @@ class Protocol(object):
     self.player = self.get_player(self.application.sqla_factory())
 
   def on_open(self):
+    # Kindly ask any existing clients to kill their own sessions.
+    self.publish(self.player.routing_key, None,
+                 game_pb2.ErrorPacket(text="session collision"))
+
     # Set up the user's AMQP subscriptions.
     queue_name = self.player.user.queue_name
 
@@ -39,6 +43,8 @@ class Protocol(object):
     self.channel.basic_consume(
         green.root(self.on_raw_amqp_message),
         queue=queue_name, no_ack=True, exclusive=True)
+
+    self.subscribe(self.player.routing_key)
 
     for on_open_hook in self.application.on_open_hooks:
       with Context(self) as ctx:
@@ -74,16 +80,16 @@ class Protocol(object):
         routing_key=routing_key,
         body=self.serialize_packet(origin, message))
 
-  def unsubscribe(self, player, routing_key):
+  def unsubscribe(self, routing_key):
     green.async_task(self.channel.queue_unbind)(
         exchange=Protocol.EXCHANGE_NAME,
-        queue=player.user.queue_name,
+        queue=self.player.user.queue_name,
         routing_key=routing_key)
 
-  def subscribe(self, player, routing_key):
+  def subscribe(self, routing_key):
     green.async_task(self.channel.queue_bind)(
         exchange=Protocol.EXCHANGE_NAME,
-        queue=player.user.queue_name,
+        queue=self.player.user.queue_name,
         routing_key=routing_key)
 
   def close(self):
@@ -215,10 +221,10 @@ class Context(object):
     self.protocol.publish(routing_key, self.player.id, message)
 
   def unsubscribe(self, routing_key):
-    self.protocol.unsubscribe(self.player, routing_key)
+    self.protocol.unsubscribe(routing_key)
 
   def subscribe(self, routing_key):
-    self.protocol.subscribe(self.player, routing_key)
+    self.protocol.subscribe(routing_key)
 
   def close(self):
     self.protocol.close()

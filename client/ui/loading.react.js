@@ -7,8 +7,15 @@ export var Loading = React.createClass({
     if (this.props.game.running) {
       return null;
     }
+
+    if (this.props.game.protocol.lastError !== null) {
+      message = "Error: " + this.props.game.protocol.lastError;
+    } else {
+      message = "Loading..."
+    }
+
     return <div className="loading">
-      Waiting for connection...
+      {{message}}
     </div>;
   }
 });

@@ -21,12 +21,12 @@ export class Transport extends EventEmitter {
 
     this.socket.onopen = (e) => {
       this.opened = true;
-      this.emit("open");
+      this.emit("open", e);
     };
 
     this.socket.onclose = (e) => {
       this.opened = false;
-      this.emit("close");
+      this.emit("close", e);
     };
 
     this.socket.onmessage = (e) => {
@@ -67,12 +67,13 @@ export class Protocol extends EventEmitter {
     this.transport.on("message", (packet) => {
       var message = PACKETS[packet.type].decode(packet.payload);
       if (packet.type === game_pb2.Packet.Type.ERROR) {
-        this.lastError = message;
+        this.lastError = message.text;
+        this.transport.close();
       }
       this.emit(packet.type, packet.origin, message);
     });
 
-    this.transport.on("close", () => {
+    this.transport.on("close", (e) => {
       if (this.lastError !== null) {
         return;
       }
@@ -80,7 +81,7 @@ export class Protocol extends EventEmitter {
       if (this.currentRetryOperation === null) {
         this.currentRetryOperation = retry.operation();
         this.currentRetryOperation.attempt(() => {
-          this.connect();
+          this.transport.connect();
         });
       } else {
         this.currentRetryOperation.retry(e);

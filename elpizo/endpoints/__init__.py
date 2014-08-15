@@ -2,6 +2,10 @@ from . import chat, move, viewport, item
 from ..game_pb2 import Packet
 
 
+def passthrough_mq_endpoint(ctx, origin, message):
+  ctx.send(origin, message)
+
+
 def basic_mq_endpoint(ctx, origin, message):
   if origin != ctx.player.id:
     ctx.send(origin, message)
@@ -31,5 +35,6 @@ def configure(application):
       Packet.MOVE: basic_mq_endpoint,
       Packet.STOP_MOVE: basic_mq_endpoint,
       Packet.STATUS: basic_mq_endpoint,
-      Packet.DESPAWN_ENTITY: basic_mq_endpoint
+      Packet.DESPAWN_ENTITY: basic_mq_endpoint,
+      Packet.ERROR: passthrough_mq_endpoint
   }
