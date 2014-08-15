@@ -43,53 +43,53 @@ def initialize_realm(app):
 
   for ary in range(realm.ah // Region.SIZE):
     for arx in range(realm.aw // Region.SIZE):
-      corners = []
+      tiles = []
 
-      for rt in range(Region.SIZE + 1):
-        for rs in range(Region.SIZE + 1):
-          a_s = arx * Region.SIZE + rs
-          a_t = ary * Region.SIZE + rt
+      for ry in range(Region.SIZE):
+        for rx in range(Region.SIZE):
+          ax = arx * Region.SIZE + rx
+          ay = ary * Region.SIZE + ry
 
-          corners.append(0x0)
-      grass_layer = RegionLayer(terrain=grassland, corners=corners)
+          tile = 0x0
 
-      platform_corners = [0x0] * (17 * 17)
-      platform_corners[4 + 4 * (Region.SIZE + 1)] = 0x2
-      platform_corners[5 + 4 * (Region.SIZE + 1)] = 0x3
-      platform_corners[6 + 4 * (Region.SIZE + 1)] = 0x3
-      platform_corners[7 + 4 * (Region.SIZE + 1)] = 0x1
+          if ax == 0 and ay == 0:
+            tile = 34
+          elif ax == 0 and ay == realm.ah - 1:
+            tile = 40
+          elif ax == realm.aw - 1 and ay == 0:
+            tile = 36
+          elif ax == realm.aw - 1 and ay == realm.ah - 1:
+            tile = 38
+          elif ax == 0:
+            tile = 16
+          elif ax == realm.aw - 1:
+            tile = 24
+          elif ay == 0:
+            tile = 20
+          elif ay == realm.ah - 1:
+            tile = 28
 
-      platform_corners[4 + 5 * (Region.SIZE + 1)] = 0x6
-      platform_corners[5 + 5 * (Region.SIZE + 1)] = 0xf
-      platform_corners[6 + 5 * (Region.SIZE + 1)] = 0xf
-      platform_corners[7 + 5 * (Region.SIZE + 1)] = 0x9
+          tiles.append(tile)
+      grass_layer = RegionLayer(terrain=grassland, tiles=tiles)
 
-      platform_corners[4 + 6 * (Region.SIZE + 1)] = 0x6
-      platform_corners[5 + 6 * (Region.SIZE + 1)] = 0xf
-      platform_corners[6 + 6 * (Region.SIZE + 1)] = 0xf
-      platform_corners[7 + 6 * (Region.SIZE + 1)] = 0x9
+      platform_tiles = [-1] * (16 * 16)
+      platform_tiles[4 + 4 * Region.SIZE] = 34
+      platform_tiles[5 + 4 * Region.SIZE] = 20
+      platform_tiles[6 + 4 * Region.SIZE] = 36
 
-      platform_corners[4 + 7 * (Region.SIZE + 1)] = 0x4
-      platform_corners[5 + 7 * (Region.SIZE + 1)] = 0xe
-      platform_corners[6 + 7 * (Region.SIZE + 1)] = 0xd
-      platform_corners[7 + 7 * (Region.SIZE + 1)] = 0x8
+      platform_tiles[4 + 5 * Region.SIZE] = 16
+      platform_tiles[5 + 5 * Region.SIZE] = 0
+      platform_tiles[6 + 5 * Region.SIZE] = 24
 
-      platform_corners[5 + 8 * (Region.SIZE + 1)] = 0x6
-      platform_corners[6 + 8 * (Region.SIZE + 1)] = 0x9
+      platform_tiles[4 + 6 * Region.SIZE] = 40
+      platform_tiles[6 + 6 * Region.SIZE] = 38
 
-      platform_layer = RegionLayer(terrain=grassland, corners=platform_corners)
+      platform_layer = RegionLayer(terrain=grassland, tiles=platform_tiles)
 
-      wall_corners = [0x0] * (17 * 17)
-      wall_corners[4 + 7 * (Region.SIZE + 1)] = 0x2
-      wall_corners[4 + 8 * (Region.SIZE + 1)] = 0x4
-      wall_corners[5 + 7 * (Region.SIZE + 1)] = 0x1
-      wall_corners[5 + 8 * (Region.SIZE + 1)] = 0x8
-
-      wall_corners[6 + 7 * (Region.SIZE + 1)] = 0x2
-      wall_corners[6 + 8 * (Region.SIZE + 1)] = 0x4
-      wall_corners[7 + 7 * (Region.SIZE + 1)] = 0x1
-      wall_corners[7 + 8 * (Region.SIZE + 1)] = 0x8
-      wall_layer = RegionLayer(terrain=grassland_wall, corners=wall_corners)
+      wall_tiles = [-1] * (16 * 16)
+      wall_tiles[4 + 7 * Region.SIZE] = 40
+      wall_tiles[6 + 7 * Region.SIZE] = 38
+      wall_layer = RegionLayer(terrain=grassland_wall, tiles=wall_tiles)
 
       passabilities = [0b1111] * (16 * 16)
 
@@ -117,7 +117,7 @@ def initialize_realm(app):
       passabilities[6 + 7 * Region.SIZE] = 0b0000
 
       region = Region(arx=arx, ary=ary, realm=realm,
-                      layers=[grass_layer],#, platform_layer, wall_layer],
+                      layers=[grass_layer, platform_layer, wall_layer],
                       passabilities=passabilities)
       sqla.add(region)
 

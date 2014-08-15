@@ -135,7 +135,7 @@ class RegionLayer(Base):
   terrain_id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("terrain.id"),
                                  nullable=False)
   terrain = relationship("Terrain")
-  corners = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
+  tiles = sqlalchemy.Column(postgresql.ARRAY(Integer), nullable=False)
   layer_index = sqlalchemy.Column(Integer, nullable=False, primary_key=True)
 
   region = relationship(
@@ -146,10 +146,9 @@ class RegionLayer(Base):
 
   def to_protobuf(self):
     return game_pb2.Region.Layer(terrain_id=self.terrain_id,
-                                 corners=self.corners)
+                                 tiles=self.tiles)
 
   __table_args__ = (
       sqlalchemy.CheckConstraint(
-          func.array_length(corners, 1) ==
-              (Region.SIZE + 1) * (Region.SIZE + 1)),
+          func.array_length(tiles, 1) == Region.SIZE * Region.SIZE),
   )

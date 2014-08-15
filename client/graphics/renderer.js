@@ -322,19 +322,20 @@ export class Renderer extends EventEmitter {
 
     var ctx = this.prepareContext(canvas);
 
-    for (var rt = 0; rt < coords.REGION_SIZE + 1; ++rt) {
-      for (var rs = 0; rs < coords.REGION_SIZE + 1; ++rs) {
+    for (var ry = 0; ry < coords.REGION_SIZE; ++ry) {
+      for (var rx = 0; rx < coords.REGION_SIZE; ++rx) {
         region.layers.forEach((layer) => {
           var spriteSet = sprites["Tiles." + layer.terrain.name];
 
-          spriteSet[layer.corners.getCell(rs, rt)].forEach((sprite, index) => {
-            if (sprite === null) {
-              return;
-            }
+          var tileNum = layer.tiles.getCell(rx, ry);
+          if (tileNum < 0) {
+            return;
+          }
 
+          spriteSet[tileNum].forEach((sprite, index) => {
             var s = this.absoluteToScreenCoords({
-                ax: rs + (index % 2) / 2,
-                ay: rt + Math.floor(index / 2) / 2
+                ax: rx + (index % 2) / 2,
+                ay: ry + Math.floor(index / 2) / 2
             });
 
             ctx.save();
