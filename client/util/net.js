@@ -13,7 +13,6 @@ export class Transport extends EventEmitter {
     this.host = host;
     this.connect();
     this.opened = false;
-    this.currentRetryOperation = null;
   }
 
   connect() {
@@ -26,16 +25,8 @@ export class Transport extends EventEmitter {
     };
 
     this.socket.onclose = (e) => {
+      this.opened = false;
       this.emit("close");
-
-      if (this.currentRetryOperation === null) {
-        this.currentRetryOperation = retry.operation();
-        this.currentRetryOperation.attempt(() => {
-          this.connect();
-        });
-      } else {
-        this.currentRetryOperation.retry(e);
-      }
     };
 
     this.socket.onmessage = (e) => {
@@ -70,15 +61,30 @@ export class Protocol extends EventEmitter {
 
     this.transport = transport;
 
-    if (this.transport.opened) {
-      // We have to wait for this frame to end before emitting open, since
-      // the caller needs to set callbacks.
-      setTimeout(this.emit.bind(this, "open"), 0);
-    }
+    this.lastError = null;
+    this.currentRetryOperation = null;
 
     this.transport.on("message", (packet) => {
       var message = PACKETS[packet.type].decode(packet.payload);
+      if (packet.type === game_pb2.Packet.Type.ERROR) {
+        this.lastError = message;
+      }
       this.emit(packet.type, packet.origin, message);
+    });
+
+    this.transport.on("close", () => {
+      if (this.lastError !== null) {
+        return;
+      }
+
+      if (this.currentRetryOperation === null) {
+        this.currentRetryOperation = retry.operation();
+        this.currentRetryOperation.attempt(() => {
+          this.connect();
+        });
+      } else {
+        this.currentRetryOperation.retry(e);
+      }
     });
   }
 
