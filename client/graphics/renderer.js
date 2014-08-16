@@ -1,5 +1,6 @@
 import {EventEmitter} from "events";
 
+import {EntityVisitor} from "../models/base";
 import {Directions, getDirectionVector} from "../models/actors";
 import {Drop} from "../models/items";
 import {repeat} from "../util/collections";
@@ -397,13 +398,18 @@ export class Renderer extends EventEmitter {
 
     ctx.save();
     ctx.translate(sOffset.sx, sOffset.sy);
-    Renderer.ENTITY_TYPES[entity.type](this, entity, ctx);
+    entity.visit(new RendererVisitor(this, ctx));
     ctx.restore();
   }
 }
 
-Renderer.ENTITY_TYPES = {
-    actor: (renderer, entity, ctx) => {
+class RendererVisitor extends EntityVisitor {
+  constructor(renderer, ctx) {
+    this.renderer = renderer;
+    this.ctx = ctx;
+  }
+
+  visitActor(entity) {
       var state = entity.moving ? "walking" : "standing";
       var direction = entity.direction == Directions.N ? "n" :
                       entity.direction == Directions.W ? "w" :
@@ -432,51 +438,49 @@ Renderer.ENTITY_TYPES = {
 
       names.forEach((name) => {
           sprites[name][state][direction]
-              .render(renderer.resources, ctx,
-                      renderer.elapsed * entity.getSpeed());
+              .render(this.renderer.resources, this.ctx,
+                      this.renderer.elapsed * entity.getSpeed());
       })
-    },
+  }
 
-    fixture: (renderer, entity, ctx) => {
+  visitFixture(entity) {
       sprites[["fixture", entity.fixtureType.name].join(".")]
-          .render(renderer.resources, ctx, renderer.elapsed);
-    },
+          .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
+  }
 
-    drop: (renderer, entity, ctx) => {
-      sprites[["item", entity.item.type].join(".")]
-          .render(renderer.resources, ctx, renderer.elapsed);
-    },
+  visitDrop(entity) {
+    sprites[["item", entity.item.type].join(".")]
+        .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
+  }
 
-    player: (renderer, entity, ctx) => {
-      Renderer.ENTITY_TYPES.actor(renderer, entity, ctx);
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "black";
-      ctx.fillText(entity.name, 17, -23);
-      ctx.fillStyle = makeColorForString(entity.name);
-      ctx.fillText(entity.name, 16, -24);
-    },
+  visitPlayer(entity) {
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillStyle = "black";
+    this.ctx.fillText(entity.name, 17, -23);
+    this.ctx.fillStyle = makeColorForString(entity.name);
+    this.ctx.fillText(entity.name, 16, -24);
+  }
 
-    building: (renderer, entity, ctx) => {
-      // TODO: actually draw the building.
+  visitBuilding(entity) {
+    // TODO: actually draw the building.
 
-      if (renderer.debug) {
-        ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
-        ctx.strokeStyle = "rgba(0, 255, 0, 0.75)";
+    if (this.renderer.debug) {
+      this.ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
+      this.ctx.strokeStyle = "rgba(0, 255, 0, 0.75)";
 
-        var sSize = renderer.absoluteToScreenCoords({
-            ax: entity.aWidth,
-            ay: entity.aHeight
-        });
-        ctx.fillRect(0, 0, sSize.sx, sSize.sy);
-        ctx.strokeRect(0, 0, sSize.sx, sSize.sy);
-        ctx.fillStyle = "rgba(0, 255, 0, 0.75)";
-        ctx.font = "18px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("(id: " + entity.id + ")", sSize.sx / 2, sSize.sy / 2);
-      }
+      var sSize = this.renderer.absoluteToScreenCoords({
+          ax: entity.aWidth,
+          ay: entity.aHeight
+      });
+      this.ctx.fillRect(0, 0, sSize.sx, sSize.sy);
+      this.ctx.strokeRect(0, 0, sSize.sx, sSize.sy);
+      this.ctx.fillStyle = "rgba(0, 255, 0, 0.75)";
+      this.ctx.font = "18px sans-serif";
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
+      this.ctx.fillText("(id: " + entity.id + ")", sSize.sx / 2, sSize.sy / 2);
     }
-};
-
+  }
+}
 Renderer.TILE_SIZE = 32;

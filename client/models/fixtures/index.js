@@ -20,5 +20,14 @@ export class Fixture extends Entity {
   onAdjacentInteract(protocol) {
     console.warn("NOT IMPLEMENTED: FIXTURE INTERACTION");
   }
+
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitFixture(this);
+  }
 }
-Entity.TYPES["fixture"] = Fixture;
+
+Fixture.REGISTRY = {};
+Fixture.register = (c2) => {
+  Fixture.REGISTRY[c2.REGISTRY_TYPE] = c2;
+};

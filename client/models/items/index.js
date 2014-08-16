@@ -33,5 +33,14 @@ export class Drop extends Entity {
     // Attempt to pick up the drop.
     protocol.send(new game_pb2.PickUpPacket({dropId: this.id}));
   }
+
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitDrop(this);
+  }
 }
-Entity.TYPES["drop"] = Drop;
+
+Item.REGISTRY = {};
+Item.register = (c2) => {
+  Item.REGISTRY[c2.REGISTRY_TYPE] = c2;
+};

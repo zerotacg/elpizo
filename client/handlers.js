@@ -1,5 +1,5 @@
 module exports from "./exports";
-import {Entity} from "./models/base";
+import {makeEntity} from "./models";
 import {Directions} from "./models/actors";
 import {Realm, Region} from "./models/realm";
 
@@ -31,8 +31,7 @@ export function install(game) {
       return;
     }
 
-    game.realm.addEntity(new (Entity.TYPES[message.entity.type])(
-        message.entity));
+    game.realm.addEntity(makeEntity(message.entity));
   });
 
   protocol.on(Packet.Type.AVATAR, (origin, message) => {

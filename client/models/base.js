@@ -29,8 +29,11 @@ export class Entity extends EventEmitter {
 
   onContainingInteract(protocol) {
   }
+
+  visit(visitor) {
+    visitor.visitEntity(this);
+  }
 }
-Entity.TYPES = {};
 
 export class Building extends Entity {
   constructor(message) {
@@ -53,5 +56,26 @@ export class Building extends Entity {
   isPassable(location, direction) {
     return false;
   }
+
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitBuilding(this);
+  }
 }
-Entity.TYPES["building"] = Building;
+
+export class EntityVisitor {
+  visitEntity(entity) {
+  }
+
+  visitBuilding(building) {
+  }
+
+  visitDrop(drop) {
+  }
+
+  visitActor(actor) {
+  }
+
+  visitPlayer(player) {
+  }
+}

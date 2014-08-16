@@ -138,12 +138,16 @@ export class Actor extends Entity {
       }
     }
   }
+
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitActor(this);
+  }
 }
 
 Actor.BASE_SPEED = 5;
-Entity.TYPES["actor"] = Actor;
 
-class Player extends Actor {
+export class Player extends Actor {
   updateAsAvatar(dt, inputState, protocol) {
     if (this.remainder > 0) {
       return;
@@ -220,5 +224,9 @@ class Player extends Actor {
       }
     }
   }
+
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitPlayer(this);
+  }
 }
-Entity.TYPES["player"] = Player;

@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import pika
-import venusian
 
 from pika.adapters.tornado_connection import TornadoConnection
 from sqlalchemy import create_engine
@@ -13,6 +12,9 @@ from . import endpoints, models
 from .exports import get_exports
 from .mint import Mint
 from .net import Connection
+
+from .models.fixtures import Fixture, registry as fixture_registry
+from .models.items import Item, registry as item_registry
 
 
 class GameHandler(RequestHandler):
@@ -41,15 +43,20 @@ class Application(Application):
       from . import debug
       debug.install(self, routes)
 
-    super().__init__(
-        routes,
-        template_path=os.path.join(os.path.dirname(__file__), "templates"),
-        **kwargs)
+    fixture_registry.initialize()
+    item_registry.initialize()
+
+    logging.info("Initialized {} fixtures, {} items.".format(
+                 len(Fixture.REGISTRY), len(Item.REGISTRY)))
+
+    super().__init__(routes,
+                     template_path=os.path.join(os.path.dirname(__file__),
+                                                "templates"),
+                     **kwargs)
 
     self.amqp = TornadoConnection(pika.ConnectionParameters(
         self.settings["amqp_server"]), stop_ioloop_on_close=False)
 
-    venusian.Scanner().scan(models)
     self.sqla_factory = scoped_session(
         sessionmaker(bind=create_engine(self.settings["dsn"])))
 
