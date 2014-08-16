@@ -28,13 +28,13 @@ def initialize_realm(app):
   sqla.add(realm)
   sqla.commit()
 
-  ocean = Terrain(name="Ocean")
+  ocean = Terrain(name="ocean")
   sqla.add(ocean)
 
-  grassland = Terrain(name="Grassland")
+  grassland = Terrain(name="grassland")
   sqla.add(grassland)
 
-  grassland_wall = Terrain(name="GrasslandWall")
+  grassland_wall = Terrain(name="grassland_wall")
   sqla.add(grassland_wall)
 
   sqla.commit()
@@ -150,10 +150,10 @@ def initialize_players(app, realm):
   teal_pants = equipment.TealPants()
   brown_shoes = equipment.BrownShoes()
 
-  valjean = Player(name="Valjean", user=victor_hugo, gender="Male",
-                   body="Light",
-                   hair="BrownMessy1",
-                   facial="BrownBeard",
+  valjean = Player(name="Valjean", user=victor_hugo, gender="male",
+                   body="light",
+                   hair="brown_messy_1",
+                   facial="brown_beard",
                    direction=1,
                    health=10,
                    realm=realm, arx=0, ary=0, rx=0, ry=0,
@@ -169,22 +169,22 @@ def initialize_players(app, realm):
   dumas = User(name="dumas")
   sqla.add(dumas)
 
-  athos = Player(name="Athos", user=dumas, gender="Male",
-                 body="Light",
+  athos = Player(name="Athos", user=dumas, gender="male",
+                 body="light",
                  direction=1,
                  health=10,
                  realm=realm, arx=0, ary=0, rx=0, ry=0,)
   sqla.add(athos)
 
-  aramis = Player(name="Aramis", user=dumas, gender="Male",
-                  body="Light",
+  aramis = Player(name="Aramis", user=dumas, gender="male",
+                  body="light",
                   direction=1,
                   health=10,
                   realm=realm, arx=0, ary=0, rx=0, ry=0)
   sqla.add(aramis)
 
-  porthos = Player(name="Porthos", user=dumas, gender="Male",
-                   body="Light",
+  porthos = Player(name="Porthos", user=dumas, gender="male",
+                   body="light",
                    direction=1,
                    health=10,
                    realm=realm, arx=0, ary=0, rx=0, ry=0)

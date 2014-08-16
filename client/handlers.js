@@ -1,5 +1,7 @@
 module exports from "./exports";
-import {Realm, Region, Entity, Directions} from "./models";
+import {Entity} from "./models/base";
+import {Directions} from "./models/actors";
+import {Realm, Region} from "./models/realm";
 
 import {Packet} from "./game_pb2";
 

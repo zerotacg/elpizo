@@ -1,5 +1,6 @@
 from . import Item
 
 
+@Item.register
 class Carrot(Item):
-  pass
+  REGISTRY_TYPE = "carrot"

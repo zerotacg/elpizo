@@ -4,7 +4,6 @@ import logging
 import sys
 import traceback
 
-from tornado.gen import coroutine
 from tornado.websocket import WebSocketHandler
 
 from . import green

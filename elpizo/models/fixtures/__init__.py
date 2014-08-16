@@ -47,6 +47,9 @@ FixtureType.__table_args__ = (
 class Fixture(Entity):
   __tablename__ = "fixtures"
 
+  REGISTRY = {}
+  REGISTRY_TYPE = "unknown"
+
   id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
                          primary_key=True)
   fixture_type_id = sqlalchemy.Column(Integer,
@@ -54,15 +57,21 @@ class Fixture(Entity):
                                       nullable=False)
   fixture_type = relationship("FixtureType")
 
+  @classmethod
+  def register(cls, c2):
+    cls.REGISTRY[c2.REGISTRY_TYPE] = c2
+    return c2
+
   @declared_attr
   def __mapper_args__(cls):
     return {
-        "polymorphic_identity": ".".join(["Fixture", cls.__name__])
+        "polymorphic_on": Entity.type,
+        "polymorphic_identity": ".".join(["fixture", cls.REGISTRY_TYPE])
     }
 
   def to_protobuf(self):
     protobuf = super().to_protobuf()
-    protobuf.type = Fixture.__name__
+    protobuf.type = "fixture"
 
     message = game_pb2.Fixture(fixture_type_id=self.fixture_type_id)
     protobuf.Extensions[game_pb2.Fixture.fixture_ext].MergeFrom(message)
@@ -88,10 +97,10 @@ class Fixture(Entity):
 
   @classmethod
   def initialize_type_table(cls, sqla):
-    for subclass in Fixture.__subclasses__():
+    for name, subclass in Fixture.REGISTRY.items():
       a_left, a_top, a_right, a_bottom = subclass.BBOX
 
-      sqla.add(FixtureType(name=subclass.__name__,
+      sqla.add(FixtureType(name=name,
                            a_left=a_left, a_top=a_top,
                            a_right=a_right, a_bottom=a_bottom))
     sqla.commit()
@@ -99,7 +108,7 @@ class Fixture(Entity):
   @classmethod
   def get_class_fixture_type(cls, sqla):
     return sqla.query(FixtureType) \
-        .filter(FixtureType.name == cls.__name__).one()
+        .filter(FixtureType.name == cls.REGISTRY_TYPE).one()
 
 
 @event.listens_for(Fixture, "before_insert", propagate=True)

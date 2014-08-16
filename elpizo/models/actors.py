@@ -86,6 +86,10 @@ class Actor(Entity):
     protobuf.Extensions[game_pb2.Actor.actor_ext].MergeFrom(message)
     return protobuf
 
+  __mapper_args__ = {
+      "polymorphic_identity": "actor"
+  }
+
 
 class Player(Actor):
   __tablename__ = "players"
@@ -98,3 +102,7 @@ class Player(Actor):
                               nullable=False)
 
   online = sqlalchemy.Column(Boolean, nullable=False, default=False)
+
+  __mapper_args__ = {
+      "polymorphic_identity": "player"
+  }

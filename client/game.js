@@ -12,6 +12,7 @@ import {UI} from "./ui/main.react";
 module coords from "./util/coords";
 module game_pb2 from "./game_pb2";
 module handlers from "./handlers";
+module models from "./models";
 
 function waitFor(emitter, event) {
   return new Promise((resolve, reject) => {

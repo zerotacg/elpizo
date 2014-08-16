@@ -1,6 +1,7 @@
 import {EventEmitter} from "events";
 
-import {Directions} from "../models";
+import {Directions, getDirectionVector} from "../models/actors";
+import {Drop} from "../models/items";
 import {repeat} from "../util/collections";
 import {makeColorForString} from "../util/colors";
 import {hasOwnProp, extend} from "../util/objects";
@@ -8,7 +9,6 @@ import {debounce} from "../util/functions";
 module coords from "../util/coords";
 
 module sprites from "../assets/sprites";
-module models from "../models";
 
 export class Renderer extends EventEmitter {
   constructor(resources, parent) {
@@ -294,9 +294,9 @@ export class Renderer extends EventEmitter {
     var sortedEntities = realm.getAllEntities()
         .sort((a, b) => {
             // Always sort drops below everything else.
-            if (a instanceof models.Drop) {
+            if (a instanceof Drop) {
               return -1;
-            } else if (b instanceof models.Drop) {
+            } else if (b instanceof Drop) {
               return 1;
             }
 
@@ -325,7 +325,7 @@ export class Renderer extends EventEmitter {
     for (var ry = 0; ry < coords.REGION_SIZE; ++ry) {
       for (var rx = 0; rx < coords.REGION_SIZE; ++rx) {
         region.layers.forEach((layer) => {
-          var spriteSet = sprites["Tiles." + layer.terrain.name];
+          var spriteSet = sprites["tile." + layer.terrain.name];
 
           var tileNum = layer.tiles.getCell(rx, ry);
           if (tileNum < 0) {
@@ -365,7 +365,7 @@ export class Renderer extends EventEmitter {
 
           var passability = region.passabilities.getCell(rx, ry);
           for (var i = 0; i < 4; ++i) {
-            var dv = models.getDirectionVector(i);
+            var dv = getDirectionVector(i);
             var isPassable = region.isPassable({rx: rx, ry: ry}, i);
 
             dv.ax = -dv.ax;
@@ -397,13 +397,13 @@ export class Renderer extends EventEmitter {
 
     ctx.save();
     ctx.translate(sOffset.sx, sOffset.sy);
-    Renderer.ENTITIES[entity.type](this, entity, ctx);
+    Renderer.ENTITY_TYPES[entity.type](this, entity, ctx);
     ctx.restore();
   }
 }
 
-Renderer.ENTITIES = {
-    Actor: (renderer, entity, ctx) => {
+Renderer.ENTITY_TYPES = {
+    actor: (renderer, entity, ctx) => {
       var state = entity.moving ? "walking" : "standing";
       var direction = entity.direction == Directions.N ? "n" :
                       entity.direction == Directions.W ? "w" :
@@ -411,14 +411,14 @@ Renderer.ENTITIES = {
                       entity.direction == Directions.E ? "e" :
                       null;
 
-      var names = [["Body", entity.gender, entity.body].join(".")];
+      var names = [["body", entity.gender, entity.body].join(".")];
 
       if (entity.facial !== null) {
-        names.push(["Facial", entity.gender, entity.facial].join("."));
+        names.push(["facial", entity.gender, entity.facial].join("."));
       }
 
       if (entity.hair !== null) {
-        names.push(["Hair", entity.gender, entity.hair].join("."));
+        names.push(["hair", entity.gender, entity.hair].join("."));
       }
 
       [].push.apply(names, [
@@ -428,7 +428,7 @@ Renderer.ENTITIES = {
           entity.feetItem
       ]
           .filter((item) => item !== null)
-          .map((item) => ["Equipment", entity.gender, item.type].join(".")));
+          .map((item) => ["equipment", entity.gender, item.type].join(".")));
 
       names.forEach((name) => {
           sprites[name][state][direction]
@@ -437,18 +437,18 @@ Renderer.ENTITIES = {
       })
     },
 
-    Fixture: (renderer, entity, ctx) => {
-      sprites[["Fixture", entity.fixtureType.name].join(".")]
+    fixture: (renderer, entity, ctx) => {
+      sprites[["fixture", entity.fixtureType.name].join(".")]
           .render(renderer.resources, ctx, renderer.elapsed);
     },
 
-    Drop: (renderer, entity, ctx) => {
-      sprites[["Item", entity.item.type].join(".")]
+    drop: (renderer, entity, ctx) => {
+      sprites[["item", entity.item.type].join(".")]
           .render(renderer.resources, ctx, renderer.elapsed);
     },
 
-    Player: (renderer, entity, ctx) => {
-      Renderer.ENTITIES.Actor(renderer, entity, ctx);
+    player: (renderer, entity, ctx) => {
+      Renderer.ENTITY_TYPES.actor(renderer, entity, ctx);
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillStyle = "black";
@@ -457,7 +457,7 @@ Renderer.ENTITIES = {
       ctx.fillText(entity.name, 16, -24);
     },
 
-    Building: (renderer, entity, ctx) => {
+    building: (renderer, entity, ctx) => {
       // TODO: actually draw the building.
 
       if (renderer.debug) {

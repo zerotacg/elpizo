@@ -1,12 +1,15 @@
 from . import Item
 
+@Item.register
 class WhiteLongsleeveShirt(Item):
-  pass
+  REGISTRY_TYPE = "white_longsleeve_shirt"
 
 
+@Item.register
 class TealPants(Item):
-  pass
+  REGISTRY_TYPE = "teal_pants"
 
 
+@Item.register
 class BrownShoes(Item):
-  pass
+  REGISTRY_TYPE = "brown_shoes"

@@ -17,8 +17,16 @@ from ..actors import Actor, Player
 class Item(Base):
   __tablename__ = "items"
 
+  REGISTRY = {}
+  REGISTRY_TYPE = "unknown"
+
   id = basic_primary_key()
   type = sqlalchemy.Column(String, nullable=False)
+
+  @classmethod
+  def register(cls, c2):
+    cls.REGISTRY[c2.REGISTRY_TYPE] = c2
+    return c2
 
   owner_actor_id = sqlalchemy.Column(Integer,
                                      sqlalchemy.ForeignKey("actors.id"),
@@ -30,7 +38,7 @@ class Item(Base):
   def __mapper_args__(cls):
     return {
         "polymorphic_on": cls.type,
-        "polymorphic_identity": cls.__name__
+        "polymorphic_identity": cls.REGISTRY_TYPE
     }
 
   def to_protobuf(self):
@@ -52,3 +60,7 @@ class Drop(Entity):
 
     protobuf.Extensions[game_pb2.Drop.drop_ext].MergeFrom(message)
     return protobuf
+
+  __mapper_args__ = {
+      "polymorphic_identity": "drop"
+  }

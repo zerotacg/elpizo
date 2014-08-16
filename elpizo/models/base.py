@@ -105,12 +105,10 @@ class Entity(Base):
   def routing_key(self):
     return "entity.{id}".format(id=self.id)
 
-  @declared_attr
-  def __mapper_args__(cls):
-    return {
-        "polymorphic_on": cls.type,
-        "polymorphic_identity": cls.__name__
-    }
+  __mapper_args__ = {
+      "polymorphic_on": type,
+      "polymorphic_identity": "entity"
+  }
 
   __table_args__ = (
       sqlalchemy.Index("ix_entities_region_location", realm_id, arx, ary),
@@ -149,6 +147,10 @@ class Building(Entity):
 
     protobuf.Extensions[game_pb2.Building.building_ext].MergeFrom(message)
     return protobuf
+
+  __mapper_args__ = {
+      "polymorphic_identity": "building"
+  }
 
 
 Building.__table_args__ = (

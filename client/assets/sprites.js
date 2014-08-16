@@ -91,35 +91,35 @@ function makeAutotile(resourceName) {
 }
 
 export default = {
-  "Fixture.Tree":
+  "fixture.tree":
       new Sprite("fixture/tree.png", {sw: 96, sh: 96}, [{sx: 0, sy: 0}],
                  {sx: 32, sy: 64}, 0),
 
-  "Item.Carrot":
+  "item.carrot":
       new Sprite("item/carrot.png", {sw: 32, sh: 32}, [{sx: 0, sy: 0}],
                  {sx: 0, sy: 0}, 0),
 
-  "Body.Male.Light":
+  "body.male.light":
       makeHumanoidSprite("body/male/light.png"),
 
-  "Facial.Male.BrownBeard":
+  "facial.male.brown_beard":
       makeHumanoidSprite("facial/male/brown_beard.png"),
 
-  "Hair.Male.BrownMessy1":
+  "hair.male.brown_messy_1":
       makeHumanoidSprite("hair/male/brown_messy_1.png"),
 
-  "Equipment.Male.WhiteLongsleeveShirt":
+  "equipment.male.white_longsleeve_shirt":
       makeHumanoidSprite("equipment/male/white_longsleeve_shirt.png"),
 
-  "Equipment.Male.TealPants":
+  "equipment.male.teal_pants":
       makeHumanoidSprite("equipment/male/teal_pants.png"),
 
-  "Equipment.Male.BrownShoes":
+  "equipment.male.brown_shoes":
       makeHumanoidSprite("equipment/male/brown_shoes.png"),
 
-  "Tiles.Grassland":
+  "tile.grassland":
       makeAutotile("tiles/grass.png"),
 
-  "Tiles.GrasslandWall":
+  "tile.grassland_wall":
       makeAutotile("tiles/grassland_wall.png")
 };
