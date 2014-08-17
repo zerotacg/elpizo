@@ -8,38 +8,6 @@ export class Item {
   }
 }
 
-export class Drop extends Entity {
-  constructor(message) {
-    super(message);
-    message = message.dropExt;
-
-    this.item = new Item(message.item);
-  }
-
-  getBbox() {
-    return {
-        aLeft: 0,
-        aTop: 0,
-        aRight: 1,
-        aBottom: 1
-    };
-  }
-
-  isPassable(location, direction) {
-    return true;
-  }
-
-  onContainingInteract(protocol) {
-    // Attempt to pick up the drop.
-    protocol.send(new game_pb2.PickUpPacket({dropId: this.id}));
-  }
-
-  visit(visitor) {
-    super.visit(visitor);
-    visitor.visitDrop(this);
-  }
-}
-
 Item.REGISTRY = {};
 Item.register = (c2) => {
   Item.REGISTRY[c2.REGISTRY_TYPE] = c2;

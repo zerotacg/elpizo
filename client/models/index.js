@@ -1,14 +1,21 @@
-module actors from "./actors";
-module base from "./base";
-module realm from "./realm";
-module fixtures from "./fixtures";
-module items from "./items";
+import {Player} from "./actors";
+import {Building, Drop} from "./base";
+import {makeFixture} from "./fixtures/registry";
 
 export function makeEntity(message) {
-  return new ({
-      building: base.Building,
-      drop: items.Drop,
-      fixture: fixtures.Fixture,
-      player: actors.Player
-  })[message.type](message);
+  switch (message.type) {
+    case "building":
+      return new Building(message);
+
+    case "drop":
+      return new Drop(message);
+
+    case "fixture":
+      return makeFixture(message);
+
+    case "player":
+      return new Player(message);
+  }
+
+  console.error("Could not make entity of type:", message.type);
 }

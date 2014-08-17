@@ -6,10 +6,10 @@ import random
 
 from elpizo import make_application
 from elpizo.models.actors import Player
-from elpizo.models.base import Base, User, Entity, Building
+from elpizo.models.base import Base, User, Entity, Building, Drop
 from elpizo.models.realm import Realm, Region, RegionLayer, Terrain
 from elpizo.models.fixtures import Fixture, resource_sources
-from elpizo.models.items import restorative, equipment, Drop
+from elpizo.models.items import restorative, equipment
 from elpizo.tools import mapgen
 
 

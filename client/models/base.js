@@ -1,4 +1,7 @@
 import {EventEmitter} from "events";
+import {makeItem} from "./items/registry";
+
+module game_pb2 from "../game_pb2";
 
 export class Entity extends EventEmitter {
   constructor(message) {
@@ -60,6 +63,39 @@ export class Building extends Entity {
   visit(visitor) {
     super.visit(visitor);
     visitor.visitBuilding(this);
+  }
+}
+
+
+export class Drop extends Entity {
+  constructor(message) {
+    super(message);
+    message = message.dropExt;
+
+    this.item = makeItem(message.item);
+  }
+
+  getBbox() {
+    return {
+        aLeft: 0,
+        aTop: 0,
+        aRight: 1,
+        aBottom: 1
+    };
+  }
+
+  isPassable(location, direction) {
+    return true;
+  }
+
+  onContainingInteract(protocol) {
+    // Attempt to pick up the drop.
+    protocol.send(new game_pb2.PickUpPacket({dropId: this.id}));
+  }
+
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitDrop(this);
   }
 }
 

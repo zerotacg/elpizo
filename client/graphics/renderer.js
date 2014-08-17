@@ -2,7 +2,7 @@ import {EventEmitter} from "events";
 
 import {EntityVisitor} from "../models/base";
 import {Directions, getDirectionVector} from "../models/actors";
-import {Drop} from "../models/items";
+import {Drop} from "../models/base";
 import {repeat} from "../util/collections";
 import {makeColorForString} from "../util/colors";
 import {hasOwnProp, extend} from "../util/objects";

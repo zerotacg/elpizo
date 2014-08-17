@@ -1,4 +1,4 @@
-from ..models.items import Drop
+from ..models.base import Drop
 from .. import game_pb2
 
 

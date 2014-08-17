@@ -43,24 +43,3 @@ class Item(Base):
 
   def to_protobuf(self):
     return game_pb2.Item(id=self.id, type=self.type)
-
-
-class Drop(Entity):
-  __tablename__ = "drops"
-
-  id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
-                         primary_key=True)
-  item_id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("items.id"),
-                              nullable=False, unique=True)
-  item = relationship("Item", backref="drop")
-
-  def to_protobuf(self):
-    protobuf = super().to_protobuf()
-    message = game_pb2.Drop(item=self.item.to_protobuf())
-
-    protobuf.Extensions[game_pb2.Drop.drop_ext].MergeFrom(message)
-    return protobuf
-
-  __mapper_args__ = {
-      "polymorphic_identity": "drop"
-  }

@@ -1,5 +1,5 @@
 import {Entity} from "./base";
-import {Item} from "./items";
+import {makeItem} from "./items/registry";
 
 import {Key} from "../util/input";
 module game_pb2 from "../game_pb2";
@@ -48,10 +48,10 @@ export class Actor extends Entity {
     this.hair = message.hair;
     this.facial = message.facial;
 
-    this.headItem = message.headItem && new Item(message.headItem);
-    this.torsoItem = message.torsoItem && new Item(message.torsoItem);
-    this.legsItem = message.legsItem && new Item(message.legsItem);
-    this.feetItem = message.feetItem && new Item(message.feetItem);
+    this.headItem = message.headItem && makeItem(message.headItem);
+    this.torsoItem = message.torsoItem && makeItem(message.torsoItem);
+    this.legsItem = message.legsItem && makeItem(message.legsItem);
+    this.feetItem = message.feetItem && makeItem(message.feetItem);
 
     this.moving = false;
     this.remainder = 0;

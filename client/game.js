@@ -14,9 +14,6 @@ module game_pb2 from "./game_pb2";
 module handlers from "./handlers";
 module models from "./models";
 
-module fixture_registry from "./models/fixtures/registry";
-module item_registry from "./models/items/registry";
-
 function waitFor(emitter, event) {
   return new Promise((resolve, reject) => {
     emitter.once(event, resolve);
@@ -26,9 +23,6 @@ function waitFor(emitter, event) {
 export class Game extends EventEmitter {
   constructor(parent) {
     super();
-
-    fixture_registry.initialize();
-    item_registry.initialize();
 
     this.realm = null;
     this.me = null;
