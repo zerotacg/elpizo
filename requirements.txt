@@ -9,3 +9,4 @@ greenlet
 protobuf-py3
 sqltap
 sqlparse
+asyncio
