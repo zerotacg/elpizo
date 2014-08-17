@@ -11,11 +11,13 @@ export class Entity extends EventEmitter {
     this.id = message.id;
     this.type = message.type;
     this.location = new Vector2(message.location.ax, message.location.ay);
+    this.bbox = new Rectangle(message.bbox.left, message.bbox.top,
+                              message.bbox.width, message.bbox.height);
     this.direction = message.direction;
   }
 
   getAbsoluteBounds() {
-    return this.getBbox().offset(this.location);
+    return this.bbox.offset(this.location);
   }
 
   update(dt) {
@@ -41,10 +43,6 @@ export class Building extends Entity {
     this.aHeight = message.aHeight;
   }
 
-  getBbox() {
-    return new Rectangle(0, 0, this.aWidth, this.aHeight);
-  }
-
   isPassable(location, direction) {
     return false;
   }
@@ -62,10 +60,6 @@ export class Drop extends Entity {
     message = message.dropExt;
 
     this.item = makeItem(message.item);
-  }
-
-  getBbox() {
-    return new Rectangle(0, 0, 1, 1);
   }
 
   isPassable(location, direction) {

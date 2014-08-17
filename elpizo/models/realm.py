@@ -100,10 +100,13 @@ class Region(Base):
     return "region.{key}".format(key=self.key)
 
   @hybrid.hybrid_method
-  def intersects(self, a_left, a_top, a_right, a_bottom):
+  def intersects(self, left, top, width, height):
+    right = left + width
+    bottom = top + height
+
     return self.bbox.op("&&")(func.box(
-        func.point(a_left, a_top),
-        func.point(a_right, a_bottom)))
+        func.point(left, top),
+        func.point(right, bottom)))
 
   @hybrid.hybrid_method
   def bbox_contains(self, ax, ay):

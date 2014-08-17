@@ -6,11 +6,7 @@ export class Fixture extends Entity {
     super(message);
     message = message.fixtureExt;
 
-    this.fixtureType = exports.fixtureTypes[message.fixtureTypeId];
-  }
-
-  getBbox() {
-    return this.fixtureType.bbox;
+    this.fixtureType = message.fixtureType;
   }
 
   isPassable(location, direction) {

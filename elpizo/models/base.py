@@ -65,6 +65,21 @@ class Entity(Base):
       uselist=False,
       backref=backref("entities", uselist=True))
 
+  bbox_left = sqlalchemy.Column(Integer, nullable=False, default=0)
+  bbox_top = sqlalchemy.Column(Integer, nullable=False, default=0)
+  bbox_width = sqlalchemy.Column(Integer, nullable=False, default=1)
+  bbox_height = sqlalchemy.Column(Integer, nullable=False, default=1)
+
+  @hybrid.hybrid_property
+  def bbox(self):
+    return func.box(func.point(self.bbox_left, self.bbox_top),
+                    func.point(self.bbox_left + self.bbox_width - 1,
+                               self.bbox_top + self.bbox_height - 1))
+
+  @hybrid.hybrid_property
+  def bounds(self):
+    return self.bbox + self.point
+
   @hybrid.hybrid_property
   def ax(self):
     return self.arx * Region.SIZE + self.rx
@@ -88,9 +103,21 @@ class Entity(Base):
     return func.point(self.ax, self.ay)
 
   @hybrid.hybrid_method
-  def contained_by(self, a_left, a_top, a_bottom, a_right):
-    return func.box(func.point(a_left, a_top),
-                    func.point(a_bottom - 1, a_right - 1)).op("@>")(self.point)
+  def intersects(self, entity):
+    return (self.realm_id == entity.realm_id) & \
+        (self.bounds).op("&&")(entity.bounds)
+
+  @hybrid.hybrid_method
+  def contained_by(self, left, top, width, height):
+    right = left + width
+    bottom = top + height
+
+    return func.box(func.point(left, top),
+                    func.point(right - 1, bottom - 1)).op("@>")(self.point)
+
+  def bbox_to_protobuf(self):
+    return game_pb2.Rectangle(left=self.bbox_left, top=self.bbox_top,
+                              width=self.bbox_width, height=self.bbox_height)
 
   def location_to_protobuf(self):
     return game_pb2.AbsoluteLocation(realm_id=self.realm_id,
@@ -99,6 +126,7 @@ class Entity(Base):
   def to_protobuf(self):
     return game_pb2.Entity(id=self.id, type=self.type,
                            location=self.location_to_protobuf(),
+                           bbox=self.bbox_to_protobuf(),
                            direction=self.direction)
 
   @property
@@ -120,6 +148,7 @@ class Entity(Base):
 
 
 Entity.__table_args__ += (
+    sqlalchemy.Index("ix_entities_bbox", Entity.bbox, postgresql_using="gist"),
     sqlalchemy.Index("ix_entities_point", Entity.point,
                      postgresql_using="gist"),
 )
@@ -131,19 +160,9 @@ class Building(Entity):
   id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
                          primary_key=True)
 
-  a_width = sqlalchemy.Column(Integer, nullable=False)
-  a_height = sqlalchemy.Column(Integer, nullable=False)
-
-  @hybrid.hybrid_property
-  def bbox(self):
-    # Buildings must not exceed one region in size (or they may not be
-    # consistently rendered).
-    return func.box(func.point(0, 0),
-                    func.point(self.a_width, self.a_height))
-
   def to_protobuf(self):
     protobuf = super().to_protobuf()
-    message = game_pb2.Building(a_width=self.a_width, a_height=self.a_height)
+    message = game_pb2.Building()
 
     protobuf.Extensions[game_pb2.Building.building_ext].MergeFrom(message)
     return protobuf
@@ -151,12 +170,6 @@ class Building(Entity):
   __mapper_args__ = {
       "polymorphic_identity": "building"
   }
-
-
-Building.__table_args__ = (
-    sqlalchemy.Index("ix_buildings_bbox", Building.bbox,
-                     postgresql_using="gist"),
-)
 
 
 class Drop(Entity):

@@ -49,15 +49,6 @@ export class Actor extends Entity {
     return getDirectionVector(this.direction);
   }
 
-  getBbox() {
-    return {
-        aLeft: 0,
-        aTop: 0,
-        aRight: 1,
-        aBottom: 1
-    };
-  }
-
   isPassable(location, direction) {
     return true;
   }
@@ -70,8 +61,7 @@ export class Actor extends Entity {
     var lastDirection = this.direction;
 
     this.location = this.location
-        .offset(this.getDirectionVector())
-        .scale(this.remainder)
+        .offset(this.getDirectionVector().scale(this.remainder))
         .elementwise(Math.round);
 
     this.direction = direction;
@@ -104,8 +94,7 @@ export class Actor extends Entity {
       var aDistance = Math.min(this.getSpeed() * dt, this.remainder);
 
       this.location = this.location
-          .offset(this.getDirectionVector())
-          .scale(aDistance);
+          .offset(this.getDirectionVector().scale(aDistance))
 
       this.emit("moveStep", {aDistance: aDistance});
       this.remainder -= aDistance;

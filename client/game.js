@@ -61,10 +61,12 @@ export class Game extends EventEmitter {
   getViewportPacket() {
     var bounds = this.renderer.getRegionCacheBounds();
     return new game_pb2.ViewportPacket({
-        arLeft: bounds.left,
-        arTop: bounds.top,
-        arRight: bounds.getRight(),
-        arBottom: bounds.getBottom()
+        bounds: {
+            left: bounds.left,
+            top: bounds.top,
+            width: bounds.width,
+            height: bounds.height
+        }
     });
   }
 

@@ -45,6 +45,7 @@ def socket_move(ctx, message):
   new_ax = entity_for_update.ax + dax
   new_ay = entity_for_update.ay + day
 
+  # TODO: check bboxes
   try:
     region = ctx.sqla.query(Region) \
         .filter(Region.realm_id == entity_for_update.realm_id,
@@ -68,9 +69,7 @@ def socket_move(ctx, message):
 
   # colliding with a fixture
   if ctx.sqla.query(ctx.sqla.query(Fixture).filter(
-      Fixture.bbox_contains(entity_for_update.realm_id,
-                            entity_for_update.ax, entity_for_update.ay)
-  ).exists()).scalar():
+      Fixture.intersects(entity_for_update)).exists()).scalar():
     ctx.sqla.rollback()
     return
 

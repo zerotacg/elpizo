@@ -27,7 +27,7 @@ export class Realm {
     delete region.realm;
   }
 
-  getRegion(location) {
+  getRegionAt(location) {
     var key = [location.x, location.y].join(",");
     return hasOwnProp.call(this.regions, key) ? this.regions[key] : null;
   }
@@ -57,12 +57,12 @@ export class Realm {
     });
   }
 
-  getClosestRegion(location) {
-    return this.getRegion(coords.absoluteToContainingRegion(location));
+  getClosestRegionTo(location) {
+    return this.getRegionAt(coords.absoluteToContainingRegion(location));
   }
 
   isPassable(location, direction) {
-    var region = this.getClosestRegion(location);
+    var region = this.getClosestRegionTo(location);
     if (region === null ||
         !region.isPassable(coords.absoluteToRelative(location), direction)) {
       return false;
@@ -70,7 +70,7 @@ export class Realm {
 
     if (this.getAllEntities().filter(
         (entity) => !entity.isPassable(location, direction)).some((entity) =>
-      entity.getAbsoluteBounds().contains(entity.location))) {
+      entity.getAbsoluteBounds().contains(location))) {
       return false;
     }
 

@@ -48,7 +48,7 @@ message Region {
   }
 
   repeated Layer layers = 2;
-  repeated uint32 passabilities = 4;
+  repeated uint32 passabilities = 3;
 }
 
 message Realm {
@@ -62,13 +62,21 @@ message Realm {
   optional AbsoluteSize size = 3;
 }
 
+message Rectangle {
+  optional sint32 left = 1;
+  optional sint32 top = 2;
+  optional uint32 width = 3;
+  optional uint32 height = 4;
+}
+
 message Entity {
   extensions 100 to max;
 
   optional uint32 id = 1;
-  optional string type = 3;
-  optional uint32 direction = 4;
-  optional AbsoluteLocation location = 5;
+  optional string type = 2;
+  optional uint32 direction = 3;
+  optional AbsoluteLocation location = 4;
+  optional Rectangle bbox = 5;
 }
 
 message Actor {
@@ -96,7 +104,7 @@ message Fixture {
     optional Fixture fixture_ext = 103;
   }
 
-  optional uint32 fixture_type_id = 1;
+  optional string fixture_type = 1;
 }
 
 message Item {
@@ -190,10 +198,7 @@ message ViewportPacket {
   // Direction: Server <- Client
   option (packet_type) = VIEWPORT;
 
-  optional sint32 ar_left = 1;
-  optional sint32 ar_top = 2;
-  optional sint32 ar_right = 3;
-  optional sint32 ar_bottom = 4;
+  optional Rectangle bounds = 1;
 }
 
 message EntityPacket {

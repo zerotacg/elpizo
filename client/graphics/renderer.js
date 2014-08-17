@@ -195,7 +195,7 @@ export class Renderer extends EventEmitter {
         var sTop = Math.round(sOffset.y + sPosition.y);
 
         var key = [arCoords.x, arCoords.y].join(",");
-        var region = realm.getRegion(arCoords);
+        var region = realm.getRegionAt(arCoords);
 
         if (region === null) {
           continue;
@@ -345,6 +345,25 @@ class RendererVisitor extends EntityVisitor {
     this.ctx = ctx;
   }
 
+  visitEntity(entity) {
+    if (this.renderer.debug) {
+      this.ctx.save();
+      this.ctx.fillStyle = "rgba(0, 0, 255, 0.25)";
+      this.ctx.strokeStyle = "rgba(0, 0, 255, 0.75)";
+
+      var sSize = this.renderer.absoluteToScreenCoords(new Vector2(
+          entity.bbox.width, entity.bbox.height));
+      this.ctx.fillRect(0, 0, sSize.x, sSize.y);
+      this.ctx.strokeRect(0, 0, sSize.x, sSize.y);
+      this.ctx.fillStyle = "rgba(0, 0, 255, 0.75)";
+      this.ctx.font = "12px sans-serif";
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
+      this.ctx.fillText("(id: " + entity.id + ")", sSize.x / 2, sSize.y / 2);
+      this.ctx.restore();
+    }
+  }
+
   visitActor(entity) {
       var state = entity.moving ? "walking" : "standing";
       var direction = entity.direction == Directions.N ? "n" :
@@ -380,7 +399,7 @@ class RendererVisitor extends EntityVisitor {
   }
 
   visitFixture(entity) {
-      sprites[["fixture", entity.fixtureType.name].join(".")]
+      sprites[["fixture", entity.fixtureType].join(".")]
           .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
   }
 
@@ -400,22 +419,6 @@ class RendererVisitor extends EntityVisitor {
 
   visitBuilding(entity) {
     // TODO: actually draw the building.
-
-    if (this.renderer.debug) {
-      this.ctx.fillStyle = "rgba(0, 255, 0, 0.25)";
-      this.ctx.strokeStyle = "rgba(0, 255, 0, 0.75)";
-
-      // TODO: don't use aWidth/aHeight
-      var sSize = this.renderer.absoluteToScreenCoords(new Vector2(
-          entity.aWidth, entity.aHeight));
-      this.ctx.fillRect(0, 0, sSize.x, sSize.y);
-      this.ctx.strokeRect(0, 0, sSize.x, sSize.y);
-      this.ctx.fillStyle = "rgba(0, 255, 0, 0.75)";
-      this.ctx.font = "18px sans-serif";
-      this.ctx.textAlign = "center";
-      this.ctx.textBaseline = "middle";
-      this.ctx.fillText("(id: " + entity.id + ")", sSize.x / 2, sSize.y / 2);
-    }
   }
 }
 Renderer.TILE_SIZE = 32;

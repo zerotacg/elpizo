@@ -46,7 +46,8 @@ export class Rectangle {
   }
 
   intersects(other) {
-    // TODO: implement me
+    return this.left <= other.getRight() && this.getRight() > other.left &&
+           this.top <= other.getBottom() && this.getBottom() > other.top;
   }
 
   contains(vec) {
