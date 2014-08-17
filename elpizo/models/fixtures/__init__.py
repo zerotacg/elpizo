@@ -21,6 +21,10 @@ class Fixture(Entity):
   id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
                          primary_key=True)
 
+  def __init__(self, *args, **kwargs):
+    self.bbox_left, self.bbox_top, self.bbox_width, self.bbox_height = self.BBOX
+    super().__init__(*args, **kwargs)
+
   @classmethod
   def register(cls, c2):
     cls.REGISTRY[c2.REGISTRY_TYPE] = c2

@@ -351,8 +351,11 @@ class RendererVisitor extends EntityVisitor {
       this.ctx.fillStyle = "rgba(0, 0, 255, 0.25)";
       this.ctx.strokeStyle = "rgba(0, 0, 255, 0.75)";
 
+      var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(
+          entity.bbox.left, entity.bbox.top));
       var sSize = this.renderer.absoluteToScreenCoords(new Vector2(
           entity.bbox.width, entity.bbox.height));
+      this.ctx.translate(sOffset.x, sOffset.y);
       this.ctx.fillRect(0, 0, sSize.x, sSize.y);
       this.ctx.strokeRect(0, 0, sSize.x, sSize.y);
       this.ctx.fillStyle = "rgba(0, 0, 255, 0.75)";
