@@ -10,8 +10,8 @@ from tornado.web import Application, RequestHandler, StaticFileHandler
 
 from . import endpoints, models
 from .exports import get_exports
-from .mint import Mint
-from .net import Connection
+from .util.mint import Mint
+from .util.net import Connection
 
 from .models.fixtures import Fixture, registry as fixture_registry
 from .models.items import Item, registry as item_registry

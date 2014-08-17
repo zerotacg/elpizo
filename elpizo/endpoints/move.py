@@ -3,7 +3,6 @@ import time
 from sqlalchemy.orm.exc import NoResultFound
 
 from .. import game_pb2
-from ..green import sleep
 from ..models.base import Entity
 from ..models.realm import Region
 from ..models.fixtures import Fixture

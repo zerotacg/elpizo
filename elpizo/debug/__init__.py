@@ -1,7 +1,7 @@
 import sqltap
 import time
 
-from ..net import Protocol
+from ..util.net import Protocol
 from .. import game_pb2
 from . import handlers
 
