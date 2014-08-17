@@ -7,6 +7,7 @@ import {Renderer} from "./graphics/renderer";
 import {Transport, Protocol} from "./util/net";
 import {Resources} from "./util/resources";
 import {InputState, Key} from "./util/input";
+import {Vector2} from "./util/geometry";
 import {UI} from "./ui/main.react";
 
 module coords from "./util/coords";
@@ -57,6 +58,16 @@ export class Game extends EventEmitter {
     this.running = false;
   }
 
+  getViewportPacket() {
+    var bounds = this.renderer.getRegionCacheBounds();
+    return new game_pb2.ViewportPacket({
+        arLeft: bounds.left,
+        arTop: bounds.top,
+        arRight: bounds.getRight(),
+        arBottom: bounds.getBottom()
+    });
+  }
+
   setDebug(v) {
     this.debug = v;
     this.renderer.setDebug(v);
@@ -75,27 +86,26 @@ export class Game extends EventEmitter {
       return;
     }
 
-    var currentArTopLeft = coords.absoluteToContainingRegion(
-        {ax: bounds.aLeft,
-         ay: bounds.aTop});
-    var currentArBottomRight = coords.absoluteToContainingRegion(
-        {ax: bounds.aRight + coords.REGION_SIZE,
-         ay: bounds.aBottom + coords.REGION_SIZE})
+    var currentArTopLeft = coords.absoluteToContainingRegion(new Vector2(
+        bounds.left, bounds.top));
 
-    var lastArTopLeft = coords.absoluteToContainingRegion(
-        {ax: lastBounds.aLeft,
-         ay: lastBounds.aTop});
-    var lastArBottomRight = coords.absoluteToContainingRegion(
-        {ax: lastBounds.aRight + coords.REGION_SIZE,
-         ay: lastBounds.aBottom + coords.REGION_SIZE})
+    var currentArBottomRight = coords.absoluteToContainingRegion(new Vector2(
+        bounds.getRight() + coords.REGION_SIZE,
+        bounds.getBottom() + coords.REGION_SIZE));
 
-    if (currentArTopLeft.arx !== lastArTopLeft.arx ||
-        currentArTopLeft.ary !== lastArTopLeft.ary ||
-        currentArBottomRight.arx !== lastArBottomRight.arx ||
-        currentArBottomRight.ary !== lastArBottomRight.ary) {
+    var lastArTopLeft = coords.absoluteToContainingRegion(new Vector2(
+        lastBounds.left, lastBounds.top));
+
+    var lastArBottomRight = coords.absoluteToContainingRegion(new Vector2(
+        lastBounds.getRight() + coords.REGION_SIZE,
+        lastBounds.getBottom() + coords.REGION_SIZE));
+
+    if (currentArTopLeft.x !== lastArTopLeft.x ||
+        currentArTopLeft.y !== lastArTopLeft.y ||
+        currentArBottomRight.x !== lastArBottomRight.x ||
+        currentArBottomRight.y !== lastArBottomRight.y) {
       this.realm.retainRegions(this.renderer.getRegionCacheBounds());
-      this.protocol.send(new game_pb2.ViewportPacket(
-          this.renderer.getRegionCacheBounds()));
+      this.protocol.send(this.getViewportPacket());
     }
   }
 
@@ -128,8 +138,7 @@ export class Game extends EventEmitter {
     console.log("Hello! Your player id is:", id);
     this.me = this.realm.getEntity(id);
     this.renderer.center(this.me.location);
-    this.protocol.send(new game_pb2.ViewportPacket(
-        this.renderer.getRegionCacheBounds()));
+    this.protocol.send(this.getViewportPacket());
   }
 
   update(dt) {

@@ -59,8 +59,8 @@ export function install(game) {
     entity.moving = false;
     entity.remainder = 0;
     entity.location = {
-        ax: message.location.ax,
-        ay: message.location.ay
+        ax: message.location.x,
+        ay: message.location.y
     };
     entity.direction = message.direction;
   });

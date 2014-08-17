@@ -25,30 +25,30 @@ export var Debug = React.createClass({
     if (this.state.showRegions && game.realm !== null) {
       var regions = game.realm.getAllRegions()
           .sort((a, b) =>
-            a.location.ary - b.location.ary ||
-                a.location.arx - b.location.arx)
+            a.location.y - b.location.y ||
+                a.location.x - b.location.x)
           .map((region) => {
             var aCoords = coords.regionToAbsolute(region.location);
-            return <li key={region.getKey()}>{region.getKey()} ({aCoords.ax}, {aCoords.ay}, {aCoords.ax + coords.REGION_SIZE}, {aCoords.ay + coords.REGION_SIZE})</li>
+            return <li key={region.getKey()}>{region.getKey()} ({aCoords.x}, {aCoords.y}, {aCoords.x + coords.REGION_SIZE}, {aCoords.y + coords.REGION_SIZE})</li>
           });
       maybeRegions = <ul>{regions}</ul>;
     }
 
     var maybeAvatarPosition = null;
     if (game.me !== null) {
-      maybeAvatarPosition = "(" + game.me.location.ax.toFixed(2) + ", " + game.me.location.ay.toFixed(2) + ")";
+      maybeAvatarPosition = "(" + game.me.location.x.toFixed(2) + ", " + game.me.location.y.toFixed(2) + ")";
     }
 
     return <div className="debug">
       <table className="attrs">
         <tr>
           <th>Viewport Bounds</th>
-          <td>({viewportBounds.aLeft.toFixed(2)}, {viewportBounds.aTop.toFixed(2)}, {viewportBounds.aRight.toFixed(2)}, {viewportBounds.aBottom.toFixed(2)})</td>
+          <td>({viewportBounds.left.toFixed(2)}, {viewportBounds.top.toFixed(2)}, {viewportBounds.getRight().toFixed(2)}, {viewportBounds.getBottom().toFixed(2)})</td>
         </tr>
 
         <tr>
           <th>Cache Bounds</th>
-          <td>({cacheBounds.arLeft.toFixed(2)}, {cacheBounds.arTop.toFixed(2)}, {cacheBounds.arRight.toFixed(2)}, {cacheBounds.arBottom.toFixed(2)})</td>
+          <td>({cacheBounds.left.toFixed(2)}, {cacheBounds.top.toFixed(2)}, {cacheBounds.getRight().toFixed(2)}, {cacheBounds.getBottom().toFixed(2)})</td>
         </tr>
 
 

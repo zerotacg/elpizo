@@ -2,6 +2,7 @@ import {Entity} from "./base";
 import {makeItem} from "./items/registry";
 
 import {Key} from "../util/input";
+import {Vector2} from "../util/geometry";
 module game_pb2 from "../game_pb2";
 
 export var Directions = {
@@ -11,29 +12,12 @@ export var Directions = {
     E: 3
 };
 
-// Get the direction constant for a given axis vector.
-//
-// Returns -1 on an invalid direction.
-export function getDirectionConstant(dx, dy) {
-  if (dy < 0) {
-    return Directions.N;
-  } else if (dx < 0) {
-    return Directions.W;
-  } else if (dy > 0) {
-    return Directions.S;
-  } else if (dx > 0) {
-    return Directions.E;
-  }
-
-  return -1;
-}
-
 export function getDirectionVector(d) {
   switch (d) {
-    case Directions.N: return {ax:  0, ay: -1};
-    case Directions.W: return {ax: -1, ay:  0};
-    case Directions.S: return {ax:  0, ay:  1};
-    case Directions.E: return {ax:  1, ay:  0};
+    case Directions.N: return new Vector2( 0, -1);
+    case Directions.W: return new Vector2(-1,  0);
+    case Directions.S: return new Vector2( 0,  1);
+    case Directions.E: return new Vector2( 1,  0);
   }
 }
 
@@ -58,11 +42,7 @@ export class Actor extends Entity {
   }
 
   getPreviousLocation() {
-    var ad = this.getDirectionVector();
-    return {
-        ax: this.location.ax - ad.ax,
-        ay: this.location.ay - ad.ay
-    }
+    return this.location.offset(this.getDirectionVector());
   }
 
   getDirectionVector() {
@@ -89,17 +69,16 @@ export class Actor extends Entity {
     // correct).
     var lastDirection = this.direction;
 
-    var unit = getDirectionVector(this.direction);
-    this.location.ax = Math.round(this.location.ax + unit.ax * this.remainder);
-    this.location.ay = Math.round(this.location.ay + unit.ay * this.remainder);
+    this.location = this.location
+        .offset(this.getDirectionVector())
+        .scale(this.remainder)
+        .elementwise(Math.round);
 
     this.direction = direction;
-    unit = getDirectionVector(this.direction);
 
-    if (!this.realm.isPassable({
-        ax: Math.round(this.location.ax + unit.ax),
-        ay: Math.round(this.location.ay + unit.ay)
-    }, direction)) {
+    if (!this.realm.isPassable(this.location
+        .offset(this.getDirectionVector())
+        .elementwise(Math.round), direction)) {
       this.remainder = 0;
       this.moving = lastDirection !== this.direction;
     } else {
@@ -122,17 +101,17 @@ export class Actor extends Entity {
     super.update(dt);
 
     if (this.remainder > 0) {
-      var unit = getDirectionVector(this.direction);
       var aDistance = Math.min(this.getSpeed() * dt, this.remainder);
 
-      this.location.ax += unit.ax * aDistance;
-      this.location.ay += unit.ay * aDistance;
+      this.location = this.location
+          .offset(this.getDirectionVector())
+          .scale(aDistance);
+
       this.emit("moveStep", {aDistance: aDistance});
       this.remainder -= aDistance;
 
       if (this.remainder <= 0) {
-        this.location.ax = Math.round(this.location.ax);
-        this.location.ay = Math.round(this.location.ay);
+        this.location = this.location.elementwise(Math.round);
         this.remainder = 0;
         this.emit("moveEnd", this.location);
       }
@@ -179,8 +158,6 @@ export class Player extends Actor {
     }
 
     // Check for interactions.
-    var dv = getDirectionVector(this.direction);
-
     var interactions = [];
 
     if (inputState.unstick(Key.Z)) {
@@ -189,15 +166,13 @@ export class Player extends Actor {
           return;
         }
 
-        if (entity.contains(this.location)) {
+        if (entity.getAbsoluteBounds().contains(this.location)) {
           interactions.push({
               entity: entity,
               contained: true
           });
-        } else if (entity.contains({
-            ax: this.location.ax + dv.ax,
-            ay: this.location.ay + dv.ay
-        })) {
+        } else if (entity.getAbsoluteBounds().contains(
+            this.location.offset(this.getDirectionVector()))) {
           interactions.push({
               entity: entity,
               contained: false

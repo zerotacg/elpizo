@@ -1,5 +1,6 @@
 import {EventEmitter} from "events";
 import {makeItem} from "./items/registry";
+import {Rectangle, Vector2} from "../util/geometry";
 
 module game_pb2 from "../game_pb2";
 
@@ -9,19 +10,12 @@ export class Entity extends EventEmitter {
 
     this.id = message.id;
     this.type = message.type;
-    this.location = {
-        ax: message.location.ax,
-        ay: message.location.ay
-    };
+    this.location = new Vector2(message.location.ax, message.location.ay);
     this.direction = message.direction;
   }
 
-  contains(location) {
-    var bbox = this.getBbox();
-    return location.ax >= this.location.ax + bbox.aLeft &&
-           location.ax < this.location.ax + bbox.aRight &&
-           location.ay >= this.location.ay + bbox.aTop &&
-           location.ay < this.location.ay + bbox.aBottom;
+  getAbsoluteBounds() {
+    return this.getBbox().offset(this.location);
   }
 
   update(dt) {
@@ -48,12 +42,7 @@ export class Building extends Entity {
   }
 
   getBbox() {
-    return {
-        aLeft: 0,
-        aTop: 0,
-        aRight: this.aWidth,
-        aBottom: this.aHeight
-    };
+    return new Rectangle(0, 0, this.aWidth, this.aHeight);
   }
 
   isPassable(location, direction) {
@@ -76,12 +65,7 @@ export class Drop extends Entity {
   }
 
   getBbox() {
-    return {
-        aLeft: 0,
-        aTop: 0,
-        aRight: 1,
-        aBottom: 1
-    };
+    return new Rectangle(0, 0, 1, 1);
   }
 
   isPassable(location, direction) {

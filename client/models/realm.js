@@ -1,5 +1,6 @@
 import {Grid} from "../util/grid";
 import {hasOwnProp} from "../util/objects";
+import {Rectangle, Vector2} from "../util/geometry";
 
 module game_pb2 from "../game_pb2";
 module exports from "../exports";
@@ -9,10 +10,7 @@ export class Realm {
   constructor(message) {
     this.id = message.id;
     this.name = message.name;
-    this.size = {
-        aw: message.size.aw,
-        ah: message.size.ah
-    };
+    this.bounds = new Rectangle(0, 0, message.size.aw, message.size.ah);
     this.terrainLayers = message.terrainLayers;
 
     this.regions = {};
@@ -30,7 +28,7 @@ export class Realm {
   }
 
   getRegion(location) {
-    var key = [location.arx, location.ary].join(",");
+    var key = [location.x, location.y].join(",");
     return hasOwnProp.call(this.regions, key) ? this.regions[key] : null;
   }
 
@@ -38,16 +36,13 @@ export class Realm {
     return Object.keys(this.regions).map((k) => this.regions[k]);
   }
 
-  retainRegions(bbox) {
+  retainRegions(arBbox) {
     // This should only be called at region boundaries, to ensure that
     // off-screen regions aren't culled away prematurely.
     Object.keys(this.regions).map((k) => {
       var region = this.regions[k];
 
-      if (region.location.arx < bbox.arLeft ||
-          region.location.arx >= bbox.arRight ||
-          region.location.ary < bbox.arTop ||
-          region.location.ary >= bbox.arBottom) {
+      if (!arBbox.contains(region.location)) {
         delete this.regions[k];
       }
     });
@@ -55,13 +50,8 @@ export class Realm {
     Object.keys(this.entities).map((k) => {
       var entity = this.entities[k];
 
-      var arEntityLocation = coords.absoluteToContainingRegion(
-          entity.location);
-
-      if (arEntityLocation.arx < bbox.arLeft ||
-          arEntityLocation.arx >= bbox.arRight ||
-          arEntityLocation.ary < bbox.arTop ||
-          arEntityLocation.ary >= bbox.arBottom) {
+      if (!arBbox.contains(coords.absoluteToContainingRegion(
+          entity.location))) {
         delete this.entities[k];
       }
     });
@@ -79,13 +69,8 @@ export class Realm {
     }
 
     if (this.getAllEntities().filter(
-        (entity) => !entity.isPassable(location, direction)).some((entity) => {
-      var bbox = entity.getBbox();
-      return location.ax >= entity.location.ax + bbox.aLeft &&
-             location.ax < entity.location.ax + bbox.aRight &&
-             location.ay >= entity.location.ay + bbox.aTop &&
-             location.ay < entity.location.ay + bbox.aBottom;
-    })) {
+        (entity) => !entity.isPassable(location, direction)).some((entity) =>
+      entity.getAbsoluteBounds().contains(entity.location))) {
       return false;
     }
 
@@ -119,10 +104,7 @@ export class Realm {
 
 export class Region {
   constructor(message) {
-    this.location = {
-        arx: message.location.arx,
-        ary: message.location.ary
-    };
+    this.location = new Vector2(message.location.arx, message.location.ary);
     this.layers = message.layers.map((layer) =>
         new Layer(layer));
     this.passabilities = new Grid(coords.REGION_SIZE, coords.REGION_SIZE,
@@ -130,12 +112,17 @@ export class Region {
   }
 
   getKey() {
-    return [this.location.arx, this.location.ary].join(",");
+    return [this.location.x, this.location.y].join(",");
   }
 
   isPassable(location, direction) {
-    return !!((this.passabilities.getCell(location.rx, location.ry) >>
+    return !!((this.passabilities.getCell(location.x, location.y) >>
         direction) & 0x1);
+  }
+
+  getAbsoluteBounds() {
+    return (new Rectangle(0, 0, coords.REGION_SIZE, coords.REGION_SIZE))
+      .offset(this.location);
   }
 }
 
