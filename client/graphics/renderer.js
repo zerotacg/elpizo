@@ -131,7 +131,8 @@ export class Renderer extends EventEmitter {
     var viewport = this.getAbsoluteViewportBounds();
 
     var arTopLeft = coords.absoluteToContainingRegion(new Vector2(
-        viewport.left - coords.REGION_SIZE, viewport.top - coords.REGION_SIZE));
+        viewport.left - coords.REGION_SIZE,
+        viewport.top - coords.REGION_SIZE));
 
     var arBottomRight = coords.absoluteToContainingRegion(new Vector2(
         viewport.getRight() + coords.REGION_SIZE,

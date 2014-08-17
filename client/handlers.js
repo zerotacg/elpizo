@@ -2,6 +2,7 @@ module exports from "./exports";
 import {makeEntity} from "./models";
 import {Directions} from "./models/actors";
 import {Realm, Region} from "./models/realm";
+import {Vector2} from "./util/geometry";
 
 import {Packet} from "./game_pb2";
 
@@ -58,10 +59,7 @@ export function install(game) {
 
     entity.moving = false;
     entity.remainder = 0;
-    entity.location = {
-        ax: message.location.x,
-        ay: message.location.y
-    };
+    entity.location = new Vector2(message.location.ax, message.location.ay);
     entity.direction = message.direction;
   });
 

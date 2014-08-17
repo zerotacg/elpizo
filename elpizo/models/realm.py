@@ -104,9 +104,10 @@ class Region(Base):
     right = left + width
     bottom = top + height
 
-    return self.bbox.op("&&")(func.box(
-        func.point(left, top),
-        func.point(right, bottom)))
+    return self.bbox.op("&&")(func.box(func.point(left * Region.SIZE,
+                                                  top * Region.SIZE),
+                                       func.point((right - 1) * Region.SIZE,
+                                                  (bottom - 1) * Region.SIZE)))
 
   @hybrid.hybrid_method
   def bbox_contains(self, ax, ay):

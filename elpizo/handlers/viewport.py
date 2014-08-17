@@ -15,10 +15,10 @@ def viewport(ctx, message):
         for region in ctx.sqla.query(Region)
             .filter(
                 Region.intersects(
-                    last_viewport.bounds.left * Region.SIZE,
-                    last_viewport.bounds.top * Region.SIZE,
-                    last_viewport.bounds.width * Region.SIZE,
-                    last_viewport.bounds.height * Region.SIZE))}
+                    last_viewport.bounds.left,
+                    last_viewport.bounds.top,
+                    last_viewport.bounds.width,
+                    last_viewport.bounds.height))}
   else:
     last_regions = {}
 
@@ -26,10 +26,10 @@ def viewport(ctx, message):
       for region in ctx.sqla.query(Region)
           .filter(
               Region.intersects(
-                  message.bounds.left * Region.SIZE,
-                  message.bounds.top * Region.SIZE,
-                  message.bounds.width * Region.SIZE,
-                  message.bounds.height * Region.SIZE))
+                  message.bounds.left,
+                  message.bounds.top,
+                  message.bounds.width,
+                  message.bounds.height))
           .options(joinedload(Region.layers))}
 
   for added_region_key in set(regions.keys()) - set(last_regions.keys()):
