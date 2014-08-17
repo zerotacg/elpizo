@@ -13,8 +13,11 @@ def main():
 
   app = make_application()
   app.listen(options.port)
-  logging.info("Application starting on port %s.", options.port)
-  asyncio.get_event_loop().run_forever()
+  logging.info("Application is starting on port %s.", options.port)
+  loop = asyncio.get_event_loop()
+  logging.info("AsyncIO will be using: %s", loop)
+  loop.call_soon(logging.info, "Initialization completed.")
+  loop.run_forever()
 
 if __name__ == "__main__":
   main()
