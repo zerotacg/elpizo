@@ -55,7 +55,7 @@ class Application(Application):
                      **kwargs)
 
     self.amqp = TornadoConnection(pika.ConnectionParameters(
-        self.settings["amqp_server"]), stop_ioloop_on_close=False)
+        self.settings["amqp_server"]), stop_ioloop_on_close=True)
 
     self.sqla_factory = scoped_session(
         sessionmaker(bind=create_engine(self.settings["dsn"])))
