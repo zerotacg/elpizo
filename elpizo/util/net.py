@@ -23,10 +23,13 @@ class Protocol(object):
     self.socket = socket
     self.channel = channel
     self.transient_storage = {}
+    self.closed = True
 
     self.player = self.get_player(self.application.sqla_factory())
 
   def on_open(self):
+    self.closed = False
+
     # Kindly ask any existing clients to kill their own sessions.
     self.publish(self.player.user.routing_key, None,
                  game_pb2.ErrorPacket(text="session collision"))
@@ -67,6 +70,10 @@ class Protocol(object):
            cls.PACKETS[packet.type].FromString(packet.payload)
 
   def send(self, origin, message):
+    if self.closed:
+      logging.warn("Lost message: %s", message)
+      return
+
     self.socket.write_message(self.serialize_packet(origin, message),
                               binary=True)
 
@@ -111,6 +118,8 @@ class Protocol(object):
       self.application.amqp_endpoints[type](ctx, origin, message)
 
   def on_close(self):
+    self.closed = True
+
     for on_close_hook in self.application.on_close_hooks:
       with Context(self) as ctx:
         on_close_hook(ctx)
@@ -188,6 +197,8 @@ class Connection(WebSocketHandler):
     try:
       if self.channel.is_open:
         self.protocol.on_close()
+        green.async_task(self.channel.queue_delete)(
+            queue=self.protocol.player.user.queue_name)
         self.channel.close()
     except Exception as e:
       logging.error("Error in on_close for WebSocket connection", exc_info=e)
