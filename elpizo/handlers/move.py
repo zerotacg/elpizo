@@ -67,12 +67,18 @@ def socket_move(ctx, message):
     ctx.sqla.rollback()
     return
 
+  intersections = ctx.sqla.query(Entity).filter(
+      Entity.intersects(entity_for_update))
+
   # colliding with an entity
-  for entity in ctx.sqla.query(Entity).filter(
-      Entity.intersects(entity_for_update)):
+  for entity in intersections:
     if not entity.is_passable((new_ax, new_ay), direction):
       ctx.sqla.rollback()
       return
+
+  # trigger entity contacts
+  for entity in intersections:
+    entity.on_contact(ctx)
 
   ctx.transient_storage["last_move_time"] = now
   ctx.sqla.commit()

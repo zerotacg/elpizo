@@ -136,6 +136,15 @@ class Entity(Base):
   def routing_key(self):
     return "entity.{id}".format(id=self.id)
 
+  def on_contact(self, ctx):
+    return
+
+  def on_containing_interact(self, ctx):
+    return
+
+  def on_adjacent_interact(self, ctx):
+    return
+
   __mapper_args__ = {
       "polymorphic_on": type,
       "polymorphic_identity": "entity"

@@ -67,7 +67,7 @@ export var Chat = React.createClass({
   onChat: function (origin, message) {
     this.addMessage({
         origin: message.actorName,
-        text: text,
+        text: message.text,
         isStatus: false
     });
   },

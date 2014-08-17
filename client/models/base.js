@@ -23,10 +23,13 @@ export class Entity extends EventEmitter {
   update(dt) {
   }
 
-  onAdjacentInteract(protocol) {
+  onAdjacentInteract(avatar, protocol) {
   }
 
-  onContainingInteract(protocol) {
+  onContainingInteract(avatar, protocol) {
+  }
+
+  onContact(avatar, protocol) {
   }
 
   isPassable(location, direction) {

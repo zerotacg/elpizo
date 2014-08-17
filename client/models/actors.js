@@ -124,12 +124,20 @@ export class Player extends Actor {
                     inputState.isHeld(Key.DOWN) ? Directions.S :
                     null;
 
-    if (direction !== null) {
-      var wasMoving = this.moving;
+    var wasMoving = this.moving;
 
+    if (direction !== null) {
       if (this.moveInDirection(direction)) {
         // Send a move packet only if we've successfully moved.
         protocol.send(new game_pb2.MovePacket({direction: direction}));
+
+        // Trigger all target contacts.
+        var target = this.location.offset(getDirectionVector(direction));
+
+        this.realm.getAllEntities().filter((entity) =>
+            entity.getAbsoluteBounds().contains(target)).forEach((entity) => {
+            entity.onContact(this, protocol);
+          })
       } else if (wasMoving) {
         // Otherwise, we're trying to move in a direction that's obstructed so
         // we stop moving and send StopMoves.
@@ -178,9 +186,9 @@ export class Player extends Actor {
 
       var head = interactions[0];
       if (head.contained) {
-        head.entity.onContainingInteract(protocol);
+        head.entity.onContainingInteract(avatar, protocol);
       } else {
-        head.entity.onAdjacentInteract(protocol);
+        head.entity.onAdjacentInteract(avatar, protocol);
       }
     }
   }

@@ -10,7 +10,7 @@ export class Fixture extends Entity {
   }
 
   isPassable(location, direction) {
-    return false;
+    return true;
   }
 
   onAdjacentInteract(protocol) {
