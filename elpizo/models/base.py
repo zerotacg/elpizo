@@ -162,13 +162,18 @@ class Building(Entity):
 
   id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
                          primary_key=True)
+  door_position = sqlalchemy.Column(Integer, nullable=False)
 
   def is_passable(self, location, direction):
+    x, y = location
+    if x == self.ax + self.bbox_left + self.door_position and \
+       y == self.ay + self.bbox_top + self.bbox_height - 1:
+      return True
     return False
 
   def to_protobuf(self):
     protobuf = super().to_protobuf()
-    message = game_pb2.Building()
+    message = game_pb2.Building(door_position=self.door_position)
 
     protobuf.Extensions[game_pb2.Building.building_ext].MergeFrom(message)
     return protobuf

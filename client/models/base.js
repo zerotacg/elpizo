@@ -43,8 +43,7 @@ export class Building extends Entity {
     super(message);
     message = message.buildingExt;
 
-    this.aWidth = message.aWidth;
-    this.aHeight = message.aHeight;
+    this.doorPosition = message.doorPosition;
   }
 
   visit(visitor) {
@@ -53,6 +52,10 @@ export class Building extends Entity {
   }
 
   isPassable(location, direction) {
+    if (location.x == this.getAbsoluteBounds().left + this.doorPosition &&
+        location.y == this.getAbsoluteBounds().getBottom() - 1) {
+      return true;
+    }
     return false;
   }
 }

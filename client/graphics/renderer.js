@@ -153,8 +153,8 @@ export class Renderer extends EventEmitter {
 
     return Rectangle.fromCorners(Math.floor(arTopLeft.x),
                                  Math.floor(arTopLeft.y),
-                                 Math.floor(arBottomRight.x) + 1,
-                                 Math.floor(arBottomRight.y) + 1);
+                                 Math.ceil(arBottomRight.x) + 1,
+                                 Math.ceil(arBottomRight.y) + 1);
   }
 
   render(realm, dt) {
@@ -422,7 +422,26 @@ class RendererVisitor extends EntityVisitor {
   }
 
   visitBuilding(entity) {
-    // TODO: actually draw the building.
+    // TODO: actually draw the building with sprites.
+    var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(
+        entity.bbox.left, entity.bbox.top - 1));
+    var sSize = this.renderer.absoluteToScreenCoords(new Vector2(
+        entity.bbox.width, entity.bbox.height));
+
+    this.ctx.fillStyle = "#eee6cb";
+    this.ctx.fillRect(sOffset.x, sOffset.y, sSize.x, sSize.y);
+
+    var sBottomOffset = this.renderer.absoluteToScreenCoords(new Vector2(
+        entity.bbox.left, entity.bbox.getBottom() - 2));
+    this.ctx.fillStyle = "#ddcf99";
+    this.ctx.fillRect(sBottomOffset.x, sBottomOffset.y,
+                      sSize.x, Renderer.TILE_SIZE * 2);
+
+    var sDoorOffset = this.renderer.absoluteToScreenCoords(new Vector2(
+        entity.bbox.left + entity.doorPosition, entity.bbox.getBottom() - 1.5));
+    this.ctx.fillStyle = "black";
+    this.ctx.fillRect(sDoorOffset.x, sDoorOffset.y,
+                      Renderer.TILE_SIZE, Renderer.TILE_SIZE * 1.5);
   }
 }
 Renderer.TILE_SIZE = 32;

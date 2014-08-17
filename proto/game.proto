@@ -125,8 +125,7 @@ message Building {
     optional Building building_ext = 105;
   }
 
-  optional uint32 a_width = 1;
-  optional uint32 a_height = 2;
+  optional uint32 door_position = 1;
 }
 
 message ErrorPacket {
