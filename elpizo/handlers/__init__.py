@@ -33,7 +33,7 @@ def basic_mq_endpoint(ctx, origin, message):
     ctx.send(origin, message)
 
 
-def configure(application):
+def install(application):
   application.on_open_hooks = [
       chat.on_open,
       on_open

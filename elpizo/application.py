@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from tornado.web import Application, RequestHandler, StaticFileHandler
 
-from . import endpoints, models
+from . import handlers, models
 from .exports import get_exports
 from .util.mint import Mint
 from .util.net import Connection
@@ -63,4 +63,4 @@ class Application(Application):
     with open(self.settings["mint_public_key"]) as f:
       self.mint = Mint(f)
 
-    endpoints.configure(self)
+    handlers.install(self)
