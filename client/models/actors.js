@@ -49,10 +49,6 @@ export class Actor extends Entity {
     return getDirectionVector(this.direction);
   }
 
-  isPassable(location, direction) {
-    return true;
-  }
-
   moveInDirection(direction) {
     // Move the entity one tile in an axis direction.
     //

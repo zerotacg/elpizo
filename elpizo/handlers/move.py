@@ -67,11 +67,12 @@ def socket_move(ctx, message):
     ctx.sqla.rollback()
     return
 
-  # colliding with a fixture
-  if ctx.sqla.query(ctx.sqla.query(Fixture).filter(
-      Fixture.intersects(entity_for_update)).exists()).scalar():
-    ctx.sqla.rollback()
-    return
+  # colliding with an entity
+  for entity in ctx.sqla.query(Entity).filter(
+      Entity.intersects(entity_for_update)):
+    if not entity.is_passable((new_ax, new_ay), direction):
+      ctx.sqla.rollback()
+      return
 
   ctx.transient_storage["last_move_time"] = now
   ctx.sqla.commit()

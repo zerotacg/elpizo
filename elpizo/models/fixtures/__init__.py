@@ -45,3 +45,6 @@ class Fixture(Entity):
     protobuf.Extensions[game_pb2.Fixture.fixture_ext].MergeFrom(message)
 
     return protobuf
+
+  def is_passable(self, location, direction):
+    return False

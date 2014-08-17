@@ -115,6 +115,9 @@ class Entity(Base):
     return func.box(func.point(left, top),
                     func.point(right - 1, bottom - 1)).op("@>")(self.point)
 
+  def is_passable(self, location, direction):
+    return True
+
   def bbox_to_protobuf(self):
     return game_pb2.Rectangle(left=self.bbox_left, top=self.bbox_top,
                               width=self.bbox_width, height=self.bbox_height)
@@ -159,6 +162,9 @@ class Building(Entity):
 
   id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("entities.id"),
                          primary_key=True)
+
+  def is_passable(self, location, direction):
+    return False
 
   def to_protobuf(self):
     protobuf = super().to_protobuf()

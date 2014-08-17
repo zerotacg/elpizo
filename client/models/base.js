@@ -29,6 +29,10 @@ export class Entity extends EventEmitter {
   onContainingInteract(protocol) {
   }
 
+  isPassable(location, direction) {
+    return true;
+  }
+
   visit(visitor) {
     visitor.visitEntity(this);
   }
@@ -43,13 +47,13 @@ export class Building extends Entity {
     this.aHeight = message.aHeight;
   }
 
-  isPassable(location, direction) {
-    return true;
-  }
-
   visit(visitor) {
     super.visit(visitor);
     visitor.visitBuilding(this);
+  }
+
+  isPassable(location, direction) {
+    return false;
   }
 }
 
@@ -60,10 +64,6 @@ export class Drop extends Entity {
     message = message.dropExt;
 
     this.item = makeItem(message.item);
-  }
-
-  isPassable(location, direction) {
-    return true;
   }
 
   onContainingInteract(protocol) {
