@@ -44,7 +44,7 @@ export class Building extends Entity {
   }
 
   isPassable(location, direction) {
-    return false;
+    return true;
   }
 
   visit(visitor) {
