@@ -68,7 +68,8 @@ def socket_move(ctx, message):
     return
 
   intersections = ctx.sqla.query(Entity).filter(
-      Entity.intersects(entity_for_update))
+      Entity.intersects(entity_for_update),
+      Entity.id != ctx.player.id)
 
   # colliding with an entity
   for entity in intersections:
