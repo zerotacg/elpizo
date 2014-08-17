@@ -6,8 +6,22 @@ import {makeColorForString} from "../util/colors";
 import {hasOwnProp} from "../util/objects";
 
 var COMMANDS = {
-  debug: (game) => {
+  debug: (comp, game) => {
     game.setDebug(!game.debug);
+
+    comp.addMessage({
+        origin: null,
+        text: "Debug mode " + (game.debug ? "on" : "off") + ".",
+        isStatus: true
+    });
+  },
+
+  deval: (comp, game, cmd) => {
+    comp.addMessage({
+        origin: null,
+        text: "Debug eval result: " + eval(cmd),
+        isStatus: true
+    });
   }
 };
 
@@ -81,39 +95,40 @@ export var Chat = React.createClass({
     e.preventDefault();
     var pendingMessage = this.state.pendingMessage;
     this.setState({pendingMessage: ""});
+    this.getDOMNode().querySelector("input").blur();
 
-    if (pendingMessage.trim().length > 0) {
-      if (pendingMessage[0] === "/" && pendingMessage[1] !== "/") {
-        var parts = pendingMessage.slice(1).split(/ /);
-        var commandName = parts[0].trim().toLowerCase();
-        var rest = parts.slice(1).join(" ").trim();
-
-        if (!hasOwnProp.call(COMMANDS, commandName)) {
-          this.addMessage({
-              origin: null,
-              text: "No such command: " + commandName,
-              isStatus: true
-          });
-        } else {
-          COMMANDS[commandName](this.props.game, rest);
-        }
-      } else {
-        pendingMessage = pendingMessage.replace(/^\/\//, "/");
-
-        this.addMessage({
-            origin: this.props.game.me.name,
-            text: pendingMessage,
-            isStatus: false
-        });
-
-        this.props.game.protocol.send(new ChatPacket({
-            target: "chatroom.global",
-            text: pendingMessage
-        }));
-      }
+    if (pendingMessage.trim().length === 0) {
+      return;
     }
 
-    this.getDOMNode().querySelector("input").blur();
+    if (pendingMessage[0] === "/" && pendingMessage[1] !== "/") {
+      var parts = pendingMessage.slice(1).split(/ /);
+      var commandName = parts[0].trim().toLowerCase();
+      var rest = parts.slice(1).join(" ").trim();
+
+      if (!hasOwnProp.call(COMMANDS, commandName)) {
+        this.addMessage({
+            origin: null,
+            text: "No such command: " + commandName,
+            isStatus: true
+        });
+      } else {
+        COMMANDS[commandName](this, this.props.game, rest);
+      }
+    } else {
+      pendingMessage = pendingMessage.replace(/^\/\//, "/");
+
+      this.addMessage({
+          origin: this.props.game.me.name,
+          text: pendingMessage,
+          isStatus: false
+      });
+
+      this.props.game.protocol.send(new ChatPacket({
+          target: "chatroom.global",
+          text: pendingMessage
+      }));
+    }
   },
 
   render: function () {
