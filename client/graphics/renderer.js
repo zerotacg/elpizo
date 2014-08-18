@@ -423,10 +423,15 @@ class RendererVisitor extends EntityVisitor {
   visitPlayer(entity) {
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
-    this.ctx.fillStyle = "black";
-    this.ctx.fillText(entity.name, 17, -23);
+
+    this.ctx.strokeStyle = "white";
     this.ctx.fillStyle = makeColorForString(entity.name);
-    this.ctx.fillText(entity.name, 16, -24);
+
+    this.ctx.lineWidth = 3;
+
+    this.ctx.translate(16, -28);
+    this.ctx.strokeText(entity.name, 0, 0);
+    this.ctx.fillText(entity.name, 0, 0);
   }
 
   visitBuilding(entity) {

@@ -1,3 +1,5 @@
+@import url("//fonts.googleapis.com/css?family=Roboto+Condensed:400,700");
+
 * {
   box-sizing: border-box;
 }
@@ -5,11 +7,12 @@
 html, body {
   width: 100%;
   height: 100%;
+  font-weight: bold;
 }
 
 body {
   background: black;
-  font: 13px "Roboto Slab", sans-serif;
+  font: 13px "Roboto Condensed", sans-serif;
   text-rendering: optimizeLegibility;
   padding: 0;
   margin: 0;
@@ -46,30 +49,34 @@ a {
   z-index: 1;
 
   .chat {
+    background: rgba(0, 0, 0, 0.5);
+
     position: absolute;
     left: 10px;
     bottom: 10px;
 
     width: 480px;
+    height: 200px;
 
-    padding: 16px;
+    padding: 0;
 
-    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
 
     .messages {
-      padding: 0 9px;
+      padding: 8px;
       margin: 0;
       list-style: none;
+      flex-grow: 1;
 
-      max-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+
       overflow: auto;
 
-      .origin {
-        font-weight: bold;
-      }
-
       .status {
-        font-style: italic;
+        color: #aaa;
       }
 
       li {
@@ -86,10 +93,9 @@ a {
 
       outline: 0;
       margin: 0;
-      margin-top: 8px;
 
       width: 100%;
-      height: 28px;
+      height: 24px;
 
       opacity: 0.5;
       transition: opacity 0.2s ease-out;
@@ -97,7 +103,7 @@ a {
       text-shadow: inherit;
 
       &:focus, &:hover {
-        background: rgba(0, 0, 0, 0.25);
+        background: rgba(255, 255, 255, 0.25);
         opacity: 1.0;
       }
     }
