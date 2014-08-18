@@ -72,7 +72,7 @@ export class Drop extends Entity {
     this.item = makeItem(message.item);
   }
 
-  onContainingInteract(protocol) {
+  onContainingInteract(avatar, protocol) {
     // Attempt to pick up the drop.
     protocol.send(new game_pb2.PickUpPacket({dropId: this.id}));
   }

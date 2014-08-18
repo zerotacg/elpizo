@@ -186,9 +186,9 @@ export class Player extends Actor {
 
       var head = interactions[0];
       if (head.contained) {
-        head.entity.onContainingInteract(avatar, protocol);
+        head.entity.onContainingInteract(this, protocol);
       } else {
-        head.entity.onAdjacentInteract(avatar, protocol);
+        head.entity.onAdjacentInteract(this, protocol);
       }
     }
   }
