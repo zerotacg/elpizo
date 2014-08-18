@@ -1,6 +1,7 @@
 module exports from "./exports";
 import {makeEntity} from "./models";
 import {Directions} from "./models/actors";
+import {makeItem} from "./models/items/registry";
 import {Realm, Region} from "./models/realm";
 import {Vector2} from "./util/geometry";
 
@@ -77,6 +78,6 @@ export function install(game) {
   });
 
   protocol.on(Packet.Type.INVENTORY, (origin, message) => {
-    console.warn("NOT IMPLEMENTED: INVENTORY");
+    game.me.inventory.push(makeItem(message.item));
   });
 }
