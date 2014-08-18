@@ -34,8 +34,11 @@ def initialize_realm(app):
   grassland = Terrain(name="grassland")
   sqla.add(grassland)
 
-  grassland_wall = Terrain(name="grassland_wall")
-  sqla.add(grassland_wall)
+  dirt_wall = Terrain(name="dirt_wall")
+  sqla.add(dirt_wall)
+
+  dirt = Terrain(name="dirt")
+  sqla.add(dirt)
 
   sqla.commit()
 
@@ -70,7 +73,6 @@ def initialize_realm(app):
             tile = 28
 
           tiles.append(tile)
-      grass_layer = RegionLayer(terrain=grassland, tiles=tiles)
 
       platform_tiles = [-1] * (16 * 16)
       platform_tiles[4 + 4 * Region.SIZE] = 34
@@ -85,12 +87,9 @@ def initialize_realm(app):
       platform_tiles[5 + 6 * Region.SIZE] = 28
       platform_tiles[6 + 6 * Region.SIZE] = 38
 
-      platform_layer = RegionLayer(terrain=grassland, tiles=platform_tiles)
-
       wall_tiles = [-1] * (16 * 16)
       wall_tiles[4 + 7 * Region.SIZE] = 40
       wall_tiles[6 + 7 * Region.SIZE] = 38
-      wall_layer = RegionLayer(terrain=grassland_wall, tiles=wall_tiles)
 
       passabilities = [0b1111] * (16 * 16)
 
@@ -117,9 +116,15 @@ def initialize_realm(app):
       passabilities[4 + 7 * Region.SIZE] = 0b0000
       passabilities[6 + 7 * Region.SIZE] = 0b0000
 
-      region = Region(arx=arx, ary=ary, realm=realm,
-                      layers=[grass_layer, platform_layer, wall_layer],
-                      passabilities=passabilities)
+      region = Region(
+          arx=arx, ary=ary, realm=realm,
+          layers=[
+              RegionLayer(terrain=grassland, tiles=tiles),
+              RegionLayer(terrain=dirt, tiles=platform_tiles),
+              RegionLayer(terrain=grassland, tiles=platform_tiles),
+              RegionLayer(terrain=dirt_wall, tiles=wall_tiles)
+          ],
+          passabilities=passabilities)
       sqla.add(region)
 
   sqla.commit()

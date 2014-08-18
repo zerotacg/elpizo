@@ -29,8 +29,17 @@ export default = {
       makeHumanoidSprite("equipment/male/brown_shoes.png"),
 
   "tile.grassland":
-      makeAutotile("tiles/grass.png", new Vector2(0, 0)),
+      makeAutotile("tiles/TileA2.png", new Vector2(8 * 32, 6 * 32)),
 
-  "tile.grassland_wall":
-      makeAutotile("tiles/grassland_wall.png", new Vector2(0, 0))
+  "tile.dirt":
+      makeAutotile("tiles/TileA4.png", new Vector2(0 * 32, 10 * 32)),
+
+  "tile.dirt_wall":
+      makeAutotile("tiles/TileA4.png", new Vector2(0 * 32, 12 * 32)),
+
+  "building.roof":
+      makeAutotile("tiles/TileA3.png", new Vector2(0 * 32, -1 * 32)),
+
+  "building.wall":
+      makeAutotile("tiles/TileA3.png", new Vector2(0 * 32, 1 * 32))
 };

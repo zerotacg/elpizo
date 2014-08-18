@@ -251,6 +251,19 @@ export class Renderer extends EventEmitter {
     });
   }
 
+  renderAutotile(autotile, ctx) {
+    autotile.forEach((sprite, index) => {
+      var s = this.absoluteToScreenCoords(new Vector2(
+          (index % 2) / 2,
+          Math.floor(index / 2) / 2));
+
+      ctx.save();
+      ctx.translate(s.x, s.y);
+      sprite.render(this.resources, ctx, this.elapsed);
+      ctx.restore();
+    });
+  }
+
   renderRegionTerrainAsBuffer(region) {
     var canvas = document.createElement("canvas");
     var size = this.absoluteToScreenCoords(new Vector2(
@@ -273,16 +286,11 @@ export class Renderer extends EventEmitter {
             return;
           }
 
-          spriteSet[tileNum].forEach((sprite, index) => {
-            var s = this.absoluteToScreenCoords(new Vector2(
-                rx + (index % 2) / 2,
-                ry + Math.floor(index / 2) / 2));
-
-            ctx.save();
-            ctx.translate(s.x, s.y);
-            sprite.render(this.resources, ctx, this.elapsed);
-            ctx.restore();
-          });
+          var sOffset = this.absoluteToScreenCoords(new Vector2(rx, ry));
+          ctx.save();
+          ctx.translate(sOffset.x, sOffset.y);
+          this.renderAutotile(spriteSet[tileNum], ctx);
+          ctx.restore();
         });
       }
     }
@@ -422,26 +430,58 @@ class RendererVisitor extends EntityVisitor {
   }
 
   visitBuilding(entity) {
-    // TODO: actually draw the building with sprites.
-    var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(
-        entity.bbox.left, entity.bbox.top));
-    var sSize = this.renderer.absoluteToScreenCoords(new Vector2(
-        entity.bbox.width, entity.bbox.height));
+    var right = entity.bbox.getRight();
+    var roofBottom = entity.bbox.getBottom() - 2;
 
-    this.ctx.fillStyle = "#eee6cb";
-    this.ctx.fillRect(sOffset.x, sOffset.y, sSize.x, sSize.y);
+    // TODO: actually draw the building with proper sprites.
+    for (var y = entity.bbox.top; y < roofBottom; ++y) {
+      for (var x = entity.bbox.left; x < right; ++x) {
+        var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(x, y));
 
-    var sBottomOffset = this.renderer.absoluteToScreenCoords(new Vector2(
-        entity.bbox.left, entity.bbox.getBottom() - 2));
-    this.ctx.fillStyle = "#ddcf99";
-    this.ctx.fillRect(sBottomOffset.x, sBottomOffset.y,
-                      sSize.x, Renderer.TILE_SIZE * 2);
+        var autotileIndex =
+            x === 0 && y === 0 ? 34 :
+            x === right - 1 && y === 0 ? 36 :
+            x === right - 1 && y === roofBottom - 1 ? 38 :
+            x === 0 && y === roofBottom - 1 ? 40 :
+            x === 0 ? 16 :
+            x === right - 1 ? 24 :
+            y === 0 ? 20 :
+            y === roofBottom - 1 ? 28 :
+            0;
 
-    var sDoorOffset = this.renderer.absoluteToScreenCoords(new Vector2(
-        entity.bbox.left + entity.doorPosition, entity.bbox.getBottom() - 1.5));
-    this.ctx.fillStyle = "black";
-    this.ctx.fillRect(sDoorOffset.x, sDoorOffset.y,
-                      Renderer.TILE_SIZE, Renderer.TILE_SIZE * 1.5);
+        this.ctx.save();
+        this.ctx.translate(sOffset.x, sOffset.y);
+        this.renderer.renderAutotile(sprites["building.roof"][autotileIndex],
+                                     this.ctx);
+        this.ctx.restore();
+      }
+    }
+
+    var wallTop = roofBottom;
+    var wallBottom = entity.bbox.getBottom();
+
+    for (var y = wallTop; y < wallBottom; ++y) {
+      for (var x = entity.bbox.left; x < right; ++x) {
+          var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(x, y));
+
+          var autotileIndex =
+              x === 0 && y === wallTop ? 34 :
+              x === right - 1 && y === wallTop ? 36 :
+              x === right - 1 && y === wallBottom - 1 ? 38 :
+              x === 0 && y === wallBottom - 1 ? 40 :
+              x === 0 ? 16 :
+              x === right - 1 ? 24 :
+              y === wallTop ? 20 :
+              y === wallBottom - 1 ? 28 :
+              0;
+
+          this.ctx.save();
+          this.ctx.translate(sOffset.x, sOffset.y);
+          this.renderer.renderAutotile(sprites["building.wall"][autotileIndex],
+                                       this.ctx);
+          this.ctx.restore();
+      }
+    }
   }
 }
 Renderer.TILE_SIZE = 32;
