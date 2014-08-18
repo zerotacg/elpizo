@@ -25,8 +25,7 @@ class ProtocolDebugContext(object):
     self.parent = parent
     self.protocol = protocol
 
-    sqla = self.protocol.application.sqla_factory()
-    self.player_id = protocol.get_player(sqla).id
+    self.player_id = protocol.user.current_player.id
 
     self.packets = {
         "ws": [],

@@ -17,25 +17,23 @@ class Protocol(object):
 
   PACKETS = {}
 
-  def __init__(self, user_id, application, socket, channel):
-    self.user_id = user_id
+  def __init__(self, user, application, socket, channel):
+    self.user = user
     self.application = application
     self.socket = socket
     self.channel = channel
     self.transient_storage = {}
     self.closed = True
 
-    self.player = self.get_player(self.application.sqla_factory())
-
   def on_open(self):
     self.closed = False
 
     # Kindly ask any existing clients to kill their own sessions.
-    self.publish(self.player.user.routing_key, None,
+    self.publish(self.user.routing_key, None,
                  game_pb2.ErrorPacket(text="session collision"))
 
     # Set up the user's AMQP subscriptions.
-    queue_name = self.player.user.queue_name
+    queue_name = self.user.queue_name
 
     green.async_task(self.channel.queue_delete)(queue=queue_name)
     green.async_task(self.channel.queue_declare)(queue=queue_name,
@@ -46,7 +44,7 @@ class Protocol(object):
         green.root(self.on_raw_amqp_message),
         queue=queue_name, no_ack=True, exclusive=True)
 
-    self.subscribe(self.player.user.routing_key)
+    self.subscribe(self.user.routing_key)
 
     for on_open_hook in self.application.on_open_hooks:
       with Context(self) as ctx:
@@ -77,9 +75,6 @@ class Protocol(object):
     self.socket.write_message(self.serialize_packet(origin, message),
                               binary=True)
 
-  def get_player(self, sqla):
-    return sqla.query(User).get(self.user_id).current_player
-
   def publish(self, routing_key, origin, message):
     self.channel.basic_publish(
         exchange=Protocol.EXCHANGE_NAME,
@@ -89,13 +84,13 @@ class Protocol(object):
   def unsubscribe(self, routing_key):
     green.async_task(self.channel.queue_unbind)(
         exchange=Protocol.EXCHANGE_NAME,
-        queue=self.player.user.queue_name,
+        queue=self.user.queue_name,
         routing_key=routing_key)
 
   def subscribe(self, routing_key):
     green.async_task(self.channel.queue_bind)(
         exchange=Protocol.EXCHANGE_NAME,
-        queue=self.player.user.queue_name,
+        queue=self.user.queue_name,
         routing_key=routing_key)
 
   def close(self):
@@ -170,10 +165,13 @@ class Connection(WebSocketHandler):
         return
 
       if realm != "user":
-        self.error("unrecognized credentials realm: {realm}".format(realm=realm))
+        self.error("unrecognized credentials realm: {realm}".format(
+            realm=realm))
         return
 
-      self.protocol = Protocol(user_id, self.application, self, self.channel)
+      sqla = self.application.sqla_factory()
+      self.protocol = Protocol(sqla.query(User).get(user_id), self.application,
+                               self, self.channel)
       self.protocol.on_open()
       self.protocol_event.set()
     except Exception as e:
@@ -198,7 +196,7 @@ class Connection(WebSocketHandler):
       if self.channel.is_open:
         self.protocol.on_close()
         green.async_task(self.channel.queue_delete)(
-            queue=self.protocol.player.user.queue_name)
+            queue=self.protocol.user.queue_name)
         self.channel.close()
     except Exception as e:
       logging.error("Error in on_close for WebSocket connection", exc_info=e)
@@ -211,7 +209,7 @@ class Context(object):
 
   @property
   def player(self):
-    return self.protocol.player
+    return self.protocol.user.current_player
 
   @property
   def application(self):
