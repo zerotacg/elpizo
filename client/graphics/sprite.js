@@ -1,4 +1,5 @@
 import {repeat} from "../util/collections";
+import {Vector2} from "../util/geometry";
 
 export class Sprite {
   constructor(resourceName, size, frames, offset, speedFactor) {
@@ -15,10 +16,10 @@ export class Sprite {
         this.frames.length];
 
     ctx.save();
-    ctx.translate(-this.offset.sx, -this.offset.sy);
+    ctx.translate(-this.offset.x, -this.offset.y);
     ctx.drawImage(resources.get("sprites/" + this.resourceName),
-                  frame.sx, frame.sy, this.size.sw, this.size.sh,
-                  0, 0, this.size.sw, this.size.sh);
+                  frame.x, frame.y, this.size.x, this.size.y,
+                  0, 0, this.size.x, this.size.y);
     ctx.restore();
   }
 }
@@ -34,32 +35,52 @@ export function makeStaticSprite(resourceName, size, frames, offset, speedFactor
 export function makeHumanoidSprite(resourceName) {
   return {
       standing: {
-          n: new Sprite(resourceName, {sw: 32, sh: 64}, [{sx: 16, sy: 64 * 0}],
-                        {sx: 0, sy: 32}, 0),
-          w: new Sprite(resourceName, {sw: 32, sh: 64}, [{sx: 16, sy: 64 * 1}],
-                        {sx: 0, sy: 32}, 0),
-          s: new Sprite(resourceName, {sw: 32, sh: 64}, [{sx: 16, sy: 64 * 2}],
-                        {sx: 0, sy: 32}, 0),
-          e: new Sprite(resourceName, {sw: 32, sh: 64}, [{sx: 16, sy: 64 * 3}],
-                        {sx: 0, sy: 32}, 0)
+          n: new Sprite(resourceName,
+                        new Vector2(32, 64),
+                        [new Vector2(16, 64 * 0)],
+                        new Vector2(0, 32),
+                        0),
+          w: new Sprite(resourceName,
+                        new Vector2(32, 64),
+                        [new Vector2(16, 64 * 1)],
+                        new Vector2(0, 32),
+                        0),
+          s: new Sprite(resourceName,
+                        new Vector2(32, 64),
+                        [new Vector2(16, 64 * 2)],
+                        new Vector2(0, 32),
+                        0),
+          e: new Sprite(resourceName,
+                        new Vector2(32, 64),
+                        [new Vector2(16, 64 * 3)],
+                        new Vector2(0, 32),
+                        0)
       },
       walking: {
           n: new Sprite(
-              resourceName, {sw: 32, sh: 64},
-              repeat(8, (i) => ({sx: 16 + 64 * (i + 1), sy: 64 * 8})),
-              {sx: 0, sy: 32}, 4),
+              resourceName,
+              new Vector2(32, 64),
+              repeat(8, (i) => new Vector2(16 + 64 * (i + 1), 64 * 8)),
+              new Vector2(0, 32),
+              4),
           w: new Sprite(
-              resourceName, {sw: 32, sh: 64},
-              repeat(8, (i) => ({sx: 16 + 64 * (i + 1), sy: 64 * 9})),
-              {sx: 0, sy: 32}, 4),
+              resourceName,
+              new Vector2(32, 64),
+              repeat(8, (i) => new Vector2(16 + 64 * (i + 1), 64 * 9)),
+              new Vector2(0, 32),
+              4),
           s: new Sprite(
-              resourceName, {sw: 32, sh: 64},
-              repeat(8, (i) => ({sx: 16 + 64 * (i + 1), sy: 64 * 10})),
-              {sx: 0, sy: 32}, 4),
+              resourceName,
+              new Vector2(32, 64),
+              repeat(8, (i) => new Vector2(16 + 64 * (i + 1), 64 * 10)),
+              new Vector2(0, 32),
+              4),
           e: new Sprite(
-              resourceName, {sw: 32, sh: 64},
-              repeat(8, (i) => ({sx: 16 + 64 * (i + 1), sy: 64 * 11})),
-              {sx: 0, sy: 32}, 4)
+              resourceName,
+              new Vector2(32, 64),
+              repeat(8, (i) => new Vector2(16 + 64 * (i + 1), 64 * 11)),
+              new Vector2(0, 32),
+              4)
       }
   };
 }
@@ -79,13 +100,15 @@ var AUTOTILE_TEXCOORDS = [
     [16, 19, 20, 23], [10, 11, 22, 23], [ 8, 11, 20, 23], [ 0,  1,  4,  5]
 ];
 
-export function makeAutotile(resourceName) {
-  var SIZE = {sw: 16, sh: 16};
-
+export function makeAutotile(resourceName, offset) {
   return AUTOTILE_TEXCOORDS.map((coords) => {
       return coords.map((i) =>
-          new Sprite(resourceName, SIZE,
-                     [{sx: (i % 4) * 16, sy: Math.floor(i / 4) * 16}],
-                     {sx: 0, sy: 0}, 0));
+          new Sprite(
+              resourceName,
+              new Vector2(16, 16),
+              [(new Vector2((i % 4) * 16, Math.floor(i / 4) * 16))
+                  .offset(offset)],
+              new Vector2(0, 0),
+              0));
   });
 }

@@ -1,13 +1,14 @@
 import {Sprite, makeHumanoidSprite, makeAutotile} from "../graphics/sprite";
+import {Vector2} from "../util/geometry";
 
 export default = {
   "fixture.tree":
-      new Sprite("fixture/tree.png", {sw: 96, sh: 96}, [{sx: 0, sy: 0}],
-                 {sx: 32, sy: 64}, 0),
+      new Sprite("fixture/tree.png", new Vector2(96, 96), [new Vector2(0, 0)],
+                 new Vector2(32, 64), 0),
 
   "item.carrot":
-      new Sprite("item/carrot.png", {sw: 32, sh: 32}, [{sx: 0, sy: 0}],
-                 {sx: 0, sy: 0}, 0),
+      new Sprite("item/carrot.png", new Vector2(32, 32), [new Vector2(0, 0)],
+                 new Vector2(0, 0), 0),
 
   "body.male.light":
       makeHumanoidSprite("body/male/light.png"),
@@ -28,8 +29,8 @@ export default = {
       makeHumanoidSprite("equipment/male/brown_shoes.png"),
 
   "tile.grassland":
-      makeAutotile("tiles/grass.png"),
+      makeAutotile("tiles/grass.png", new Vector2(0, 0)),
 
   "tile.grassland_wall":
-      makeAutotile("tiles/grassland_wall.png")
+      makeAutotile("tiles/grassland_wall.png", new Vector2(0, 0))
 };

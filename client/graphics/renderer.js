@@ -424,7 +424,7 @@ class RendererVisitor extends EntityVisitor {
   visitBuilding(entity) {
     // TODO: actually draw the building with sprites.
     var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(
-        entity.bbox.left, entity.bbox.top - 1));
+        entity.bbox.left, entity.bbox.top));
     var sSize = this.renderer.absoluteToScreenCoords(new Vector2(
         entity.bbox.width, entity.bbox.height));
 
