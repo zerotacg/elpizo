@@ -6,6 +6,7 @@ import pika
 from pika.adapters.tornado_connection import TornadoConnection
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
+from statsd import StatsClient
 from tornado.web import Application, RequestHandler, StaticFileHandler
 
 from . import handlers, models
@@ -56,6 +57,8 @@ class Application(Application):
 
     self.amqp = TornadoConnection(pika.ConnectionParameters(
         self.settings["amqp_server"]), stop_ioloop_on_close=True)
+
+    self.statsd = StatsClient(self.settings["statsd_server"], prefix="elpizo")
 
     self.sqla_factory = scoped_session(
         sessionmaker(bind=create_engine(self.settings["dsn"])))

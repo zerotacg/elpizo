@@ -96,8 +96,12 @@ class Protocol(object):
     self.socket.close()
 
   def on_raw_ws_message(self, packet):
-    origin, message = self.deserialize_packet(packet)
-    self.on_ws_message(origin, message)
+    with self.application.statsd.timer("ws_message"):
+      origin, message = self.deserialize_packet(packet)
+      with self.application.statsd.timer("packets.{}".format(
+          type(message).__name__)), \
+           self.application.statsd.timer("players.{}".format(self.player.id)):
+        self.on_ws_message(origin, message)
 
   def on_raw_amqp_message(self, channel, method, properties, body):
     origin, message = self.deserialize_packet(body)

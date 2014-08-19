@@ -7,6 +7,7 @@ define("port", default="9999", help="Port to listen on")
 define("debug", default=False, help="Run in debug mode")
 define("dsn", default="", help="Database DSN to connect to")
 define("amqp_server", default="localhost", help="AMQP server to connect to")
+define("statsd_server", default="localhost", help="statsd server to connect to")
 define("mint_public_key", default="elpizo.pub", help="Public key of the mint")
 
 
@@ -26,6 +27,7 @@ def make_application():
   from elpizo.application import Application
 
   app = Application(debug=options.debug, amqp_server=options.amqp_server,
+                    statsd_server=options.statsd_server,
                     dsn=options.dsn, mint_public_key=options.mint_public_key)
 
   return app
