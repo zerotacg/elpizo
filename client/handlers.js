@@ -52,10 +52,6 @@ export function install(game) {
     game.realm.getEntity(origin).moveInDirection(message.direction);
   });
 
-  protocol.on(Packet.Type.REGION_CHANGE, (origin, message) => {
-
-  });
-
   protocol.on(Packet.Type.STOP_MOVE, (origin, message) => {
     game.realm.getEntity(origin).moving = false;
   });
@@ -94,6 +90,13 @@ export function install(game) {
   });
 
   protocol.on(Packet.Type.REGION_CHANGE, (origin, message) => {
+    if (message.location.realmId !== game.realm.id) {
+      console.warn("Got invalid region realm ID (" +
+                   message.entity.location.realmId + ") for current realm (" +
+                   game.realm.id + "), discarding.");
+      return;
+    }
+
     if (!renderer.getRegionCacheBounds().contains(new Vector2(
         message.location.arx, message.location.ary))) {
       game.realm.removeEntity(game.realm.getEntity(origin));
