@@ -24,6 +24,7 @@ def on_open(ctx):
 def on_close(ctx):
   #ctx.publish(ctx.player.realm.routing_key, game_pb2.StatusPacket(online=False))
 
+  ctx.publish(ctx.player.realm.routing_key, game_pb2.StopMovePacket())
   ctx.player.online = False
   ctx.sqla.commit()
 
@@ -31,6 +32,11 @@ def on_close(ctx):
 def basic_mq_endpoint(ctx, origin, message):
   if origin != ctx.player.id:
     ctx.send(origin, message)
+
+
+def on_mq_error(ctx, origin, message):
+  ctx.protocol.socket.close()
+  basic_mq_endpoint(ctx, origin, message)
 
 
 def install(application):
@@ -59,6 +65,6 @@ def install(application):
       Packet.STATUS: basic_mq_endpoint,
       Packet.DESPAWN_ENTITY: basic_mq_endpoint,
       Packet.ENTITY: basic_mq_endpoint,
-      Packet.ERROR: basic_mq_endpoint,
+      Packet.ERROR: on_mq_error,
       Packet.REGION_CHANGE: basic_mq_endpoint
   }
