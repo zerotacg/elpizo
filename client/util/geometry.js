@@ -19,6 +19,10 @@ export class Vector2 {
   negate() {
     return new Vector2(-this.x, -this.y);
   }
+
+  equals(other) {
+    return this.x === other.x && this.y === other.y;
+  }
 }
 
 export class Rectangle {
@@ -58,6 +62,15 @@ export class Rectangle {
   offset(vec) {
     return new Rectangle(this.left + vec.x, this.top + vec.y,
                          this.width, this.height);
+  }
+
+  scale(k) {
+    return new Rectangle(this.left, this.top, k * this.width, k * this.height);
+  }
+
+  equals(other) {
+    return this.left === other.left && this.top === other.top &&
+           this.width === other.width && this.height === other.height;
   }
 }
 

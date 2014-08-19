@@ -64,9 +64,11 @@ export class Actor extends Entity {
 
     this.direction = direction;
 
-    if (!this.realm.isPassable(this.location
-        .offset(this.getDirectionVector())
-        .elementwise(Math.round), direction)) {
+    var targetLocation = this.location
+          .offset(this.getDirectionVector())
+          .elementwise(Math.round);
+
+    if (!this.realm.isPassable(targetLocation, direction)) {
       this.remainder = 0;
       this.moving = lastDirection !== this.direction;
     } else {
@@ -76,9 +78,11 @@ export class Actor extends Entity {
 
     if (this.moving) {
       this.emit("moveStart", this.location);
+    } else {
+      targetLocation = this.location;
     }
 
-    return this.moving;
+    return targetLocation;
   }
 
   getSpeed() {
@@ -129,7 +133,11 @@ export class Player extends Actor {
     var wasMoving = this.moving;
 
     if (direction !== null) {
-      if (this.moveInDirection(direction)) {
+      var lastDirection = this.direction;
+      var targetLocation = this.moveInDirection(direction);
+
+      if (!targetLocation.equals(this.location) ||
+          lastDirection !== this.direction) {
         // Send a move packet only if we've successfully moved.
         protocol.send(new game_pb2.MovePacket({direction: direction}));
 

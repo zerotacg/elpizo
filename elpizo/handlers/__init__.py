@@ -9,7 +9,7 @@ def on_open(ctx):
   ctx.subscribe(ctx.player.realm.routing_key)
 
   # Set the player to online.
-  ctx.publish(ctx.player.realm.routing_key, game_pb2.StatusPacket(online=True))
+  #ctx.publish(ctx.player.realm.routing_key, game_pb2.StatusPacket(online=True))
 
   ctx.player.online = True
   ctx.sqla.commit()
@@ -22,7 +22,7 @@ def on_open(ctx):
 
 
 def on_close(ctx):
-  ctx.publish(ctx.player.realm.routing_key, game_pb2.StatusPacket(online=False))
+  #ctx.publish(ctx.player.realm.routing_key, game_pb2.StatusPacket(online=False))
 
   ctx.player.online = False
   ctx.sqla.commit()
@@ -58,5 +58,7 @@ def install(application):
       Packet.STOP_MOVE: basic_mq_endpoint,
       Packet.STATUS: basic_mq_endpoint,
       Packet.DESPAWN_ENTITY: basic_mq_endpoint,
-      Packet.ERROR: basic_mq_endpoint
+      Packet.ENTITY: basic_mq_endpoint,
+      Packet.ERROR: basic_mq_endpoint,
+      Packet.REGION_CHANGE: basic_mq_endpoint
   }

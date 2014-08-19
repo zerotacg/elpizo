@@ -113,10 +113,13 @@ class Region(Base):
   def bbox_contains(self, ax, ay):
     return self.bbox.op("@>")(func.point(ax, ay))
 
+  def location_to_protobuf(self):
+    return game_pb2.AbsoluteRealmLocation(realm_id=self.realm_id,
+                                          arx=self.arx, ary=self.ary)
+
   def to_protobuf(self):
     return game_pb2.Region(
-        location=game_pb2.AbsoluteRealmLocation(realm_id=self.realm_id,
-                                                arx=self.arx, ary=self.ary),
+        location=self.location_to_protobuf(),
         layers=[layer.to_protobuf() for layer in self.layers],
         passabilities=self.passabilities)
 

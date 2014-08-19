@@ -1,14 +1,18 @@
 module exports from "./exports";
+module coords from "./util/coords";
+
 import {makeEntity} from "./models";
 import {Directions} from "./models/actors";
 import {makeItem} from "./models/items/registry";
 import {Realm, Region} from "./models/realm";
 import {Vector2} from "./util/geometry";
+import {hasOwnProp} from "./util/objects";
 
 import {Packet} from "./game_pb2";
 
 export function install(game) {
   var protocol = game.protocol;
+  var renderer = game.renderer;
 
   protocol.on(Packet.Type.REALM, (origin, message) => {
     game.setRealm(new Realm(message.realm));
@@ -33,6 +37,10 @@ export function install(game) {
       return;
     }
 
+    if (hasOwnProp.call(game.realm.entities, message.entity.id)) {
+      return;
+    }
+
     game.realm.addEntity(makeEntity(message.entity));
   });
 
@@ -42,6 +50,10 @@ export function install(game) {
 
   protocol.on(Packet.Type.MOVE, (origin, message) => {
     game.realm.getEntity(origin).moveInDirection(message.direction);
+  });
+
+  protocol.on(Packet.Type.REGION_CHANGE, (origin, message) => {
+
   });
 
   protocol.on(Packet.Type.STOP_MOVE, (origin, message) => {
@@ -79,5 +91,12 @@ export function install(game) {
 
   protocol.on(Packet.Type.INVENTORY, (origin, message) => {
     game.me.inventory.push(makeItem(message.item));
+  });
+
+  protocol.on(Packet.Type.REGION_CHANGE, (origin, message) => {
+    if (!renderer.getRegionCacheBounds().contains(new Vector2(
+        message.location.arx, message.location.ary))) {
+      game.realm.removeEntity(game.realm.getEntity(origin));
+    }
   });
 }

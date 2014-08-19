@@ -23,6 +23,8 @@ def socket_move(ctx, message):
       .with_lockmode("update") \
       .one()
 
+  last_region = ctx.player.region
+
   last_move_time = ctx.transient_storage.get("last_move_time", 0)
   now = time.monotonic()
 
@@ -80,6 +82,14 @@ def socket_move(ctx, message):
   # trigger entity contacts
   for entity in intersections:
     entity.on_contact(ctx)
+
+  if region is not last_region:
+    ctx.protocol.publish(region.routing_key, ctx.player.id,
+                         game_pb2.EntityPacket(entity=ctx.player.to_protobuf()))
+    ctx.protocol.publish(
+        last_region.routing_key, ctx.player.id,
+        game_pb2.RegionChangePacket(
+            location=region.location_to_protobuf()))
 
   ctx.transient_storage["last_move_time"] = now
   ctx.sqla.commit()
