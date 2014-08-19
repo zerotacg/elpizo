@@ -57,9 +57,6 @@ def install(application, routes):
       (r"/_debug/realms/(\d+)/regions/(\d+),(\d+)/", handlers.RegionHandler),
   ])
 
-  def get_packet_name(code):
-    return Protocol.PACKETS[code].__name__
-
   # instrument Protocol
   def wrap_on_open(f):
     def _wrapper(self):

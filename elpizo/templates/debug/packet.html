@@ -11,7 +11,7 @@
 
 <dl class="{{"rx" if packet["received"] else "tx"}}">
   <dt>type</dt>
-  <dd>{{packet["type"]}}</dd>
+  <dd>{{type(packet["message"]).__name__}}</dd>
 
   <dt>origin</dt>
   <dd><a href="/_debug/entities/{{packet["origin"]}}/">{{packet["origin"]}}</a></dd>
