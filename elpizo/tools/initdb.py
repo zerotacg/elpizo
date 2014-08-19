@@ -167,26 +167,23 @@ def initialize_players(app, realm):
   valjean.feet_item = brown_shoes
   sqla.commit()
 
-  athos = Player(name="Athos", gender="male",
-                 body="light",
-                 direction=1,
-                 health=10,
-                 realm=realm, arx=0, ary=0, rx=0, ry=0,)
-  sqla.add(athos)
-
-  aramis = Player(name="Aramis", gender="male",
+  sqla.add(Player(name="Enjolras", gender="male",
                   body="light",
                   direction=1,
                   health=10,
-                  realm=realm, arx=0, ary=0, rx=0, ry=0)
-  sqla.add(aramis)
+                  realm=realm, arx=0, ary=0, rx=0, ry=0))
 
-  porthos = Player(name="Porthos", gender="male",
-                   body="light",
-                   direction=1,
-                   health=10,
-                   realm=realm, arx=0, ary=0, rx=0, ry=0)
-  sqla.add(porthos)
+  sqla.add(Player(name="Marius", gender="male",
+                  body="light",
+                  direction=1,
+                  health=10,
+                  realm=realm, arx=0, ary=0, rx=0, ry=0))
+
+  sqla.add(Player(name="Courfeyrac", gender="male",
+                  body="light",
+                  direction=1,
+                  health=10,
+                  realm=realm, arx=0, ary=0, rx=0, ry=0))
 
   sqla.commit()
 
