@@ -137,7 +137,7 @@ def initialize_fixtures(app, realm):
 
   sqla.add(resource_sources.Tree(realm=realm, ax=7, ay=7))
   sqla.add(Drop(item=restorative.Carrot(), realm=realm, ax=1, ay=0))
-  sqla.add(Building(realm=realm, ax=13, ay=2, bbox_width=5, bbox_height=5,
+  sqla.add(Building(realm=realm, ax=9, ay=2, bbox_width=10, bbox_height=10,
                     door_position=3))
   sqla.commit()
 

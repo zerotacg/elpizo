@@ -41,5 +41,11 @@ export default = {
       makeAutotile("tiles/TileA3.png", new Vector2(0 * 32, -1 * 32)),
 
   "building.wall":
-      makeAutotile("tiles/TileA3.png", new Vector2(0 * 32, 1 * 32))
+      makeAutotile("tiles/TileA3.png", new Vector2(0 * 32, 1 * 32)),
+
+  "building.ceiling":
+      makeAutotile("tiles/TileA4.png", new Vector2(4 * 32, 5 * 32)),
+
+  "building.wall_internal":
+      makeAutotile("tiles/TileA4.png", new Vector2(4 * 32, 7 * 32))
 };

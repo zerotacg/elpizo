@@ -348,6 +348,33 @@ export class Renderer extends EventEmitter {
   }
 }
 
+function drawAutotileRectangle(renderer, rect, autotile, ctx) {
+  var bottom = rect.getBottom();
+  var right = rect.getRight();
+
+  for (var y = rect.top; y < bottom; ++y) {
+    for (var x = rect.left; x < right; ++x) {
+      var sOffset = renderer.absoluteToScreenCoords(new Vector2(x, y));
+
+      var autotileIndex =
+          x === rect.left && y === rect.top     ? 34 :
+          x === right - 1 && y === rect.top     ? 36 :
+          x === right - 1 && y === bottom - 1   ? 38 :
+          x === rect.left && y === bottom - 1   ? 40 :
+          x === rect.left                       ? 16 :
+          x === right - 1                       ? 24 :
+          y === rect.top                        ? 20 :
+          y === bottom - 1                      ? 28 :
+          0;
+
+      ctx.save();
+      ctx.translate(sOffset.x, sOffset.y);
+      renderer.renderAutotile(autotile[autotileIndex], ctx);
+      ctx.restore();
+    }
+  }
+}
+
 class RendererVisitor extends EntityVisitor {
   constructor(renderer, ctx) {
     this.renderer = renderer;
@@ -435,58 +462,21 @@ class RendererVisitor extends EntityVisitor {
   }
 
   visitBuilding(entity) {
-    var right = entity.bbox.getRight();
-    var roofBottom = entity.bbox.getBottom() - 2;
+    drawAutotileRectangle(this.renderer,
+                          new Rectangle(entity.bbox.left,
+                                        entity.bbox.top,
+                                        entity.bbox.width,
+                                        entity.bbox.height - 2),
+                          sprites["building.roof"],
+                          this.ctx);
 
-    // TODO: actually draw the building with proper sprites.
-    for (var y = entity.bbox.top; y < roofBottom; ++y) {
-      for (var x = entity.bbox.left; x < right; ++x) {
-        var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(x, y));
-
-        var autotileIndex =
-            x === 0 && y === 0 ? 34 :
-            x === right - 1 && y === 0 ? 36 :
-            x === right - 1 && y === roofBottom - 1 ? 38 :
-            x === 0 && y === roofBottom - 1 ? 40 :
-            x === 0 ? 16 :
-            x === right - 1 ? 24 :
-            y === 0 ? 20 :
-            y === roofBottom - 1 ? 28 :
-            0;
-
-        this.ctx.save();
-        this.ctx.translate(sOffset.x, sOffset.y);
-        this.renderer.renderAutotile(sprites["building.roof"][autotileIndex],
-                                     this.ctx);
-        this.ctx.restore();
-      }
-    }
-
-    var wallTop = roofBottom;
-    var wallBottom = entity.bbox.getBottom();
-
-    for (var y = wallTop; y < wallBottom; ++y) {
-      for (var x = entity.bbox.left; x < right; ++x) {
-          var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(x, y));
-
-          var autotileIndex =
-              x === 0 && y === wallTop ? 34 :
-              x === right - 1 && y === wallTop ? 36 :
-              x === right - 1 && y === wallBottom - 1 ? 38 :
-              x === 0 && y === wallBottom - 1 ? 40 :
-              x === 0 ? 16 :
-              x === right - 1 ? 24 :
-              y === wallTop ? 20 :
-              y === wallBottom - 1 ? 28 :
-              0;
-
-          this.ctx.save();
-          this.ctx.translate(sOffset.x, sOffset.y);
-          this.renderer.renderAutotile(sprites["building.wall"][autotileIndex],
-                                       this.ctx);
-          this.ctx.restore();
-      }
-    }
+    drawAutotileRectangle(this.renderer,
+                          new Rectangle(entity.bbox.left,
+                                        entity.bbox.getBottom() - 2,
+                                        entity.bbox.width,
+                                        2),
+                          sprites["building.wall"],
+                          this.ctx);
   }
 }
 Renderer.TILE_SIZE = 32;
