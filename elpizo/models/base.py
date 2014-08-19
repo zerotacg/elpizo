@@ -13,32 +13,6 @@ from . import Base, basic_primary_key
 from .realm import Realm, Region
 
 
-class User(Base):
-  __tablename__ = "users"
-
-  id = basic_primary_key()
-  name = sqlalchemy.Column(String, unique=True, nullable=False)
-
-  current_player_id = sqlalchemy.Column(
-      Integer,
-      sqlalchemy.ForeignKey("players.id", use_alter=True,
-                            name="user_current_player_id"),
-      nullable=True)
-  current_player = relationship("Player",
-                                foreign_keys="User.current_player_id")
-
-  players = relationship("Player", foreign_keys="Player.user_id",
-                         backref="user")
-
-  @property
-  def queue_name(self):
-    return "users.{id}".format(id=self.id)
-
-  @property
-  def routing_key(self):
-    return "users.{id}".format(id=self.id)
-
-
 class Entity(Base):
   __tablename__ = "entities"
 

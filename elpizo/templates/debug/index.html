@@ -6,13 +6,13 @@
 
 <h2>Admit</h2>
 {% if can_mint %}
-<p>Mint a token for the given user name and player name.</p>
+<p>Mint a token for the given player name and player name.</p>
 <p>
   <span style="color:red"><strong>WARNING:</strong></span> Make sure this is off
   in production -- set mint_public_key to actually be the public key to disable.
 </p>
 <form action="admit/">
-  <label>user <input name="user"></label>
+  <label>player <input name="player"></label>
   <label>player <input name="player"></label>
   <button type="submit">mint</button>
 </form>
@@ -45,10 +45,10 @@
   {% end %}
 </ul>
 
-<h2>Users</h2>
+<h2>Players</h2>
 <ul>
-  {% for user in users %}
-  <li><a href="users/{{user.id}}/">{{user.id}} (name: {{user.name}})</a></li>
+  {% for player in players %}
+  <li><a href="entities/{{player.id}}/">{{player.id}} (name: {{player.name}})</a></li>
   {% end %}
 </ul>
 

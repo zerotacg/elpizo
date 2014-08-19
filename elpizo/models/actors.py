@@ -97,11 +97,11 @@ class Player(Actor):
   id = sqlalchemy.Column(Integer, sqlalchemy.ForeignKey("actors.id"),
                          primary_key=True)
 
-  user_id = sqlalchemy.Column(Integer,
-                              sqlalchemy.ForeignKey("users.id"),
-                              nullable=False)
-
   online = sqlalchemy.Column(Boolean, nullable=False, default=False)
+
+  @property
+  def queue_name(self):
+    return "players.{id}".format(id=self.id)
 
   __mapper_args__ = {
       "polymorphic_identity": "player"

@@ -6,7 +6,7 @@ import random
 
 from elpizo import make_application
 from elpizo.models.actors import Player
-from elpizo.models.base import Base, User, Entity, Building, Drop
+from elpizo.models.base import Base, Entity, Building, Drop
 from elpizo.models.realm import Realm, Region, RegionLayer, Terrain
 from elpizo.models.fixtures import Fixture, resource_sources
 from elpizo.models.items import restorative, equipment
@@ -147,14 +147,11 @@ def initialize_fixtures(app, realm):
 def initialize_players(app, realm):
   sqla = app.sqla_factory()
 
-  victor_hugo = User(name="victor_hugo")
-  sqla.add(victor_hugo)
-
   white_longsleeve_shirt = equipment.WhiteLongsleeveShirt()
   teal_pants = equipment.TealPants()
   brown_shoes = equipment.BrownShoes()
 
-  valjean = Player(name="Valjean", user=victor_hugo, gender="male",
+  valjean = Player(name="Valjean", gender="male",
                    body="light",
                    hair="brown_messy_1",
                    facial="brown_beard",
@@ -170,24 +167,21 @@ def initialize_players(app, realm):
   valjean.feet_item = brown_shoes
   sqla.commit()
 
-  dumas = User(name="dumas")
-  sqla.add(dumas)
-
-  athos = Player(name="Athos", user=dumas, gender="male",
+  athos = Player(name="Athos", gender="male",
                  body="light",
                  direction=1,
                  health=10,
                  realm=realm, arx=0, ary=0, rx=0, ry=0,)
   sqla.add(athos)
 
-  aramis = Player(name="Aramis", user=dumas, gender="male",
+  aramis = Player(name="Aramis", gender="male",
                   body="light",
                   direction=1,
                   health=10,
                   realm=realm, arx=0, ary=0, rx=0, ry=0)
   sqla.add(aramis)
 
-  porthos = Player(name="Porthos", user=dumas, gender="male",
+  porthos = Player(name="Porthos", gender="male",
                    body="light",
                    direction=1,
                    health=10,
@@ -196,7 +190,7 @@ def initialize_players(app, realm):
 
   sqla.commit()
 
-  logging.info("Created test users.")
+  logging.info("Created test players.")
 
 
 def main():

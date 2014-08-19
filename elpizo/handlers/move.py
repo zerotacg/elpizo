@@ -3,6 +3,7 @@ import time
 from sqlalchemy.orm.exc import NoResultFound
 
 from .. import game_pb2
+from ..util import green
 from ..models.base import Entity
 from ..models.realm import Region
 from ..models.fixtures import Fixture
@@ -18,6 +19,7 @@ def get_direction_vector(d):
 
 
 def socket_move(ctx, message):
+  # lock the row so we don't have racy writes
   entity_for_update = ctx.sqla.query(Entity) \
       .filter(Entity.id == ctx.player.id) \
       .with_lockmode("update") \
@@ -43,6 +45,7 @@ def socket_move(ctx, message):
   dax, day = get_direction_vector(direction)
   entity_for_update.direction = direction
   ctx.sqla.commit()
+  green.yield_()
 
   new_ax = entity_for_update.ax + dax
   new_ay = entity_for_update.ay + day
@@ -57,6 +60,7 @@ def socket_move(ctx, message):
     # colliding with the edge of the world
     ctx.sqla.rollback()
     return
+  green.yield_()
 
   entity_for_update.ax = new_ax
   entity_for_update.ay = new_ay
@@ -72,6 +76,7 @@ def socket_move(ctx, message):
   intersections = ctx.sqla.query(Entity).filter(
       Entity.intersects(entity_for_update),
       Entity.id != ctx.player.id)
+  green.yield_()
 
   # colliding with an entity
   for entity in intersections:
@@ -82,6 +87,7 @@ def socket_move(ctx, message):
   # trigger entity contacts
   for entity in intersections:
     entity.on_contact(ctx)
+    green.yield_()
 
   if region is not last_region:
     ctx.protocol.publish(region.routing_key, ctx.player.id,

@@ -25,7 +25,7 @@ class ProtocolDebugContext(object):
     self.parent = parent
     self.protocol = protocol
 
-    self.player_id = protocol.user.current_player.id
+    self.player_id = protocol.player.id
 
     self.packets = {
         "ws": [],
@@ -52,7 +52,6 @@ def install(application, routes):
       (r"/_debug/sessions/(0x[0-9a-f]+)/packets/(ws|amqp)/(\d+)/queries/(\d+)/", handlers.QueryHandler),
       (r"/_debug/entities/(\d+)/", handlers.EntityHandler),
       (r"/_debug/items/(\d+)/", handlers.ItemHandler),
-      (r"/_debug/users/(\d+)/", handlers.UserHandler),
       (r"/_debug/realms/(\d+)/", handlers.RealmHandler),
       (r"/_debug/realms/(\d+)/regions/(\d+),(\d+)/", handlers.RegionHandler),
   ])

@@ -9,7 +9,7 @@ from tornado.websocket import WebSocketHandler
 from . import green
 from .. import game_pb2
 from .mint import InvalidTokenError
-from ..models.base import User
+from ..models.actors import Player
 
 
 class Protocol(object):
@@ -17,8 +17,8 @@ class Protocol(object):
 
   PACKETS = {}
 
-  def __init__(self, user, application, socket, channel):
-    self.user = user
+  def __init__(self, player, application, socket, channel):
+    self.player = player
     self.application = application
     self.socket = socket
     self.channel = channel
@@ -29,11 +29,11 @@ class Protocol(object):
     self.closed = False
 
     # Kindly ask any existing clients to kill their own sessions.
-    self.publish(self.user.routing_key, None,
+    self.publish(self.player.routing_key, None,
                  game_pb2.ErrorPacket(text="session collision"))
 
-    # Set up the user's AMQP subscriptions.
-    queue_name = self.user.queue_name
+    # Set up the player's AMQP subscriptions.
+    queue_name = self.player.queue_name
 
     green.async_task(self.channel.queue_delete)(queue=queue_name)
     green.async_task(self.channel.queue_declare)(queue=queue_name,
@@ -44,7 +44,7 @@ class Protocol(object):
         green.root(self.on_raw_amqp_message),
         queue=queue_name, no_ack=True, exclusive=True)
 
-    self.subscribe(self.user.routing_key)
+    self.subscribe(self.player.routing_key)
 
     for on_open_hook in self.application.on_open_hooks:
       with Context(self) as ctx:
@@ -83,13 +83,13 @@ class Protocol(object):
   def unsubscribe(self, routing_key):
     green.async_task(self.channel.queue_unbind)(
         exchange=Protocol.EXCHANGE_NAME,
-        queue=self.user.queue_name,
+        queue=self.player.queue_name,
         routing_key=routing_key)
 
   def subscribe(self, routing_key):
     green.async_task(self.channel.queue_bind)(
         exchange=Protocol.EXCHANGE_NAME,
-        queue=self.user.queue_name,
+        queue=self.player.queue_name,
         routing_key=routing_key)
 
   def close(self):
@@ -156,27 +156,27 @@ class Connection(WebSocketHandler):
       self.channel = green.async_task(self.application.amqp.channel,
                                       callback_name="on_open_callback")()
 
-      # Authorize the user using a minted token.
+      # Authorize the player using a minted token.
       token = self.get_cookie("elpizo_token")
       if token is None:
         self.error("no token found")
         return
 
       try:
-        realm, user_id = self.application.mint.unmint(
+        realm, player_id = self.application.mint.unmint(
             base64.b64decode(token)).decode("utf-8").split(".")
       except InvalidTokenError as e:
         self.error("invalid token: {e}".format(e=e))
         return
 
-      if realm != "user":
+      if realm != "player":
         self.error("unrecognized credentials realm: {realm}".format(
             realm=realm))
         return
 
       sqla = self.application.sqla_factory()
-      self.protocol = Protocol(sqla.query(User).get(user_id), self.application,
-                               self, self.channel)
+      self.protocol = Protocol(sqla.query(Player).get(player_id),
+                               self.application, self, self.channel)
       self.protocol.on_open()
       self.protocol_event.set()
     except Exception as e:
@@ -201,7 +201,7 @@ class Connection(WebSocketHandler):
       if self.channel.is_open:
         self.protocol.on_close()
         green.async_task(self.channel.queue_delete)(
-            queue=self.protocol.user.queue_name)
+            queue=self.protocol.player.queue_name)
         self.channel.close()
     except Exception as e:
       logging.error("Error in on_close for WebSocket connection", exc_info=e)
@@ -214,7 +214,7 @@ class Context(object):
 
   @property
   def player(self):
-    return self.protocol.user.current_player
+    return self.protocol.player
 
   @property
   def application(self):

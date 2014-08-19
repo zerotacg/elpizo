@@ -39,11 +39,8 @@
 {% end %}
 
 {% if isinstance(entity, Player) %}
-<h2>Player (<a href="/_debug/admit/?user={{entity.user.name}}&amp;player={{entity.name}}">admit</a>)</h2>
+<h2>Player (<a href="/_debug/admit/?player={{entity.name}}">admit</a>)</h2>
 <dl>
-  <dt>user</dt>
-  <dd><a href="/_debug/users/{{entity.user.id}}/">{{entity.user.id}} (name: {{entity.user.name}})</a></dd>
-
   <dt>online</dt>
   <dd>{{entity.online}}</dd>
 </dl>

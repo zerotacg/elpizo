@@ -28,14 +28,14 @@ class GameClient(WebSocketClient):
 
 
 def main():
-  if len(sys.argv) != 3:
-    sys.stderr.write("usage: {argv0} user player\n".format(argv0=sys.argv[0]))
+  if len(sys.argv) != 2:
+    sys.stderr.write("usage: {argv0} player\n".format(argv0=sys.argv[0]))
     sys.exit(1)
 
   logging.basicConfig(level=logging.INFO)
 
   token_request = requests.get("http://localhost:9999/_debug/admit/", params={
-      "user": sys.argv[1], "player": sys.argv[2]})
+      "player": sys.argv[1]})
   token_request.raise_for_status()
 
   token = token_request.cookies["elpizo_token"]

@@ -7,7 +7,7 @@ from tornado.web import RequestHandler
 
 from .explain import explain_query
 
-from ..models.base import User, Entity
+from ..models.base import Entity
 from ..models.actors import Player
 from ..models.items import Item
 from ..models.realm import Realm, Region
@@ -29,7 +29,7 @@ class RequestHandler(RequestHandler):
 class MainHandler(RequestHandler):
   def get(self):
     self.render("debug/index.html",
-                realms=self.sqla.query(Realm), users=self.sqla.query(User),
+                realms=self.sqla.query(Realm), players=self.sqla.query(Player),
                 can_mint=self.application.mint.can_mint)
 
 
@@ -82,21 +82,11 @@ class AdmitHandler(RequestHandler):
   def get(self):
     mint = self.application.mint
 
-    user_name = self.get_argument("user")
-    player_name = self.get_argument("player")
-
     player = self.sqla.query(Player) \
-        .filter(Player.name == player_name,
-                User.name == user_name,
-                Player.user_id == User.id) \
+        .filter(Player.name == self.get_argument("player")) \
         .one()
 
-    user = player.user
-    user.current_player = player
-
-    self.sqla.commit()
-
-    credentials = "user.{}".format(user.id)
+    credentials = "player.{}".format(player.id)
 
     token = mint.mint(credentials.encode("utf-8"))
     self.set_cookie("elpizo_token", base64.b64encode(token))
@@ -117,11 +107,6 @@ class EntityHandler(RequestHandler):
 class ItemHandler(RequestHandler):
   def get(self, id):
     self.render("debug/item.html", item=self.sqla.query(Item).get(id))
-
-
-class UserHandler(RequestHandler):
-  def get(self, id):
-    self.render("debug/user.html", user=self.sqla.query(User).get(id))
 
 
 class RealmHandler(RequestHandler):
