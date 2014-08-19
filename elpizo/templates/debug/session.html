@@ -37,7 +37,7 @@
     <td>
       {% if packet["received"] %}c-&gt;s{% else %}s-&gt;c{% end %}
     </td>
-    <td>{{packet["type"]}}</td>
+    <td>{{type(packet["message"]).__name__}}</td>
     <td><a href="/_debug/entities/{{packet["origin"]}}/">{{packet["origin"]}}</a></td>
     <td><pre>{{str(packet["message"])[:100]}}</pre></td>
     <td>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</td>
@@ -65,7 +65,7 @@
       {% if packet["received"] %}q-&gt;s{% else %}s-&gt;q{% end %}
     </td>
     <td>{{packet["routing_key"]}}</td>
-    <td>{{packet["type"]}}</td>
+    <td>{{type(packet["message"]).__name__}}</td>
     <td><a href="/_debug/entities/{{packet["origin"]}}/">{{packet["origin"]}}</a></td>
     <td><pre>{{str(packet["message"])[:100]}}</pre></td>
     <td>{{"{:.2f}".format(packet["duration"] * 1000)}} ms</td>

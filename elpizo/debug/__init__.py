@@ -74,10 +74,9 @@ def install(application, routes):
     return _wrapper
 
   def wrap_on_ws_message(f):
-    def _wrapper(self, type, origin, message):
+    def _wrapper(self, origin, message):
       packet = {
           "received": True,
-          "type": get_packet_name(type),
           "origin": "",
           "message": message
       }
@@ -86,7 +85,7 @@ def install(application, routes):
       start_time = time.monotonic()
       profiler = create_profiling_session()
       with profiler:
-        r = f(self, type, origin, message)
+        r = f(self, origin, message)
       end_time = time.monotonic()
 
       packet.update({
@@ -97,11 +96,10 @@ def install(application, routes):
     return _wrapper
 
   def wrap_on_amqp_message(f):
-    def _wrapper(self, type, origin, message):
+    def _wrapper(self, origin, message):
       packet = {
           "received": True,
           "routing_key": "",
-          "type": get_packet_name(type),
           "origin": origin,
           "message": message
       }
@@ -110,7 +108,7 @@ def install(application, routes):
       start_time = time.monotonic()
       profiler = create_profiling_session()
       with profiler:
-        r = f(self, type, origin, message)
+        r = f(self, origin, message)
       end_time = time.monotonic()
 
       packet.update({
@@ -129,8 +127,6 @@ def install(application, routes):
       debug_context.get_session(self).packets["amqp"].append({
           "received": False,
           "routing_key": routing_key,
-          "type": get_packet_name(message.DESCRIPTOR.GetOptions().Extensions[
-              game_pb2.packet_type]),
           "origin": origin,
           "message": message,
           "duration": end_time - start_time,
@@ -147,8 +143,6 @@ def install(application, routes):
 
       debug_context.get_session(self).packets["ws"].append({
           "received": False,
-          "type": get_packet_name(message.DESCRIPTOR.GetOptions().Extensions[
-              game_pb2.packet_type]),
           "origin": origin if origin is not None else "",
           "message": message,
           "duration": end_time - start_time,

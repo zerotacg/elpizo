@@ -64,8 +64,7 @@ class Protocol(object):
   @classmethod
   def deserialize_packet(cls, raw):
     packet = game_pb2.Packet.FromString(raw)
-    return packet.type, packet.origin, \
-           cls.PACKETS[packet.type].FromString(packet.payload)
+    return packet.origin, cls.PACKETS[packet.type].FromString(packet.payload)
 
   def send(self, origin, message):
     if self.closed:
@@ -97,18 +96,20 @@ class Protocol(object):
     self.socket.close()
 
   def on_raw_ws_message(self, packet):
-    type, origin, message = self.deserialize_packet(packet)
-    self.on_ws_message(type, origin, message)
+    origin, message = self.deserialize_packet(packet)
+    self.on_ws_message(origin, message)
 
   def on_raw_amqp_message(self, channel, method, properties, body):
-    type, origin, message = self.deserialize_packet(body)
-    self.on_amqp_message(type, origin, message)
+    origin, message = self.deserialize_packet(body)
+    self.on_amqp_message(origin, message)
 
-  def on_ws_message(self, type, origin, message):
+  def on_ws_message(self, origin, message):
+    type = message.DESCRIPTOR.GetOptions().Extensions[game_pb2.packet_type]
     with Context(self) as ctx:
       self.application.ws_endpoints[type](ctx, message)
 
-  def on_amqp_message(self, type, origin, message):
+  def on_amqp_message(self, origin, message):
+    type = message.DESCRIPTOR.GetOptions().Extensions[game_pb2.packet_type]
     with Context(self) as ctx:
       self.application.amqp_endpoints[type](ctx, origin, message)
 
@@ -144,6 +145,10 @@ class Connection(WebSocketHandler):
         Protocol.serialize_packet(None, game_pb2.ErrorPacket(text=body)),
         binary=True)
     self.close()
+
+  def check_origin(self, origin):
+    # TODO: remove this when ws4py behaves
+    return True
 
   @green.root
   def open(self):
