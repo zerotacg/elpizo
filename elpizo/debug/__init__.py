@@ -76,7 +76,6 @@ def install(application, routes):
           "origin": "",
           "message": message
       }
-      debug_context.get_session(self).packets["ws"].append(packet)
 
       start_time = time.monotonic()
       profiler = create_profiling_session()
@@ -88,6 +87,7 @@ def install(application, routes):
           "query_stats": profiler.collect(),
           "duration": end_time - start_time
       })
+      debug_context.get_session(self).packets["ws"].append(packet)
       return r
     return _wrapper
 
@@ -99,7 +99,6 @@ def install(application, routes):
           "origin": origin,
           "message": message
       }
-      debug_context.get_session(self).packets["amqp"].append(packet)
 
       start_time = time.monotonic()
       profiler = create_profiling_session()
@@ -111,6 +110,7 @@ def install(application, routes):
           "query_stats": profiler.collect(),
           "duration": end_time - start_time
       })
+      debug_context.get_session(self).packets["amqp"].append(packet)
       return r
     return _wrapper
 
