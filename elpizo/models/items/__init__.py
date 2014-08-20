@@ -1,45 +1,26 @@
-import sqlalchemy
-
-from sqlalchemy import func, inspect, event
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.ext import hybrid
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.orm import backref, relationship, remote, foreign
-from sqlalchemy.types import *
-
-from ... import game_pb2
-
-from .. import Base, basic_primary_key
-from ..base import Entity
-from ..actors import Actor, Player
+from elpizo import models
+from elpizo.util import record
 
 
-class Item(Base):
-  __tablename__ = "items"
-
+class Item(object):
+  KEY_PREFIX = "item"
   REGISTRY = {}
-  REGISTRY_TYPE = "unknown"
 
-  id = basic_primary_key()
-  type = sqlalchemy.Column(String, nullable=False)
+  def __init__(self, **kwargs):
+    for k, v in kwargs.items():
+      setattr(self, k, v)
 
   @classmethod
-  def register(cls, c2):
-    cls.REGISTRY[c2.REGISTRY_TYPE] = c2
-    return c2
-
-  owner_actor_id = sqlalchemy.Column(Integer,
-                                     sqlalchemy.ForeignKey("actors.id"),
-                                     nullable=True)
-  owner = relationship("Actor", foreign_keys=[owner_actor_id],
-                       backref="inventory")
-
-  @declared_attr
-  def __mapper_args__(cls):
-    return {
-        "polymorphic_on": cls.type,
-        "polymorphic_identity": cls.REGISTRY_TYPE
-    }
+  def register(cls, subclass):
+    cls.REGISTRY[subclass.TYPE] = subclass
 
   def to_protobuf(self):
-    return game_pb2.Item(id=self.id, type=self.type)
+    return game_pb2.Item(type=self.TYPE)
+
+  @classmethod
+  def from_protobuf(cls, proto):
+    return cls(type=proto.type)
+
+  @classmethod
+  def from_protobuf_polymorphic(cls, proto):
+    return cls.REGISTRY[proto.type].from_protobuf(proto)

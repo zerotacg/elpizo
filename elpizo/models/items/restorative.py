@@ -1,5 +1,5 @@
-from . import Item
+from elpizo.models import items
 
 
-class Carrot(Item):
-  REGISTRY_TYPE = "carrot"
+class Carrot(items.Item):
+  TYPE = "carrot"

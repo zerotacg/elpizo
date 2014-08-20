@@ -1,9 +1,9 @@
-import sqlalchemy
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.types import *
+from elpizo.util import record
 
 
-Base = declarative_base()
+class ProtobufRecord(record.Record):
+  def serialize(self):
+    return self.to_protobuf().SerializeToString()
 
-def basic_primary_key():
-  return sqlalchemy.Column(Integer, primary_key=True, nullable=False)
+  def deserialize(self, serialized):
+    self.from_protobuf(self.PROTOBUF_TYPE.FromString(serialized))

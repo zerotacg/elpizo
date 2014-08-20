@@ -1,0 +1,3 @@
+message Item {
+  optional string type = 1;
+}

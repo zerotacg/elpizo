@@ -1,0 +1,63 @@
+import "geometry.proto";
+import "items.proto";
+
+message Entity {
+  extensions 100 to max;
+
+  enum Direction {
+    NORTH = 0;
+    WEST = 1;
+    SOUTH = 2;
+    EAST = 3;
+  }
+
+  optional string type = 1;
+  optional uint32 realm_id = 2;
+  optional Vector2 location = 3;
+  optional Direction direction = 4;
+  optional Rectangle bbox = 5;
+}
+
+message Drop {
+  extend Entity {
+    optional Drop drop_ext = 104;
+  }
+
+  optional Item item = 1;
+}
+
+message Building {
+  extend Entity {
+    optional Building building_ext = 105;
+  }
+
+  optional uint32 door_position = 1;
+}
+
+message Fixture {
+  extend Entity {
+    optional Fixture fixture_ext = 103;
+  }
+
+  optional string fixture_type = 1;
+}
+
+message Actor {
+  extend Entity {
+    optional Actor actor_ext = 101;
+  }
+
+  optional string name = 1;
+  optional uint32 health = 2;
+  optional string gender = 3;
+  optional string body = 4;
+  optional string facial = 5;
+  optional string hair = 6;
+
+  optional Item head_item = 7;
+  optional Item torso_item = 8;
+  optional Item legs_item = 9;
+  optional Item feet_item = 10;
+
+  repeated Item inventory = 11;
+}

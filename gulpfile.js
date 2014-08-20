@@ -28,7 +28,7 @@ var paths = {
   scripts: ["client/**/*.js"],
   assets: ["assets/**/*"],
   styles: ["client/style/**/*.less"],
-  protos: ["proto/game.proto"]
+  protos: ["protos/*.proto"]
 };
 
 function rebundle(bundler) {
@@ -143,25 +143,23 @@ gulp.task("styles", function () {
 gulp.task("protos", ["protos-js", "protos-py"]);
 
 gulp.task("protos-js", function () {
-  return gulp.src("./proto/game.proto")
+  return gulp.src(paths.protos)
     .pipe(run(path.join(__dirname, "node_modules", ".bin", "proto2js") +
-                        " ./proto/game.proto -commonjs",
+                        " ./protos/<%= file.relative %> -commonjs",
               {silent: true}))
-    .pipe(insert.prepend("require(\"protobufjs\").convertFieldsToCamelCase=true;"))
-    .pipe(rename("game_pb2.js"))
-    .pipe(gulp.dest("client"));
+    .pipe(insert.prepend(
+        "require(\"protobufjs\").convertFieldsToCamelCase=true;"))
+    .pipe(rename(function (file) {
+      file.extname = ".js";
+    }))
+    .pipe(gulp.dest("client/protos"));
 });
 
-gulp.task("protos-py", function (callback) {
-  tmp.dir({prefix: "protoc"}, function (err, tmpdir) {
-    gulp.src("./proto/game.proto")
-      .pipe(run(path.join(__dirname, "protobuf-py3", "src", "protoc") +
-        " -I=./proto --python_out=" + tmpdir + " ./proto/game.proto" +
-        " && cat " + tmpdir + "/game_pb2.py", {silent: true}))
-      .pipe(rename("game_pb2.py"))
-      .pipe(gulp.dest("elpizo"))
-      .on("end", callback);
-  });
+gulp.task("protos-py", function () {
+  return gulp.src(paths.protos)
+    .pipe(run(path.join(__dirname, "protobuf-py3", "src", "protoc") +
+        " -I=./protos --python_out=elpizo/protos ./protos/<%= file.relative %>",
+        {silent: true}));
 });
 
 gulp.task("watchScripts", function () {

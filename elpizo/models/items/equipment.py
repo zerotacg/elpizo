@@ -1,13 +1,13 @@
-from . import Item
+from elpizo.models import items
 
 
-class WhiteLongsleeveShirt(Item):
-  REGISTRY_TYPE = "white_longsleeve_shirt"
+class WhiteLongsleeveShirt(items.Item):
+  TYPE = "white_longsleeve_shirt"
 
 
-class TealPants(Item):
-  REGISTRY_TYPE = "teal_pants"
+class TealPants(items.Item):
+  TYPE = "teal_pants"
 
 
-class BrownShoes(Item):
-  REGISTRY_TYPE = "brown_shoes"
+class BrownShoes(items.Item):
+  TYPE = "brown_shoes"

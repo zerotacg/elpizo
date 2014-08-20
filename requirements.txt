@@ -1,13 +1,11 @@
-tornado
-psycopg2
-sqlalchemy
-git+https://github.com/renshawbay/pika-python3.git
 pillow
 lxml
 pycrypto
 greenlet
 protobuf-py3
-sqltap
-sqlparse
 asyncio
 statsd
+asyncio_redis
+websockets
+PyYAML
+coloredlogs

@@ -1,9 +1,10 @@
-from . import Item
-from . import equipment, restorative
+from elpizo.models import items
+from elpizo.models.items import equipment
+from elpizo.models.items import restorative
 
 
 def initialize():
-  Item.register(equipment.WhiteLongsleeveShirt)
-  Item.register(equipment.TealPants)
-  Item.register(equipment.BrownShoes)
-  Item.register(restorative.Carrot)
+  items.Item.register(equipment.WhiteLongsleeveShirt)
+  items.Item.register(equipment.TealPants)
+  items.Item.register(equipment.BrownShoes)
+  items.Item.register(restorative.Carrot)
