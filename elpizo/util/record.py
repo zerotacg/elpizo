@@ -45,23 +45,29 @@ class Record(object):
     """
     return self.key_for_id(self.id)
 
-  def save(self):
+  def save(self, kvs=None):
     """
     Save the serialized state of the record into the key-value store.
 
     :param kvs: The key-value store to save to.
     """
+    if kvs is not None:
+      self._kvs = kvs
+
     if self.id is None:
       self.id = self.get_next_id(self._kvs)
 
     self._kvs.set(self.key, self.serialize())
 
-  def load(self):
+  def load(self, kvs=None):
     """
     Load the most recent version of the record from the key-value store.
 
     :param kvs: The key-value store to load from.
     """
+    if kvs is not None:
+      self._kvs = kvs
+
     self.deserialize(self._kvs.get(self.key))
 
   @property
@@ -84,8 +90,7 @@ class Record(object):
     :returns: The record, bound to a key-value store.
     """
     record = cls(id)
-    record._kvs = kvs
-    record.load()
+    record.load(kvs)
     return record
 
   def serialize(self):
@@ -138,3 +143,11 @@ class Store(object):
     Flush all records from the underlying cache.
     """
     self.records.clear()
+
+  def loaded_records(self):
+    """
+    Get an iterator to records loaded into the store.
+
+    :returns: The iterator.
+    """
+    return self.records.items()

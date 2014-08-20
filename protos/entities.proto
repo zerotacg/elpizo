@@ -61,3 +61,11 @@ message Actor {
 
   repeated Item inventory = 11;
 }
+
+message Player {
+  extend Entity {
+    optional Player player_ext = 106;
+  }
+
+  optional bool online = 1;
+}

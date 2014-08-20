@@ -3,25 +3,24 @@ from elpizo.models import realm
 from elpizo.util import record
 
 
-def find_entity_polymorphic(id, kvs):
-  # Get the base entity and deserialize it to determine the type.
-  base_entity = entities.Entity(id)
-  base_entity._kvs = kvs
-  serialized = kvs.get(base_entity.key)
-  base_entity.deserialize(serialized)
+class RegionStore(record.Store):
+  def __init__(self, kvs):
+    super().__init__(realm.Region.find, kvs)
 
-  # Now, deserialize the entity proper as the correct type.
-  entity = entities.Entity.REGISTRY[base_entity.type](id)
-  entity._kvs = kvs
-  entity.deserialize(serialized)
-  return entity
+  def find_closest(self, realm_id, x, y):
+    x = (x // realm.Region.SIZE) * realm.Region.SIZE
+    y = (y // realm.Region.SIZE) * realm.Region.SIZE
+
+    return self.find("{}.{}_{}".format(realm_id, x, y))
 
 
-class Store(object):
+class GameStore(object):
   def __init__(self, kvs):
     self.realms = record.Store(realm.Realm.find, kvs)
-    self.entities = record.Store(find_entity_polymorphic, kvs)
+    self.regions = RegionStore(kvs)
+    self.entities = record.Store(entities.Entity.find_polymorphic, kvs)
 
   def save_all(self):
     self.realms.save_all()
+    self.regions.save_all()
     self.entities.save_all()

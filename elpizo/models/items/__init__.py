@@ -13,6 +13,7 @@ class Item(object):
   @classmethod
   def register(cls, subclass):
     cls.REGISTRY[subclass.TYPE] = subclass
+    return subclass
 
   def to_protobuf(self):
     return game_pb2.Item(type=self.TYPE)

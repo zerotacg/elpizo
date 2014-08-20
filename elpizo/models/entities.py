@@ -1,7 +1,7 @@
-from elpizo.protos import entities_pb2
 from elpizo import models
 from elpizo.models import geometry
 from elpizo.models import items
+from elpizo.protos import entities_pb2
 
 
 class Entity(models.ProtobufRecord):
@@ -12,6 +12,7 @@ class Entity(models.ProtobufRecord):
   @classmethod
   def register(cls, subclass):
     cls.REGISTRY[subclass.TYPE] = subclass
+    return subclass
 
   def to_protobuf(self):
     return entities_pb2.Entity(type=self.TYPE,
@@ -26,6 +27,19 @@ class Entity(models.ProtobufRecord):
     self.bbox = geometry.Rectangle.from_protobuf(proto.bbox)
     self.direction = proto.direction
 
+  @classmethod
+  def find_polymorphic(cls, id, kvs):
+    # Get the base entity and deserialize it to determine the type.
+    base_entity = cls(id)
+    serialized = kvs.get(base_entity.key)
+    base_entity.deserialize(serialized)
+
+    # Now, deserialize the entity proper as the correct type.
+    entity = cls.REGISTRY[base_entity.type](id)
+    entity._kvs = kvs
+    entity.deserialize(serialized)
+    return entity
+
 
 class Actor(Entity):
   def to_protobuf(self):
@@ -35,22 +49,22 @@ class Actor(Entity):
                                  inventory=[item.to_protobuf()
                                             for item in self.inventory])
 
-    if self.facial is not None:
+    if getattr(self, "facial", None) is not None:
       message.facial = self.facial
 
-    if self.hair is not None:
+    if getattr(self, "hair", None) is not None:
       message.hair = self.hair
 
-    if self.head_item is not None:
+    if getattr(self, "head_item", None) is not None:
       message.head_item.MergeFrom(self.head_item.to_protobuf())
 
-    if self.torso_item is not None:
+    if getattr(self, "torso_item", None) is not None:
       message.torso_item.MergeFrom(self.torso_item.to_protobuf())
 
-    if self.legs_item is not None:
+    if getattr(self, "legs_item", None) is not None:
       message.legs_item.MergeFrom(self.legs_item.to_protobuf())
 
-    if self.feet_item is not None:
+    if getattr(self, "feet_item", None) is not None:
       message.feet_item.MergeFrom(self.feet_item.to_protobuf())
 
     proto.Extensions[entities_pb2.Actor.actor_ext].MergeFrom(message)
@@ -82,9 +96,15 @@ class Actor(Entity):
 class Player(Actor):
   TYPE = "player"
 
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.protocol = None
+
   def to_protobuf(self):
     proto = super().to_protobuf()
-    message = entities_pb2.Player(online=self.online)
+    message = entities_pb2.Player(online=getattr(self, "online", False))
+    proto.Extensions[entities_pb2.Player.player_ext].MergeFrom(message)
+    return proto
 
   def from_protobuf(self, proto):
     super().from_protobuf(proto)

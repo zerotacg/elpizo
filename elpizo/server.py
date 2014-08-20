@@ -5,6 +5,7 @@ import logging
 import websockets
 import yaml
 
+from asyncio_redis import encoders
 from elpizo import handlers
 from elpizo import store
 from elpizo.models import items
@@ -31,8 +32,10 @@ class Server(object):
       self.mint = mint.Mint(f)
     logging.info("Initialized mint (can mint: %s)", self.mint.can_mint)
 
-    self.store = store.Store(kvs.AsyncIORedisAdapter(
-        green.task(asyncio_redis.Pool.create(**self.config["redis"]))))
+    self.store = store.GameStore(kvs.AsyncIORedisAdapter(
+        green.task(asyncio_redis.Pool.create(
+            encoder=encoders.BytesEncoder(),
+            **self.config["redis"]))))
     logging.info("Server starting on port %s.", self.config["bind"]["port"])
 
     green.task(

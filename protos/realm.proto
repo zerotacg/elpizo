@@ -1,8 +1,6 @@
 import "geometry.proto";
 
 message Region {
-  optional Vector2 location = 1;
-
   message Layer {
     optional uint32 terrain_id = 1;
     repeated sint32 tiles = 2;

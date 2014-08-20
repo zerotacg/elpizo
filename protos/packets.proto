@@ -96,7 +96,8 @@ message RegionPacket {
   // Direction: Server -> Client
   option (packet_type) = REGION;
 
-  optional Region region = 1;
+  optional Vector2 location = 1;
+  optional Region region = 2;
 }
 
 message ViewportPacket {
