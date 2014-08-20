@@ -60,13 +60,13 @@ export class Actor extends Entity {
 
     this.location = this.location
         .offset(this.getDirectionVector().scale(this.remainder))
-        .elementwise(Math.round);
+        .map(Math.round);
 
     this.direction = direction;
 
     var targetLocation = this.location
           .offset(this.getDirectionVector())
-          .elementwise(Math.round);
+          .map(Math.round);
 
     if (!this.realm.isPassable(targetLocation, direction)) {
       this.remainder = 0;
@@ -102,7 +102,7 @@ export class Actor extends Entity {
       this.remainder -= aDistance;
 
       if (this.remainder <= 0) {
-        this.location = this.location.elementwise(Math.round);
+        this.location = this.location.map(Math.round);
         this.remainder = 0;
         this.emit("moveEnd", this.location);
       }

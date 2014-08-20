@@ -4,8 +4,12 @@ export class Vector2 {
     this.y = y;
   }
 
-  elementwise(f) {
+  map(f) {
     return new Vector2(f(this.x), f(this.y));
+  }
+
+  elementwise(f, other) {
+    return new Vector2(f(this.x, other.x), f(this.y, other.y));
   }
 
   scale(k) {

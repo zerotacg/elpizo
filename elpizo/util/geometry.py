@@ -3,8 +3,11 @@ class Vector2(object):
     self.x = x
     self.y = y
 
-  def elementwise(self, f):
+  def map(self, f):
     return Vector2(f(self.x), f(self.y))
+
+  def elementwise(self, f, other):
+    return Vector2(f(self.x, other.x), f(self.y, other.y))
 
   def scale(self, k):
     return Vector2(k * self.x, k * self.y)

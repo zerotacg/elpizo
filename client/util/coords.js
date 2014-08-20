@@ -1,7 +1,7 @@
 export var REGION_SIZE = 16;
 
 export function absoluteToContainingRegion(position) {
-  return position.scale(1 / REGION_SIZE).elementwise(Math.floor);
+  return position.scale(1 / REGION_SIZE).map(Math.floor);
 }
 
 export function regionToAbsolute(position) {
@@ -9,5 +9,5 @@ export function regionToAbsolute(position) {
 }
 
 export function absoluteToRelative(position) {
-  return position.elementwise((v) => v % REGION_SIZE);
+  return position.map((v) => v % REGION_SIZE);
 };
