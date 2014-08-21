@@ -49,4 +49,3 @@ def coroutine(f, *, loop=None):
 
     return fut
   return _wrapper
-  
