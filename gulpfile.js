@@ -49,7 +49,7 @@ function rebundle(bundler) {
     }))
     .pipe(argv.debug ? through() : uglify())
     .pipe(sourcemaps.write("../maps"))
-    .pipe(gulp.dest("elpizo/static/js"));
+    .pipe(gulp.dest("static/js"));
 }
 
 function reactify(filename) {
@@ -137,7 +137,7 @@ gulp.task("styles", function () {
       this.emit("end");
     })
     .pipe(sourcemaps.write("../maps"))
-    .pipe(gulp.dest("elpizo/static/css"));
+    .pipe(gulp.dest("static/css"));
 });
 
 gulp.task("protos", ["protos-js", "protos-py"]);
@@ -211,7 +211,7 @@ function generateManifest() {
 gulp.task("assets", function () {
   return gulp.src("./assets/**/*", { base: "./" })
       .pipe(generateManifest())
-      .pipe(gulp.dest("elpizo/static"));
+      .pipe(gulp.dest("static"));
 });
 
 gulp.task("watch", function () {

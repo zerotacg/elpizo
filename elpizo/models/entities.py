@@ -1,11 +1,11 @@
 from elpizo import models
 from elpizo.models import geometry
+from elpizo.models import realm
 from elpizo.models import items
 from elpizo.protos import entities_pb2
 
 
 class Entity(models.ProtobufRecord):
-  KEY_PREFIX = "entity"
   PROTOBUF_TYPE = entities_pb2.Entity
   REGISTRY = {}
 
@@ -15,7 +15,7 @@ class Entity(models.ProtobufRecord):
     return subclass
 
   def to_protobuf(self):
-    return entities_pb2.Entity(type=self.TYPE,
+    return entities_pb2.Entity(type=self.TYPE, realm_id=self.realm_id,
                                location=self.location.to_protobuf(),
                                bbox=self.bbox.to_protobuf(),
                                direction=self.direction)
@@ -31,7 +31,7 @@ class Entity(models.ProtobufRecord):
   def find_polymorphic(cls, id, kvs):
     # Get the base entity and deserialize it to determine the type.
     base_entity = cls(id)
-    serialized = kvs.get(base_entity.key)
+    serialized = kvs.get(id)
     base_entity.deserialize(serialized)
 
     # Now, deserialize the entity proper as the correct type.
@@ -39,6 +39,19 @@ class Entity(models.ProtobufRecord):
     entity._kvs = kvs
     entity.deserialize(serialized)
     return entity
+
+  @property
+  def regions(self):
+    bounds = self.bbox.offset(self.location)
+
+    left = realm.Region.floor(bounds.left)
+    top = realm.Region.floor(bounds.top)
+    right = realm.Region.ceil(bounds.right)
+    bottom = realm.Region.ceil(bounds.bottom)
+
+    for y in range(top, bottom, realm.Region.SIZE):
+      for x in range(left, right, realm.Region.SIZE):
+        yield self.realm.regions.load_closest(geometry.Vector2(x, y))
 
 
 class Actor(Entity):
@@ -49,22 +62,22 @@ class Actor(Entity):
                                  inventory=[item.to_protobuf()
                                             for item in self.inventory])
 
-    if getattr(self, "facial", None) is not None:
+    if getattr(self, "facial", None):
       message.facial = self.facial
 
-    if getattr(self, "hair", None) is not None:
+    if getattr(self, "hair", None):
       message.hair = self.hair
 
-    if getattr(self, "head_item", None) is not None:
+    if getattr(self, "head_item", None):
       message.head_item.MergeFrom(self.head_item.to_protobuf())
 
-    if getattr(self, "torso_item", None) is not None:
+    if getattr(self, "torso_item", None):
       message.torso_item.MergeFrom(self.torso_item.to_protobuf())
 
-    if getattr(self, "legs_item", None) is not None:
+    if getattr(self, "legs_item", None):
       message.legs_item.MergeFrom(self.legs_item.to_protobuf())
 
-    if getattr(self, "feet_item", None) is not None:
+    if getattr(self, "feet_item", None):
       message.feet_item.MergeFrom(self.feet_item.to_protobuf())
 
     proto.Extensions[entities_pb2.Actor.actor_ext].MergeFrom(message)
@@ -82,14 +95,21 @@ class Actor(Entity):
                       for item_proto in proto.inventory]
     self.facial = proto.facial
     self.hair = proto.hair
-    self.head_item = proto.head_item and \
-        items.Item.from_protobuf_polymorphic(proto.head_item)
-    self.torso_item = proto.torso_item and \
-        items.Item.from_protobuf_polymorphic(proto.torso_item)
-    self.legs_item = proto.legs_item and \
-        items.Item.from_protobuf_polymorphic(proto.legs_item)
-    self.feet_item = proto.feet_item and \
-        items.Item.from_protobuf_polymorphic(proto.feet_item)
+
+    self.head_item = items.Item.from_protobuf_polymorphic(proto.head_item) \
+        if proto.HasField("head_item") else None
+
+    self.torso_item = items.Item.from_protobuf_polymorphic(proto.torso_item) \
+        if proto.HasField("torso_item") else None
+
+    self.legs_item = items.Item.from_protobuf_polymorphic(proto.legs_item) \
+        if proto.HasField("legs_item") else None
+
+    self.feet_item = items.Item.from_protobuf_polymorphic(proto.feet_item) \
+        if proto.HasField("feet_item") else None
+
+  def get_realm(self, realm_store):
+    return realm_store.find(self.realm_id)
 
 
 @Entity.register
@@ -97,8 +117,8 @@ class Player(Actor):
   TYPE = "player"
 
   def __init__(self, *args, **kwargs):
+    self.bbox = geometry.Rectangle(0, 0, 1, 1)
     super().__init__(*args, **kwargs)
-    self.protocol = None
 
   def to_protobuf(self):
     proto = super().to_protobuf()

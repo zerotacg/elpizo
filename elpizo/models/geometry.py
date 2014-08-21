@@ -7,8 +7,8 @@ class Vector2(geometry.Vector2):
     return geometry_pb2.Vector2(x=self.x, y=self.y)
 
   @classmethod
-  def from_protobuf(cls, serialized):
-    return cls(serialized.x, serialized.y)
+  def from_protobuf(cls, proto):
+    return cls(proto.x, proto.y)
 
 
 class Rectangle(geometry.Rectangle):
@@ -17,6 +17,5 @@ class Rectangle(geometry.Rectangle):
                                   width=self.width, height=self.height)
 
   @classmethod
-  def from_protobuf(cls, serialized):
-    return cls(serialized.left, serialized.top,
-               serialized.width, serialized.height)
+  def from_protobuf(cls, proto):
+    return cls(proto.left, proto.top, proto.width, proto.height)

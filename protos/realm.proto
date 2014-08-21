@@ -1,16 +1,17 @@
 import "geometry.proto";
 
-message Region {
-  message Layer {
-    optional uint32 terrain_id = 1;
-    repeated sint32 tiles = 2;
-  }
+message Layer {
+  optional string terrain = 1;
+  repeated sint32 tiles = 2;
+}
 
-  repeated Layer layers = 2;
-  repeated uint32 passabilities = 3;
+message Region {
+  repeated Layer layers = 1;
+  repeated uint32 passabilities = 2;
+  repeated string entity_ids = 3;
 }
 
 message Realm {
-  optional string name = 2;
-  optional Vector2 size = 3;
+  optional string name = 1;
+  optional Vector2 size = 2;
 }

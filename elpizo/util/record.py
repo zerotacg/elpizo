@@ -1,8 +1,7 @@
 class Record(object):
   """
   An implementation of the active record pattern for a key-value store. The
-  subclass must implement `serialize()` and `deserialize()` instance methods, as
-  well as define a `KEY_PREFIX`.
+  subclass must implement `serialize()` and `deserialize()` instance methods.
 
   The subclass should also not attempt to deserialize anything to the `id`
   member of the class, as it will be overriden by the ID passed into `find`.
@@ -18,65 +17,39 @@ class Record(object):
     for k, v in kwargs.items():
       setattr(self, k, v)
 
-  @classmethod
-  def key_for_id(cls, id):
+  def bind(self, kvs):
     """
-    Get the key-value store key for a given ID.
+    Bind the record to a key-value store.
 
-    :param id: The ID.
-    :returns: The key.
+    :param kvs: The key-value store to bind.
     """
-    return ".".join([cls.KEY_PREFIX, str(id)])
+    self._kvs = kvs
 
-  @classmethod
-  def get_next_id(cls, kvs):
-    """
-    Get the next monotonically increasing ID for the given record type.
-
-    :param kvs: The key-value store.
-    :returns: The fresh ID.
-    """
-    return kvs.incr(cls.key_for_id("_serial"))
-
-  @property
-  def key(self):
-    """
-    Retrieve the key for persisting to the key-value store.
-    """
-    return self.key_for_id(self.id)
-
-  def save(self, kvs=None):
+  def save(self):
     """
     Save the serialized state of the record into the key-value store.
 
     :param kvs: The key-value store to save to.
     """
-    if kvs is not None:
-      self._kvs = kvs
-
     if self.id is None:
-      self.id = self.get_next_id(self._kvs)
+      self.id = self._kvs.next_serial()
 
-    self._kvs.set(self.key, self.serialize())
+    self._kvs.set(self.id, self.serialize())
 
-  def load(self, kvs=None):
+  def delete(self):
+    """
+    Delete the record from the key-value store.
+    """
+    self._kvs.delete(self.id)
+    self.id = None
+
+  def load(self):
     """
     Load the most recent version of the record from the key-value store.
 
     :param kvs: The key-value store to load from.
     """
-    if kvs is not None:
-      self._kvs = kvs
-
-    self.deserialize(self._kvs.get(self.key))
-
-  @property
-  def is_persisted(self):
-    """
-    Whether or not the the record has an identity mapped to the underlying
-    key-value store.
-    """
-    return self.id is not None and self._kvs is not None
+    self.deserialize(self._kvs.get(self.id))
 
   @classmethod
   def find(cls, id, kvs):
@@ -90,7 +63,8 @@ class Record(object):
     :returns: The record, bound to a key-value store.
     """
     record = cls(id)
-    record.load(kvs)
+    record.bind(kvs)
+    record.load()
     return record
 
   def serialize(self):
@@ -114,11 +88,11 @@ class Record(object):
 
 class Store(object):
   def __init__(self, find_func, kvs):
-    self.find_func = find_func
+    self.find = find_func
     self.kvs = kvs
     self.records = {}
 
-  def find(self, id):
+  def load(self, id):
     """
     Get a record with the given ID from the underlying key-value store.
 
@@ -128,21 +102,44 @@ class Store(object):
     :returns: The record, bound to a key-value store.
     """
     if id not in self.records:
-      self.records[id] = self.find_func(id, self.kvs)
+      record = self.find(id, self.kvs)
+      self.add(record)
     return self.records[id]
+
+  def load_all(self):
+    """
+    Load all of the store into memory.
+    """
+    for key in self.kvs.keys():
+      self.load(key)
+
+  def save(self, record):
+    """
+    Save a record into the underlying key-value store.
+    """
+    record.bind(self.kvs)
+    record.save()
+    self.add(record)
 
   def save_all(self):
     """
     Save all records contained by this store to the backing key-value store.
     """
-    for record in self.records.values():
-      record.save()
+    for record in list(self.records.values()):
+      self.save(record)
 
-  def flush_all(self):
+  def expire(self, record):
     """
-    Flush all records from the underlying cache.
+    Remove a record from the cache.
     """
-    self.records.clear()
+    del self.records[record.id]
+
+  def expire_all(self):
+    """
+    Purge all records from the underlying cache.
+    """
+    for record in list(self.records.values()):
+      self.expire(record)
 
   def loaded_records(self):
     """
@@ -151,3 +148,9 @@ class Store(object):
     :returns: The iterator.
     """
     return self.records.items()
+
+  def add(self, record):
+    """
+    Add a record into the cache.
+    """
+    self.records[record.id] = record

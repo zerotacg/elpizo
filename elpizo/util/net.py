@@ -1,5 +1,3 @@
-import logging
-
 from elpizo.protos import packets_pb2
 from elpizo.util import green
 
@@ -10,13 +8,13 @@ class Transport(object):
     self.path = path
 
   def recv(self):
-    return green.task(self.websocket.recv())
+    return green.await_coro(self.websocket.recv())
 
   def send(self, packet):
-    green.task(self.websocket.send(packet))
+    green.await_coro(self.websocket.send(packet))
 
   def close(self):
-    green.task(self.websocket.close())
+    green.await_coro(self.websocket.close())
 
 
 class Protocol(object):

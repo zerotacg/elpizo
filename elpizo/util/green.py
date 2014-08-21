@@ -25,7 +25,7 @@ def await(fut):
   return fut.result()
 
 
-def task(coro, *, loop=None):
+def await_coro(coro, *, loop=None):
   """
   Wait for an AsyncIO coroutine to complete.
   """

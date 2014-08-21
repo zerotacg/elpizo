@@ -1,4 +1,5 @@
 from elpizo import models
+from elpizo.protos import items_pb2
 from elpizo.util import record
 
 
@@ -16,7 +17,7 @@ class Item(object):
     return subclass
 
   def to_protobuf(self):
-    return game_pb2.Item(type=self.TYPE)
+    return items_pb2.Item(type=self.TYPE)
 
   @classmethod
   def from_protobuf(cls, proto):

@@ -21,6 +21,9 @@ class Vector2(object):
   def __eq__(self, other):
     return self.x == other.x and self.y == other.y
 
+  def __repr__(self):
+    return "Vector2({x}, {y})".format(**self.__dict__)
+
 
 class Rectangle(object):
   def __init__(self, left, top, width, height):
@@ -63,3 +66,6 @@ class Rectangle(object):
   def __eq__(self, other):
     return self.left == other.left and self.top == other.top and \
            self.width == other.width and self.height == other.height
+
+  def __repr__(self):
+    return "Rectangle({left}, {top}, {width}, {height})".format(**self.__dict__)
