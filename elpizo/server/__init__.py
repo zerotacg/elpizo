@@ -59,9 +59,6 @@ class Server(object):
     self.store.save_all()
     logger.info("Goodbye.")
 
-    loop = asyncio.get_event_loop()
-    loop.close()
-
 
 def main():
   with open("elpizo.conf") as config_file:

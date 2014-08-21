@@ -3,4 +3,5 @@ trap "kill 0" EXIT
 
 source VENV/bin/activate
 node_modules/.bin/gulp --debug &
-python3 -m elpizo --debug --mint_public_key=elpizo.pem
+nginx -p . -c nginx.conf &
+python3 -m elpizo.server
