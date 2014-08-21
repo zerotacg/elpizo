@@ -1,6 +1,7 @@
 import logging
 
 from elpizo.models import entities
+from elpizo.models import geometry
 from elpizo.models import realm
 from elpizo.server.util import kvs
 from elpizo.util import record
@@ -33,15 +34,27 @@ class RegionStore(record.Store):
     self.entities = entities
     super().__init__(self.find, kvs)
 
+  def load(self, vec):
+    return super().load("{x},{y}".format(x=vec.x, y=vec.y))
+
   def load_closest(self, location):
-    return self.load("{x},{y}".format(x=realm.Region.floor(location.x),
-                                      y=realm.Region.floor(location.y)))
+    return self.load(location.map(realm.Regiom.floor))
 
   def find(self, id, kvs):
     region = realm.Region.find(id, kvs)
     region.entities = {self.entities.load(entity_id)
                        for entity_id in region.entity_ids}
     return region
+
+  def load_contained_by(self, bounds):
+    left = realm.Region.floor(bounds.left)
+    top = realm.Region.floor(bounds.top)
+    right = realm.Region.ceil(bounds.right)
+    bottom = realm.Region.ceil(bounds.bottom)
+
+    for y in range(top, bottom, realm.Region.SIZE):
+      for x in range(left, right, realm.Region.SIZE):
+        yield self.load(geometry.Vector2(x, y))
 
 
 class EntityStore(record.Store):

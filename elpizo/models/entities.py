@@ -44,16 +44,7 @@ class Entity(models.ProtobufRecord):
 
   @property
   def regions(self):
-    bounds = self.bbox.offset(self.location)
-
-    left = realm.Region.floor(bounds.left)
-    top = realm.Region.floor(bounds.top)
-    right = realm.Region.ceil(bounds.right)
-    bottom = realm.Region.ceil(bounds.bottom)
-
-    for y in range(top, bottom, realm.Region.SIZE):
-      for x in range(left, right, realm.Region.SIZE):
-        yield self.realm.regions.load_closest(geometry.Vector2(x, y))
+    return self.realm.regions.load_contained_by(self.bbox.offset(self.location))
 
   @contextlib.contextmanager
   def move_transaction(self):
