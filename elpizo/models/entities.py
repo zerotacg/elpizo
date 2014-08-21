@@ -29,19 +29,6 @@ class Entity(models.ProtobufRecord):
     self.bbox = geometry.Rectangle.from_protobuf(proto.bbox)
     self.direction = proto.direction
 
-  @classmethod
-  def find_polymorphic(cls, id, kvs):
-    # Get the base entity and deserialize it to determine the type.
-    base_entity = cls(id)
-    serialized = kvs.get(id)
-    base_entity.deserialize(serialized)
-
-    # Now, deserialize the entity proper as the correct type.
-    entity = cls.REGISTRY[base_entity.type](id)
-    entity._kvs = kvs
-    entity.deserialize(serialized)
-    return entity
-
   @property
   def regions(self):
     return self.realm.regions.load_contained_by(self.bbox.offset(self.location))

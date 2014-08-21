@@ -30,8 +30,8 @@ class RealmStore(record.Store):
 
 
 class RegionStore(record.Store):
-  def __init__(self, entities, kvs):
-    self.entities = entities
+  def __init__(self, parent, kvs):
+    self.parent = parent
     super().__init__(self.find, kvs)
 
   def load(self, vec):
@@ -42,7 +42,7 @@ class RegionStore(record.Store):
 
   def find(self, id, kvs):
     region = realm.Region.find(id, kvs)
-    region.entities = {self.entities.load(entity_id)
+    region.entities = {self.parent.entities.load(entity_id)
                        for entity_id in region.entity_ids}
     return region
 
@@ -60,11 +60,23 @@ class RegionStore(record.Store):
 class EntityStore(record.Store):
   def __init__(self, parent, kvs):
     self.parent = parent
-    super().__init__(entities.Entity.find_polymorphic, kvs)
+    super().__init__(self.find, kvs)
 
   def add(self, entity):
     super().add(entity)
     entity.realm = self.parent.realms.load(entity.realm_id)
+
+  def find(self, id, kvs):
+    # Get the base entity and deserialize it to determine the type.
+    base_entity = entities.Entity(id)
+    serialized = kvs.get(id)
+    base_entity.deserialize(serialized)
+
+    # Now, deserialize the entity proper as the correct type.
+    entity = entities.Entity.REGISTRY[base_entity.type](id)
+    entity.bind(kvs)
+    entity.deserialize(serialized)
+    return entity
 
 
 class GameStore(object):
@@ -79,7 +91,7 @@ class GameStore(object):
     assert realm.id is not None
 
     return RegionStore(
-        self.entities,
+        self,
         kvs.RedisHashAdapter("realms.{id}.regions".format(id=realm.id),
                              self.redis))
 
