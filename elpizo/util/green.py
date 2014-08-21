@@ -32,14 +32,14 @@ def task(coro, *, loop=None):
   return await(asyncio.async(coro, loop=loop))
 
 
-def coroutine(f):
+def coroutine(f, *, loop=None):
   """
   Make a root coroutine.
   """
 
   @functools.wraps(f)
   def _wrapper(*args, **kwargs):
-    fut = asyncio.Future()
+    fut = asyncio.Future(loop=loop)
 
     @greenlet.greenlet
     def g():
@@ -49,3 +49,4 @@ def coroutine(f):
 
     return fut
   return _wrapper
+  
