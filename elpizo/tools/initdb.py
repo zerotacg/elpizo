@@ -25,7 +25,7 @@ def initdb(server):
             passabilities=[0b1111] * (realm.Region.SIZE ** 2),
             layers=[realm.Layer(terrain="grassland",
                                 tiles=[47] * (realm.Region.SIZE ** 2))],
-            entities=[])
+            entities=set())
         windvale.regions.save(region)
 
     logging.info("Created Windvale.")
@@ -38,8 +38,11 @@ def initdb(server):
     server.store.entities.save(valjean)
 
     for region in valjean.regions:
-      region.entities.append(valjean)
+      region.entities.add(valjean)
       region.save()
+
+    with valjean.move_transaction():
+      valjean.location.x = 42
 
     logging.info("Created players.")
   finally:

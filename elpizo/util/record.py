@@ -119,7 +119,8 @@ class Store(object):
     """
     record.bind(self.kvs)
     record.save()
-    self.add(record)
+    if record.id not in self.records:
+      self.add(record)
 
   def save_all(self):
     """

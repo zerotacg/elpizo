@@ -1,7 +1,12 @@
+import logging
+
 from elpizo.models import entities
 from elpizo.models import realm
 from elpizo.server.util import kvs
 from elpizo.util import record
+
+
+logger = logging.getLogger(__name__)
 
 
 class RealmStore(record.Store):
@@ -15,6 +20,7 @@ class RealmStore(record.Store):
 
   def save(self, realm):
     super().save(realm)
+    logger.info("Saving realm: %s", realm.id)
     realm.regions.save_all()
 
   def expire(self, realm):
@@ -33,8 +39,8 @@ class RegionStore(record.Store):
 
   def find(self, id, kvs):
     region = realm.Region.find(id, kvs)
-    region.entities = [self.entities.load(entity_id)
-                       for entity_id in region.entity_ids]
+    region.entities = {self.entities.load(entity_id)
+                       for entity_id in region.entity_ids}
     return region
 
 

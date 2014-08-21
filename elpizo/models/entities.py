@@ -1,3 +1,5 @@
+import contextlib
+
 from elpizo import models
 from elpizo.models import geometry
 from elpizo.models import realm
@@ -52,6 +54,18 @@ class Entity(models.ProtobufRecord):
     for y in range(top, bottom, realm.Region.SIZE):
       for x in range(left, right, realm.Region.SIZE):
         yield self.realm.regions.load_closest(geometry.Vector2(x, y))
+
+  @contextlib.contextmanager
+  def move_transaction(self):
+    initial_regions = list(self.regions)
+
+    yield
+
+    for region in initial_regions:
+      region.entities.remove(self)
+
+    for region in self.regions:
+      region.entities.add(self)
 
 
 class Actor(Entity):
