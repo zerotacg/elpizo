@@ -49,6 +49,11 @@ class Region(models.ProtobufRecord):
                             passabilities=self.passabilities,
                             entity_ids=[entity.id for entity in self.entities])
 
+  def to_public_protobuf(self):
+    proto = self.to_protobuf()
+    proto.ClearField("entity_ids")
+    return proto
+
   def from_protobuf(self, proto):
     self.layers = [Layer.from_protobuf(layer) for layer in proto.layers]
     self.passabilities = list(proto.passabilities)

@@ -4,6 +4,7 @@ from elpizo.protos import packets_pb2
 from elpizo.util import net
 
 from elpizo.server.handlers import hello
+from elpizo.server.handlers import viewport
 
 logger = logging.getLogger(__name__)
 
@@ -37,3 +38,4 @@ class Dispatcher(net.Protocol):
 
 
 Dispatcher.register(packets_pb2.Packet.HELLO, hello.on_hello)
+Dispatcher.register(packets_pb2.Packet.VIEWPORT, viewport.on_viewport)

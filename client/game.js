@@ -11,7 +11,7 @@ import {Vector2} from "./util/geometry";
 import {UI} from "./ui/main.react";
 
 module coords from "./util/coords";
-module game_pb2 from "./game_pb2";
+module gameProtos from "./protos/game";
 module handlers from "./handlers";
 module models from "./models";
 
@@ -60,7 +60,7 @@ export class Game extends EventEmitter {
 
   getViewportPacket() {
     var bounds = this.renderer.getRegionCacheBounds();
-    return new game_pb2.ViewportPacket({
+    return new gameProtos.ViewportPacket({
         bounds: {
             left: bounds.left,
             top: bounds.top,
