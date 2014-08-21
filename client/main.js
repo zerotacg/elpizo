@@ -1,5 +1,4 @@
-import {Game} from "./game";
-import {loadImage} from "./util/resources";
+module game from "client/game";
 
-var game = new Game(document.body);
-game.loadFromManifest(window._manifest);
+var g = new game.Game(document.body);
+g.loadFromManifest(window._manifest);

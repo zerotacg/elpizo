@@ -2,9 +2,9 @@
 
 module React from "react";
 
-import {Chat} from "./chat.react";
-import {Debug} from "./debug.react";
-import {Loading} from "./loading.react";
+module chat from "client/ui/chat.react";
+module debug from "client/ui/debug.react";
+module loading from "client/ui/loading.react";
 
 export var UI = React.createClass({
   onKeyDown: function (e) {
@@ -13,9 +13,9 @@ export var UI = React.createClass({
 
   render: function () {
     return <div onKeyDown={this.onKeyDown}>
-      <Chat game={this.props.game} />
-      <Debug game={this.props.game} />
-      <Loading game={this.props.game} />
+      <chat.Chat game={this.props.game} />
+      <debug.Debug game={this.props.game} />
+      <loading.Loading game={this.props.game} />
     </div>;
   }
 });

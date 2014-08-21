@@ -1,8 +1,9 @@
-import {makeLinCongRand} from "./random";
 module chroma from "chroma-js";
 
+module random from "client/util/random";
+
 export function makeColor(seed) {
-  var rand = makeLinCongRand(seed);
+  var rand = random.makeLinCongRand(seed);
   return chroma.hsl(rand() * 360, 1.0, 0.75);
 }
 

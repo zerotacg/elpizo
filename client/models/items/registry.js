@@ -1,10 +1,10 @@
-import {hasOwnProp} from "../../util/objects";
-import {Item} from "../items";
+module items from "client/models/items";
+module objects from "client/util/objects";
 
 export function makeItem(message) {
-  if (!hasOwnProp.call(Item.REGISTRY, message.type)) {
-    return new Item(message);
+  if (!objects.hasOwnProp.call(items.Item.REGISTRY, message.type)) {
+    return new items.Item(message);
   }
 
-  return new Item.REGISTRY[message.type](message);
+  return new items.Item.REGISTRY[message.type](message);
 }

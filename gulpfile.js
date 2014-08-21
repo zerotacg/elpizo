@@ -110,7 +110,9 @@ function progress(filename) {
 }
 
 function configureBundler(bundler) {
-  return bundler
+  return bundler({
+      paths: ["."]
+  })
     .transform(progress)
     .transform(reactify)
     .transform(debowerify)
@@ -120,7 +122,7 @@ function configureBundler(bundler) {
 }
 
 gulp.task("scripts", function () {
-  return rebundle(configureBundler(browserify()));
+  return rebundle(configureBundler(browserify));
 });
 
 gulp.task("styles", function () {
@@ -163,7 +165,7 @@ gulp.task("protos-py", function () {
 });
 
 gulp.task("watchScripts", function () {
-  var bundler = configureBundler(watchify());
+  var bundler = configureBundler(watchify);
   bundler.on("update", function (files) {
     gutil.log("Files updated, rebundling...", files);
     rebundle(bundler)

@@ -1,5 +1,5 @@
-import {repeat} from "../util/collections";
-import {Vector2} from "../util/geometry";
+module collections from "client/util/collections";
+module geometry from "client/util/geometry";
 
 export class Sprite {
   constructor(resourceName, size, frames, offset, speedFactor) {
@@ -36,50 +36,54 @@ export function makeHumanoidSprite(resourceName) {
   return {
       standing: {
           n: new Sprite(resourceName,
-                        new Vector2(32, 64),
-                        [new Vector2(16, 64 * 0)],
-                        new Vector2(0, 32),
+                        new geometry.Vector2(32, 64),
+                        [new geometry.Vector2(16, 64 * 0)],
+                        new geometry.Vector2(0, 32),
                         0),
           w: new Sprite(resourceName,
-                        new Vector2(32, 64),
-                        [new Vector2(16, 64 * 1)],
-                        new Vector2(0, 32),
+                        new geometry.Vector2(32, 64),
+                        [new geometry.Vector2(16, 64 * 1)],
+                        new geometry.Vector2(0, 32),
                         0),
           s: new Sprite(resourceName,
-                        new Vector2(32, 64),
-                        [new Vector2(16, 64 * 2)],
-                        new Vector2(0, 32),
+                        new geometry.Vector2(32, 64),
+                        [new geometry.Vector2(16, 64 * 2)],
+                        new geometry.Vector2(0, 32),
                         0),
           e: new Sprite(resourceName,
-                        new Vector2(32, 64),
-                        [new Vector2(16, 64 * 3)],
-                        new Vector2(0, 32),
+                        new geometry.Vector2(32, 64),
+                        [new geometry.Vector2(16, 64 * 3)],
+                        new geometry.Vector2(0, 32),
                         0)
       },
       walking: {
           n: new Sprite(
               resourceName,
-              new Vector2(32, 64),
-              repeat(8, (i) => new Vector2(16 + 64 * (i + 1), 64 * 8)),
-              new Vector2(0, 32),
+              new geometry.Vector2(32, 64),
+              collections.repeat(8, (i) =>
+                  new geometry.Vector2(16 + 64 * (i + 1), 64 * 8)),
+              new geometry.Vector2(0, 32),
               4),
           w: new Sprite(
               resourceName,
-              new Vector2(32, 64),
-              repeat(8, (i) => new Vector2(16 + 64 * (i + 1), 64 * 9)),
-              new Vector2(0, 32),
+              new geometry.Vector2(32, 64),
+              collections.repeat(8, (i) =>
+                  new geometry.Vector2(16 + 64 * (i + 1), 64 * 9)),
+              new geometry.Vector2(0, 32),
               4),
           s: new Sprite(
               resourceName,
-              new Vector2(32, 64),
-              repeat(8, (i) => new Vector2(16 + 64 * (i + 1), 64 * 10)),
-              new Vector2(0, 32),
+              new geometry.Vector2(32, 64),
+              collections.repeat(8, (i) =>
+                  new geometry.Vector2(16 + 64 * (i + 1), 64 * 10)),
+              new geometry.Vector2(0, 32),
               4),
           e: new Sprite(
               resourceName,
-              new Vector2(32, 64),
-              repeat(8, (i) => new Vector2(16 + 64 * (i + 1), 64 * 11)),
-              new Vector2(0, 32),
+              new geometry.Vector2(32, 64),
+              collections.repeat(8, (i) =>
+                  new geometry.Vector2(16 + 64 * (i + 1), 64 * 11)),
+              new geometry.Vector2(0, 32),
               4)
       }
   };
@@ -105,10 +109,10 @@ export function makeAutotile(resourceName, offset) {
       return coords.map((i) =>
           new Sprite(
               resourceName,
-              new Vector2(16, 16),
-              [(new Vector2((i % 4) * 16, Math.floor(i / 4) * 16))
+              new geometry.Vector2(16, 16),
+              [(new geometry.Vector2((i % 4) * 16, Math.floor(i / 4) * 16))
                   .offset(offset)],
-              new Vector2(0, 0),
+              new geometry.Vector2(0, 0),
               0));
   });
 }

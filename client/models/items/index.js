@@ -1,6 +1,3 @@
-import {Entity} from "../base";
-module game_pb2 from "../../game_pb2";
-
 export class Item {
   constructor(message) {
     this.id = message.id;

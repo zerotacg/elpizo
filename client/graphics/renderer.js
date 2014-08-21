@@ -1,18 +1,13 @@
-import {EventEmitter} from "events";
+module events from "events";
 
-import {EntityVisitor} from "../models/base";
-import {Directions, getDirectionVector} from "../models/actors";
-import {Drop} from "../models/base";
-import {repeat} from "../util/collections";
-import {makeColorForString} from "../util/colors";
-import {Rectangle, Vector2} from "../util/geometry";
-import {hasOwnProp, extend} from "../util/objects";
-import {debounce} from "../util/functions";
-module coords from "../util/coords";
+module sprites from "client/assets/sprites";
+module entities from "client/models/entities";
+module realm from "client/models/realm";
+module geometry from "client/util/geometry";
+module objects from "client/util/objects";
+module functions from "client/util/functions";
 
-module sprites from "../assets/sprites";
-
-export class Renderer extends EventEmitter {
+export class Renderer extends events.EventEmitter {
   constructor(resources, parent) {
     super();
 
@@ -32,7 +27,7 @@ export class Renderer extends EventEmitter {
     this.entityCanvas.style.zIndex = 1;
     this.el.appendChild(this.entityCanvas);
 
-    this.aTopLeft = new Vector2(0, 0);
+    this.topLeft = new geometry.Vector2(0, 0);
 
     this.resources = resources;
     this.currentRealm = null;
@@ -40,13 +35,13 @@ export class Renderer extends EventEmitter {
     this.regionTerrainCache = {};
     this.elapsed = 0;
 
-    window.onresize = debounce(() => {
+    window.onresize = functions.debounce(() => {
       this.refit();
     }, 500);
 
     this.style = window.getComputedStyle(this.el);
 
-    this.sBounds = new Rectangle(0, 0, 0, 0);
+    this.sBounds = new geometry.Rectangle(0, 0, 0, 0);
   }
 
   setDebug(debug) {
@@ -54,12 +49,12 @@ export class Renderer extends EventEmitter {
     this.regionTerrainCache = {};
   }
 
-  center(aPosition) {
-    var bounds = this.getAbsoluteViewportBounds();
+  center(position) {
+    var bounds = this.getViewportBounds();
 
-    this.setAbsoluteTopLeft(new Vector2(
-        aPosition.x - Math.round(bounds.width / 2),
-        aPosition.y - Math.round(bounds.height / 2)));
+    this.setTopLeft(new geometry.Vector2(
+        position.x - Math.round(bounds.width / 2),
+        position.y - Math.round(bounds.height / 2)));
   }
 
   prepareContext(canvas) {
@@ -70,7 +65,7 @@ export class Renderer extends EventEmitter {
 
   createCanvas() {
     var canvas = document.createElement("canvas");
-    extend(canvas.style, {
+    objects.extend(canvas.style, {
         position: "absolute",
         left: "0px",
         top: "0px",
@@ -80,28 +75,28 @@ export class Renderer extends EventEmitter {
     return canvas;
   }
 
-  absoluteToScreenCoords(location) {
+  toScreenCoords(location) {
     return location.scale(Renderer.TILE_SIZE);
   }
 
-  screenToAbsoluteCoords(location) {
+  fromScreenCoords(location) {
     return location.scale(1 / Renderer.TILE_SIZE);
   }
 
-  setAbsoluteTopLeft(v) {
-    var previous = this.getAbsoluteViewportBounds();
-    this.aTopLeft = v;
-    this.emit("viewportChange", this.getAbsoluteViewportBounds(), previous);
+  setTopLeft(v) {
+    var previous = this.getViewportBounds();
+    this.topLeft = v;
+    this.emit("viewportChange", this.getViewportBounds(), previous);
   }
 
   setScreenViewportSize(sw, sh) {
-    var previous = this.getAbsoluteViewportBounds();
+    var previous = this.getViewportBounds();
 
     this.el.style.width = sw + "px";
     this.el.style.height = sh + "px";
 
     var sBounds = this.el.getBoundingClientRect();
-    this.sBounds = Rectangle.fromCorners(sBounds.left, sBounds.top,
+    this.sBounds = geometry.Rectangle.fromCorners(sBounds.left, sBounds.top,
                                          sBounds.right, sBounds.bottom);
 
     this.terrainCanvas.width = sw;
@@ -110,7 +105,7 @@ export class Renderer extends EventEmitter {
     this.entityCanvas.width = sw;
     this.entityCanvas.height = sh;
 
-    this.emit("viewportChange", this.getAbsoluteViewportBounds(), previous);
+    this.emit("viewportChange", this.getViewportBounds(), previous);
   }
 
   refit() {
@@ -118,43 +113,22 @@ export class Renderer extends EventEmitter {
     this.emit("refit", this.sBounds);
   }
 
-  getAbsoluteViewportBounds() {
-    var absoluteViewportSize = this.screenToAbsoluteCoords(new Vector2(
-        this.sBounds.width, this.sBounds.height));
+  getViewportBounds() {
+    var size = this.fromScreenCoords(new geometry.Vector2(this.sBounds.width,
+                                                 this.sBounds.height));
 
-    return new Rectangle(this.aTopLeft.x, this.aTopLeft.y,
-                         Math.ceil(absoluteViewportSize.x),
-                         Math.ceil(absoluteViewportSize.y));
+    return new geometry.Rectangle(this.topLeft.x, this.topLeft.y,
+                         Math.ceil(size.x), Math.ceil(size.y));
   }
 
-  getRegionCacheBounds() {
-    var viewport = this.getAbsoluteViewportBounds();
+  getCacheBounds() {
+    var viewport = this.getViewportBounds();
 
-    var arTopLeft = coords.absoluteToContainingRegion(new Vector2(
-        viewport.left - coords.REGION_SIZE,
-        viewport.top - coords.REGION_SIZE));
-
-    var arBottomRight = coords.absoluteToContainingRegion(new Vector2(
-        viewport.getRight() + coords.REGION_SIZE,
-        viewport.getBottom() + coords.REGION_SIZE));
-
-    return Rectangle.fromCorners(arTopLeft.x, arTopLeft.y,
-                                 arBottomRight.x + 1, arBottomRight.y + 1);
-  }
-
-  getRegionWorldBounds() {
-    var aBounds = this.getAbsoluteViewportBounds();
-
-    var arTopLeft = coords.absoluteToContainingRegion(
-        new Vector2(aBounds.left, aBounds.top));
-
-    var arBottomRight = coords.absoluteToContainingRegion(
-        new Vector2(aBounds.getRight(), aBounds.getBottom()));
-
-    return Rectangle.fromCorners(Math.floor(arTopLeft.x),
-                                 Math.floor(arTopLeft.y),
-                                 Math.ceil(arBottomRight.x) + 1,
-                                 Math.ceil(arBottomRight.y) + 1);
+    return geometry.Rectangle.fromCorners(
+        viewport.left - realm.Region.SIZE,
+        viewport.top - realm.Region.SIZE,
+        viewport.getRight() + realm.Region.SIZE,
+        viewport.getBottom() + realm.Region.SIZE);
   }
 
   render(realm, dt) {
@@ -165,7 +139,7 @@ export class Renderer extends EventEmitter {
   }
 
   renderTerrain(realm) {
-    var arWorldBounds = this.getRegionWorldBounds();
+    var viewport = this.getViewportBounds();
 
     if (realm !== this.currentRealm) {
       this.regionTerrainCache = {};
@@ -183,19 +157,20 @@ export class Renderer extends EventEmitter {
     var ctx = this.prepareContext(this.terrainCanvas);
     ctx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
 
-    var sOffset = this.absoluteToScreenCoords(this.aTopLeft.negate());
+    var sOffset = this.toScreenCoords(this.topLeft.negate());
 
     // Only render the regions bounded by the viewport.
-    for (var ary = arWorldBounds.top; ary < arWorldBounds.getBottom(); ++ary) {
-      for (var arx = arWorldBounds.left; arx < arWorldBounds.getRight(); ++arx) {
-        var arCoords = new Vector2(arx, ary);
-        var sPosition = this.absoluteToScreenCoords(
-            coords.regionToAbsolute(arCoords));
-
+    for (var y = viewport.top;
+         y < viewport.getBottom();
+         y += realm.Region.SIZE) {
+      for (var x = viewport.left;
+           x < viewport.getRight();
+           x += realm.Region.SIZE) {
+        var sPosition = this.toScreenCoords(new geometry.Vector2(x, y));
         var sLeft = Math.round(sOffset.x + sPosition.x);
         var sTop = Math.round(sOffset.y + sPosition.y);
 
-        var key = [arCoords.x, arCoords.y].join(",");
+        var key = [x, y].join(",");
         var region = realm.getRegionAt(arCoords);
 
         if (region === null) {
@@ -204,7 +179,7 @@ export class Renderer extends EventEmitter {
 
         // If this region hasn't been rendered yet, then we render it and add it
         // to the cache.
-        if (!hasOwnProp.call(this.regionTerrainCache, key)) {
+        if (!objects.hasOwnProp.call(this.regionTerrainCache, key)) {
           this.regionTerrainCache[key] =
               this.renderRegionTerrainAsBuffer(region);
         }
@@ -232,14 +207,12 @@ export class Renderer extends EventEmitter {
     var ctx = this.prepareContext(this.entityCanvas);
     ctx.clearRect(0, 0, this.entityCanvas.width, this.entityCanvas.height);
 
-    var aWorldBounds = this.getAbsoluteViewportBounds();
-
     var sortedEntities = realm.getAllEntities()
         .sort((a, b) => {
             // Always sort drops below everything else.
-            if (a instanceof Drop) {
+            if (a instanceof entities.Drop) {
               return -1;
-            } else if (b instanceof Drop) {
+            } else if (b instanceof entities.Drop) {
               return 1;
             }
 
@@ -253,7 +226,7 @@ export class Renderer extends EventEmitter {
 
   renderAutotile(autotile, ctx) {
     autotile.forEach((sprite, index) => {
-      var s = this.absoluteToScreenCoords(new Vector2(
+      var s = this.toScreenCoords(new geometry.Vector2(
           (index % 2) / 2,
           Math.floor(index / 2) / 2));
 
@@ -266,8 +239,8 @@ export class Renderer extends EventEmitter {
 
   renderRegionTerrainAsBuffer(region) {
     var canvas = document.createElement("canvas");
-    var size = this.absoluteToScreenCoords(new Vector2(
-        coords.REGION_SIZE, coords.REGION_SIZE));
+    var size = this.toScreenCoords(new geometry.Vector2(
+        realm.Region.SIZE, realm.Region.SIZE));
 
     canvas.width = size.x;
     canvas.height = size.y;
@@ -276,8 +249,8 @@ export class Renderer extends EventEmitter {
 
     var ctx = this.prepareContext(canvas);
 
-    for (var ry = 0; ry < coords.REGION_SIZE; ++ry) {
-      for (var rx = 0; rx < coords.REGION_SIZE; ++rx) {
+    for (var ry = 0; ry < realm.Region.SIZE; ++ry) {
+      for (var rx = 0; rx < realm.Region.SIZE; ++rx) {
         region.layers.forEach((layer) => {
           var spriteSet = sprites["tile." + layer.terrain.name];
 
@@ -286,7 +259,7 @@ export class Renderer extends EventEmitter {
             return;
           }
 
-          var sOffset = this.absoluteToScreenCoords(new Vector2(rx, ry));
+          var sOffset = this.toScreenCoords(new geometry.Vector2(rx, ry));
           ctx.save();
           ctx.translate(sOffset.x, sOffset.y);
           this.renderAutotile(spriteSet[tileNum], ctx);
@@ -303,8 +276,8 @@ export class Renderer extends EventEmitter {
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
-      for (var ry = 0; ry < coords.REGION_SIZE; ++ry) {
-        for (var rx = 0; rx < coords.REGION_SIZE; ++rx) {
+      for (var ry = 0; ry < realm.Region.SIZE; ++ry) {
+        for (var rx = 0; rx < realm.Region.SIZE; ++rx) {
           var x = rx * Renderer.TILE_SIZE;
           var y = ry * Renderer.TILE_SIZE;
           ctx.strokeRect(x, y,
@@ -313,8 +286,8 @@ export class Renderer extends EventEmitter {
 
           var passability = region.passabilities.getCell(rx, ry);
           for (var i = 0; i < 4; ++i) {
-            var dv = getDirectionVector(i);
-            var isPassable = region.isPassable(new Vector2(rx, ry), i);
+            var dv = entities.getDirectionVector(i);
+            var isPassable = region.isPassable(new geometry.Vector2(rx, ry), i);
 
             dv.x = -dv.x;
             dv.y = -dv.y;
@@ -338,8 +311,8 @@ export class Renderer extends EventEmitter {
   }
 
   renderEntity(entity, ctx) {
-    var sOffset = this.absoluteToScreenCoords(
-        entity.location.offset(this.aTopLeft.negate()));
+    var sOffset = this.toScreenCoords(
+        entity.location.offset(this.topLeft.negate()));
 
     ctx.save();
     ctx.translate(sOffset.x, sOffset.y);
@@ -354,7 +327,7 @@ function drawAutotileRectangle(renderer, rect, autotile, ctx) {
 
   for (var y = rect.top; y < bottom; ++y) {
     for (var x = rect.left; x < right; ++x) {
-      var sOffset = renderer.absoluteToScreenCoords(new Vector2(x, y));
+      var sOffset = renderer.toScreenCoords(new geometry.Vector2(x, y));
 
       var autotileIndex =
           x === rect.left && y === rect.top     ? 34 :
@@ -375,7 +348,7 @@ function drawAutotileRectangle(renderer, rect, autotile, ctx) {
   }
 }
 
-class RendererVisitor extends EntityVisitor {
+class RendererVisitor extends entities.EntityVisitor {
   constructor(renderer, ctx) {
     this.renderer = renderer;
     this.ctx = ctx;
@@ -387,9 +360,9 @@ class RendererVisitor extends EntityVisitor {
       this.ctx.fillStyle = "rgba(0, 0, 255, 0.25)";
       this.ctx.strokeStyle = "rgba(0, 0, 255, 0.75)";
 
-      var sOffset = this.renderer.absoluteToScreenCoords(new Vector2(
+      var sOffset = this.renderer.toScreenCoords(new geometry.Vector2(
           entity.bbox.left, entity.bbox.top));
-      var sSize = this.renderer.absoluteToScreenCoords(new Vector2(
+      var sSize = this.renderer.toScreenCoords(new geometry.Vector2(
           entity.bbox.width, entity.bbox.height));
       this.ctx.translate(sOffset.x, sOffset.y);
       this.ctx.fillRect(0, 0, sSize.x, sSize.y);
@@ -405,10 +378,10 @@ class RendererVisitor extends EntityVisitor {
 
   visitActor(entity) {
       var state = entity.moving ? "walking" : "standing";
-      var direction = entity.direction == Directions.N ? "n" :
-                      entity.direction == Directions.W ? "w" :
-                      entity.direction == Directions.S ? "s" :
-                      entity.direction == Directions.E ? "e" :
+      var direction = entity.direction == entities.Directions.N ? "n" :
+                      entity.direction == entities.Directions.W ? "w" :
+                      entity.direction == entities.Directions.S ? "s" :
+                      entity.direction == entities.Directions.E ? "e" :
                       null;
 
       var names = [["body", entity.gender, entity.body].join(".")];
@@ -463,18 +436,18 @@ class RendererVisitor extends EntityVisitor {
 
   visitBuilding(entity) {
     drawAutotileRectangle(this.renderer,
-                          new Rectangle(entity.bbox.left,
-                                        entity.bbox.top,
-                                        entity.bbox.width,
-                                        entity.bbox.height - 2),
+                          new geometry.Rectangle(entity.bbox.left,
+                                                 entity.bbox.top,
+                                                 entity.bbox.width,
+                                                 entity.bbox.height - 2),
                           sprites["building.roof"],
                           this.ctx);
 
     drawAutotileRectangle(this.renderer,
-                          new Rectangle(entity.bbox.left,
-                                        entity.bbox.getBottom() - 2,
-                                        entity.bbox.width,
-                                        2),
+                          new geometry.Rectangle(entity.bbox.left,
+                                                 entity.bbox.getBottom() - 2,
+                                                 entity.bbox.width,
+                                                 2),
                           sprites["building.wall"],
                           this.ctx);
   }

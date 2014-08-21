@@ -17,6 +17,9 @@ class Realm(models.ProtobufRecord):
     self.name = proto.name
     self.size = geometry.Vector2.from_protobuf(proto.size)
 
+  def to_public_protobuf(self):
+    proto = self.to_protobuf()
+    return proto
 
 class Region(models.ProtobufRecord):
   PROTOBUF_TYPE = realm_pb2.Region

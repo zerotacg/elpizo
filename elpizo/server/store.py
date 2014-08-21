@@ -46,7 +46,7 @@ class RegionStore(record.Store):
                        for entity_id in region.entity_ids}
     return region
 
-  def load_contained_by(self, bounds):
+  def load_intersecting(self, bounds):
     left = realm.Region.floor(bounds.left)
     top = realm.Region.floor(bounds.top)
     right = realm.Region.ceil(bounds.right)

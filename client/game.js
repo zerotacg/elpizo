@@ -1,47 +1,42 @@
+module events from "events";
 module React from "react";
+module promise from "es6-promise";
 
-import {EventEmitter} from "events";
-import {Promise} from "es6-promise";
-
-import {Renderer} from "./graphics/renderer";
-import {Transport, Protocol} from "./util/net";
-import {Resources} from "./util/resources";
-import {InputState, Key} from "./util/input";
-import {Vector2} from "./util/geometry";
-import {UI} from "./ui/main.react";
-
-module coords from "./util/coords";
-module gameProtos from "./protos/game";
-module handlers from "./handlers";
-module models from "./models";
+module renderer from "client/graphics/renderer";
+module handlers from "client/handlers";
+module packets from "client/protos/packets";
+module net from "client/util/net";
+module input from "client/util/input";
+module geometry from "client/models/geometry";
+module ui from "client/ui/main.react";
 
 function waitFor(emitter, event) {
-  return new Promise((resolve, reject) => {
+  return new promise.Promise((resolve, reject) => {
     emitter.once(event, resolve);
   });
 }
 
-export class Game extends EventEmitter {
+export class Game extends events.EventEmitter {
   constructor(parent) {
     super();
 
     this.realm = null;
     this.me = null;
 
-    this.protocol = new Protocol(new Transport(
+    this.protocol = new net.Protocol(new net.Transport(
         "ws://" + window.location.host + "/socket"));
 
-    this.resources = new Resources();
+    this.resources = new resources.Resources();
     this.resourcesLoaded = false;
 
-    this.renderer = new Renderer(this.resources, parent);
-    this.inputState = new InputState(window);
+    this.renderer = new renderer.Renderer(this.resources, parent);
+    this.inputState = new input.InputState(window);
 
     this.uiRoot = document.createElement("div");
     this.uiRoot.className = "ui-root";
     parent.appendChild(this.uiRoot);
 
-    this.uiRootComponent = UI({game: this});
+    this.uiRootComponent = ui.UI({game: this});
 
     // Render the React components once.
     this.renderReact();
@@ -60,7 +55,7 @@ export class Game extends EventEmitter {
 
   getViewportPacket() {
     var bounds = this.renderer.getRegionCacheBounds();
-    return new gameProtos.ViewportPacket({
+    return new packets.ViewportPacket({
         bounds: {
             left: bounds.left,
             top: bounds.top,
@@ -88,25 +83,17 @@ export class Game extends EventEmitter {
       return;
     }
 
-    var currentArTopLeft = coords.absoluteToContainingRegion(new Vector2(
-        bounds.left, bounds.top));
+    var currentTopLeft = bounds.getTopLeft().map(Region.floor);
+    var currentBottomRight = bounds.getBottomRight().map(Region.ceil);
 
-    var currentArBottomRight = coords.absoluteToContainingRegion(new Vector2(
-        bounds.getRight() + coords.REGION_SIZE,
-        bounds.getBottom() + coords.REGION_SIZE));
+    var lastTopLeft = lastBounds.getTopLeft().map(Region.floor);
+    var lastBottomRight = lastBounds.getBottomRight().map(Region.ceil);
 
-    var lastArTopLeft = coords.absoluteToContainingRegion(new Vector2(
-        lastBounds.left, lastBounds.top));
-
-    var lastArBottomRight = coords.absoluteToContainingRegion(new Vector2(
-        lastBounds.getRight() + coords.REGION_SIZE,
-        lastBounds.getBottom() + coords.REGION_SIZE));
-
-    if (currentArTopLeft.x !== lastArTopLeft.x ||
-        currentArTopLeft.y !== lastArTopLeft.y ||
-        currentArBottomRight.x !== lastArBottomRight.x ||
-        currentArBottomRight.y !== lastArBottomRight.y) {
-      this.realm.retainRegions(this.renderer.getRegionCacheBounds());
+    if (currentTopLeft.x !== lastTopLeft.x ||
+        currentTopLeft.y !== lastTopLeft.y ||
+        currentBottomRight.x !== lastBottomRight.x ||
+        currentBottomRight.y !== lastBottomRight.y) {
+      this.realm.retainRegions(this.renderer.getCacheBounds());
       this.protocol.send(this.getViewportPacket());
     }
   }

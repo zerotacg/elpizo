@@ -1,10 +1,85 @@
-import {Entity} from "./base";
-import {makeItem} from "./items/registry";
+module geometry from "client/models/geometry";
+module itemRegistry from "client/models/items/registry";
+module packets from "client/protos/packets";
+module input from "client/util/input";
 
-import {Key} from "../util/input";
-import {Vector2} from "../util/geometry";
-module game_pb2 from "../game_pb2";
+export class Entity {
+  constructor(message) {
+    super();
 
+    this.id = message.id;
+    this.type = message.type;
+    this.realmId = message.realmId;
+    this.location = geometry.Vector2.fromProtobuf(message.location);
+    this.bbox = geometry.Rectangle.fromProtobuf(message.bbox);
+    this.direction = message.direction;
+  }
+
+  getBounds() {
+    return this.bbox.offset(this.location);
+  }
+
+  update(dt) {
+  }
+
+  onAdjacentInteract(avatar, protocol) {
+  }
+
+  onContainingInteract(avatar, protocol) {
+  }
+
+  onContact(avatar, protocol) {
+  }
+
+  isPassable(location, direction) {
+    return true;
+  }
+
+  visit(visitor) {
+    visitor.visitEntity(this);
+  }
+}
+
+export class Building extends Entity {
+  constructor(message) {
+    super(message);
+    message = message.buildingExt;
+
+    this.doorPosition = message.doorPosition;
+  }
+
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitBuilding(this);
+  }
+
+  isPassable(location, direction) {
+    if (location.x == this.getBounds().left + this.doorPosition &&
+        location.y == this.getBounds().getBottom() - 1) {
+      return true;
+    }
+    return false;
+  }
+}
+
+export class Drop extends Entity {
+  constructor(message) {
+    super(message);
+    message = message.dropExt;
+
+    this.item = makeItem(message.item);
+  }
+
+  onContainingInteract(avatar, protocol) {
+    // Attempt to pick up the drop.
+    protocol.send(new packets.PickUpPacket({dropId: this.id}));
+  }
+
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitDrop(this);
+  }
+}
 export var Directions = {
     N: 0,
     W: 1,
@@ -14,10 +89,10 @@ export var Directions = {
 
 export function getDirectionVector(d) {
   switch (d) {
-    case Directions.N: return new Vector2( 0, -1);
-    case Directions.W: return new Vector2(-1,  0);
-    case Directions.S: return new Vector2( 0,  1);
-    case Directions.E: return new Vector2( 1,  0);
+    case Directions.N: return new geometry.Vector2( 0, -1);
+    case Directions.W: return new geometry.Vector2(-1,  0);
+    case Directions.S: return new geometry.Vector2( 0,  1);
+    case Directions.E: return new geometry.Vector2( 1,  0);
   }
 }
 
@@ -76,9 +151,7 @@ export class Actor extends Entity {
       this.moving = true;
     }
 
-    if (this.moving) {
-      this.emit("moveStart", this.location);
-    } else {
+    if (!this.moving) {
       targetLocation = this.location;
     }
 
@@ -98,13 +171,11 @@ export class Actor extends Entity {
       this.location = this.location
           .offset(this.getDirectionVector().scale(aDistance))
 
-      this.emit("moveStep", {aDistance: aDistance});
       this.remainder -= aDistance;
 
       if (this.remainder <= 0) {
         this.location = this.location.map(Math.round);
         this.remainder = 0;
-        this.emit("moveEnd", this.location);
       }
     }
   }
@@ -124,10 +195,10 @@ export class Player extends Actor {
     }
 
     // Check for movement.
-    var direction = inputState.isHeld(Key.LEFT) ? Directions.W :
-                    inputState.isHeld(Key.UP) ? Directions.N :
-                    inputState.isHeld(Key.RIGHT) ? Directions.E :
-                    inputState.isHeld(Key.DOWN) ? Directions.S :
+    var direction = inputState.isHeld(input.Key.LEFT) ? Directions.W :
+                    inputState.isHeld(input.Key.UP) ? Directions.N :
+                    inputState.isHeld(input.Key.RIGHT) ? Directions.E :
+                    inputState.isHeld(input.Key.DOWN) ? Directions.S :
                     null;
 
     var wasMoving = this.moving;
@@ -139,42 +210,42 @@ export class Player extends Actor {
       if (!targetLocation.equals(this.location) ||
           lastDirection !== this.direction) {
         // Send a move packet only if we've successfully moved.
-        protocol.send(new game_pb2.MovePacket({direction: direction}));
+        protocol.send(new packets.MovePacket({direction: direction}));
 
         // Trigger all target contacts.
         var target = this.location.offset(getDirectionVector(direction));
 
         this.realm.getAllEntities().filter((entity) =>
-            entity.getAbsoluteBounds().contains(target)).forEach((entity) => {
+            entity.getBounds().contains(target)).forEach((entity) => {
             entity.onContact(this, protocol);
           })
       } else if (wasMoving) {
         // Otherwise, we're trying to move in a direction that's obstructed so
         // we stop moving and send StopMoves.
         this.moving = false;
-        protocol.send(new game_pb2.StopMovePacket());
+        protocol.send(new packets.StopMovePacket());
       }
     } else if (this.moving) {
         // We've stopped moving entirely.
         this.moving = false;
-        protocol.send(new game_pb2.StopMovePacket());
+        protocol.send(new packets.StopMovePacket());
     }
 
     // Check for interactions.
     var interactions = [];
 
-    if (inputState.unstick(Key.Z)) {
+    if (inputState.unstick(input.Key.Z)) {
       this.realm.getAllEntities().forEach((entity) => {
         if (entity === this) {
           return;
         }
 
-        if (entity.getAbsoluteBounds().contains(this.location)) {
+        if (entity.getBounds().contains(this.location)) {
           interactions.push({
               entity: entity,
               contained: true
           });
-        } else if (entity.getAbsoluteBounds().contains(
+        } else if (entity.getBounds().contains(
             this.location.offset(this.getDirectionVector()))) {
           interactions.push({
               entity: entity,
@@ -206,5 +277,22 @@ export class Player extends Actor {
   visit(visitor) {
     super.visit(visitor);
     visitor.visitPlayer(this);
+  }
+}
+
+export class EntityVisitor {
+  visitEntity(entity) {
+  }
+
+  visitBuilding(building) {
+  }
+
+  visitDrop(drop) {
+  }
+
+  visitActor(actor) {
+  }
+
+  visitPlayer(player) {
   }
 }

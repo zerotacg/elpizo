@@ -22,6 +22,9 @@ class Entity(models.ProtobufRecord):
                                bbox=self.bbox.to_protobuf(),
                                direction=self.direction)
 
+  def to_public_protobuf(self):
+    return self.to_protobuf()
+
   def from_protobuf(self, proto):
     self.type = proto.type
     self.realm_id = proto.realm_id
@@ -30,8 +33,12 @@ class Entity(models.ProtobufRecord):
     self.direction = proto.direction
 
   @property
+  def bounds(self):
+    return self.bbox.offset(self.location)
+
+  @property
   def regions(self):
-    return self.realm.regions.load_contained_by(self.bbox.offset(self.location))
+    return self.realm.regions.load_intersecting(self.bounds)
 
   @contextlib.contextmanager
   def move_transaction(self):
@@ -73,6 +80,11 @@ class Actor(Entity):
       message.feet_item.MergeFrom(self.feet_item.to_protobuf())
 
     proto.Extensions[entities_pb2.Actor.actor_ext].MergeFrom(message)
+    return proto
+
+  def to_public_protobuf(self):
+    proto = super().to_public_protobuf()
+    proto.Extensions[entities_pb2.Actor.actor_ext].ClearField("inventory")
     return proto
 
   def from_protobuf(self, proto):

@@ -2,8 +2,6 @@
 
 module React from "react";
 
-module coords from "../util/coords";
-
 export var Debug = React.createClass({
   getInitialState: function () {
     return {
@@ -18,8 +16,8 @@ export var Debug = React.createClass({
 
     var game = this.props.game;
 
-    var viewportBounds = game.renderer.getAbsoluteViewportBounds();
-    var cacheBounds = game.renderer.getRegionCacheBounds();
+    var viewport = game.renderer.getViewportBounds();
+    var cacheBounds = game.renderer.getCacheBounds();
 
     var maybeRegions = null;
     if (this.state.showRegions && game.realm !== null) {
@@ -28,8 +26,8 @@ export var Debug = React.createClass({
             a.location.y - b.location.y ||
                 a.location.x - b.location.x)
           .map((region) => {
-            var aCoords = coords.regionToAbsolute(region.location);
-            return <li key={region.getKey()}>{region.getKey()} ({aCoords.x}, {aCoords.y}, {aCoords.x + coords.REGION_SIZE}, {aCoords.y + coords.REGION_SIZE})</li>
+            var bounds = region.getBounds();
+            return <li key={region.getKey()}>{region.getKey()} ({bounds.left}, {bounds.top}, {bounds.getRight()}, {bounds.getBottom()})</li>
           });
       maybeRegions = <ul>{regions}</ul>;
     }
@@ -43,7 +41,7 @@ export var Debug = React.createClass({
       <table className="attrs">
         <tr>
           <th>Viewport Bounds</th>
-          <td>({viewportBounds.left.toFixed(2)}, {viewportBounds.top.toFixed(2)}, {viewportBounds.getRight().toFixed(2)}, {viewportBounds.getBottom().toFixed(2)})</td>
+          <td>({viewport.left.toFixed(2)}, {viewport.top.toFixed(2)}, {viewport.getRight().toFixed(2)}, {viewport.getBottom().toFixed(2)})</td>
         </tr>
 
         <tr>

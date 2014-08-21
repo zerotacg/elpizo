@@ -1,12 +1,10 @@
 module retry from "retry";
+module events from "events";
 
-module game_pb2 from "../game_pb2";
+module packets from "client/protos/packets";
+module objects from "client/util/objects";
 
-import {hasOwnProp} from "./objects";
-
-import {EventEmitter} from "events";
-
-export class Transport extends EventEmitter {
+export class Transport extends events.EventEmitter {
   constructor(host) {
     super();
 
@@ -31,7 +29,7 @@ export class Transport extends EventEmitter {
 
     this.socket.onmessage = (e) => {
       this.currentRetryOperation = null;
-      this.emit("message", game_pb2.Packet.decode(e.data));
+      this.emit("message", packets.Packet.decode(e.data));
     };
   }
 
@@ -45,13 +43,13 @@ export class Transport extends EventEmitter {
 }
 
 var PACKETS = {};
-Object.keys(game_pb2).forEach((name) => {
-  var cls = game_pb2[name];
-  if (!hasOwnProp.call(cls.$options, "(packet_type)")) {
+Object.keys(packets).forEach((name) => {
+  var cls = packets[name];
+  if (!objects.hasOwnProp.call(cls.$options, "(packet_type)")) {
     return;
   }
 
-  var packetType = game_pb2.Packet.Type[cls.$options["(packet_type)"]];
+  var packetType = packets.Packet.Type[cls.$options["(packet_type)"]];
   PACKETS[packetType] = cls;
 });
 
@@ -66,7 +64,7 @@ export class Protocol extends EventEmitter {
 
     this.transport.on("message", (packet) => {
       var message = PACKETS[packet.type].decode(packet.payload);
-      if (packet.type === game_pb2.Packet.Type.ERROR) {
+      if (packet.type === packets.Packet.Type.ERROR) {
         this.lastError = message.text;
         this.transport.close();
       }
@@ -90,7 +88,7 @@ export class Protocol extends EventEmitter {
   }
 
   send(message) {
-    this.transport.send(new game_pb2.Packet({
+    this.transport.send(new packets.Packet({
         type: message.$type.options["(packet_type)"],
         payload: message.encode()
     }));

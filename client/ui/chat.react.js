@@ -1,9 +1,10 @@
 /** @jsx React.DOM */
 
 module React from "react";
-import {Packet, ChatPacket} from "../game_pb2";
-import {makeColorForString} from "../util/colors";
-import {hasOwnProp} from "../util/objects";
+
+module packets from "client/protos/packets";
+module colors from "client/util/colors";
+module objects from "client/util/objects";
 
 var COMMANDS = {
   debug: (comp, game) => {
@@ -34,15 +35,15 @@ export var Chat = React.createClass({
   },
 
   componentWillMount: function () {
-    this.props.game.protocol.on(Packet.Type.STATUS, this.onStatus);
-    this.props.game.protocol.on(Packet.Type.CHAT, this.onChat);
-    this.props.game.protocol.on(Packet.Type.INVENTORY, this.onInventory);
+    this.props.game.protocol.on(packets.Packet.Type.STATUS, this.onStatus);
+    this.props.game.protocol.on(packets.Packet.Type.CHAT, this.onChat);
+    this.props.game.protocol.on(packets.Packet.Type.INVENTORY, this.onInventory);
   },
 
   componentWillUnmount: function () {
-    this.props.game.protocol.removeListener(Packet.Type.STATUS, this.onStatus);
-    this.props.game.protocol.removeListener(Packet.Type.CHAT, this.onChat);
-    this.props.game.protocol.removeListener(Packet.Type.INVENTORY, this.onInventory);
+    this.props.game.protocol.removeListener(packets.Packet.Type.STATUS, this.onStatus);
+    this.props.game.protocol.removeListener(packets.Packet.Type.CHAT, this.onChat);
+    this.props.game.protocol.removeListener(packets.Packet.Type.INVENTORY, this.onInventory);
   },
 
   componentDidUpdate: function (prevProps, prevState) {
@@ -106,7 +107,7 @@ export var Chat = React.createClass({
       var commandName = parts[0].trim().toLowerCase();
       var rest = parts.slice(1).join(" ").trim();
 
-      if (!hasOwnProp.call(COMMANDS, commandName)) {
+      if (!objects.hasOwnProp.call(COMMANDS, commandName)) {
         this.addMessage({
             origin: null,
             text: "No such command: " + commandName,
@@ -124,7 +125,7 @@ export var Chat = React.createClass({
           isStatus: false
       });
 
-      this.props.game.protocol.send(new ChatPacket({
+      this.props.game.protocol.send(new packets.ChatPacket({
           target: "chatroom.global",
           text: pendingMessage
       }));
@@ -134,7 +135,7 @@ export var Chat = React.createClass({
   render: function () {
     var messages = this.state.messages.map((message) => {
       var maybeOrigin = message.origin &&
-          <span className="origin" style={{color: makeColorForString(message.origin)}}>
+          <span className="origin" style={{color: colors.makeColorForString(message.origin)}}>
               {message.origin}
           </span>;
 

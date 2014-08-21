@@ -26,7 +26,7 @@ message Packet {
   }
 
   optional Type type = 1;
-  optional uint32 origin = 2;
+  optional string origin = 2;
   optional bytes payload = 3;
 }
 

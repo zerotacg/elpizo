@@ -27,5 +27,10 @@ def on_hello(protocol, origin, message):
   protocol.player = player
   protocol.server.bus.add(player.id, protocol)
 
-  for region in protocol.player.regions:
-    print(region.entities, region.location, player.location, player.name)
+  protocol.send(
+      None,
+      packets_pb2.RealmPacket(realm=player.realm.to_public_protobuf()))
+  protocol.send(
+      player.id,
+      packets_pb2.EntityPacket(entity=player.to_protobuf()))
+  protocol.send(player.id, packets_pb2.AvatarPacket())

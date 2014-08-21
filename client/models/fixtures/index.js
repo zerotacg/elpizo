@@ -1,7 +1,6 @@
-import {Entity} from "../base";
-module exports from "../../exports";
+module entities from "client/models/entities";
 
-export class Fixture extends Entity {
+export class Fixture extends entities.Entity {
   constructor(message) {
     super(message);
     message = message.fixtureExt;

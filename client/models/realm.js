@@ -1,16 +1,12 @@
-import {Grid} from "../util/grid";
-import {hasOwnProp} from "../util/objects";
-import {Rectangle, Vector2} from "../util/geometry";
-
-module game_pb2 from "../game_pb2";
-module exports from "../exports";
-module coords from "../util/coords";
+module grid from "client/util/grid";
+module objects from "client/util/objects";
+module geometry from "client/models/geometry";
 
 export class Realm {
   constructor(message) {
     this.id = message.id;
     this.name = message.name;
-    this.bounds = new Rectangle(0, 0, message.size.aw, message.size.ah);
+    this.size = geometry.Vector2.fromProtobuf(message.size);
     this.terrainLayers = message.terrainLayers;
 
     this.regions = {};
@@ -29,20 +25,20 @@ export class Realm {
 
   getRegionAt(location) {
     var key = [location.x, location.y].join(",");
-    return hasOwnProp.call(this.regions, key) ? this.regions[key] : null;
+    return objects.hasOwnProp.call(this.regions, key) ? this.regions[key] : null;
   }
 
   getAllRegions() {
     return Object.keys(this.regions).map((k) => this.regions[k]);
   }
 
-  retainRegions(arBbox) {
+  retainRegions(bbox) {
     // This should only be called at region boundaries, to ensure that
     // off-screen regions aren't culled away prematurely.
     Object.keys(this.regions).map((k) => {
       var region = this.regions[k];
 
-      if (!arBbox.contains(region.location)) {
+      if (!bbox.contains(region.location)) {
         delete this.regions[k];
       }
     });
@@ -50,27 +46,25 @@ export class Realm {
     Object.keys(this.entities).map((k) => {
       var entity = this.entities[k];
 
-      if (!arBbox.contains(coords.absoluteToContainingRegion(
-          entity.location))) {
+      if (!bbox.contains(entity.location)) {
         delete this.entities[k];
       }
     });
   }
 
   getClosestRegionTo(location) {
-    return this.getRegionAt(coords.absoluteToContainingRegion(location));
+    return this.getRegionAt(location.map(Region.floor));
   }
 
   isPassable(location, direction) {
     var region = this.getClosestRegionTo(location);
-    if (region === null ||
-        !region.isPassable(coords.absoluteToRelative(location), direction)) {
+    if (region === null || !region.isPassable(location, direction)) {
       return false;
     }
 
     if (this.getAllEntities().filter(
         (entity) => !entity.isPassable(location, direction)).some((entity) =>
-      entity.getAbsoluteBounds().contains(location))) {
+      entity.getBounds().contains(location))) {
       return false;
     }
 
@@ -88,7 +82,7 @@ export class Realm {
   }
 
   getEntity(id) {
-    return hasOwnProp.call(this.entities, id) ? this.entities[id] : null;
+    return objects.hasOwnProp.call(this.entities, id) ? this.entities[id] : null;
   }
 
   getAllEntities() {
@@ -104,11 +98,12 @@ export class Realm {
 
 export class Region {
   constructor(message) {
-    this.location = new Vector2(message.location.arx, message.location.ary);
+    this.location = new geometry.Vector2(message.location.x,
+                                         message.location.y);
     this.layers = message.layers.map((layer) =>
         new Layer(layer));
-    this.passabilities = new Grid(coords.REGION_SIZE, coords.REGION_SIZE,
-                                  message.passabilities);
+    this.passabilities = new grid.Grid(Region.SIZE, Region.SIZE,
+                                       message.passabilities);
   }
 
   getKey() {
@@ -116,20 +111,24 @@ export class Region {
   }
 
   isPassable(location, direction) {
+    location = location.offset(this.location.negate());
     return !!((this.passabilities.getCell(location.x, location.y) >>
         direction) & 0x1);
   }
 
-  getAbsoluteBounds() {
-    return (new Rectangle(0, 0, coords.REGION_SIZE, coords.REGION_SIZE))
+  getBounds() {
+    return (new geometry.Rectangle(0, 0, Region.SIZE, Region.SIZE))
       .offset(this.location);
   }
 }
+Region.SIZE = 16;
+
+Region.floor = (x) => Math.floor(x / Region.SIZE) * Region.SIZE;
+Region.ceil = (x) => Math.ceil(x / Region.SIZE) * Region.SIZE;
 
 class Layer {
   constructor(message) {
-    this.terrain = exports.terrain[message.terrainId];
-    this.tiles = new Grid(coords.REGION_SIZE, coords.REGION_SIZE,
-                          message.tiles);
+    this.terrain = exports.terrain[message.terrain];
+    this.tiles = new grid.Grid(Region.SIZE, Region.SIZE, message.tiles);
   }
 }

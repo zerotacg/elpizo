@@ -1,20 +1,19 @@
-import {Player} from "./actors";
-import {Building, Drop} from "./base";
-import {makeFixture} from "./fixtures/registry";
+module entities from "client/models/entities";
+module fixtureRegistry from "client/models/fixtures/registry";
 
 export function makeEntity(message) {
   switch (message.type) {
     case "building":
-      return new Building(message);
+      return new entities.Building(message);
 
     case "drop":
-      return new Drop(message);
+      return new entities.Drop(message);
 
     case "fixture":
-      return makeFixture(message);
+      return fixtureRegistry.makeFixture(message);
 
     case "player":
-      return new Player(message);
+      return new entities.Player(message);
   }
 
   console.error("Could not make entity of type:", message.type);
