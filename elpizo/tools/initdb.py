@@ -113,7 +113,6 @@ def initdb(server):
       gender="male",
       body="light",
       hair="brown_messy_1",
-      facial="brown_beard",
       direction=1,
       health=10,
       realm_id=windvale.id,
