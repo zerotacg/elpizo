@@ -1,9 +1,9 @@
 import asyncio
 import coloredlogs
 import logging
-import yaml
 
 from elpizo import server
+from elpizo.server import config
 from elpizo.models import entities
 from elpizo.models import geometry
 from elpizo.models import realm
@@ -126,10 +126,7 @@ def initdb(server):
 
 def main():
   coloredlogs.install()
-
-  with open("elpizo.conf") as config_file:
-    config = yaml.load(config_file)
-  server.Server(config).once(initdb)
+  server.Server(config.make_parser().parse_args()).once(initdb)
 
 
 if __name__ == "__main__":

@@ -3,12 +3,12 @@ import asyncio_redis
 import coloredlogs
 import logging
 import websockets
-import yaml
 
 from asyncio_redis import encoders
 from elpizo.models import items
 from elpizo.models.items import registry as item_registry
 from elpizo.server import bus
+from elpizo.server import config
 from elpizo.server import handlers
 from elpizo.server import store
 from elpizo.server.util import kvs
@@ -33,7 +33,7 @@ class Server(object):
 
     logger.info("Item types registered: %d", len(items.Item.REGISTRY))
 
-    with open(self.config["mint_key"]) as f:
+    with open(self.config.mint_key) as f:
       self.mint = mint.Mint(f)
     logger.info("Initialized mint (can mint: %s)", self.mint.can_mint)
 
@@ -41,16 +41,17 @@ class Server(object):
 
     self.store = store.GameStore(
         green.await_coro(asyncio_redis.Pool.create(
-            encoder=encoders.BytesEncoder(), **self.config["redis"])))
+            host=self.config.redis_host, port=self.config.redis_port,
+            encoder=encoders.BytesEncoder())))
 
     if serve:
-      logger.info("Server starting on port %s.", self.config["bind"]["port"])
+      logger.info("Server starting on port %s.", self.config.bind_port)
       self.store.lock()
 
       green.await_coro(
           websockets.serve(self.accept,
-                           self.config["bind"]["host"],
-                           self.config["bind"]["port"]))
+                           self.config.bind_host,
+                           self.config.bind_port))
 
     self.start_event.set()
 
@@ -95,10 +96,6 @@ class Server(object):
 
 
 def main():
-  with open("elpizo.conf") as config_file:
-    config = yaml.load(config_file)
-
-  coloredlogs.install(getattr(logging, config.get("log_level", "INFO"), None))
-
-  server = Server(config)
+  coloredlogs.install(getattr(logging, args.log_level, None))
+  server = Server(config.make_parser().parse_args())
   server.run()

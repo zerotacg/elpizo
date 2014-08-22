@@ -1,14 +1,14 @@
 import base64
 import sys
-import yaml
 
 from elpizo import server
+from elpizo.server import config
 from urllib import parse
 
 
-def do_mint(server, credentials):
+def do_mint(server, credentials, expiry):
   token = base64.b64encode(server.mint.mint(credentials.encode("utf-8"),
-                                            expiry=1000000)) \
+                                            expiry=expiry)) \
       .decode("utf-8")
   print(token)
 
@@ -17,9 +17,16 @@ def do_mint(server, credentials):
 
 
 def main():
-  with open("elpizo.conf") as config_file:
-    config = yaml.load(config_file)
-  server.Server(config).once(do_mint, sys.argv[1])
+  parser = config.make_parser()
+  parser.add_argument("credentials", help="Credentials to mint.")
+  parser.add_argument("--expiry",
+                      help="When to expire credentials. NOTE: Credentials "
+                           "cannot be revoked without generating a new minting "
+                           "key pair!",
+                      default=1000000)
+  args = parser.parse_args()
+
+  server.Server(args).once(do_mint, args.credentials, args.expiry)
 
 
 if __name__ == "__main__":
