@@ -35,18 +35,18 @@ export class Realm {
   retainRegions(bbox) {
     // This should only be called at region boundaries, to ensure that
     // off-screen regions aren't culled away prematurely.
-    Object.keys(this.regions).map((k) => {
-      var region = this.regions[k];
+    bbox = new geometry.Rectangle(
+        Region.floor(bbox.left), Region.floor(bbox.top),
+        Region.ceil(bbox.width), Region.ceil(bbox.height));
 
-      if (!bbox.contains(region.location)) {
+    Object.keys(this.regions).map((k) => {
+      if (!bbox.contains(this.regions[k].location)) {
         delete this.regions[k];
       }
     });
 
     Object.keys(this.entities).map((k) => {
-      var entity = this.entities[k];
-
-      if (!bbox.contains(entity.location)) {
+      if (!bbox.contains(this.entities[k].location)) {
         delete this.entities[k];
       }
     });

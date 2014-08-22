@@ -177,5 +177,5 @@ message RegionChangePacket {
   // Direction: Server -> Client
   option (packet_type) = REGION_CHANGE;
 
-  optional Vector2 location = 1;
+  repeated Vector2 locations = 1;
 }

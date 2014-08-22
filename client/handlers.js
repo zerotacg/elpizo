@@ -80,16 +80,10 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.REGION_CHANGE, (origin, message) => {
-    if (message.location.realmId !== game.realm.id) {
-      console.warn("Got invalid region realm ID (" +
-                   message.entity.realmId + ") for current realm (" +
-                   game.realm.id + "), discarding.");
-      return;
-    }
-
-    if (!renderer.getRegionCacheBounds().contains(new geometry.Vector2(
-        message.location.arx, message.location.ary))) {
-      game.realm.removeEntity(game.realm.getEntity(origin));
+    var cacheBounds = renderer.getCacheBounds();
+    if (message.locations.every((location) =>
+        !cacheBounds.contains(geometry.Vector2.fromProtobuf(location)))) {
+      game.realm.removeEntity(origin);
     }
   });
 }
