@@ -2,6 +2,7 @@ import asyncio
 import asyncio_redis
 import coloredlogs
 import logging
+import statsd
 import websockets
 
 from asyncio_redis import encoders
@@ -24,7 +25,6 @@ logger = logging.getLogger(__name__)
 class Server(object):
   def __init__(self, config, loop=None):
     self.config = config
-    self.start_event = asyncio.Event()
     self.loop = loop or asyncio.get_event_loop()
 
   @green.coroutine
@@ -43,6 +43,9 @@ class Server(object):
         green.await_coro(asyncio_redis.Pool.create(
             host=self.config.redis_host, port=self.config.redis_port,
             encoder=encoders.BytesEncoder())))
+    self.statsd = statsd.StatsClient(self.config.statsd_host,
+                                     self.config.statsd_port,
+                                     prefix="elpizo")
 
     if serve:
       logger.info("Server starting on port %s.", self.config.bind_port)
@@ -89,6 +92,8 @@ class Server(object):
     coloredlogs.install(getattr(logging, self.config.log_level, None))
 
     logger.info("Using event loop: %s", type(self.loop).__name__)
+
+    self.start_event = asyncio.Event()
 
     self.loop.run_until_complete(self.start(serve))
     try:
