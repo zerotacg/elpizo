@@ -86,6 +86,8 @@ class Server(object):
     self.run(False)
 
   def run(self, serve=True):
+    coloredlogs.install(getattr(logging, self.config.log_level, None))
+
     logger.info("Using event loop: %s", type(self.loop).__name__)
 
     self.loop.run_until_complete(self.start(serve))
@@ -96,6 +98,5 @@ class Server(object):
 
 
 def main():
-  coloredlogs.install(getattr(logging, args.log_level, None))
   server = Server(config.make_parser().parse_args())
   server.run()
