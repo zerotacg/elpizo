@@ -4,25 +4,28 @@ class Vector2(object):
     self.y = y
 
   def map(self, f):
-    return Vector2(f(self.x), f(self.y))
+    return self.__class__(f(self.x), f(self.y))
 
   def elementwise(self, f, other):
-    return Vector2(f(self.x, other.x), f(self.y, other.y))
+    return self.__class__(f(self.x, other.x), f(self.y, other.y))
 
   def scale(self, k):
-    return Vector2(k * self.x, k * self.y)
+    return self.__class__(k * self.x, k * self.y)
 
   def offset(self, other):
-    return Vector2(self.x + other.x, self.y + other.y)
+    return self.__class__(self.x + other.x, self.y + other.y)
 
   def negate(self):
-    return Vector2(-self.x, -self.y)
+    return self.__class__(-self.x, -self.y)
 
   def __eq__(self, other):
     return self.x == other.x and self.y == other.y
 
   def __repr__(self):
     return "Vector2({x}, {y})".format(**self.__dict__)
+
+  def __hash__(self):
+    return hash((Vector2, self.x, self.y))
 
 
 class Rectangle(object):
@@ -57,11 +60,11 @@ class Rectangle(object):
            self.top <= vec.y and self.bottom > vec.y
 
   def offset(self, vec):
-    return Rectangle(self.left + vec.x, self.top + vec.y,
+    return self.__class__(self.left + vec.x, self.top + vec.y,
                      self.width, self.height)
 
   def scale(self, k):
-    return Rectangle(self.left, self.top, k * self.width, k * self.height);
+    return self.__class__(self.left, self.top, k * self.width, k * self.height)
 
   def __eq__(self, other):
     return self.left == other.left and self.top == other.top and \
@@ -69,3 +72,6 @@ class Rectangle(object):
 
   def __repr__(self):
     return "Rectangle({left}, {top}, {width}, {height})".format(**self.__dict__)
+
+  def __hash__(self):
+    return hash((Rectangle, self.left, self.top, self.width, self.height))

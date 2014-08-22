@@ -5,6 +5,10 @@ export class Vector2 extends geometry.Vector2 {
   toProtobuf() {
     return new geometryProtos.Vector2({x: this.x, y: this.y});
   }
+
+  copy() {
+    return new Vector2(this.x, this.y);
+  }
 }
 
 Vector2.fromProtobuf = (proto) => {
@@ -16,6 +20,10 @@ export class Rectangle extends geometry.Rectangle {
     return new geometryProtos.Rectangle({left: this.left, top: this.top,
                                          width: this.width,
                                          height: this.height});
+  }
+
+  copy() {
+    return new Rectangle(this.left, this.top, this.width, this.height);
   }
 }
 

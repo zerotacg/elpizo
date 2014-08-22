@@ -3,7 +3,7 @@ from elpizo.util import mint
 from elpizo.util import net
 
 
-def on_hello(protocol, origin, message):
+def on_hello(protocol, message):
   try:
     token = protocol.server.mint.unmint(message.token)
   except mint.InvalidTokenError as e:
@@ -32,5 +32,13 @@ def on_hello(protocol, origin, message):
       packets_pb2.RealmPacket(realm=player.realm.to_public_protobuf()))
   protocol.send(
       player.id,
-      packets_pb2.EntityPacket(entity=player.to_protobuf()))
+      packets_pb2.EntityPacket(entity=player.to_protected_protobuf()))
   protocol.send(player.id, packets_pb2.AvatarPacket())
+
+  protocol.server.bus.subscribe(
+      protocol.player.id,
+      ("conversation", protocol.player.name))
+
+  protocol.server.bus.subscribe(
+      protocol.player.id,
+      ("chatroom", "global"))

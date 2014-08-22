@@ -11,6 +11,13 @@ class Entity(models.ProtobufRecord):
   PROTOBUF_TYPE = entities_pb2.Entity
   REGISTRY = {}
 
+  DIRECTION_VECTORS = {
+      0: geometry.Vector2( 0, -1),  # N
+      1: geometry.Vector2(-1,  0),  # W
+      2: geometry.Vector2( 0,  1),  # S
+      3: geometry.Vector2( 1,  0)   # E
+  }
+
   @classmethod
   def register(cls, subclass):
     cls.REGISTRY[subclass.TYPE] = subclass
@@ -46,7 +53,7 @@ class Entity(models.ProtobufRecord):
     return self.realm.load_intersecting_regions(self.bounds)
 
   @contextlib.contextmanager
-  def move_transaction(self):
+  def movement(self):
     initial_regions = list(self.regions)
 
     yield

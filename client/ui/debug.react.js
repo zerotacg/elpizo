@@ -67,14 +67,6 @@ export var Debug = React.createClass({
           <th>Avatar Position</th>
           <td>{maybeAvatarPosition !== null ? maybeAvatarPosition : "(no avatar)"}</td>
         </tr>
-
-        <tr>
-          <th><a href="/_debug/" target="_blank">Debug Console</a></th>
-          <td>
-            <a href={game.me !== null ? "/_debug/entities/" + game.me.id + "/" : null} target="_blank">Avatar</a>/
-            <a href={game.realm !== null ? "/_debug/realms/" + game.realm.id + "/" : null} target="_blank">Realm</a>
-          </td>
-        </tr>
       </table>
     </div>;
   },

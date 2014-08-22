@@ -46,6 +46,18 @@ class Realm(models.ProtobufRecord):
       logger.info("Saving all child regions for realm: %s", self.id)
       self.regions.save_all()
 
+  def is_passable(self, location, direction):
+    try:
+      region = self.regions.load_closest(location)
+    except KeyError:
+      return False
+
+    if not region.is_passable(location, direction):
+      return False
+
+    # TODO: check entities
+    return True
+
 
 class Region(models.ProtobufRecord):
   PROTOBUF_TYPE = realm_pb2.Region
@@ -89,6 +101,12 @@ class Region(models.ProtobufRecord):
     self.layers = [Layer.from_protobuf(layer) for layer in proto.layers]
     self.passabilities = list(proto.passabilities)
     self.entity_ids = list(proto.entity_ids)
+
+  def is_passable(self, location, direction):
+    location = location.offset(self.location.negate())
+    i = location.y * Region.SIZE + location.x
+
+    return bool((self.passabilities[i] >> direction) & 0x1)
 
 
 class Layer(object):

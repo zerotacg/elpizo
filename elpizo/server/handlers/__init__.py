@@ -1,10 +1,12 @@
 import logging
 
 from elpizo.protos import packets_pb2
-from elpizo.util import net
-
+from elpizo.models import geometry
+from elpizo.server.handlers import chat
 from elpizo.server.handlers import hello
+from elpizo.server.handlers import move
 from elpizo.server.handlers import viewport
+from elpizo.util import net
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,9 @@ class Dispatcher(net.Protocol):
   def on_open(self):
     self.player = None
 
+    self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
+    self.last_move_time = 0
+
   def on_message(self, origin, message):
     type = message.DESCRIPTOR.GetOptions().Extensions[packets_pb2.packet_type]
 
@@ -29,7 +34,7 @@ class Dispatcher(net.Protocol):
           type, "opcode {}".format(type))
       logger.warn("Unhandled packet: %s", packet_name)
     else:
-      handler(self, origin, message)
+      handler(self, message)
 
   def on_close(self):
     if self.player is not None:
@@ -37,5 +42,8 @@ class Dispatcher(net.Protocol):
       self.server.bus.remove(self.player.id)
 
 
+Dispatcher.register(packets_pb2.Packet.CHAT, chat.on_chat)
 Dispatcher.register(packets_pb2.Packet.HELLO, hello.on_hello)
+Dispatcher.register(packets_pb2.Packet.MOVE, move.on_move)
+Dispatcher.register(packets_pb2.Packet.STOP_MOVE, move.on_stop_move)
 Dispatcher.register(packets_pb2.Packet.VIEWPORT, viewport.on_viewport)

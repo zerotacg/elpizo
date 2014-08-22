@@ -151,6 +151,7 @@ gulp.task("protos-js", function () {
               {silent: true}))
     .pipe(insert.prepend(
         "require(\"protobufjs\").convertFieldsToCamelCase=true;"))
+    .pipe(buffer()) // prevents slow writes from interfering
     .pipe(rename(function (file) {
       file.extname = ".js";
     }))

@@ -4,24 +4,43 @@ export class Vector2 {
     this.y = y;
   }
 
+  copy() {
+    return new Vector2(this.x, this.y);
+  }
+
   map(f) {
-    return new Vector2(f(this.x), f(this.y));
+    var out = this.copy();
+    out.x = f(out.x);
+    out.y = f(out.y);
+    return out;
   }
 
   elementwise(f, other) {
-    return new Vector2(f(this.x, other.x), f(this.y, other.y));
+    var out = this.copy();
+    out.x = f(out.x, other.x);
+    out.y = f(out.y, other.y);
+    return out;
   }
 
   scale(k) {
-    return new Vector2(k * this.x, k * this.y);
+    var out = this.copy();
+    out.x *= k;
+    out.y *= k;
+    return out;
   }
 
   offset(other) {
-    return new Vector2(this.x + other.x, this.y + other.y);
+    var out = this.copy();
+    out.x += other.x;
+    out.y += other.y;
+    return out;
   }
 
   negate() {
-    return new Vector2(-this.x, -this.y);
+    var out = this.copy();
+    out.x = -out.x;
+    out.y = -out.y;
+    return out;
   }
 
   equals(other) {
@@ -35,6 +54,10 @@ export class Rectangle {
     this.top = top;
     this.width = width;
     this.height = height;
+  }
+
+  copy() {
+    return new Rectangle(this.left, this.top, this.width, this.height);
   }
 
   getTopLeft() {
@@ -64,12 +87,17 @@ export class Rectangle {
   }
 
   offset(vec) {
-    return new Rectangle(this.left + vec.x, this.top + vec.y,
-                         this.width, this.height);
+    var out = this.copy();
+    out.left += vec.x;
+    out.top += vec.y;
+    return out;
   }
 
   scale(k) {
-    return new Rectangle(this.left, this.top, k * this.width, k * this.height);
+    var out = this.copy();
+    out.width *= k;
+    out.height *= k;
+    return out;
   }
 
   equals(other) {

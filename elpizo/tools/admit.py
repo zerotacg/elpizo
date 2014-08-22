@@ -7,7 +7,8 @@ from urllib import parse
 
 
 def do_mint(server, credentials):
-  token = base64.b64encode(server.mint.mint(credentials.encode("utf-8"))) \
+  token = base64.b64encode(server.mint.mint(credentials.encode("utf-8"),
+                                            expiry=1000000)) \
       .decode("utf-8")
   print(token)
 

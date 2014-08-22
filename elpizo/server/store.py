@@ -38,7 +38,7 @@ class RegionStore(record.Store):
     return super().load("{x},{y}".format(x=vec.x, y=vec.y))
 
   def load_closest(self, location):
-    return self.load(location.map(realm.Regiom.floor))
+    return self.load(location.map(realm.Region.floor))
 
   def find(self, id, kvs):
     region = realm.Region.find(id, kvs)
