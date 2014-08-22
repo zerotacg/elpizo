@@ -23,7 +23,12 @@ class Entity(models.ProtobufRecord):
                                direction=self.direction)
 
   def to_public_protobuf(self):
-    return self.to_protobuf()
+    return self.to_protected_protobuf()
+
+  def to_protected_protobuf(self):
+    proto = self.to_protobuf()
+    proto.id = self.id
+    return proto
 
   def from_protobuf(self, proto):
     self.type = proto.type

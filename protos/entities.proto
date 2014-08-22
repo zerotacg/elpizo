@@ -11,11 +11,12 @@ message Entity {
     EAST = 3;
   }
 
-  optional string type = 1;
-  optional string realm_id = 2;
-  optional Vector2 location = 3;
-  optional Direction direction = 4;
-  optional Rectangle bbox = 5;
+  optional string id = 1;
+  optional string type = 2;
+  optional string realm_id = 3;
+  optional Vector2 location = 4;
+  optional Direction direction = 5;
+  optional Rectangle bbox = 6;
 }
 
 message Drop {

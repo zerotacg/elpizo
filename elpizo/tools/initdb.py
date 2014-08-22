@@ -12,8 +12,10 @@ from elpizo.util import green
 
 
 def initdb(server):
+  server.store.lock()
+
   windvale = realm.Realm(name="Windvale", size=geometry.Vector2(128, 128))
-  server.store.realms.save(windvale)
+  server.store.realms.create(windvale)
 
   for y in range(0, windvale.size.y, realm.Region.SIZE):
     for x in range(0, windvale.size.x, realm.Region.SIZE):
@@ -23,7 +25,7 @@ def initdb(server):
           layers=[realm.Layer(terrain="grassland",
                               tiles=[0] * (realm.Region.SIZE ** 2))],
           entities=set())
-      windvale.regions.save(region)
+      windvale.regions.create(region)
 
   logging.info("Created Windvale.")
 
@@ -32,11 +34,7 @@ def initdb(server):
                             direction=1, health=10, realm_id=windvale.id,
                             location=geometry.Vector2(0, 0),
                             inventory=[], legs_item=equipment.TealPants())
-  server.store.entities.save(valjean)
-
-  for region in valjean.regions:
-    region.entities.add(valjean)
-    region.save()
+  server.store.entities.create(valjean)
 
   logging.info("Created players.")
 

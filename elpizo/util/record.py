@@ -17,6 +17,10 @@ class Record(object):
     for k, v in kwargs.items():
       setattr(self, k, v)
 
+  @property
+  def is_fresh(self):
+    return self.id is None
+
   def bind(self, kvs):
     """
     Bind the record to a key-value store.
@@ -113,7 +117,7 @@ class Store(object):
     for key in self.kvs.keys():
       self.load(key)
 
-  def save(self, record):
+  def create(self, record):
     """
     Save a record into the underlying key-value store.
     """
@@ -127,7 +131,7 @@ class Store(object):
     Save all records contained by this store to the backing key-value store.
     """
     for record in list(self.records.values()):
-      self.save(record)
+      record.save()
 
   def expire(self, record):
     """

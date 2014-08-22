@@ -43,7 +43,12 @@ def coroutine(f, *, loop=None):
 
     @greenlet.greenlet
     def g():
-      fut.set_result(f(*args, **kwargs))
+      try:
+        result = f(*args, **kwargs)
+      except Exception as e:
+        fut.set_exception(e)
+      else:
+        fut.set_result(result)
 
     g.switch()
 

@@ -1,3 +1,4 @@
+import logging
 import math
 
 from elpizo import models
@@ -7,8 +8,15 @@ from elpizo.server.util import kvs
 from elpizo.util import record
 
 
+logger = logging.getLogger(__name__)
+
+
 class Realm(models.ProtobufRecord):
   PROTOBUF_TYPE = realm_pb2.Realm
+
+  def __init__(self, *args, **kwargs):
+    self.regions = None
+    super().__init__(*args, **kwargs)
 
   def to_protobuf(self):
     return realm_pb2.Realm(name=self.name, size=self.size.to_protobuf())
@@ -31,6 +39,12 @@ class Realm(models.ProtobufRecord):
     for y in range(top, bottom, Region.SIZE):
       for x in range(left, right, Region.SIZE):
           yield self.regions.load(geometry.Vector2(x, y))
+
+  def save(self):
+    super().save()
+    if self.regions is not None:
+      logger.info("Saving all child regions for realm: %s", self.id)
+      self.regions.save_all()
 
 
 class Region(models.ProtobufRecord):

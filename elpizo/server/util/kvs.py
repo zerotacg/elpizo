@@ -14,18 +14,18 @@ class RedisHashAdapter(object):
 
   def get(self, key):
     v = green.await_coro(self.redis.hget(self.hash_key.encode("utf-8"),
-                                         str(key).encode("utf-8")))
+                                         key.encode("utf-8")))
     if v is None:
       raise KeyError(key)
     return v
 
   def set(self, key, value):
     green.await_coro(self.redis.hset(self.hash_key.encode("utf-8"),
-                                     str(key).encode("utf-8"), value))
+                                     key.encode("utf-8"), value))
 
   def delete(self, key):
     green.await_coro(self.redis.hdel(self.hash_key.encode("utf-8"),
-                                     str(key).encode("utf-8")))
+                                     [key.encode("utf-8")]))
 
   def next_serial(self):
     return str(green.await_coro(self.redis.hincrby(self.hash_key.encode("utf-8"),
