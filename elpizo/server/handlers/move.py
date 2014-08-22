@@ -1,14 +1,20 @@
 import time
 
 from elpizo.models import entities
+from elpizo.protos import packets_pb2
 
 
 def on_move(protocol, message):
-  last_move_time = protocol.last_move_time
-
   protocol.player.direction = message.direction
 
   now = time.monotonic()
+  dt = now - protocol.last_move_time
+
+  if dt < 1 / protocol.player.speed * 0.5: # compensate for slow connections by 0.5
+    protocol.send(protocol.player.id, packets_pb2.TeleportPacket(
+        location=protocol.player.location.to_protobuf(),
+        direction=protocol.player.direction))
+    return
 
   for region in protocol.player.regions:
     protocol.server.bus.broadcast(

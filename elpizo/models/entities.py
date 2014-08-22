@@ -66,6 +66,12 @@ class Entity(models.ProtobufRecord):
 
 
 class Actor(Entity):
+  BASE_SPEED = 5
+
+  @property
+  def speed(self):
+    return self.BASE_SPEED
+
   def to_protobuf(self):
     proto = super().to_protobuf()
     message = entities_pb2.Actor(name=self.name, health=self.health,

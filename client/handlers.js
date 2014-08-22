@@ -56,13 +56,6 @@ export function install(game) {
   protocol.on(packets.Packet.Type.TELEPORT, (origin, message) => {
     var entity = game.realm.getEntity(origin);
 
-    if (message.location.realmId !== game.realm.id) {
-      console.warn("Got invalid teleport realm ID (" +
-                   message.location.realmId + ") for current realm (" +
-                   game.realm.id + "), discarding.");
-      return;
-    }
-
     entity.moving = false;
     entity.remainder = 0;
     entity.location = geometry.Vector2.fromProtobuf(message.location);
