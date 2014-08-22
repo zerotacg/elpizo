@@ -126,10 +126,10 @@ export class Renderer extends events.EventEmitter {
     var viewport = this.getViewportBounds();
 
     return geometry.Rectangle.fromCorners(
-        viewport.left - realm.Region.SIZE,
-        viewport.top - realm.Region.SIZE,
-        viewport.getRight() + realm.Region.SIZE,
-        viewport.getBottom() + realm.Region.SIZE);
+        realm.Region.floor(viewport.left - realm.Region.SIZE),
+        realm.Region.floor(viewport.top - realm.Region.SIZE),
+        realm.Region.ceil(viewport.getRight() + realm.Region.SIZE),
+        realm.Region.ceil(viewport.getBottom() + realm.Region.SIZE));
   }
 
   render(realm, dt) {

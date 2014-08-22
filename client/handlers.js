@@ -81,8 +81,8 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.REGION_CHANGE, (origin, message) => {
     var cacheBounds = renderer.getCacheBounds();
-    if (message.locations.every((location) =>
-        !cacheBounds.contains(geometry.Vector2.fromProtobuf(location)))) {
+    if (!message.locations.some((location) =>
+        cacheBounds.contains(geometry.Vector2.fromProtobuf(location)))) {
       game.realm.removeEntity(origin);
     }
   });
