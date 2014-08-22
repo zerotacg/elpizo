@@ -30,16 +30,13 @@ def initdb(server):
   valjean = entities.Player(name="Valjean", gender="male", body="light",
                             hair="brown_messy_1", facial="brown_beard",
                             direction=1, health=10, realm_id=windvale.id,
-                            location=geometry.Vector2(15, 0),
+                            location=geometry.Vector2(0, 0),
                             inventory=[], legs_item=equipment.TealPants())
   server.store.entities.save(valjean)
 
   for region in valjean.regions:
     region.entities.add(valjean)
     region.save()
-
-  with valjean.move_transaction():
-    valjean.location.x = 42
 
   logging.info("Created players.")
 

@@ -103,7 +103,7 @@ message RegionPacket {
 message ViewportPacket {
   // Sent by the client to indicate its viewport size.
   //
-  // Direction: Server <- Client
+  // Direction: Client -> Server
   option (packet_type) = VIEWPORT;
 
   optional Rectangle bounds = 1;

@@ -65,13 +65,16 @@ export class Game extends events.EventEmitter {
 
   getViewportPacket() {
     var bounds = this.renderer.getCacheBounds();
+
+    // TODO: this doesn't serialize correctly without #toRaw()
+    // https://github.com/dcodeIO/ProtoBuf.js/issues/180
     return new packets.ViewportPacket({
-        bounds: {
-            left: bounds.left,
-            top: bounds.top,
-            width: bounds.width,
-            height: bounds.height
-        }
+        bounds: (new geometry.Rectangle(
+            Math.floor(bounds.left),
+            Math.floor(bounds.top),
+            Math.ceil(bounds.width),
+            Math.ceil(bounds.height)
+        )).toProtobuf().toRaw()
     });
   }
 
