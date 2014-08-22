@@ -5,8 +5,6 @@ module input from "client/util/input";
 
 export class Entity {
   constructor(message) {
-    super();
-
     this.id = message.id;
     this.type = message.type;
     this.realmId = message.realmId;
@@ -67,7 +65,7 @@ export class Drop extends Entity {
     super(message);
     message = message.dropExt;
 
-    this.item = makeItem(message.item);
+    this.item = itemRegistry.makeItem(message.item);
   }
 
   onContainingInteract(avatar, protocol) {
@@ -107,12 +105,12 @@ export class Actor extends Entity {
     this.hair = message.hair;
     this.facial = message.facial;
 
-    this.headItem = message.headItem && makeItem(message.headItem);
-    this.torsoItem = message.torsoItem && makeItem(message.torsoItem);
-    this.legsItem = message.legsItem && makeItem(message.legsItem);
-    this.feetItem = message.feetItem && makeItem(message.feetItem);
+    this.headItem = message.headItem && itemRegistry.makeItem(message.headItem);
+    this.torsoItem = message.torsoItem && itemRegistry.makeItem(message.torsoItem);
+    this.legsItem = message.legsItem && itemRegistry.makeItem(message.legsItem);
+    this.feetItem = message.feetItem && itemRegistry.makeItem(message.feetItem);
 
-    this.inventory = message.inventory.map((message) => makeItem(message));
+    this.inventory = message.inventory.map((message) => itemRegistry.makeItem(message));
 
     this.moving = false;
     this.remainder = 0;

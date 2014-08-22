@@ -38,7 +38,7 @@ class Entity(models.ProtobufRecord):
 
   @property
   def regions(self):
-    return self.realm.regions.load_intersecting(self.bounds)
+    return self.realm.load_intersecting_regions(self.bounds)
 
   @contextlib.contextmanager
   def move_transaction(self):

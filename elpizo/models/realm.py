@@ -19,7 +19,19 @@ class Realm(models.ProtobufRecord):
 
   def to_public_protobuf(self):
     proto = self.to_protobuf()
+    proto.id = self.id
     return proto
+
+  def load_intersecting_regions(self, bounds):
+    left = max([Region.floor(bounds.left), 0])
+    top = max([Region.floor(bounds.top), 0])
+    right = min([Region.ceil(bounds.right), self.size.x])
+    bottom = min([Region.ceil(bounds.bottom), self.size.y])
+
+    for y in range(top, bottom, Region.SIZE):
+      for x in range(left, right, Region.SIZE):
+          yield self.regions.load(geometry.Vector2(x, y))
+
 
 class Region(models.ProtobufRecord):
   PROTOBUF_TYPE = realm_pb2.Region
@@ -52,9 +64,11 @@ class Region(models.ProtobufRecord):
                             passabilities=self.passabilities,
                             entity_ids=[entity.id for entity in self.entities])
 
-  def to_public_protobuf(self):
+  def to_public_protobuf(self, realm):
     proto = self.to_protobuf()
     proto.ClearField("entity_ids")
+    proto.realm_id = realm.id
+    proto.location.MergeFrom(self.location.to_protobuf())
     return proto
 
   def from_protobuf(self, proto):

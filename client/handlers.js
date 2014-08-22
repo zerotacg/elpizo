@@ -16,7 +16,7 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.REGION, (origin, message) => {
-    if (message.region.location.realmId !== game.realm.id) {
+    if (message.region.realmId !== game.realm.id) {
       console.warn("Got invalid region realm ID (" + message.region.realmId +
                    ") for current realm (" + game.realm.id + "), discarding.");
       return;
@@ -27,9 +27,9 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.ENTITY, (origin, message) => {
-    if (message.entity.location.realmId !== game.realm.id) {
+    if (message.entity.realmId !== game.realm.id) {
       console.warn("Got invalid entity realm ID (" +
-                   message.entity.location.realmId + ") for current realm (" +
+                   message.entity.realmId + ") for current realm (" +
                    game.realm.id + "), discarding.");
       return;
     }
@@ -38,7 +38,7 @@ export function install(game) {
       return;
     }
 
-    game.realm.addEntity(models.makeEntity(message.entity));
+    game.realm.addEntity(origin, models.makeEntity(message.entity));
   });
 
   protocol.on(packets.Packet.Type.AVATAR, (origin, message) => {
@@ -74,12 +74,12 @@ export function install(game) {
 
     if (entity.realm.id !== game.realm.id) {
       console.warn("Got invalid entity realm ID (" +
-                   entity.location.realmId + ") for current realm (" +
+                   entity.realmId + ") for current realm (" +
                    game.realm.id + "), discarding.");
       return;
     }
 
-    game.realm.removeEntity(entity);
+    game.realm.removeEntity(origin);
   });
 
   protocol.on(packets.Packet.Type.INVENTORY, (origin, message) => {
@@ -89,7 +89,7 @@ export function install(game) {
   protocol.on(packets.Packet.Type.REGION_CHANGE, (origin, message) => {
     if (message.location.realmId !== game.realm.id) {
       console.warn("Got invalid region realm ID (" +
-                   message.entity.location.realmId + ") for current realm (" +
+                   message.entity.realmId + ") for current realm (" +
                    game.realm.id + "), discarding.");
       return;
     }

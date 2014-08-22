@@ -53,7 +53,7 @@ Object.keys(packets).forEach((name) => {
   PACKETS[packetType] = cls;
 });
 
-export class Protocol extends EventEmitter {
+export class Protocol extends events.EventEmitter {
   constructor(transport) {
     super();
 

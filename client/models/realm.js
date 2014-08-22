@@ -71,13 +71,14 @@ export class Realm {
     return true;
   }
 
-  addEntity(entity) {
+  addEntity(id, entity) {
     entity.realm = this;
-    this.entities[entity.id] = entity;
+    this.entities[id] = entity;
   }
 
-  removeEntity(entity) {
-    delete this.entities[entity.id];
+  removeEntity(id) {
+    var entity = this.entities[id];
+    delete this.entities[id];
     delete entity.realm;
   }
 
@@ -100,6 +101,7 @@ export class Region {
   constructor(message) {
     this.location = new geometry.Vector2(message.location.x,
                                          message.location.y);
+    this.realmId = message.realmId;
     this.layers = message.layers.map((layer) =>
         new Layer(layer));
     this.passabilities = new grid.Grid(Region.SIZE, Region.SIZE,
@@ -128,7 +130,7 @@ Region.ceil = (x) => Math.ceil(x / Region.SIZE) * Region.SIZE;
 
 class Layer {
   constructor(message) {
-    this.terrain = exports.terrain[message.terrain];
+    this.terrain = message.terrain;
     this.tiles = new grid.Grid(Region.SIZE, Region.SIZE, message.tiles);
   }
 }

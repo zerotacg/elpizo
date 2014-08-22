@@ -3,9 +3,10 @@ module events from "events";
 module sprites from "client/assets/sprites";
 module entities from "client/models/entities";
 module realm from "client/models/realm";
+module colors from "client/util/colors";
+module functions from "client/util/functions";
 module geometry from "client/util/geometry";
 module objects from "client/util/objects";
-module functions from "client/util/functions";
 
 export class Renderer extends events.EventEmitter {
   constructor(resources, parent) {
@@ -138,17 +139,17 @@ export class Renderer extends events.EventEmitter {
     this.renderEntities(realm);
   }
 
-  renderTerrain(realm) {
+  renderTerrain(r) {
     var viewport = this.getViewportBounds();
 
-    if (realm !== this.currentRealm) {
+    if (r !== this.currentRealm) {
       this.regionTerrainCache = {};
-      this.currentRealm = realm;
+      this.currentRealm = r;
     } else {
       // Evict parts of the terrain cache to keep it synchronized with realm
       // regions.
       Object.keys(this.regionTerrainCache).forEach((k) => {
-        if (!realm.regions[k]) {
+        if (!r.regions[k]) {
           delete this.regionTerrainCache[k];
         }
       });
@@ -160,18 +161,18 @@ export class Renderer extends events.EventEmitter {
     var sOffset = this.toScreenCoords(this.topLeft.negate());
 
     // Only render the regions bounded by the viewport.
-    for (var y = viewport.top;
-         y < viewport.getBottom();
+    for (var y = realm.Region.floor(viewport.top);
+         y < realm.Region.ceil(viewport.getBottom());
          y += realm.Region.SIZE) {
-      for (var x = viewport.left;
-           x < viewport.getRight();
+      for (var x = realm.Region.floor(viewport.left);
+           x < realm.Region.ceil(viewport.getRight());
            x += realm.Region.SIZE) {
         var sPosition = this.toScreenCoords(new geometry.Vector2(x, y));
         var sLeft = Math.round(sOffset.x + sPosition.x);
         var sTop = Math.round(sOffset.y + sPosition.y);
 
         var key = [x, y].join(",");
-        var region = realm.getRegionAt(arCoords);
+        var region = r.getRegionAt(new geometry.Vector2(x, y));
 
         if (region === null) {
           continue;
@@ -252,7 +253,7 @@ export class Renderer extends events.EventEmitter {
     for (var ry = 0; ry < realm.Region.SIZE; ++ry) {
       for (var rx = 0; rx < realm.Region.SIZE; ++rx) {
         region.layers.forEach((layer) => {
-          var spriteSet = sprites["tile." + layer.terrain.name];
+          var spriteSet = sprites["tile." + layer.terrain];
 
           var tileNum = layer.tiles.getCell(rx, ry);
           if (tileNum < 0) {
@@ -425,7 +426,7 @@ class RendererVisitor extends entities.EntityVisitor {
     this.ctx.textBaseline = "middle";
 
     this.ctx.strokeStyle = "white";
-    this.ctx.fillStyle = makeColorForString(entity.name);
+    this.ctx.fillStyle = colors.makeColorForString(entity.name);
 
     this.ctx.lineWidth = 3;
 

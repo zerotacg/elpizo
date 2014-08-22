@@ -6,12 +6,15 @@ message Layer {
 }
 
 message Region {
-  repeated Layer layers = 1;
-  repeated uint32 passabilities = 2;
-  repeated string entity_ids = 3;
+  optional string realm_id = 1;
+  optional Vector2 location = 2;
+  repeated Layer layers = 3;
+  repeated uint32 passabilities = 4;
+  repeated string entity_ids = 5;
 }
 
 message Realm {
-  optional string name = 1;
-  optional Vector2 size = 2;
+  optional string id = 1;
+  optional string name = 2;
+  optional Vector2 size = 3;
 }

@@ -12,41 +12,36 @@ from elpizo.util import green
 
 
 def initdb(server):
-  loop = asyncio.get_event_loop()
+  windvale = realm.Realm(name="Windvale", size=geometry.Vector2(128, 128))
+  server.store.realms.save(windvale)
 
-  try:
-    windvale = realm.Realm(name="Windvale", size=geometry.Vector2(128, 128))
-    server.store.realms.save(windvale)
+  for y in range(0, windvale.size.y, realm.Region.SIZE):
+    for x in range(0, windvale.size.x, realm.Region.SIZE):
+      region = realm.Region(
+          realm_id=windvale.id, location=geometry.Vector2(x, y),
+          passabilities=[0b1111] * (realm.Region.SIZE ** 2),
+          layers=[realm.Layer(terrain="grassland",
+                              tiles=[0] * (realm.Region.SIZE ** 2))],
+          entities=set())
+      windvale.regions.save(region)
 
-    for y in range(0, windvale.size.y, realm.Region.SIZE):
-      for x in range(0, windvale.size.x, realm.Region.SIZE):
-        region = realm.Region(
-            realm_id=windvale.id, location=geometry.Vector2(x, y),
-            passabilities=[0b1111] * (realm.Region.SIZE ** 2),
-            layers=[realm.Layer(terrain="grassland",
-                                tiles=[47] * (realm.Region.SIZE ** 2))],
-            entities=set())
-        windvale.regions.save(region)
+  logging.info("Created Windvale.")
 
-    logging.info("Created Windvale.")
+  valjean = entities.Player(name="Valjean", gender="male", body="light",
+                            hair="brown_messy_1", facial="brown_beard",
+                            direction=1, health=10, realm_id=windvale.id,
+                            location=geometry.Vector2(15, 0),
+                            inventory=[], legs_item=equipment.TealPants())
+  server.store.entities.save(valjean)
 
-    valjean = entities.Player(name="Valjean", gender="male", body="light",
-                              hair="brown_messy_1", facial="brown_beard",
-                              direction=1, health=10, realm_id=windvale.id,
-                              location=geometry.Vector2(15, 0),
-                              inventory=[], legs_item=equipment.TealPants())
-    server.store.entities.save(valjean)
+  for region in valjean.regions:
+    region.entities.add(valjean)
+    region.save()
 
-    for region in valjean.regions:
-      region.entities.add(valjean)
-      region.save()
+  with valjean.move_transaction():
+    valjean.location.x = 42
 
-    with valjean.move_transaction():
-      valjean.location.x = 42
-
-    logging.info("Created players.")
-  finally:
-    loop.stop()
+  logging.info("Created players.")
 
 
 def main():
@@ -54,17 +49,7 @@ def main():
 
   with open("elpizo.conf") as config_file:
     config = yaml.load(config_file)
-
-  s = server.Server(config)
-
-  loop = asyncio.get_event_loop()
-  loop.run_until_complete(s.start())
-  loop.call_soon_threadsafe(green.coroutine(initdb), s)
-
-  try:
-    loop.run_forever()
-  finally:
-    loop.run_until_complete(s.on_close())
+  server.Server(config).once(initdb)
 
 
 if __name__ == "__main__":

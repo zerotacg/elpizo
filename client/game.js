@@ -1,13 +1,16 @@
 module events from "events";
 module React from "react";
 module promise from "es6-promise";
+module querystring from "querystring";
 
 module renderer from "client/graphics/renderer";
 module handlers from "client/handlers";
 module packets from "client/protos/packets";
 module net from "client/util/net";
 module input from "client/util/input";
+module resources from "client/util/resources";
 module geometry from "client/models/geometry";
+module realm from "client/models/realm";
 module ui from "client/ui/main.react";
 
 function waitFor(emitter, event) {
@@ -22,6 +25,13 @@ export class Game extends events.EventEmitter {
 
     this.realm = null;
     this.me = null;
+
+    var qs = querystring.parse(window.location.search.substring(1));
+    var encodedToken = atob(qs.token);
+    this.token = new Uint8Array(encodedToken.length);
+    [].forEach.call(encodedToken, (c, i) => {
+      this.token[i] = c.charCodeAt(0);
+    });
 
     this.protocol = new net.Protocol(new net.Transport(
         "ws://" + window.location.host + "/socket"));
@@ -49,12 +59,12 @@ export class Game extends events.EventEmitter {
     this.protocol.transport.on("open", this.onTransportOpen.bind(this));
     this.protocol.transport.on("close", this.onTransportClose.bind(this));
 
-    this.setDebug(window.location.search === "?debug");
+    this.setDebug(qs.debug === "on");
     this.running = false;
   }
 
   getViewportPacket() {
-    var bounds = this.renderer.getRegionCacheBounds();
+    var bounds = this.renderer.getCacheBounds();
     return new packets.ViewportPacket({
         bounds: {
             left: bounds.left,
@@ -68,7 +78,22 @@ export class Game extends events.EventEmitter {
   setDebug(v) {
     this.debug = v;
     this.renderer.setDebug(v);
-    window.history.replaceState({}, null, this.debug ? "/?debug" : "/");
+
+    var qs = querystring.parse(window.location.search.substring(1));
+
+    if (!this.debug) {
+      delete qs.debug;
+    } else {
+      qs.debug = "on";
+    }
+
+    var path = "/";
+    var stringified = querystring.stringify(qs);
+    if (stringified.length > 0) {
+      path += "?" + stringified;
+    }
+
+    window.history.replaceState({}, null, path);
 
   }
 
@@ -83,11 +108,11 @@ export class Game extends events.EventEmitter {
       return;
     }
 
-    var currentTopLeft = bounds.getTopLeft().map(Region.floor);
-    var currentBottomRight = bounds.getBottomRight().map(Region.ceil);
+    var currentTopLeft = bounds.getTopLeft().map(realm.Region.floor);
+    var currentBottomRight = bounds.getBottomRight().map(realm.Region.ceil);
 
-    var lastTopLeft = lastBounds.getTopLeft().map(Region.floor);
-    var lastBottomRight = lastBounds.getBottomRight().map(Region.ceil);
+    var lastTopLeft = lastBounds.getTopLeft().map(realm.Region.floor);
+    var lastBottomRight = lastBounds.getBottomRight().map(realm.Region.ceil);
 
     if (currentTopLeft.x !== lastTopLeft.x ||
         currentTopLeft.y !== lastTopLeft.y ||
@@ -111,7 +136,7 @@ export class Game extends events.EventEmitter {
 
     Object.keys(manifest).forEach(function (fileName) {
       var type = manifest[fileName];
-      bundle[fileName] = Resources.TYPES[type]("static/assets/" + fileName);
+      bundle[fileName] = resources.Resources.TYPES[type]("assets/" + fileName);
     });
 
     this.resources.loadBundle(bundle).then(() => {
@@ -131,7 +156,7 @@ export class Game extends events.EventEmitter {
   }
 
   update(dt) {
-    if (this.inputState.unstick(Key.RETURN)) {
+    if (this.inputState.unstick(input.Key.RETURN)) {
       window.setTimeout(() => this.uiRoot.querySelector(".chat input").focus(),
                         0);
     }
@@ -192,6 +217,7 @@ export class Game extends events.EventEmitter {
   }
 
   go() {
+    this.protocol.send(new packets.HelloPacket({token: this.token || ""}));
     this.running = true;
     this.renderer.refit();
     this.startUpdating();
