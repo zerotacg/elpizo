@@ -285,10 +285,10 @@ export class Renderer extends events.EventEmitter {
                          Renderer.TILE_SIZE, Renderer.TILE_SIZE);
           ctx.fillText(rx + "," + ry, x + halfTileSize, y + halfTileSize);
 
-          var passability = region.passabilities.getCell(rx, ry);
           for (var i = 0; i < 4; ++i) {
             var dv = entities.getDirectionVector(i);
-            var isPassable = region.isPassable(new geometry.Vector2(rx, ry), i);
+            var isPassable = region.isPassable(
+                region.location.offset(new geometry.Vector2(rx, ry)), i);
 
             dv.x = -dv.x;
             dv.y = -dv.y;
@@ -299,8 +299,6 @@ export class Renderer extends events.EventEmitter {
                            8 + Math.abs(dv.y) * 12,
                            8 + Math.abs(dv.x) * 12);
             }
-
-            passability >>= 1;
           }
         }
       }
