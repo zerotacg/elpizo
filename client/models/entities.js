@@ -100,6 +100,7 @@ export class Actor extends Entity {
     message = message.actorExt;
 
     this.name = message.name;
+    this.health = message.health;
     this.gender = message.gender;
     this.body = message.body;
     this.hair = message.hair;

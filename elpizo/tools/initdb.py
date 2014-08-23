@@ -69,9 +69,8 @@ def initdb(server):
       platform_tiles[6 + 6 * realm.Region.SIZE] = 38
 
       wall_tiles = [-1] * (realm.Region.SIZE * realm.Region.SIZE)
-      wall_tiles[4 + 7 * realm.Region.SIZE] = 40
-      wall_tiles[5 + 7 * realm.Region.SIZE] = 28
-      wall_tiles[6 + 7 * realm.Region.SIZE] = 38
+      wall_tiles[4 + 7 * realm.Region.SIZE] = 46
+      wall_tiles[6 + 7 * realm.Region.SIZE] = 46
 
       stairs_tiles = [-1] * (realm.Region.SIZE * realm.Region.SIZE)
       stairs_tiles[5 + 7 * realm.Region.SIZE] = 47
