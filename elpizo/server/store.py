@@ -108,6 +108,7 @@ server is not running, please run:
   def unlock(self):
     if self.is_locked:
       green.await_coro(self.redis.delete([self._G_LOCK.encode("utf-8")]))
+      self.is_locked = False
 
   def _make_kvs(self, hash_key):
     return kvs.RedisHashAdapter(hash_key, self.redis)

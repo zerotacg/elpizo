@@ -14,6 +14,16 @@ from elpizo.util import green
 
 def initdb(server):
   server.store.lock()
+  try:
+    input("This will DELETE ALL DATA from the database! Press ENTER to "
+          "continue, or Ctrl+C to abort. ")
+  except KeyboardInterrupt:
+    server.store.unlock()
+    return
+
+  green.await_coro(server.store.redis.flushdb())
+
+  server.store.lock()
 
   windvale = realm.Realm(name="Windvale", size=geometry.Vector2(128, 128))
   server.store.realms.create(windvale)
