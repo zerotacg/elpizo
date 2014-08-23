@@ -97,7 +97,7 @@ class GameStore(object):
     if not green.await_coro(
         self.redis.setnx(self._G_LOCK.encode("utf-8"), b"")):
       raise StoreError("""\
-Store is is_locked. This generally occurs if the server was uncleanly shut down, \
+Store is locked. This generally occurs if the server was uncleanly shut down, \
 or another copy of the server is running. If you are sure another copy of the \
 server is not running, please run:
 
