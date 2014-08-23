@@ -39,7 +39,13 @@ class Bus(object):
     self.subscriptions[id].remove(channel)
 
   def broadcast(self, channel, origin, message):
-    for id in self.channels[channel]:
+    for id in list(self.channels[channel]):
       if id == origin:
         continue
-      self.get(id).send(origin, message)
+      try:
+        protocol = self.get(id)
+      except KeyError:
+        # A client disappeared while we were iterating.
+        logger.warn("Client disappeared during broadcast: %d", id)
+      else:
+        protocol.send(origin, message)

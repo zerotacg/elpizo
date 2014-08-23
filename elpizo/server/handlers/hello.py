@@ -44,10 +44,12 @@ def on_hello(protocol, message):
       packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))
   protocol.send(actor.id, packets_pb2.AvatarPacket())
 
-  protocol.server.bus.subscribe(
-      protocol.actor.id,
-      ("conversation", protocol.actor.name))
+  if isinstance(actor, entities.Player):
+    # Only players get chat access.
+    protocol.server.bus.subscribe(
+        protocol.actor.id,
+        ("conversation", protocol.actor.name))
 
-  protocol.server.bus.subscribe(
-      protocol.actor.id,
-      ("chatroom", "global"))
+    protocol.server.bus.subscribe(
+        protocol.actor.id,
+        ("chatroom", "global"))
