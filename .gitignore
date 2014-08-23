@@ -5,4 +5,5 @@ dump.rdb
 elpizo.conf
 elpizo.pem
 elpizo.pub
+*.pid
 VENV
