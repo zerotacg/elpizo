@@ -38,6 +38,11 @@ var COMMANDS = {
           isStatus: true
       });
     }
+  },
+
+  ping: (comp, game) => {
+    game.protocol.send(new packets.EchoPacket({
+        payload: new Date().valueOf().toString()}));
   }
 };
 
@@ -53,12 +58,14 @@ export var Chat = React.createClass({
     this.props.game.protocol.on(packets.Packet.Type.STATUS, this.onStatus);
     this.props.game.protocol.on(packets.Packet.Type.CHAT, this.onChat);
     this.props.game.protocol.on(packets.Packet.Type.INVENTORY, this.onInventory);
+    this.props.game.protocol.on(packets.Packet.Type.ECHO, this.onEcho);
   },
 
   componentWillUnmount: function () {
     this.props.game.protocol.removeListener(packets.Packet.Type.STATUS, this.onStatus);
     this.props.game.protocol.removeListener(packets.Packet.Type.CHAT, this.onChat);
     this.props.game.protocol.removeListener(packets.Packet.Type.INVENTORY, this.onInventory);
+    this.props.game.protocol.removeListener(packets.Packet.Type.ECHO, this.onEcho);
   },
 
   componentDidUpdate: function (prevProps, prevState) {
@@ -92,6 +99,17 @@ export var Chat = React.createClass({
     this.addMessage({
         origin: null,
         text: "You picked up: " + message.item.type,
+        isStatus: true
+    });
+  },
+
+  onEcho: function (origin, message) {
+    var startTime = parseFloat(message.payload);
+    var endTime = new Date().valueOf();
+
+    this.addMessage({
+        origin: null,
+        text: "Latency: " + (endTime - startTime) + "ms",
         isStatus: true
     });
   },

@@ -23,6 +23,7 @@ message Packet {
     DESPAWN_ENTITY = 13;
     INVENTORY = 14;
     REGION_CHANGE = 15;
+    ECHO = 16;
   }
 
   optional Type type = 1;
@@ -178,4 +179,14 @@ message RegionChangePacket {
   option (packet_type) = REGION_CHANGE;
 
   repeated Vector2 locations = 1;
+}
+
+message EchoPacket {
+  // Sent by the client to determine how much latency there is to the server;
+  // sent by the server in response to the client.
+  //
+  // Direction: Server <-> Client
+  option (packet_type) = ECHO;
+
+  optional string payload = 1;
 }

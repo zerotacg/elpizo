@@ -1,4 +1,5 @@
 import base64
+import socket
 import sys
 
 from elpizo import server
@@ -13,7 +14,8 @@ def do_mint(server, credentials, expiry):
   print(token)
 
   print("")
-  print("http://localhost:8081/?token=" + parse.quote(token))
+  print("http://" + socket.gethostname() + ":8081/?token=" +
+      parse.quote(token))
 
 
 def main():
