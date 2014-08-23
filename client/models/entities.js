@@ -302,4 +302,7 @@ export class EntityVisitor {
 
   visitPlayer(player) {
   }
+
+  visitMob(mob) {
+  }
 }
