@@ -2,7 +2,8 @@ import argparse
 
 
 def make_parser(*args, **kwargs):
-  parser = argparse.ArgumentParser(*args, **kwargs)
+  parser = argparse.ArgumentParser(
+      *args, formatter_class=argparse.ArgumentDefaultsHelpFormatter, **kwargs)
   parser.add_argument("--debug", action="store_const", default=False, const=True,
                       help="Whether or not to run the server in debug mode.")
   parser.add_argument("--log-level", action="store", default="INFO",
