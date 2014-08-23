@@ -16,8 +16,6 @@ class Bus(object):
 
   def remove(self, id):
     logger.debug("Removed ID from bus: %d", id)
-    protocol = self.protocols[id]
-    protocol.transport.close()
 
     for channel in list(self.subscriptions[id]):
       self.unsubscribe(id, channel)
