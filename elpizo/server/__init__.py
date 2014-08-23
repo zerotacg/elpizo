@@ -27,9 +27,17 @@ class Server(object):
     self.config = config
     self.loop = loop or asyncio.get_event_loop()
 
+  @property
+  def debug(self):
+    return self.config.debug
+
   @green.coroutine
   def start(self, serve):
     logger.info("Welcome to elpizo.server!")
+
+    if self.debug:
+      logger.warn("Server is running in DEBUG mode! Tracebacks will be visible "
+                  "in logs!")
 
     logger.info("Item types registered: %d", len(items.Item.REGISTRY))
 

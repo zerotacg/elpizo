@@ -1,8 +1,6 @@
-@import url("//fonts.googleapis.com/css?family=Roboto+Condensed:400,700");
+@import "./loading.less";
 
-* {
-  box-sizing: border-box;
-}
+@import url("//fonts.googleapis.com/css?family=Roboto+Condensed:400,700");
 
 html, body {
   width: 100%;
@@ -134,9 +132,34 @@ a {
     display: flex;
     justify-content: center;
     align-items: center;
-    white-space: pre-wrap;
 
-    background: rgba(0, 0, 0, 0.5);
+    .error {
+      width: 100%;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      background: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.8);
+
+      padding: 5px 0;
+
+      h1 {
+        margin: 0;
+        padding: 5px 0;
+        font-size: 3em;
+      }
+
+      pre {
+        font: inherit;
+        border-left: 2px solid rgba(255, 255, 255, 0.2);
+        padding-left: 8px;
+      }
+    }
+
+    background: rgba(0, 0, 0, 0.8);
 
     width: 100%;
     height: 100%;

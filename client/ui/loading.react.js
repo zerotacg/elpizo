@@ -8,14 +8,23 @@ export var Loading = React.createClass({
       return null;
     }
 
+    var body;
     if (this.props.game.protocol.lastError !== null) {
-      message = "Error: " + this.props.game.protocol.lastError;
+      body = <div className="error">
+        <div>
+          <h1>:(</h1>
+          <p>An unexpected error has occurred.</p>
+          <pre>{this.props.game.protocol.lastError}</pre>
+          <p>Your session has been closed. Please try logging in again.</p>
+        </div>
+      </div>;
     } else {
-      message = "Loading..."
+      body = <div className="spinner">
+        <div className="cube1" />
+        <div className="cube2" />
+      </div>;
     }
 
-    return <div className="loading">
-      {{message}}
-    </div>;
+    return <div className="loading">{{body}}</div>;
   }
 });

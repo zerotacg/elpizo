@@ -42,11 +42,11 @@ class Mint(object):
     envelope = token[self.rsa_key_size:]
 
     if not self.signer.verify(self.hashfunc.new(envelope), sig):
-      raise InvalidTokenError("signature mismatch")
+      raise InvalidTokenError("Token signature mismatched.")
 
     expires, = struct.unpack_from(self.TIMESTAMP_FORMAT, envelope)
 
     if ts >= expires:
-      raise InvalidTokenError("token expired")
+      raise InvalidTokenError("Token expired.")
 
     return envelope[struct.calcsize(self.TIMESTAMP_FORMAT):]

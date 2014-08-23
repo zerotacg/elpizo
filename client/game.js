@@ -27,7 +27,7 @@ export class Game extends events.EventEmitter {
     this.me = null;
 
     var qs = querystring.parse(window.location.search.substring(1));
-    var encodedToken = atob(qs.token);
+    var encodedToken = atob(qs.token || "");
     this.token = new Uint8Array(encodedToken.length);
     [].forEach.call(encodedToken, (c, i) => {
       this.token[i] = c.charCodeAt(0);

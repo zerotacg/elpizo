@@ -1,3 +1,6 @@
+import sys
+import traceback
+
 from elpizo.protos import packets_pb2
 from elpizo.util import green
 
@@ -59,13 +62,17 @@ class Protocol(object):
 
         if packet is None:
           break
-
         origin, message = self.deserialize_packet(packet)
         self.on_message(origin, message)
     except ProtocolError as e:
       self.send(None, packets_pb2.ErrorPacket(text=str(e)))
     except Exception as e:
-      self.send(None, packets_pb2.ErrorPacket(text="internal server error"))
+      text = "INTERNAL SERVER ERROR"
+
+      if self.server.debug:
+        text += "\n\n" + "".join(traceback.format_exception(*sys.exc_info()))
+
+      self.send(None, packets_pb2.ErrorPacket(text=text))
       raise
     finally:
       self.transport.close()

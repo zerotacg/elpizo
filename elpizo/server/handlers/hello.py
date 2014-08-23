@@ -7,12 +7,12 @@ def on_hello(protocol, message):
   try:
     token = protocol.server.mint.unmint(message.token)
   except mint.InvalidTokenError as e:
-    raise net.ProtocolError(str(e))
+    raise net.ProtocolError("Invalid login token: {}".format(e))
 
   realm, id = token.decode("utf-8").split(".")
 
   if realm not in {"player"}:
-    raise net.ProtocolError("unknown authentication realm")
+    raise net.ProtocolError("Unknown authentication realm.")
 
   player = protocol.server.store.entities.load(id)
 
@@ -20,7 +20,8 @@ def on_hello(protocol, message):
     # We remove the protocol from the player associated with the bus, since
     # we're switching the player to a different protocol.
     last_protocol = protocol.server.bus.get(player.id)
-    last_protocol.send(None, packets_pb2.ErrorPacket(text="session collision"))
+    last_protocol.send(None, packets_pb2.ErrorPacket(
+        text="Session collision."))
     last_protocol.player = None
     protocol.server.bus.remove(player.id)
 
