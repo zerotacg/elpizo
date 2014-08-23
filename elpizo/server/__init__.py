@@ -79,7 +79,7 @@ class Server(object):
       self.store.save_all()
       self.store.unlock()
     else:
-      logger.info("No store lock, cowardly refusing to flush stores.")
+      logger.warn("No store lock, cowardly refusing to flush stores.")
 
     logger.info("Goodbye.")
 

@@ -9,12 +9,13 @@ export var Loading = React.createClass({
     }
 
     var body;
-    if (this.props.game.protocol.lastError !== null) {
+
+    if (this.props.game.lastError !== null) {
       body = <div className="error">
         <div>
           <h1>:(</h1>
           <p>An unexpected error has occurred.</p>
-          <pre>{this.props.game.protocol.lastError}</pre>
+          <pre>{this.props.game.lastError}</pre>
           <p>Your session has been closed. Please try logging in again.</p>
         </div>
       </div>;
@@ -25,6 +26,6 @@ export var Loading = React.createClass({
       </div>;
     }
 
-    return <div className="loading">{{body}}</div>;
+    return <div className="loading">{body}</div>;
   }
 });

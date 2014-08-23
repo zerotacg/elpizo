@@ -1,6 +1,5 @@
 export class Item {
   constructor(message) {
-    this.id = message.id;
     this.type = message.type;
   }
 }

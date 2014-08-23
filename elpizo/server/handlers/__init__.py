@@ -4,6 +4,7 @@ from elpizo.protos import packets_pb2
 from elpizo.models import geometry
 from elpizo.server.handlers import chat
 from elpizo.server.handlers import hello
+from elpizo.server.handlers import item
 from elpizo.server.handlers import move
 from elpizo.server.handlers import viewport
 from elpizo.util import net
@@ -44,6 +45,7 @@ class Dispatcher(net.Protocol):
 
 Dispatcher.register(packets_pb2.Packet.CHAT, chat.on_chat)
 Dispatcher.register(packets_pb2.Packet.HELLO, hello.on_hello)
+Dispatcher.register(packets_pb2.Packet.PICK_UP, item.on_pick_up)
 Dispatcher.register(packets_pb2.Packet.MOVE, move.on_move)
 Dispatcher.register(packets_pb2.Packet.STOP_MOVE, move.on_stop_move)
 Dispatcher.register(packets_pb2.Packet.VIEWPORT, viewport.on_viewport)

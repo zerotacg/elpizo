@@ -7,7 +7,6 @@ export class Realm {
     this.id = message.id;
     this.name = message.name;
     this.size = geometry.Vector2.fromProtobuf(message.size);
-    this.terrainLayers = message.terrainLayers;
 
     this.regions = {};
     this.entities = {};

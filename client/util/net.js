@@ -54,25 +54,24 @@ Object.keys(packets).forEach((name) => {
 });
 
 export class Protocol extends events.EventEmitter {
-  constructor(transport) {
+  constructor(game, transport) {
     super();
 
     this.transport = transport;
 
-    this.lastError = null;
     this.currentRetryOperation = null;
 
     this.transport.on("message", (packet) => {
       var message = PACKETS[packet.type].decode(packet.payload);
       if (packet.type === packets.Packet.Type.ERROR) {
-        this.lastError = message.text;
+        game.lastError = message.text;
         this.transport.close();
       }
       this.emit(packet.type, packet.origin, message);
     });
 
     this.transport.on("close", (e) => {
-      if (this.lastError !== null) {
+      if (game.lastError !== null) {
         return;
       }
 

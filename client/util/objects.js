@@ -1,3 +1,5 @@
+module util from "util";
+
 export var hasOwnProp = Object.prototype.hasOwnProperty;
 
 export function extend(dest, src) {
@@ -10,4 +12,8 @@ export function extend(dest, src) {
   }
 
   return dest;
+}
+
+export function repr(obj, options) {
+  return util.inspect(obj, options);
 }

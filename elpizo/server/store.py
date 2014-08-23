@@ -74,6 +74,11 @@ class EntityStore(record.Store):
     entity.deserialize(serialized)
     return entity
 
+  def destroy(self, entity):
+    super().destroy(entity)
+    for region in entity.regions:
+      region.entities.remove(entity)
+
 
 class GameStore(object):
   _G_LOCK = "g_lock"

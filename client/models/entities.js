@@ -110,7 +110,8 @@ export class Actor extends Entity {
     this.legsItem = message.legsItem && itemRegistry.makeItem(message.legsItem);
     this.feetItem = message.feetItem && itemRegistry.makeItem(message.feetItem);
 
-    this.inventory = message.inventory.map((message) => itemRegistry.makeItem(message));
+    this.inventory = message.inventory.map(
+      (message) => itemRegistry.makeItem(message));
 
     this.moving = false;
     this.remainder = 0;

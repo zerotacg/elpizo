@@ -146,6 +146,14 @@ class Store(object):
     for record in list(self.records.values()):
       self.expire(record)
 
+  def destroy(self, record):
+    """
+    Delete a record from the underlying key-value store, and expire it from the
+    store.
+    """
+    self.expire(record)
+    record.delete()
+
   def loaded_records(self):
     """
     Get an iterator to records loaded into the store.

@@ -18,11 +18,26 @@ var COMMANDS = {
   },
 
   deval: (comp, game, cmd) => {
-    comp.addMessage({
-        origin: null,
-        text: "Debug eval result: " + eval(cmd),
-        isStatus: true
-    });
+    var r;
+    var evalOk = false;
+    try {
+      r = eval(cmd);
+      evalOk = true;
+    } catch (e) {
+      comp.addMessage({
+          origin: null,
+          text: "<<! " + e.toString(),
+          isStatus: true
+      });
+    }
+
+    if (evalOk) {
+      comp.addMessage({
+          origin: null,
+          text: "<<< " + objects.repr(r),
+          isStatus: true
+      });
+    }
   }
 };
 

@@ -26,6 +26,9 @@ export class Game extends events.EventEmitter {
     this.realm = null;
     this.me = null;
 
+    window.onerror = this.onError.bind(this);
+    this.lastError = null;
+
     var qs = querystring.parse(window.location.search.substring(1));
     var encodedToken = atob(qs.token || "");
     this.token = new Uint8Array(encodedToken.length);
@@ -33,7 +36,7 @@ export class Game extends events.EventEmitter {
       this.token[i] = c.charCodeAt(0);
     });
 
-    this.protocol = new net.Protocol(new net.Transport(
+    this.protocol = new net.Protocol(this, new net.Transport(
         "ws://" + window.location.host + "/socket"));
 
     this.resources = new resources.Resources();
@@ -61,6 +64,11 @@ export class Game extends events.EventEmitter {
 
     this.setDebug(qs.debug === "on");
     this.running = false;
+  }
+
+  onError(msg, file, lineno, colno, e) {
+    this.protocol.transport.close();
+    this.lastError = e.stack;
   }
 
   getViewportPacket() {
