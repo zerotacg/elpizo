@@ -23,6 +23,7 @@ def on_hello(protocol, message):
     last_protocol.send(None, packets_pb2.ErrorPacket(
         text="Session collision."))
     last_protocol.player = None
+    last_protocol.transport.close()
     protocol.server.bus.remove(player.id)
 
   protocol.player = player

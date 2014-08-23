@@ -41,6 +41,7 @@ class Dispatcher(net.Protocol):
   def on_close(self):
     if self.player is not None:
       self.player.save()
+      logger.info("Flushing player %s to database.", self.player.id)
       self.server.bus.remove(self.player.id)
 
 
