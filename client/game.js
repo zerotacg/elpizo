@@ -23,18 +23,13 @@ export class Game extends events.EventEmitter {
   constructor(parent) {
     super();
 
-    this.realm = null;
-    this.me = null;
-
     window.onerror = this.onError.bind(this);
     this.lastError = null;
 
-    var qs = querystring.parse(window.location.search.substring(1));
-    var encodedToken = atob(qs.token || "");
-    this.token = new Uint8Array(encodedToken.length);
-    [].forEach.call(encodedToken, (c, i) => {
-      this.token[i] = c.charCodeAt(0);
-    });
+    this.realm = null;
+    this.me = null;
+
+    this.running = false;
 
     this.protocol = new net.Protocol(this, new net.Transport(
         "ws://" + window.location.host + "/socket"));
@@ -62,13 +57,26 @@ export class Game extends events.EventEmitter {
     this.protocol.transport.on("open", this.onTransportOpen.bind(this));
     this.protocol.transport.on("close", this.onTransportClose.bind(this));
 
+    var qs = querystring.parse(window.location.search.substring(1));
+    var encodedToken = atob(qs.token || "");
+    this.token = new Uint8Array(encodedToken.length);
+    [].forEach.call(encodedToken, (c, i) => {
+      this.token[i] = c.charCodeAt(0);
+    });
+
     this.setDebug(qs.debug === "on");
-    this.running = false;
   }
 
   onError(msg, file, lineno, colno, e) {
     this.protocol.transport.close();
     this.lastError = "Internal client error.\n\n" + e.stack.toString();
+
+    try {
+      this.renderReact();
+    } catch (e) {
+      // Something has gone horribly wrong, bail out!
+      console.error(e.stack);
+    }
   }
 
   getViewportPacket() {
