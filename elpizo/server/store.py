@@ -50,7 +50,7 @@ class RegionStore(record.Store):
 class EntityStore(record.Store):
   def __init__(self, parent, kvs):
     self.parent = parent
-    super().__init__(self.find, kvs)
+    super().__init__(entities.Entity.find, kvs)
 
   def add(self, entity):
     super().add(entity)
@@ -61,18 +61,6 @@ class EntityStore(record.Store):
     for region in entity.regions:
       region.entities.add(entity)
       region.save()
-
-  def find(self, id, kvs):
-    # Get the base entity and deserialize it to determine the type.
-    base_entity = entities.Entity(id)
-    serialized = kvs.get(id)
-    base_entity.deserialize(serialized)
-
-    # Now, deserialize the entity proper as the correct type.
-    entity = entities.Entity.REGISTRY[base_entity.type](id)
-    entity.bind(kvs)
-    entity.deserialize(serialized)
-    return entity
 
   def destroy(self, entity):
     super().destroy(entity)

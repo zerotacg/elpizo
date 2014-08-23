@@ -135,6 +135,30 @@ def initdb(server):
       inventory=[],
       legs_item=equipment.TealPants()))
 
+  server.store.entities.create(entities.Player(
+      name="Courfeyrac",
+      gender="male",
+      body="light",
+      hair="brown_messy_1",
+      direction=1,
+      health=10,
+      realm_id=windvale.id,
+      location=geometry.Vector2(16, 16),
+      inventory=[],
+      legs_item=equipment.TealPants()))
+
+  server.store.entities.create(entities.Player(
+      name="Enjolras",
+      gender="male",
+      body="light",
+      hair="brown_messy_1",
+      direction=1,
+      health=10,
+      realm_id=windvale.id,
+      location=geometry.Vector2(12, 16),
+      inventory=[],
+      legs_item=equipment.TealPants()))
+
   server.store.entities.create(entities.Drop(
       item=restorative.Carrot(),
       location=geometry.Vector2(0, 1),

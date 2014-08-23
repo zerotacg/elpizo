@@ -9,7 +9,7 @@ def on_chat(protocol, message):
     raise net.ProtocolError("unknown chat namespace: {}".format(ns))
 
   protocol.server.bus.broadcast(
-      (ns, name), protocol.player.id,
+      (ns, name), protocol.actor.id,
       packets_pb2.ChatPacket(target=message.target,
-                             actor_name=protocol.player.name,
+                             actor_name=protocol.actor.name,
                              text=message.text))

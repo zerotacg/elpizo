@@ -21,9 +21,10 @@ class Realm(models.ProtobufRecord):
   def to_protobuf(self):
     return realm_pb2.Realm(name=self.name, size=self.size.to_protobuf())
 
-  def from_protobuf(self, proto):
-    self.name = proto.name
-    self.size = geometry.Vector2.from_protobuf(proto.size)
+  @classmethod
+  def from_protobuf(cls, proto):
+    return cls(name=proto.name,
+               size=geometry.Vector2.from_protobuf(proto.size))
 
   def to_public_protobuf(self):
     proto = self.to_protobuf()
@@ -97,10 +98,11 @@ class Region(models.ProtobufRecord):
     proto.location.MergeFrom(self.location.to_protobuf())
     return proto
 
-  def from_protobuf(self, proto):
-    self.layers = [Layer.from_protobuf(layer) for layer in proto.layers]
-    self.passabilities = list(proto.passabilities)
-    self.entity_ids = list(proto.entity_ids)
+  @classmethod
+  def from_protobuf(cls, proto):
+    return cls(layers=[Layer.from_protobuf(layer) for layer in proto.layers],
+               passabilities=list(proto.passabilities),
+               entity_ids=list(proto.entity_ids))
 
   def is_passable(self, location, direction):
     location = location.offset(self.location.negate())
@@ -119,4 +121,4 @@ class Layer(object):
 
   @classmethod
   def from_protobuf(cls, proto):
-    return Layer(terrain=proto.terrain, tiles=list(proto.tiles))
+    return cls(terrain=proto.terrain, tiles=list(proto.tiles))

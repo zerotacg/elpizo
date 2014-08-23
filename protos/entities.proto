@@ -70,3 +70,9 @@ message Player {
 
   optional bool online = 1;
 }
+
+message Mob {
+  extend Entity {
+    optional Mob mob_ext = 107;
+  }
+}

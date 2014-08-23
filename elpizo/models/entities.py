@@ -37,12 +37,23 @@ class Entity(models.ProtobufRecord):
     proto.id = self.id
     return proto
 
-  def from_protobuf(self, proto):
-    self.type = proto.type
-    self.realm_id = proto.realm_id
-    self.location = geometry.Vector2.from_protobuf(proto.location)
-    self.bbox = geometry.Rectangle.from_protobuf(proto.bbox)
-    self.direction = proto.direction
+  @classmethod
+  def from_protobuf_polymorphic(cls, proto):
+    return cls.REGISTRY[proto.type].from_protobuf(proto)
+
+  @classmethod
+  def from_protobuf(cls, proto):
+    return cls(type=proto.type, realm_id=proto.realm_id,
+               location=geometry.Vector2.from_protobuf(proto.location),
+               bbox=geometry.Rectangle.from_protobuf(proto.bbox),
+               direction=proto.direction)
+
+  @classmethod
+  def deserialize(cls, id, serialized):
+    record = cls.from_protobuf_polymorphic(
+        cls.PROTOBUF_TYPE.FromString(serialized))
+    record.id = id
+    return record
 
   @property
   def bounds(self):
@@ -105,30 +116,24 @@ class Actor(Entity):
     proto.Extensions[entities_pb2.Actor.actor_ext].ClearField("inventory")
     return proto
 
-  def from_protobuf(self, proto):
-    super().from_protobuf(proto)
+  @classmethod
+  def from_protobuf(cls, proto):
+    record = super().from_protobuf(proto)
     proto = proto.Extensions[entities_pb2.Actor.actor_ext]
-
-    self.name = proto.name
-    self.health = proto.health
-    self.gender = proto.gender
-    self.body = proto.body
-    self.inventory = [items.Item.from_protobuf_polymorphic(item_proto)
-                      for item_proto in proto.inventory]
-    self.facial = proto.facial
-    self.hair = proto.hair
-
-    self.head_item = items.Item.from_protobuf_polymorphic(proto.head_item) \
-        if proto.HasField("head_item") else None
-
-    self.torso_item = items.Item.from_protobuf_polymorphic(proto.torso_item) \
-        if proto.HasField("torso_item") else None
-
-    self.legs_item = items.Item.from_protobuf_polymorphic(proto.legs_item) \
-        if proto.HasField("legs_item") else None
-
-    self.feet_item = items.Item.from_protobuf_polymorphic(proto.feet_item) \
-        if proto.HasField("feet_item") else None
+    record.update(name=proto.name, health=proto.health, gender=proto.gender,
+                  body=proto.body,
+                  inventory=[items.Item.from_protobuf_polymorphic(item_proto)
+                             for item_proto in proto.inventory],
+                  facial=proto.facial, hair=proto.hair,
+                  head_item=items.Item.from_protobuf_polymorphic(proto.head_item)
+                      if proto.HasField("head_item") else None,
+                  torso_item=items.Item.from_protobuf_polymorphic(proto.torso_item)
+                      if proto.HasField("torso_item") else None,
+                  legs_item=items.Item.from_protobuf_polymorphic(proto.legs_item)
+                      if proto.HasField("legs_item") else None,
+                  feet_item=items.Item.from_protobuf_polymorphic(proto.feet_item)
+                      if proto.HasField("feet_item") else None)
+    return record
 
   def get_realm(self, realm_store):
     return realm_store.find(self.realm_id)
@@ -148,11 +153,33 @@ class Player(Actor):
     proto.Extensions[entities_pb2.Player.player_ext].MergeFrom(message)
     return proto
 
-  def from_protobuf(self, proto):
-    super().from_protobuf(proto)
+  @classmethod
+  def from_protobuf(cls, proto):
+    record = super().from_protobuf(proto)
     proto = proto.Extensions[entities_pb2.Player.player_ext]
+    record.update(online=proto.online)
+    return record
 
-    self.online = proto.online
+
+@Entity.register
+class Mob(Actor):
+  TYPE = "mob"
+
+  def __init__(self, *args, **kwargs):
+    self.bbox = geometry.Rectangle(0, 0, 1, 1)
+    super().__init__(*args, **kwargs)
+
+  def to_protobuf(self):
+    proto = super().to_protobuf()
+    message = entities_pb2.Mob()
+    proto.Extensions[entities_pb2.Mob.mob_ext].MergeFrom(message)
+    return proto
+
+  @classmethod
+  def from_protobuf(self, proto):
+    record = super().from_protobuf(proto)
+    proto = proto.Extensions[entities_pb2.Mob.mob_ext]
+    return record
 
 
 @Entity.register
@@ -175,8 +202,9 @@ class Drop(Entity):
     proto.Extensions[entities_pb2.Drop.drop_ext].MergeFrom(message)
     return proto
 
+  @classmethod
   def from_protobuf(self, proto):
-    super().from_protobuf(proto)
+    record = super().from_protobuf(proto)
     proto = proto.Extensions[entities_pb2.Drop.drop_ext]
-
-    self.item = items.Item.from_protobuf_polymorphic(proto.item)
+    record.update(item=items.Item.from_protobuf_polymorphic(proto.item))
+    return record

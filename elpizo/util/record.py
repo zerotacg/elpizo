@@ -13,7 +13,12 @@ class Record(object):
     """
     self.id = id
     self._kvs = None
+    self.update(**kwargs)
 
+  def update(self, **kwargs):
+    """
+    Update fields in the record.
+    """
     for k, v in kwargs.items():
       setattr(self, k, v)
 
@@ -47,14 +52,6 @@ class Record(object):
     self._kvs.delete(self.id)
     self.id = None
 
-  def load(self):
-    """
-    Load the most recent version of the record from the key-value store.
-
-    :param kvs: The key-value store to load from.
-    """
-    self.deserialize(self._kvs.get(self.id))
-
   @classmethod
   def find(cls, id, kvs):
     """
@@ -66,9 +63,8 @@ class Record(object):
                       store.
     :returns: The record, bound to a key-value store.
     """
-    record = cls(id)
+    record = cls.deserialize(id, kvs.get(id))
     record.bind(kvs)
-    record.load()
     return record
 
   def serialize(self):
@@ -80,7 +76,8 @@ class Record(object):
     """
     raise NotImplemented
 
-  def deserialize(self, serialized):
+  @classmethod
+  def deserialize(cls, id, serialized):
     """
     Deserialize the record for retrieval from the key-value store. It should be
     overriden by subclasses.

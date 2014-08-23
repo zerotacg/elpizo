@@ -5,5 +5,8 @@ class ProtobufRecord(record.Record):
   def serialize(self):
     return self.to_protobuf().SerializeToString()
 
-  def deserialize(self, serialized):
-    self.from_protobuf(self.PROTOBUF_TYPE.FromString(serialized))
+  @classmethod
+  def deserialize(cls, id, serialized):
+    record = cls.from_protobuf(cls.PROTOBUF_TYPE.FromString(serialized))
+    record.id = id
+    return record

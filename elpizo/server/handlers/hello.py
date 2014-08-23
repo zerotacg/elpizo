@@ -1,3 +1,4 @@
+from elpizo.models import entities
 from elpizo.protos import packets_pb2
 from elpizo.util import mint
 from elpizo.util import net
@@ -11,36 +12,42 @@ def on_hello(protocol, message):
 
   realm, id = token.decode("utf-8").split(".")
 
-  if realm not in {"player"}:
+  if realm not in {"player", "mob"}:
     raise net.ProtocolError("Unknown authentication realm.")
 
-  player = protocol.server.store.entities.load(id)
+  actor = protocol.server.store.entities.load(id)
 
-  if protocol.server.bus.has(player.id):
-    # We remove the protocol from the player associated with the bus, since
-    # we're switching the player to a different protocol.
-    last_protocol = protocol.server.bus.get(player.id)
+  if not isinstance(actor, {
+      "player": entities.Player,
+      "mob": entities.Mob
+  }[realm]):
+    raise net.ProtocolError("Provided authentication realm is not acceptable.")
+
+  if protocol.server.bus.has(actor.id):
+    # We remove the protocol from the actor associated with the bus, since
+    # we're switching the actor to a different protocol.
+    last_protocol = protocol.server.bus.get(actor.id)
     last_protocol.send(None, packets_pb2.ErrorPacket(
         text="Session collision."))
-    last_protocol.player = None
+    last_protocol.actor = None
     last_protocol.transport.close()
-    protocol.server.bus.remove(player.id)
+    protocol.server.bus.remove(actor.id)
 
-  protocol.player = player
-  protocol.server.bus.add(player.id, protocol)
+  protocol.actor = actor
+  protocol.server.bus.add(actor.id, protocol)
 
   protocol.send(
       None,
-      packets_pb2.RealmPacket(realm=player.realm.to_public_protobuf()))
+      packets_pb2.RealmPacket(realm=actor.realm.to_public_protobuf()))
   protocol.send(
-      player.id,
-      packets_pb2.EntityPacket(entity=player.to_protected_protobuf()))
-  protocol.send(player.id, packets_pb2.AvatarPacket())
+      actor.id,
+      packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))
+  protocol.send(actor.id, packets_pb2.AvatarPacket())
 
   protocol.server.bus.subscribe(
-      protocol.player.id,
-      ("conversation", protocol.player.name))
+      protocol.actor.id,
+      ("conversation", protocol.actor.name))
 
   protocol.server.bus.subscribe(
-      protocol.player.id,
+      protocol.actor.id,
       ("chatroom", "global"))

@@ -21,7 +21,7 @@ class Dispatcher(net.Protocol):
     cls.HANDLERS[type] = f
 
   def on_open(self):
-    self.player = None
+    self.actor = None
 
     self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
     self.last_move_time = 0
@@ -39,10 +39,10 @@ class Dispatcher(net.Protocol):
       handler(self, message)
 
   def on_close(self):
-    if self.player is not None:
-      self.player.save()
-      logger.info("Flushing player %s to database.", self.player.id)
-      self.server.bus.remove(self.player.id)
+    if self.actor is not None:
+      self.actor.save()
+      logger.info("Flushing actor %s to database.", self.actor.id)
+      self.server.bus.remove(self.actor.id)
 
 
 Dispatcher.register(packets_pb2.Packet.CHAT, chat.on_chat)
