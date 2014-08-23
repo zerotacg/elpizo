@@ -8,7 +8,7 @@ from elpizo.protos import entities_pb2
 from elpizo.util import classproperty
 
 
-class Entity(models.ProtobufRecord):
+class Entity(models.PolymorphicProtobufRecord):
   PROTOBUF_TYPE = entities_pb2.Entity
   REGISTRY = {}
 
@@ -48,13 +48,6 @@ class Entity(models.ProtobufRecord):
                location=geometry.Vector2.from_protobuf(proto.location),
                bbox=geometry.Rectangle.from_protobuf(proto.bbox),
                direction=proto.direction)
-
-  @classmethod
-  def deserialize(cls, id, serialized):
-    record = cls.from_protobuf_polymorphic(
-        cls.PROTOBUF_TYPE.FromString(serialized))
-    record.id = id
-    return record
 
   @property
   def bounds(self):
