@@ -46,7 +46,7 @@ a {
   height: 100%;
   z-index: 1;
 
-  .chat {
+  .log {
     background: rgba(0, 0, 0, 0.5);
 
     position: absolute;
@@ -69,14 +69,16 @@ a {
 
       overflow: auto;
 
-      .status {
-        color: #aaa;
-      }
-
       li {
-        padding-left: 22px;
-        text-indent: -22px;
         word-wrap: break-word;
+
+        .status, .info {
+          color: #aaa;
+        }
+
+        pre {
+          margin: 0;
+        }
       }
     }
 

@@ -37,7 +37,7 @@ class Server(object):
 
     if self.debug:
       logger.warn("Server is running in DEBUG mode! Tracebacks will be visible "
-                  "in logs!")
+                  "to the client!")
 
     logger.info("Item types registered: %d", len(items.Item.REGISTRY))
 

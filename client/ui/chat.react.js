@@ -10,11 +10,8 @@ var COMMANDS = {
   debug: (comp, game) => {
     game.setDebug(!game.debug);
 
-    comp.addMessage({
-        origin: null,
-        text: "Debug mode " + (game.debug ? "on" : "off") + ".",
-        isStatus: true
-    });
+    comp.addMessage(comp.makeInfoMessageNode(
+        "Debug mode " + (game.debug ? "on" : "off") + "."));
   },
 
   deval: (comp, game, cmd) => {
@@ -24,19 +21,11 @@ var COMMANDS = {
       r = eval(cmd);
       evalOk = true;
     } catch (e) {
-      comp.addMessage({
-          origin: null,
-          text: "<<! " + e.toString(),
-          isStatus: true
-      });
+      comp.addMessage(<pre className="info">&lt;&lt;! {e.toString()}</pre>);
     }
 
     if (evalOk) {
-      comp.addMessage({
-          origin: null,
-          text: "<<< " + objects.repr(r),
-          isStatus: true
-      });
+      comp.addMessage(<pre className="info">&lt;&lt;&lt; {objects.repr(r)}</pre>);
     }
   },
 
@@ -80,44 +69,34 @@ export var Chat = React.createClass({
   onStatus: function (origin, message) {
     var entity = this.props.game.realm.getEntity(origin);
 
-    this.addMessage({
-        origin: entity.name,
-        text: (message.online ? "connected" : "disconnected") + ".",
-        isStatus: true
-    });
+    this.addMessage(this.makeStatusMessageNode(
+        entity.name, (message.online ? "connected" : "disconnected") + "."));
   },
 
   onChat: function (origin, message) {
-    this.addMessage({
-        origin: message.actorName,
-        text: message.text,
-        isStatus: false
-    });
+    this.addMessage(this.makeChatMessageNode(
+        message.actorName, message.text));
   },
 
   onInventory: function (origin, message) {
-    this.addMessage({
-        origin: null,
-        text: "You picked up: " + message.item.type,
-        isStatus: true
-    });
+    this.addMessage(this.makeInfoMessageNode("You picked up: " +
+        message.item.type));
   },
 
   onEcho: function (origin, message) {
     var startTime = parseFloat(message.payload);
     var endTime = new Date().valueOf();
 
-    this.addMessage({
-        origin: null,
-        text: "Latency: " + (endTime - startTime) + "ms",
-        isStatus: true
-    });
+    this.addMessage(this.makeInfoMessageNode(
+        "Latency: " + (endTime - startTime) + "ms"));
   },
 
-  addMessage: function (message) {
-    message.id = new Date().valueOf();
+  addMessage: function (node) {
     this.setState({
-        messages: this.state.messages.concat([message])
+        messages: this.state.messages.concat([{
+            id: new Date().valueOf(),
+            node: node
+        }])
     });
   },
 
@@ -141,22 +120,16 @@ export var Chat = React.createClass({
       var rest = parts.slice(1).join(" ").trim();
 
       if (!objects.hasOwnProp.call(COMMANDS, commandName)) {
-        this.addMessage({
-            origin: null,
-            text: "No such command: " + commandName,
-            isStatus: true
-        });
+        this.addMessage(this.makeInfoMessageNode("No such command: " +
+            commandName));
       } else {
         COMMANDS[commandName](this, this.props.game, rest);
       }
     } else {
       pendingMessage = pendingMessage.replace(/^\/\//, "/");
 
-      this.addMessage({
-          origin: this.props.game.me.name,
-          text: pendingMessage,
-          isStatus: false
-      });
+      this.addMessage(this.makeChatMessageNode(
+          this.props.game.me.name, pendingMessage));
 
       this.props.game.protocol.send(new packets.ChatPacket({
           target: "chatroom.global",
@@ -165,19 +138,33 @@ export var Chat = React.createClass({
     }
   },
 
+  makeOriginNode: function (origin) {
+    return <span className="origin" style={{color: colors.makeColorForString(origin)}}>
+      {origin}
+    </span>;
+  },
+
+  makeChatMessageNode: function (origin, text) {
+    return <div className="chat">
+      {this.makeOriginNode(origin)} {text}
+    </div>;
+  },
+
+  makeStatusMessageNode: function (origin, text) {
+    return <div className="status">
+      {this.makeOriginNode(origin)} {text}
+    </div>;
+  },
+
+  makeInfoMessageNode: function (text) {
+    return <div className="info">{text}</div>;
+  },
+
   render: function () {
-    var messages = this.state.messages.map((message) => {
-      var maybeOrigin = message.origin &&
-          <span className="origin" style={{color: colors.makeColorForString(message.origin)}}>
-              {message.origin}
-          </span>;
+    var messages = this.state.messages.map((message) =>
+        <li key={message.id}>{message.node}</li>);
 
-      return <li key={message.id} className={message.isStatus ? "status" : ""}>
-        {maybeOrigin} <span>{message.text}</span>
-      </li>;
-    });
-
-    return <form className="chat" onSubmit={this.handleSubmit}>
+    return <form className="log" onSubmit={this.handleSubmit}>
       <ul className="messages">
         {messages}
       </ul>

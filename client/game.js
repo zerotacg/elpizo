@@ -68,7 +68,7 @@ export class Game extends events.EventEmitter {
 
   onError(msg, file, lineno, colno, e) {
     this.protocol.transport.close();
-    this.lastError = e.stack;
+    this.lastError = "Internal client error.\n\n" + e.stack.toString();
   }
 
   getViewportPacket() {
@@ -168,7 +168,7 @@ export class Game extends events.EventEmitter {
 
   update(dt) {
     if (this.inputState.unstick(input.Key.RETURN)) {
-      window.setTimeout(() => this.uiRoot.querySelector(".chat input").focus(),
+      window.setTimeout(() => this.uiRoot.querySelector(".log input").focus(),
                         0);
     }
 
