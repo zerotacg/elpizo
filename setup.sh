@@ -1,5 +1,5 @@
 #!/bin/bash
-sudo apt-get install -y libpython3.4-dev libxml2-dev libxslt1-dev cython3 nodejs-legacy python3.4 nodejs python3-setuptools npm git build-essential libtool autoconf redis-server && \
+sudo apt-get install -y libpython3.4-dev libxml2-dev libxslt1-dev cython3 nodejs-legacy python3.4 nodejs python3-setuptools npm git build-essential libtool autoconf redis-server nginx && \
 sudo easy_install-3.4 pip && \
 sudo pip3.4 install virtualenv && \
 sudo npm install -g bower && \
