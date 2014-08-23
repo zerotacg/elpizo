@@ -15,6 +15,9 @@ export default = {
   "body.male.light":
       sprite.makeHumanoidSprite("body/male/light.png"),
 
+  "body.neuter.green_slime":
+      sprite.makeMobSprite("body/neuter/green_slime.png"),
+
   "facial.male.brown_beard":
       sprite.makeHumanoidSprite("facial/male/brown_beard.png"),
 

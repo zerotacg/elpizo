@@ -451,5 +451,8 @@ class RendererVisitor extends entities.EntityVisitor {
                           sprites["building.wall"],
                           this.ctx);
   }
+
+  visitMob(entity) {
+  }
 }
 Renderer.TILE_SIZE = 32;

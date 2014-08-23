@@ -17,10 +17,6 @@ def on_viewport(protocol, message):
     known_regions.add(region.location)
 
   for region in protocol.actor.realm.load_intersecting_regions(cache_bounds):
-    protocol.server.bus.subscribe(
-        protocol.actor.id,
-        ("region", protocol.actor.realm.id, region.location))
-
     if region.location not in known_regions:
       protocol.send(None, packets_pb2.RegionPacket(
           location=region.location.to_protobuf(),
@@ -31,3 +27,8 @@ def on_viewport(protocol, message):
           protocol.send(
               entity.id,
               packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
+
+    protocol.server.bus.subscribe(
+        protocol.actor.id,
+        ("region", protocol.actor.realm.id, region.location))
+

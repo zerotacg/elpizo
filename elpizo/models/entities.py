@@ -5,6 +5,7 @@ from elpizo.models import geometry
 from elpizo.models import realm
 from elpizo.models import items
 from elpizo.protos import entities_pb2
+from elpizo.util import classproperty
 
 
 class Entity(models.ProtobufRecord):
@@ -161,22 +162,40 @@ class Player(Actor):
     return record
 
 
-@Entity.register
 class Mob(Actor):
-  TYPE = "mob"
+  @classproperty
+  def TYPE(cls):
+    return ".".join(["mob", cls.SPECIES])
+
+  @classproperty
+  def REGISTRY(cls):
+    registry = {}
+    for k, v in super().REGISTRY.items():
+      type, *rest = k.split(".")
+      if type != "mob":
+        continue
+
+      species, = rest
+      registry[species] = v
+    return registry
 
   def __init__(self, *args, **kwargs):
     self.bbox = geometry.Rectangle(0, 0, 1, 1)
     super().__init__(*args, **kwargs)
 
+  def to_protected_protobuf(self):
+    proto = super().to_protected_protobuf()
+    proto.type = "mob"
+    return proto
+
   def to_protobuf(self):
     proto = super().to_protobuf()
-    message = entities_pb2.Mob()
+    message = entities_pb2.Mob(species=self.SPECIES)
     proto.Extensions[entities_pb2.Mob.mob_ext].MergeFrom(message)
     return proto
 
   @classmethod
-  def from_protobuf(self, proto):
+  def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
     proto = proto.Extensions[entities_pb2.Mob.mob_ext]
     return record
@@ -203,7 +222,7 @@ class Drop(Entity):
     return proto
 
   @classmethod
-  def from_protobuf(self, proto):
+  def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
     proto = proto.Extensions[entities_pb2.Drop.drop_ext]
     record.update(item=items.Item.from_protobuf_polymorphic(proto.item))

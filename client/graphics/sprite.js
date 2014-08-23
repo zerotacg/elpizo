@@ -89,6 +89,63 @@ export function makeHumanoidSprite(resourceName) {
   };
 }
 
+export function makeMobSprite(resourceName) {
+  return {
+      standing: {
+          n: new Sprite(resourceName,
+                        new geometry.Vector2(32, 32),
+                        [new geometry.Vector2(0, 32 * 0)],
+                        new geometry.Vector2(0, 0),
+                        0),
+          w: new Sprite(resourceName,
+                        new geometry.Vector2(32, 32),
+                        [new geometry.Vector2(0, 32 * 1)],
+                        new geometry.Vector2(0, 0),
+                        0),
+          s: new Sprite(resourceName,
+                        new geometry.Vector2(32, 32),
+                        [new geometry.Vector2(0, 32 * 2)],
+                        new geometry.Vector2(0, 0),
+                        0),
+          e: new Sprite(resourceName,
+                        new geometry.Vector2(32, 32),
+                        [new geometry.Vector2(0, 32 * 3)],
+                        new geometry.Vector2(0, 0),
+                        0)
+      },
+      walking: {
+          n: new Sprite(
+              resourceName,
+              new geometry.Vector2(32, 32),
+              collections.repeat(3, (i) =>
+                  new geometry.Vector2(32 * i, 32 * 0)),
+              new geometry.Vector2(0, 0),
+              2),
+          w: new Sprite(
+              resourceName,
+              new geometry.Vector2(32, 32),
+              collections.repeat(3, (i) =>
+                  new geometry.Vector2(32 * i, 32 * 1)),
+              new geometry.Vector2(0, 0),
+              2),
+          s: new Sprite(
+              resourceName,
+              new geometry.Vector2(32, 32),
+              collections.repeat(3, (i) =>
+                  new geometry.Vector2(32 * i, 32 * 2)),
+              new geometry.Vector2(0, 0),
+              2),
+          e: new Sprite(
+              resourceName,
+              new geometry.Vector2(32, 32),
+              collections.repeat(3, (i) =>
+                  new geometry.Vector2(32 * i, 32 * 3)),
+              new geometry.Vector2(0, 0),
+              2)
+      }
+  };
+}
+
 var AUTOTILE_TEXCOORDS = [
     [13, 14, 17, 18], [ 2, 14, 17, 18], [13,  3, 17, 18], [ 2,  3, 17, 18],
     [13, 14, 17,  7], [ 2, 14, 17,  7], [13,  3, 17,  7], [ 2,  3, 17,  7],

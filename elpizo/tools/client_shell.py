@@ -1,5 +1,6 @@
 import IPython
 import logging
+import os
 import sys
 
 from elpizo.protos import packets_pb2
@@ -21,9 +22,11 @@ class GameClient(threadedclient.WebSocketClient):
 
   def closed(self, code, reason):
     logging.info("Connection closed.")
+    os._exit(1)
 
   def received_message(self, m):
     origin, message = net.Protocol.deserialize_packet(m.data)
+
     print(type(message).__name__)
     print(origin)
     print(message)
@@ -34,15 +37,15 @@ class GameClient(threadedclient.WebSocketClient):
 
 def main():
   if len(sys.argv) != 2:
-    sys.stderr.write("usage: {argv0} player_id\n".format(argv0=sys.argv[0]))
+    sys.stderr.write("usage: {argv0} credentials\n".format(argv0=sys.argv[0]))
     sys.exit(1)
 
-  player_id = int(sys.argv[1])
+  credentials = sys.argv[1]
 
   with open("elpizo.pem") as f:
     m = mint.Mint(f)
 
-  token = m.mint("player.{}".format(player_id).encode("utf-8"))
+  token = m.mint(credentials.encode("utf-8"))
 
   logging.basicConfig(level=logging.INFO)
 

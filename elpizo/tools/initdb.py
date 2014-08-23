@@ -8,6 +8,7 @@ from elpizo.models import geometry
 from elpizo.models import realm
 from elpizo.models.items import equipment
 from elpizo.models.items import restorative
+from elpizo.models.mobs import slime
 from elpizo.util import green
 
 
@@ -158,6 +159,14 @@ def initdb(server):
       location=geometry.Vector2(12, 16),
       inventory=[],
       legs_item=equipment.TealPants()))
+
+  server.store.entities.create(slime.GreenSlime(
+      name="Green Slime",
+      direction=1,
+      health=10,
+      realm_id=windvale.id,
+      location=geometry.Vector2(12, 16),
+      inventory=[]))
 
   server.store.entities.create(entities.Drop(
       item=restorative.Carrot(),

@@ -14,7 +14,10 @@ export function makeEntity(message) {
 
     case "player":
       return new entities.Player(message);
+
+    case "mob":
+      return new entities.Mob(message);
   }
 
-  console.error("Could not make entity of type:", message.type);
+  throw new Error("Could not make entity of type: " + message.type);
 }

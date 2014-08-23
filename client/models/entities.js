@@ -280,6 +280,13 @@ export class Player extends Actor {
   }
 }
 
+export class Mob extends Actor {
+  visit(visitor) {
+    super.visit(visitor);
+    visitor.visitMob(this);
+  }
+}
+
 export class EntityVisitor {
   visitEntity(entity) {
   }
