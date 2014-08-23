@@ -12,7 +12,7 @@ export var Loading = React.createClass({
 
     if (this.props.game.lastError !== null) {
       body = <div className="error">
-        <div>
+        <div className="inner">
           <h1>:(</h1>
           <p>An unexpected error has occurred.</p>
           <pre>{this.props.game.lastError}</pre>
