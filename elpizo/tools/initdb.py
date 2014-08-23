@@ -1,5 +1,4 @@
 import asyncio
-import coloredlogs
 import logging
 
 from elpizo import server
@@ -141,7 +140,6 @@ def initdb(server):
 
 
 def main():
-  coloredlogs.install()
   server.Server(config.make_parser().parse_args()).once(initdb)
 
 
