@@ -48,4 +48,7 @@ class Bus(object):
         # A client disappeared while we were iterating.
         logger.warn("Client disappeared during broadcast: %d", id)
       else:
+        if not protocol.transport.is_open:
+          logger.warn("Client transport closed during broadcast: %d", id)
+          continue
         protocol.send(origin, message)
