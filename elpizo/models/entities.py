@@ -164,6 +164,11 @@ class Building(Entity):
 class Drop(Entity):
   TYPE = "drop"
 
+  def __init__(self, *args, **kwargs):
+    self.bbox = geometry.Rectangle(0, 0, 1, 1)
+    self.direction = 0
+    super().__init__(*args, **kwargs)
+
   def to_protobuf(self):
     proto = super().to_protobuf()
     message = entities_pb2.Drop(item=self.item.to_protobuf())
@@ -172,6 +177,6 @@ class Drop(Entity):
 
   def from_protobuf(self, proto):
     super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Drop.drop_ex]
+    proto = proto.Extensions[entities_pb2.Drop.drop_ext]
 
     self.item = items.Item.from_protobuf_polymorphic(proto.item)

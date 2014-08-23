@@ -67,7 +67,7 @@ class Protocol(object):
     except ProtocolError as e:
       self.send(None, packets_pb2.ErrorPacket(text=str(e)))
     except Exception as e:
-      text = "INTERNAL SERVER ERROR"
+      text = "Internal server error. Sorry, that's all we know."
 
       if self.server.debug:
         text += "\n\n" + "".join(traceback.format_exception(*sys.exc_info()))

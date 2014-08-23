@@ -8,6 +8,7 @@ from elpizo.models import entities
 from elpizo.models import geometry
 from elpizo.models import realm
 from elpizo.models.items import equipment
+from elpizo.models.items import restorative
 from elpizo.util import green
 
 
@@ -105,8 +106,7 @@ def initdb(server):
       realm_id=windvale.id,
       location=geometry.Vector2(0, 0),
       inventory=[],
-      legs_item=equipment.TealPants()
-  ))
+      legs_item=equipment.TealPants()))
 
   server.store.entities.create(entities.Player(
       name="Marius",
@@ -118,8 +118,12 @@ def initdb(server):
       realm_id=windvale.id,
       location=geometry.Vector2(0, 16),
       inventory=[],
-      legs_item=equipment.TealPants()
-  ))
+      legs_item=equipment.TealPants()))
+
+  server.store.entities.create(entities.Drop(
+      item=restorative.Carrot(),
+      location=geometry.Vector2(0, 1),
+      realm_id=windvale.id))
 
   logging.info("Created players.")
 

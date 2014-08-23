@@ -151,7 +151,7 @@ message PickUpPacket {
   // Direction: Client -> Server
   option (packet_type) = PICK_UP;
 
-  optional uint32 drop_id = 1;
+  optional string drop_id = 1;
 }
 
 message DespawnEntityPacket {
