@@ -19,6 +19,10 @@ class Transport(object):
   def close(self):
     green.await_coro(self.websocket.close())
 
+  @property
+  def is_open(self):
+    return self.websocket.open
+
 
 class Protocol(object):
   PACKETS = {}
@@ -66,7 +70,6 @@ class Protocol(object):
         self.on_message(origin, message)
     except ProtocolError as e:
       self.send(None, packets_pb2.ErrorPacket(text=str(e)))
-      self.transport.close()
     except Exception as e:
       text = "Internal server error. Sorry, that's all we know."
 
@@ -74,9 +77,10 @@ class Protocol(object):
         text += "\n\n" + "".join(traceback.format_exception(*sys.exc_info()))
 
       self.send(None, packets_pb2.ErrorPacket(text=text))
-      self.transport.close()
       raise
     finally:
+      if self.transport.is_open:
+        self.transport.close()
       self.on_close()
 
   def send(self, origin, message):
