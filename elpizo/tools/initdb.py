@@ -70,7 +70,11 @@ def initdb(server):
 
       wall_tiles = [-1] * (realm.Region.SIZE * realm.Region.SIZE)
       wall_tiles[4 + 7 * realm.Region.SIZE] = 40
+      wall_tiles[5 + 7 * realm.Region.SIZE] = 28
       wall_tiles[6 + 7 * realm.Region.SIZE] = 38
+
+      stairs_tiles = [-1] * (realm.Region.SIZE * realm.Region.SIZE)
+      stairs_tiles[5 + 7 * realm.Region.SIZE] = 47
 
       passabilities = [0b1111] * (realm.Region.SIZE * realm.Region.SIZE)
       passabilities[4 + 3 * realm.Region.SIZE] = 0b1110
@@ -98,7 +102,8 @@ def initdb(server):
           layers=[realm.Layer(terrain="grassland", tiles=tiles),
                   realm.Layer(terrain="dirt", tiles=platform_tiles),
                   realm.Layer(terrain="grassland", tiles=platform_tiles),
-                  realm.Layer(terrain="dirt_wall", tiles=wall_tiles)],
+                  realm.Layer(terrain="dirt_wall", tiles=wall_tiles),
+                  realm.Layer(terrain="stairs", tiles=stairs_tiles)],
           entities=set())
       windvale.regions.create(region)
 

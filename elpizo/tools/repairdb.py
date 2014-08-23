@@ -12,7 +12,7 @@ def repair(server):
         "to abort. ")
 
   green.await_coro(server.store.redis.delete([
-      store.GameStore._G_LOCK.encode("utf-8")]))
+      store.GameStore._LOCK_KEY.encode("utf-8")]))
   logging.info("Lock broken.")
 
   server.store.lock()

@@ -81,7 +81,7 @@ class EntityStore(record.Store):
 
 
 class GameStore(object):
-  _G_LOCK = "g_lock"
+  _LOCK_KEY = "lock"
 
   def __init__(self, redis):
     self.redis = redis
@@ -95,7 +95,7 @@ class GameStore(object):
     # this acquires an advisory lock -- locking is not mandatory, but I don't
     # suggest you try.
     if not green.await_coro(
-        self.redis.setnx(self._G_LOCK.encode("utf-8"), b"")):
+        self.redis.setnx(self._LOCK_KEY.encode("utf-8"), b"")):
       raise StoreError("""\
 Store is locked. This generally occurs if the server was uncleanly shut down, \
 or another copy of the server is running. If you are sure another copy of the \
@@ -107,7 +107,7 @@ server is not running, please run:
 
   def unlock(self):
     if self.is_locked:
-      green.await_coro(self.redis.delete([self._G_LOCK.encode("utf-8")]))
+      green.await_coro(self.redis.delete([self._LOCK_KEY.encode("utf-8")]))
       self.is_locked = False
 
   def _make_kvs(self, hash_key):

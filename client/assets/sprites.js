@@ -42,6 +42,10 @@ export default = {
       sprite.makeAutotile("tiles/TileA4.png",
                           new geometry.Vector2(0 * 32, 12 * 32)),
 
+  "tile.stairs":
+      sprite.makeAutotile("tiles/TileA5.png",
+                          new geometry.Vector2(3 * 32, 8 * 32)),
+
   "building.roof":
       sprite.makeAutotile("tiles/TileA3.png",
                           new geometry.Vector2(0 * 32, -1 * 32)),
