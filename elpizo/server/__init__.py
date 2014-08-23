@@ -72,7 +72,7 @@ class Server(object):
 
   @green.coroutine
   def accept(self, websocket, path):
-    handlers.Dispatcher(self, net.Transport(websocket, path)).run()
+    handlers.Dispatcher(self, net.Transport(websocket)).run()
 
   @green.coroutine
   def on_close(self):

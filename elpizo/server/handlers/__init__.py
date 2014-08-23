@@ -1,4 +1,5 @@
 import logging
+import traceback
 
 from elpizo.protos import packets_pb2
 from elpizo.models import geometry
@@ -15,6 +16,10 @@ logger = logging.getLogger(__name__)
 
 class Dispatcher(net.Protocol):
   HANDLERS = {}
+
+  def __init__(self, server, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.server = server
 
   @classmethod
   def register(cls, type, f):
@@ -43,6 +48,19 @@ class Dispatcher(net.Protocol):
       self.actor.save()
       logger.info("Flushing actor %s to database.", self.actor.id)
       self.server.bus.remove(self.actor.id)
+
+  def on_error(self, e, exc_info):
+    if isinstance(e, net.ProtocolError):
+      self.send(None, packets_pb2.ErrorPacket(text=str(e)))
+      return
+
+    text = "Internal server error. Sorry, that's all we know."
+
+    if self.server.debug:
+      text += "\n\n" + "".join(traceback.format_exception(*exc_info))
+
+    self.send(None, packets_pb2.ErrorPacket(text=text))
+    raise e
 
 
 Dispatcher.register(packets_pb2.Packet.CHAT, chat.on_chat)

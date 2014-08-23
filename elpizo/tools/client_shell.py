@@ -14,6 +14,26 @@ from elpizo.util import net
 from urllib.parse import urlencode
 
 
+class ClientProtocol(net.Protocol):
+  def __init__(self, token, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.token = token
+
+  def on_open(self):
+    logging.info("Connection opened.")
+    if self.token is not None:
+      self.send(None, packets_pb2.HelloPacket(token=self.token))
+
+  def on_close(self):
+    logging.info("Connection closed.")
+    os._exit(1)
+
+  def on_message(self, origin, message):
+    print(type(message).__name__)
+    print(origin)
+    print(message)
+
+
 class GameClient(threading.Thread):
   daemon = True
 
@@ -28,56 +48,29 @@ class GameClient(threading.Thread):
 
   @green.coroutine
   def _run(self):
-    self.websocket = green.await_coro(
+    websocket = green.await_coro(
         websockets.connect("ws://localhost:8765/socket"))
-
-    self.opened()
-    try:
-      while True:
-        packet = green.await_coro(self.websocket.recv())
-        if packet is None:
-          break
-        self.received_message(packet)
-    finally:
-      self.closed()
-
-  def opened(self):
-    logging.info("Connection opened.")
-    self.send(packets_pb2.HelloPacket(token=self.token))
-
-  def closed(self):
-    logging.info("Connection closed.")
-    os._exit(1)
-
-  def received_message(self, packet):
-    origin, message = net.Protocol.deserialize_packet(packet)
-
-    print(type(message).__name__)
-    print(origin)
-    print(message)
-
-  @green.coroutine
-  def _send(self, message):
-    green.await_coro(
-        self.websocket.send(net.Protocol.serialize_packet(None, message)))
+    self.protocol = ClientProtocol(self.token, net.Transport(websocket))
+    self.protocol.run()
 
   def send(self, message):
     self.loop.call_soon_threadsafe(self._send, message)
 
+  @green.coroutine
+  def _send(self, message):
+    self.protocol.send(None, message)
+
 
 def main():
-  if len(sys.argv) != 2:
-    sys.stderr.write("usage: {argv0} credentials\n".format(argv0=sys.argv[0]))
-    sys.exit(1)
-
-  credentials = sys.argv[1]
-
-  with open("elpizo.pem") as f:
-    m = mint.Mint(f)
-
-  token = m.mint(credentials.encode("utf-8"))
-
   logging.basicConfig(level=logging.INFO)
+
+  credentials = sys.argv[1] if len(sys.argv) >= 2 else None
+  if credentials is not None:
+    with open("elpizo.pem") as f:
+      m = mint.Mint(f)
+    token = m.mint(credentials.encode("utf-8"))
+  else:
+    token = None
 
   ws = GameClient(token)
   ws.start()

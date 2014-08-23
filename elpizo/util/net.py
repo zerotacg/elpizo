@@ -1,14 +1,12 @@
 import sys
-import traceback
 
 from elpizo.protos import packets_pb2
 from elpizo.util import green
 
 
 class Transport(object):
-  def __init__(self, websocket, path):
+  def __init__(self, websocket):
     self.websocket = websocket
-    self.path = path
 
   def recv(self):
     return green.await_coro(self.websocket.recv())
@@ -27,8 +25,7 @@ class Transport(object):
 class Protocol(object):
   PACKETS = {}
 
-  def __init__(self, server, transport):
-    self.server = server
+  def __init__(self, transport):
     self.transport = transport
 
   @classmethod
@@ -57,6 +54,9 @@ class Protocol(object):
   def on_message(self, origin, message):
     pass
 
+  def on_error(self, e, exc_info):
+    raise e
+
   def run(self):
     self.on_open()
 
@@ -68,16 +68,8 @@ class Protocol(object):
           break
         origin, message = self.deserialize_packet(packet)
         self.on_message(origin, message)
-    except ProtocolError as e:
-      self.send(None, packets_pb2.ErrorPacket(text=str(e)))
     except Exception as e:
-      text = "Internal server error. Sorry, that's all we know."
-
-      if self.server.debug:
-        text += "\n\n" + "".join(traceback.format_exception(*sys.exc_info()))
-
-      self.send(None, packets_pb2.ErrorPacket(text=text))
-      raise
+      self.on_error(e, sys.exc_info())
     finally:
       if self.transport.is_open:
         self.transport.close()
