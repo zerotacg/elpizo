@@ -106,7 +106,9 @@ def initdb(server):
       realm_id=windvale.id,
       location=geometry.Vector2(0, 0),
       inventory=[],
-      legs_item=equipment.TealPants()))
+      torso_item=equipment.WhiteLongsleeveShirt(),
+      legs_item=equipment.TealPants(),
+      feet_item=equipment.BrownShoes()))
 
   server.store.entities.create(entities.Player(
       name="Marius",
