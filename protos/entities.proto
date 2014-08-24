@@ -21,7 +21,7 @@ message Entity {
 
 message Drop {
   extend Entity {
-    optional Drop drop_ext = 104;
+    optional Drop ext = 104;
   }
 
   optional Item item = 1;
@@ -29,7 +29,7 @@ message Drop {
 
 message Building {
   extend Entity {
-    optional Building building_ext = 105;
+    optional Building ext = 105;
   }
 
   optional uint32 door_position = 1;
@@ -37,7 +37,7 @@ message Building {
 
 message Fixture {
   extend Entity {
-    optional Fixture fixture_ext = 103;
+    optional Fixture ext = 103;
   }
 
   optional string fixture_type = 1;
@@ -45,7 +45,7 @@ message Fixture {
 
 message Actor {
   extend Entity {
-    optional Actor actor_ext = 101;
+    optional Actor ext = 101;
   }
 
   optional string name = 1;
@@ -65,7 +65,7 @@ message Actor {
 
 message Player {
   extend Entity {
-    optional Player player_ext = 106;
+    optional Player ext = 106;
   }
 
   optional bool online = 1;
@@ -73,7 +73,7 @@ message Player {
 
 message Mob {
   extend Entity {
-    optional Mob mob_ext = 107;
+    optional Mob ext = 107;
   }
 
   optional string species = 1;

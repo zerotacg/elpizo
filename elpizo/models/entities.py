@@ -102,18 +102,18 @@ class Actor(Entity):
     if getattr(self, "feet_item", None):
       message.feet_item.MergeFrom(self.feet_item.to_protobuf())
 
-    proto.Extensions[entities_pb2.Actor.actor_ext].MergeFrom(message)
+    proto.Extensions[entities_pb2.Actor.ext].MergeFrom(message)
     return proto
 
   def to_public_protobuf(self):
     proto = super().to_public_protobuf()
-    proto.Extensions[entities_pb2.Actor.actor_ext].ClearField("inventory")
+    proto.Extensions[entities_pb2.Actor.ext].ClearField("inventory")
     return proto
 
   @classmethod
   def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Actor.actor_ext]
+    proto = proto.Extensions[entities_pb2.Actor.ext]
     record.update(name=proto.name, health=proto.health, gender=proto.gender,
                   body=proto.body,
                   inventory=[items.Item.from_protobuf_polymorphic(item_proto)
@@ -144,13 +144,13 @@ class Player(Actor):
   def to_protobuf(self):
     proto = super().to_protobuf()
     message = entities_pb2.Player(online=getattr(self, "online", False))
-    proto.Extensions[entities_pb2.Player.player_ext].MergeFrom(message)
+    proto.Extensions[entities_pb2.Player.ext].MergeFrom(message)
     return proto
 
   @classmethod
   def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Player.player_ext]
+    proto = proto.Extensions[entities_pb2.Player.ext]
     record.update(online=proto.online)
     return record
 
@@ -184,13 +184,13 @@ class Mob(Actor):
   def to_protobuf(self):
     proto = super().to_protobuf()
     message = entities_pb2.Mob(species=self.SPECIES)
-    proto.Extensions[entities_pb2.Mob.mob_ext].MergeFrom(message)
+    proto.Extensions[entities_pb2.Mob.ext].MergeFrom(message)
     return proto
 
   @classmethod
   def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Mob.mob_ext]
+    proto = proto.Extensions[entities_pb2.Mob.ext]
     return record
 
 
@@ -211,12 +211,12 @@ class Drop(Entity):
   def to_protobuf(self):
     proto = super().to_protobuf()
     message = entities_pb2.Drop(item=self.item.to_protobuf())
-    proto.Extensions[entities_pb2.Drop.drop_ext].MergeFrom(message)
+    proto.Extensions[entities_pb2.Drop.ext].MergeFrom(message)
     return proto
 
   @classmethod
   def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Drop.drop_ext]
+    proto = proto.Extensions[entities_pb2.Drop.ext]
     record.update(item=items.Item.from_protobuf_polymorphic(proto.item))
     return record

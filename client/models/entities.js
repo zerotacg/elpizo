@@ -41,7 +41,7 @@ export class Entity {
 export class Building extends Entity {
   constructor(message) {
     super(message);
-    message = message.buildingExt;
+    message = message[".Building.ext"];
 
     this.doorPosition = message.doorPosition;
   }
@@ -63,7 +63,7 @@ export class Building extends Entity {
 export class Drop extends Entity {
   constructor(message) {
     super(message);
-    message = message.dropExt;
+    message = message[".Drop.ext"];
 
     this.item = itemRegistry.makeItem(message.item);
   }
@@ -97,7 +97,7 @@ export function getDirectionVector(d) {
 export class Actor extends Entity {
   constructor(message) {
     super(message);
-    message = message.actorExt;
+    message = message[".Actor.ext"];
 
     this.name = message.name;
     this.health = message.health;
