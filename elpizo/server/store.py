@@ -124,5 +124,8 @@ the database IMMEDIATELY!
                            id=realm.id)))
 
   def save_all(self):
+    if not self.is_lock_acquired:
+      raise StoreError("Lock not acquired.")
+
     self.realms.save_all()
     self.entities.save_all()
