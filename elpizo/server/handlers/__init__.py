@@ -25,6 +25,9 @@ class Dispatcher(net.Protocol):
   def register(cls, type, f):
     cls.HANDLERS[type] = f
 
+  def bind_actor(self, actor):
+    self.actor = actor
+
   def on_open(self):
     self.actor = None
 
@@ -41,7 +44,7 @@ class Dispatcher(net.Protocol):
           type, "opcode {}".format(type))
       logger.warn("Unhandled packet: %s", packet_name)
     else:
-      handler(self, message)
+      handler(self, self.actor, message)
 
   def on_close(self):
     if self.actor is not None:

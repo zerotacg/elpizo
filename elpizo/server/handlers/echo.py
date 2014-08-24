@@ -1,2 +1,2 @@
-def on_echo(protocol, message):
+def on_echo(protocol, actor, message):
   protocol.send(None, message)

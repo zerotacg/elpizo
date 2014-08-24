@@ -4,7 +4,7 @@ from elpizo.util import mint
 from elpizo.util import net
 
 
-def on_hello(protocol, message):
+def on_hello(protocol, actor, message):
   try:
     token = protocol.server.mint.unmint(message.token)
   except mint.InvalidTokenError as e:
@@ -29,11 +29,11 @@ def on_hello(protocol, message):
     last_protocol = protocol.server.bus.get(actor.id)
     last_protocol.send(None, packets_pb2.ErrorPacket(
         text="Session collision."))
-    last_protocol.actor = None
+    last_protocol.bind_actor(None)
     last_protocol.transport.close()
     protocol.server.bus.remove(actor.id)
 
-  protocol.actor = actor
+  protocol.bind_actor(actor)
   protocol.server.bus.add(actor.id, protocol)
 
   protocol.send(
