@@ -56,7 +56,7 @@ class Application(object):
   def run(self):
     coloredlogs.install(getattr(logging, self.config.log_level, None))
 
-    logger.info("Welcome to elpizo.platform!")
+    logger.info("Welcome to elpizo!")
     logger.info("Using event loop: %s", type(self.loop).__name__)
 
     self.start_event = asyncio.Event()

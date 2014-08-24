@@ -1,14 +1,14 @@
 import contextlib
 
-from elpizo import models
-from elpizo import util
 from elpizo.models import geometry
 from elpizo.models import realm
 from elpizo.models import items
+from elpizo.models import record
 from elpizo.protos import entities_pb2
+from elpizo.util import support
 
 
-class Entity(models.PolymorphicProtobufRecord):
+class Entity(record.PolymorphicProtobufRecord):
   PROTOBUF_TYPE = entities_pb2.Entity
   REGISTRY = {}
 
@@ -158,11 +158,11 @@ class Player(Actor):
 class NPC(Actor):
   _TYPE_PREFIX = "npc"
 
-  @util.classproperty
+  @support.classproperty
   def TYPE(cls):
     return ".".join([cls._TYPE_PREFIX, cls.SPECIES])
 
-  @util.classproperty
+  @support.classproperty
   def REGISTRY(cls):
     registry = {}
     for k, v in super().REGISTRY.items():

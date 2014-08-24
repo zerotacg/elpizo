@@ -2,8 +2,8 @@ import base64
 import socket
 import sys
 
-from elpizo import server
-from elpizo.server import config
+from elpizo import config
+from elpizo import platform
 from urllib import parse
 
 
@@ -27,7 +27,7 @@ def main():
                            "key pair!", type=int, default=100)
   args = parser.parse_args()
 
-  server.Application(args).once(do_mint, args.credentials, args.token_expiry)
+  platform.Application(args).once(do_mint, args.credentials, args.token_expiry)
 
 
 if __name__ == "__main__":

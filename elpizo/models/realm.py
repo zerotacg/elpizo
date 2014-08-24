@@ -1,16 +1,15 @@
 import logging
 import math
 
-from elpizo import models
 from elpizo.models import geometry
+from elpizo.models import record
 from elpizo.protos import realm_pb2
-from elpizo.util import record
 
 
 logger = logging.getLogger(__name__)
 
 
-class Realm(models.ProtobufRecord):
+class Realm(record.ProtobufRecord):
   PROTOBUF_TYPE = realm_pb2.Realm
 
   def __init__(self, *args, **kwargs):
@@ -59,7 +58,7 @@ class Realm(models.ProtobufRecord):
     return True
 
 
-class Region(models.ProtobufRecord):
+class Region(record.ProtobufRecord):
   PROTOBUF_TYPE = realm_pb2.Region
 
   SIZE = 16
