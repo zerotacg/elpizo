@@ -12,10 +12,7 @@ class ProtobufRecord(record.Record):
     return record
 
 
-class PolymorphicProtobufRecord(record.Record):
-  def serialize(self):
-    return self.to_protobuf().SerializeToString()
-
+class PolymorphicProtobufRecord(ProtobufRecord):
   @classmethod
   def deserialize(cls, id, serialized):
     record = cls.from_protobuf_polymorphic(
