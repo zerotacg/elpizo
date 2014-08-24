@@ -52,8 +52,8 @@ class Rectangle(object):
     return Vector2(self.bottom, self.right)
 
   def intersects(self, other):
-    return self.left <= other.right and self.right > other.left and \
-           self.top <= other.bottom and self.bottom > other.top;
+    return self.left < other.right and self.right > other.left and \
+           self.top < other.bottom and self.bottom > other.top
 
   def contains(self, vec):
     return self.left <= vec.x and self.right > vec.x and \

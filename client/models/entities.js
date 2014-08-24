@@ -23,7 +23,7 @@ export class Entity {
   onAdjacentInteract(avatar, protocol) {
   }
 
-  onContainingInteract(avatar, protocol) {
+  onIntersectingInteract(avatar, protocol) {
   }
 
   onContact(avatar, protocol) {
@@ -68,7 +68,7 @@ export class Drop extends Entity {
     this.item = itemRegistry.makeItem(message.item);
   }
 
-  onContainingInteract(avatar, protocol) {
+  onIntersectingInteract(avatar, protocol) {
     // Attempt to pick up the drop.
     protocol.send(new packets.PickUpPacket({dropId: this.id}));
   }
@@ -190,17 +190,24 @@ export class Player extends Actor {
         protocol.send(new packets.TurnPacket({direction: direction}))
       } else {
         var target = this.location.offset(this.getDirectionVector());
+        var targetBounds = this.bbox.offset(target);
 
-        if (this.realm.isPassable(target, this.direction)) {
+        var intersecting = this.realm.getAllEntities()
+            .filter((entity) =>
+                entity.getBounds().intersects(targetBounds) && entity !== this);
+
+        if (this.realm.isPassable(target, this.direction) &&
+            intersecting.length === 0) {
           this.step();
           didMove = true;
 
           protocol.send(new packets.MovePacket());
 
-          // Trigger all target contacts.
-          this.realm.getAllEntities()
-              .filter((entity) =>
-                  entity.getBounds().contains(target))
+          // Trigger all target contacts (before we arrive, but this is the
+          // only time we can guarantee it.)
+          // NOTE: not reachable code right now, but will be once
+          // intersectability is implemented
+          intersecting
               .forEach((entity) =>
                 entity.onContact(this, protocol));
         }
@@ -249,7 +256,7 @@ export class Player extends Actor {
 
       var head = interactions[0];
       if (head.contained) {
-        head.entity.onContainingInteract(this, protocol);
+        head.entity.onIntersectingInteract(this, protocol);
       } else {
         head.entity.onAdjacentInteract(this, protocol);
       }

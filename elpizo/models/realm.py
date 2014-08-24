@@ -54,7 +54,6 @@ class Realm(record.ProtobufRecord):
     if not region.is_passable(location, direction):
       return False
 
-    # TODO: check entities
     return True
 
 

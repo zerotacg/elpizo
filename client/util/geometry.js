@@ -77,8 +77,8 @@ export class Rectangle {
   }
 
   intersects(other) {
-    return this.left <= other.getRight() && this.getRight() > other.left &&
-           this.top <= other.getBottom() && this.getBottom() > other.top;
+    return this.left < other.getRight() && this.getRight() > other.left &&
+           this.top < other.getBottom() && this.getBottom() > other.top;
   }
 
   contains(vec) {
