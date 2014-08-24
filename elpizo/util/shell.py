@@ -97,3 +97,7 @@ class Shell(embed.InteractiveShellEmbed):
     return outflag
 
   runcode = run_code
+
+  def showtraceback(self, exc_tuple=None, filename=None, tb_offset=None,
+                    exception_only=False):
+    return super().showtraceback(exc_tuple, filename, 5, exception_only)
