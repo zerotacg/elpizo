@@ -38,7 +38,7 @@ class Application(object):
   def on_start(self):
     pass
 
-  def on_close(self):
+  def on_stop(self):
     pass
 
   def once(self, _f, *args, **kwargs):
@@ -66,4 +66,4 @@ class Application(object):
     try:
       self.loop.run_forever()
     finally:
-      self.loop.run_until_complete(green.coroutine(self.on_close)())
+      self.loop.run_until_complete(green.coroutine(self.on_stop)())

@@ -26,7 +26,7 @@ class Application(platform.Application):
                                      self.config.statsd_port,
                                      prefix="elpizo")
 
-  def on_close(self):
+  def on_stop(self):
     logger.info("Application shutting down.")
 
     if self.store.is_locked:

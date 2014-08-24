@@ -20,10 +20,10 @@ logger = logging.getLogger(__name__)
 
 class ClientProtocol(net.Protocol):
   def on_open(self):
-    logging.info("Connection opened.")
+    logger.info("Client protocol opened.")
 
   def on_close(self):
-    logging.info("Connection closed.")
+    logger.info("Client protocol closed.")
     os._exit(1)
 
   def on_message(self, origin, message):
@@ -37,6 +37,9 @@ class SimpleClient(client.Application):
     self.token = self.mint.mint(self.config.credentials.encode("utf-8"),
                                 self.config.token_expiry)
     super().on_start()
+
+  def on_stop(self):
+    os._exit(1)
 
   def handle(self, token, websocket):
     self.protocol = ClientProtocol(websocket)
@@ -56,7 +59,12 @@ class ClientThread(threading.Thread):
     asyncio.set_event_loop(self.loop)
 
     self.client = SimpleClient(self.config)
-    self.client.run()
+
+    try:
+      self.client.run()
+    except Exception:
+      logger.critical("Client did not start!", exc_info=True)
+      os._exit(1)
 
   def send(self, message):
     self.loop.call_soon_threadsafe(green.coroutine(self._send), message)
