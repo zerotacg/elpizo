@@ -81,7 +81,7 @@ class GameStore(object):
 
   def lock(self):
     # this acquires an advisory lock -- locking is not mandatory, but I don't
-    # suggest you try.
+    # suggest you try bypassing it.
     if not green.await_coro(
         self.redis.setnx(self._LOCK_KEY.encode("utf-8"), b"")):
       raise StoreError("""\
