@@ -19,7 +19,7 @@
     "gulp-util": "^2.2.20",
     "jstransform": "^6.0.1",
     "less": "^1.7.3",
-    "protobufjs": "git://github.com/dcodeIO/ProtoBuf.js",
+    "protobufjs": "^3.5.2",
     "react-tools": "^0.11.0",
     "retry": "^0.6.1",
     "through": "^2.3.4",
