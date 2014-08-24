@@ -115,7 +115,7 @@ export class Actor extends Entity {
       (message) => itemRegistry.makeItem(message));
 
     this.moving = false;
-    this.remainder = 0;
+    this.moveRemaining = 0;
   }
 
   getPreviousLocation() {
@@ -126,36 +126,16 @@ export class Actor extends Entity {
     return getDirectionVector(this.direction);
   }
 
-  moveInDirection(direction) {
-    // Move the entity one tile in an axis direction.
+  step() {
+    // Move the entity one tile forward.
     //
     // It will forcibly normalize the location (may be janky, but will always be
     // correct).
-    var lastDirection = this.direction;
-
     this.location = this.location
-        .offset(this.getDirectionVector().scale(this.remainder))
+        .offset(this.getDirectionVector().scale(this.moveRemaining))
         .map(Math.round);
-
-    this.direction = direction;
-
-    var targetLocation = this.location
-          .offset(this.getDirectionVector())
-          .map(Math.round);
-
-    if (!this.realm.isPassable(targetLocation, direction)) {
-      this.remainder = 0;
-      this.moving = lastDirection !== this.direction;
-    } else {
-      this.remainder = 1;
-      this.moving = true;
-    }
-
-    if (!this.moving) {
-      targetLocation = this.location;
-    }
-
-    return targetLocation;
+    this.moving = true;
+    this.moveRemaining = 1;
   }
 
   getSpeed() {
@@ -165,17 +145,17 @@ export class Actor extends Entity {
   update(dt) {
     super.update(dt);
 
-    if (this.remainder > 0) {
-      var aDistance = Math.min(this.getSpeed() * dt, this.remainder);
+    if (this.moveRemaining > 0) {
+      var aDistance = Math.min(this.getSpeed() * dt, this.moveRemaining);
 
       this.location = this.location
           .offset(this.getDirectionVector().scale(aDistance))
 
-      this.remainder -= aDistance;
+      this.moveRemaining -= aDistance;
 
-      if (this.remainder <= 0) {
+      if (this.moveRemaining <= 0) {
         this.location = this.location.map(Math.round);
-        this.remainder = 0;
+        this.moveRemaining = 0;
       }
     }
   }
@@ -190,7 +170,7 @@ Actor.BASE_SPEED = 5;
 
 export class Player extends Actor {
   updateAsAvatar(dt, inputState, protocol) {
-    if (this.remainder > 0) {
+    if (this.moveRemaining > 0) {
       return;
     }
 
@@ -201,34 +181,36 @@ export class Player extends Actor {
                     inputState.isHeld(input.Key.DOWN) ? Directions.S :
                     null;
 
-    var wasMoving = this.moving;
+    var didMove = false;
 
     if (direction !== null) {
-      var lastDirection = this.direction;
-      var targetLocation = this.moveInDirection(direction);
+      if (this.direction !== direction) {
+        // Send a turn packet.
+        this.direction = direction;
+        protocol.send(new packets.TurnPacket({direction: direction}))
+      } else {
+        var target = this.location.offset(this.getDirectionVector());
 
-      if (!targetLocation.equals(this.location) ||
-          lastDirection !== this.direction) {
-        // Send a move packet only if we've successfully moved.
-        protocol.send(new packets.MovePacket({direction: direction}));
+        if (this.realm.isPassable(target, this.direction)) {
+          this.step();
+          didMove = true;
 
-        // Trigger all target contacts.
-        var target = this.location.offset(getDirectionVector(direction));
+          protocol.send(new packets.MovePacket());
 
-        this.realm.getAllEntities().filter((entity) =>
-            entity.getBounds().contains(target)).forEach((entity) => {
-            entity.onContact(this, protocol);
-          })
-      } else if (wasMoving) {
-        // Otherwise, we're trying to move in a direction that's obstructed so
-        // we stop moving and send StopMoves.
-        this.moving = false;
-        protocol.send(new packets.StopMovePacket());
+          // Trigger all target contacts.
+          this.realm.getAllEntities()
+              .filter((entity) =>
+                  entity.getBounds().contains(target))
+              .forEach((entity) =>
+                entity.onContact(this, protocol));
+        }
       }
-    } else if (this.moving) {
-        // We've stopped moving entirely.
-        this.moving = false;
-        protocol.send(new packets.StopMovePacket());
+    }
+
+    if (!didMove && this.moving) {
+      // We've stopped moving entirely.
+      this.moving = false;
+      protocol.send(new packets.StopMovePacket());
     }
 
     // Check for interactions.

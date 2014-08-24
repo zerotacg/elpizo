@@ -24,6 +24,7 @@ message Packet {
     INVENTORY = 14;
     REGION_CHANGE = 15;
     ECHO = 16;
+    TURN = 17;
   }
 
   optional Type type = 1;
@@ -71,8 +72,6 @@ message MovePacket {
   //
   // Direction: Server <-> Client
   option (packet_type) = MOVE;
-
-  optional Entity.Direction direction = 1;
 }
 
 message AvatarPacket {
@@ -134,7 +133,7 @@ message TeleportPacket {
   option (packet_type) = TELEPORT;
 
   optional Vector2 location = 1;
-  optional uint32 direction = 2;
+  optional Entity.Direction direction = 2;
 }
 
 message StatusPacket {
@@ -189,4 +188,14 @@ message EchoPacket {
   option (packet_type) = ECHO;
 
   optional string payload = 1;
+}
+
+message TurnPacket {
+  // Sent by the client to indicate that it has turned; sent by the server to
+  // indicate a client has turned.
+  //
+  // Direction: Server <-> Client
+  option (packet_type) = TURN;
+
+  optional Entity.Direction direction = 1;
 }
