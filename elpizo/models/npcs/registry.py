@@ -1,6 +1,6 @@
 from elpizo.models import entities
 
-from elpizo.models.mobs import slime
+from elpizo.models.npcs import slime
 
 
 def initialize():

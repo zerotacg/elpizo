@@ -15,8 +15,8 @@ export function makeEntity(message) {
     case "player":
       return new entities.Player(message);
 
-    case "mob":
-      return new entities.Mob(message);
+    case "npc":
+      return new entities.NPC(message);
   }
 
   throw new Error("Could not make entity of type: " + message.type);

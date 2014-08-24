@@ -8,7 +8,7 @@ from elpizo.models import geometry
 from elpizo.models import realm
 from elpizo.models.items import equipment
 from elpizo.models.items import restorative
-from elpizo.models.mobs import slime
+from elpizo.models.npcs import slime
 from elpizo.util import green
 
 

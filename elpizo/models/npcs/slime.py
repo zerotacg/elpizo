@@ -1,7 +1,7 @@
 from elpizo.models import entities
 
 
-class GreenSlime(entities.Mob):
+class GreenSlime(entities.NPC):
   SPECIES = "green_slime"
 
   def __init__(self, *args, **kwargs):

@@ -9,7 +9,7 @@ from asyncio_redis import encoders
 from elpizo.models import entities
 from elpizo.models import items
 from elpizo.models.items import registry as item_registry
-from elpizo.models.mobs import registry as mob_registry
+from elpizo.models.npcs import registry as npc_registry
 from elpizo.server import bus
 from elpizo.server import config
 from elpizo.server import handlers
@@ -20,7 +20,7 @@ from elpizo.util import mint
 from elpizo.util import net
 
 item_registry.initialize()
-mob_registry.initialize()
+npc_registry.initialize()
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class Server(object):
                   "to the client!")
 
     logger.info("Item types registered: %d", len(items.Item.REGISTRY))
-    logger.info("Mob types registered: %d", len(entities.Mob.REGISTRY))
+    logger.info("NPC types registered: %d", len(entities.NPC.REGISTRY))
 
     with open(self.config.mint_key) as f:
       self.mint = mint.Mint(f)

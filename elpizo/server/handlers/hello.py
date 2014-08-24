@@ -12,14 +12,14 @@ def on_hello(protocol, message):
 
   realm, id = token.decode("utf-8").split(".")
 
-  if realm not in {"player", "mob"}:
+  if realm not in {"player", "npc"}:
     raise net.ProtocolError("Unknown authentication realm.")
 
   actor = protocol.server.store.entities.load(id)
 
   if not isinstance(actor, {
       "player": entities.Player,
-      "mob": entities.Mob
+      "npc": entities.NPC
   }[realm]):
     raise net.ProtocolError("Provided authentication realm is not acceptable.")
 

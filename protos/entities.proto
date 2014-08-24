@@ -71,9 +71,9 @@ message Player {
   optional bool online = 1;
 }
 
-message Mob {
+message NPC {
   extend Entity {
-    optional Mob ext = 107;
+    optional NPC ext = 107;
   }
 
   optional string species = 1;

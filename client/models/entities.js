@@ -280,10 +280,17 @@ export class Player extends Actor {
   }
 }
 
-export class Mob extends Actor {
+export class NPC extends Actor {
+  constructor(message) {
+    super(message);
+    message = message[".NPC.ext"];
+
+    this.species = message.species;
+  }
+
   visit(visitor) {
     super.visit(visitor);
-    visitor.visitMob(this);
+    visitor.visitNPC(this);
   }
 }
 
@@ -303,6 +310,6 @@ export class EntityVisitor {
   visitPlayer(player) {
   }
 
-  visitMob(mob) {
+  visitNPC(npc) {
   }
 }

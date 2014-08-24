@@ -155,17 +155,19 @@ class Player(Actor):
     return record
 
 
-class Mob(Actor):
+class NPC(Actor):
+  _TYPE_PREFIX = "npc"
+
   @util.classproperty
   def TYPE(cls):
-    return ".".join(["mob", cls.SPECIES])
+    return ".".join([cls._TYPE_PREFIX, cls.SPECIES])
 
   @util.classproperty
   def REGISTRY(cls):
     registry = {}
     for k, v in super().REGISTRY.items():
       type, *rest = k.split(".")
-      if type != "mob":
+      if type != cls._TYPE_PREFIX:
         continue
 
       species, = rest
@@ -178,19 +180,19 @@ class Mob(Actor):
 
   def to_protected_protobuf(self):
     proto = super().to_protected_protobuf()
-    proto.type = "mob"
+    proto.type = self._TYPE_PREFIX
     return proto
 
   def to_protobuf(self):
     proto = super().to_protobuf()
-    message = entities_pb2.Mob(species=self.SPECIES)
-    proto.Extensions[entities_pb2.Mob.ext].MergeFrom(message)
+    message = entities_pb2.NPC(species=self.SPECIES)
+    proto.Extensions[entities_pb2.NPC.ext].MergeFrom(message)
     return proto
 
   @classmethod
   def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Mob.ext]
+    proto = proto.Extensions[entities_pb2.NPC.ext]
     return record
 
 
