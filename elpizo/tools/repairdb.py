@@ -11,10 +11,7 @@ def repair(app):
         "Proceeding will BREAK THE LOCK! Press ENTER to continue or Ctrl+C "
         "to abort. ")
 
-  green.await_coro(app.store.redis.delete([
-      store.GameStore._LOCK_KEY.encode("utf-8")]))
-  logging.info("Lock broken.")
-
+  app.store.unlock()
   app.store.lock()
 
 

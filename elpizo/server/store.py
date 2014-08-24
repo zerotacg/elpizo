@@ -77,7 +77,7 @@ class GameStore(object):
     self.realms = RealmStore(self, self._make_kvs("realms"))
     self.entities = EntityStore(self, self._make_kvs("entities"))
 
-    self.is_locked = False
+    self.is_lock_acquired = False
 
   def lock(self):
     # this acquires an advisory lock -- locking is not mandatory, but I don't
@@ -89,14 +89,29 @@ Store is locked. This generally occurs if the server was uncleanly shut down, \
 or another copy of the server is running. If you are sure another copy of the \
 server is not running, please run:
 
-    python -m elpizo.tools.repairdb \
+    python -m elpizo.tools.repairdb
 """)
-    self.is_locked = True
+    self.is_lock_acquired = True
 
   def unlock(self):
-    if self.is_locked:
-      green.await_coro(self.redis.delete([self._LOCK_KEY.encode("utf-8")]))
-      self.is_locked = False
+    unlocked = green.await_coro(
+        self.redis.delete([self._LOCK_KEY.encode("utf-8")])) == 1
+
+    if not self.is_lock_acquired and unlocked:
+      logger.warn("Store lock was BROKEN!")
+
+    if self.is_lock_acquired and not unlocked:
+      raise StoreError("""\
+Lock was acquired but could not be unlocked. This is VERY BAD! Please repair \
+the database IMMEDIATELY!
+
+    python -m elpizo.tools.repairdb
+""")
+
+    self.is_lock_acquired = False
+
+  def is_locked(self):
+    return green.await_coro(self.redis.exists(self._LOCK_KEY.encode("utf-8")))
 
   def _make_kvs(self, hash_key):
     return kvs.AsyncRedisHashAdapter(hash_key, self.redis)

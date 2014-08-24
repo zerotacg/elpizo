@@ -29,10 +29,13 @@ class Application(platform.Application):
   def on_stop(self):
     logger.info("Application shutting down.")
 
-    if self.store.is_locked:
+    if self.store.is_lock_acquired:
       logger.info("Flushing stores.")
       self.store.save_all()
-      self.store.unlock()
+      try:
+        self.store.unlock()
+      except store.StoreError as e:
+        logging.critical(str(e))
     else:
       logger.warn("No store lock, cowardly refusing to flush stores.")
 

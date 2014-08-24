@@ -31,7 +31,7 @@ class ClientShellProtocol(net.Protocol):
     print(message)
 
 
-class ShellClient(client.Client):
+class ClientShell(client.Client):
   def make_protocol(self, transport):
     return ClientShellProtocol(self.token, transport)
 
@@ -59,7 +59,7 @@ def main():
                            "cannot be revoked without generating a new minting "
                            "key pair!", type=int, default=100)
 
-  shell.Shell(ShellClient, parser.parse_args(), banner1=BANNER).mainloop()
+  shell.Shell(ClientShell, parser.parse_args(), banner1=BANNER).mainloop()
 
 
 if __name__ == "__main__":
