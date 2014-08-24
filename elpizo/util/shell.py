@@ -1,4 +1,5 @@
 import asyncio
+import greenlet
 import logging
 import os
 import sys
@@ -39,8 +40,12 @@ class ShellThread(threading.Thread):
 
   def do(self, _f, *args, **kwargs):
     fut = futures.Future()
+    g_self = None
 
     def _wrapper():
+      nonlocal g_self
+      g_self = greenlet.getcurrent()
+
       try:
         result = _f(*args, **kwargs)
       except BaseException as e:
@@ -49,7 +54,12 @@ class ShellThread(threading.Thread):
         fut.set_result(result)
 
     self.loop.call_soon_threadsafe(green.coroutine(_wrapper))
-    return fut.result()
+
+    try:
+      return fut.result()
+    except BaseException as e:
+      self.loop.call_soon_threadsafe(g_self.throw, e)
+      raise
 
 
 class Shell(embed.InteractiveShellEmbed):

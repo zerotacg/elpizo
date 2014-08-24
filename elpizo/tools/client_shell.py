@@ -59,8 +59,7 @@ def main():
                            "cannot be revoked without generating a new minting "
                            "key pair!", type=int, default=100)
 
-  shell.Shell(ShellClient, parser.parse_args(), banner1=BANNER,
-              user_ns={"packets": packets_pb2}).mainloop()
+  shell.Shell(ShellClient, parser.parse_args(), banner1=BANNER).mainloop()
 
 
 if __name__ == "__main__":
