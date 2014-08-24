@@ -143,8 +143,8 @@ class Player(Actor):
 
   def to_protobuf(self):
     proto = super().to_protobuf()
-    message = entities_pb2.Player(online=getattr(self, "online", False))
-    proto.Extensions[entities_pb2.Player.ext].MergeFrom(message)
+    proto.Extensions[entities_pb2.Player.ext].MergeFrom(
+        entities_pb2.Player(online=getattr(self, "online", False)))
     return proto
 
   @classmethod
@@ -181,12 +181,13 @@ class NPC(Actor):
   def to_protected_protobuf(self):
     proto = super().to_protected_protobuf()
     proto.type = self._TYPE_PREFIX
+    proto.Extensions[entities_pb2.NPC.ext].MergeFrom(
+        entities_pb2.NPC(species=self.SPECIES))
     return proto
 
   def to_protobuf(self):
     proto = super().to_protobuf()
-    message = entities_pb2.NPC(species=self.SPECIES)
-    proto.Extensions[entities_pb2.NPC.ext].MergeFrom(message)
+    proto.Extensions[entities_pb2.NPC.ext].MergeFrom(entities_pb2.NPC())
     return proto
 
   @classmethod
@@ -212,8 +213,8 @@ class Drop(Entity):
 
   def to_protobuf(self):
     proto = super().to_protobuf()
-    message = entities_pb2.Drop(item=self.item.to_protobuf())
-    proto.Extensions[entities_pb2.Drop.ext].MergeFrom(message)
+    proto.Extensions[entities_pb2.Drop.ext].MergeFrom(
+        entities_pb2.Drop(item=self.item.to_protobuf()))
     return proto
 
   @classmethod
