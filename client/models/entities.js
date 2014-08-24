@@ -175,11 +175,13 @@ export class Player extends Actor {
     }
 
     // Check for movement.
-    var direction = inputState.isHeld(input.Key.LEFT) ? Directions.W :
-                    inputState.isHeld(input.Key.UP) ? Directions.N :
-                    inputState.isHeld(input.Key.RIGHT) ? Directions.E :
-                    inputState.isHeld(input.Key.DOWN) ? Directions.S :
+    var direction = inputState.held(input.Key.LEFT) ? Directions.W :
+                    inputState.held(input.Key.UP) ? Directions.N :
+                    inputState.held(input.Key.RIGHT) ? Directions.E :
+                    inputState.held(input.Key.DOWN) ? Directions.S :
                     null;
+
+    var move = !inputState.held(input.Key.ALT);
 
     var didMove = false;
 
@@ -188,7 +190,7 @@ export class Player extends Actor {
         // Send a turn packet.
         this.direction = direction;
         protocol.send(new packets.TurnPacket({direction: direction}))
-      } else {
+      } else if (move) {
         var target = this.location.offset(this.getDirectionVector());
         var targetBounds = this.bbox.offset(target);
 

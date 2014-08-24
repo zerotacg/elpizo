@@ -4,8 +4,8 @@ export class InputState {
     this.keysStuck = {};
 
     window.onkeydown = (e) => {
-      this.keysDown[e.which] = true;
-      this.keysStuck[e.which] = true;
+      this.keysDown[e.which] = e;
+      this.keysStuck[e.which] = e;
     };
 
     window.onkeyup = (e) => {
@@ -13,8 +13,8 @@ export class InputState {
     };
   }
 
-  isHeld(key) {
-    return !!this.keysDown[key];
+  held(key) {
+    return this.keysDown[key] || null;
   }
 
   unstick(key) {
