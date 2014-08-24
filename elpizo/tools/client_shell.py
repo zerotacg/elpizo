@@ -2,7 +2,6 @@ import asyncio
 import IPython
 import logging
 import os
-import sys
 import threading
 
 from elpizo import client
@@ -12,13 +11,11 @@ from elpizo.util import green
 from elpizo.util import mint
 from elpizo.util import net
 
-from urllib.parse import urlencode
-
 
 logger = logging.getLogger(__name__)
 
 
-class ClientProtocol(net.Protocol):
+class ClientShellProtocol(net.Protocol):
   def on_open(self):
     logger.info("Client protocol opened.")
 
@@ -42,7 +39,7 @@ class SimpleClient(client.Application):
     os._exit(1)
 
   def handle(self, token, websocket):
-    self.protocol = ClientProtocol(websocket)
+    self.protocol = ClientShellProtocol(websocket)
     self.protocol.send(None, packets_pb2.HelloPacket(token=self.token))
     self.protocol.run()
 
@@ -67,10 +64,8 @@ class ClientThread(threading.Thread):
       os._exit(1)
 
   def send(self, message):
-    self.loop.call_soon_threadsafe(green.coroutine(self._send), message)
-
-  def _send(self, message):
-    self.client.protocol.send(None, message)
+    self.loop.call_soon_threadsafe(green.coroutine(self.client.protocol.send),
+                                   None, message)
 
 
 def main():
