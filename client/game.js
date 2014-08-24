@@ -83,12 +83,8 @@ export class Game extends events.EventEmitter {
     var bounds = this.renderer.getCacheBounds();
 
     return new packets.ViewportPacket({
-        bounds: (new geometry.Rectangle(
-            Math.floor(bounds.left),
-            Math.floor(bounds.top),
-            Math.ceil(bounds.width),
-            Math.ceil(bounds.height)
-        )).toProtobuf()
+        bounds: geometry.Rectangle.prototype.copy.call(
+            this.renderer.getCacheBounds()).toProtobuf()
     });
   }
 
