@@ -1,3 +1,3 @@
 from elpizo.client import client
 
-Application = client.Application
+Client = client.Client

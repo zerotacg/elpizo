@@ -74,7 +74,7 @@ class Record(object):
 
     :returns: The serialized representation of the record.
     """
-    raise NotImplemented
+    raise NotImplementedError
 
   @classmethod
   def deserialize(cls, id, serialized):
@@ -84,7 +84,7 @@ class Record(object):
 
     :param serialized: The serialized representation of the record.
     """
-    raise NotImplemented
+    raise NotImplementedError
 
 
 class Store(object):
