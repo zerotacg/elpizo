@@ -51,10 +51,9 @@ class Server(object):
 
     self.bus = bus.Bus()
 
-    self.store = store.GameStore(
-        green.await_coro(asyncio_redis.Pool.create(
-            host=self.config.redis_host, port=self.config.redis_port,
-            encoder=encoders.BytesEncoder())))
+    self.store = store.GameStore(green.await_coro(asyncio_redis.Pool.create(
+        host=self.config.redis_host, port=self.config.redis_port,
+        encoder=encoders.BytesEncoder())))
     self.statsd = statsd.StatsClient(self.config.statsd_host,
                                      self.config.statsd_port,
                                      prefix="elpizo")

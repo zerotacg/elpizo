@@ -5,7 +5,7 @@ from elpizo.util import green
 logger = logging.getLogger(__name__)
 
 
-class RedisHashAdapter(object):
+class AsyncRedisHashAdapter(object):
   _SERIAL_KEY = "serial"
 
   def __init__(self, hash_key, redis):

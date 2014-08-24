@@ -99,7 +99,7 @@ server is not running, please run:
       self.is_locked = False
 
   def _make_kvs(self, hash_key):
-    return kvs.RedisHashAdapter(hash_key, self.redis)
+    return kvs.AsyncRedisHashAdapter(hash_key, self.redis)
 
   def make_region_store(self, realm):
     assert realm.id is not None
