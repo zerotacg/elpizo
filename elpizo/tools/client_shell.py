@@ -44,9 +44,8 @@ class GameClient(threading.Thread):
   def run(self):
     self.loop = asyncio.new_event_loop()
     asyncio.set_event_loop(self.loop)
-    self.loop.run_until_complete(self._run())
+    self.loop.run_until_complete(green.coroutine(self._run)())
 
-  @green.coroutine
   def _run(self):
     websocket = green.await_coro(
         websockets.connect("ws://localhost:8765/socket"))
@@ -54,9 +53,8 @@ class GameClient(threading.Thread):
     self.protocol.run()
 
   def send(self, message):
-    self.loop.call_soon_threadsafe(self._send, message)
+    self.loop.call_soon_threadsafe(green.coroutine(self._send), message)
 
-  @green.coroutine
   def _send(self, message):
     self.protocol.send(None, message)
 

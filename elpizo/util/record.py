@@ -107,11 +107,17 @@ class Store(object):
       self.add(record)
     return self.records[id]
 
+  def keys(self):
+    """
+    Get all the persisted keys in the store.
+    """
+    return self.kvs.keys()
+
   def load_all(self):
     """
     Load all of the store into memory.
     """
-    for key in self.kvs.keys():
+    for key in self.keys():
       self.load(key)
 
   def create(self, record):

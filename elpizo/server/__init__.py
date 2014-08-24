@@ -34,8 +34,7 @@ class Server(object):
   def debug(self):
     return self.config.debug
 
-  @green.coroutine
-  def start(self, serve):
+  def start(self):
     logger.info("Welcome to elpizo.server!")
 
     if self.debug:
@@ -57,23 +56,20 @@ class Server(object):
     self.statsd = statsd.StatsClient(self.config.statsd_host,
                                      self.config.statsd_port,
                                      prefix="elpizo")
-
-    if serve:
-      logger.info("Server starting on port %s.", self.config.bind_port)
-      self.store.lock()
-
-      green.await_coro(
-          websockets.serve(self.accept,
-                           self.config.bind_host,
-                           self.config.bind_port))
-
     self.start_event.set()
 
-  @green.coroutine
+  def serve(self):
+    logger.info("Server starting on port %s.", self.config.bind_port)
+    self.store.lock()
+
+    green.await_coro(
+        websockets.serve(green.coroutine(self.accept),
+                         self.config.bind_host,
+                         self.config.bind_port))
+
   def accept(self, websocket, path):
     handlers.Dispatcher(self, net.Transport(websocket)).run()
 
-  @green.coroutine
   def on_close(self):
     logger.info("Server shutting down.")
 
@@ -87,7 +83,6 @@ class Server(object):
     logger.info("Goodbye.")
 
   def once(self, _f, *args, **kwargs):
-    @green.coroutine
     def _wrapper():
       green.await_coro(self.start_event.wait())
 
@@ -96,7 +91,7 @@ class Server(object):
       finally:
         self.loop.stop()
 
-    self.loop.call_soon_threadsafe(_wrapper)
+    self.loop.call_soon_threadsafe(green.coroutine(_wrapper))
     self.run(False)
 
   def run(self, serve=True):
@@ -106,11 +101,15 @@ class Server(object):
 
     self.start_event = asyncio.Event()
 
-    self.loop.run_until_complete(self.start(serve))
+    self.loop.run_until_complete(green.coroutine(self.start)())
+
+    if serve:
+      self.loop.run_until_complete(green.coroutine(self.serve)())
+
     try:
       self.loop.run_forever()
     finally:
-      self.loop.run_until_complete(self.on_close())
+      self.loop.run_until_complete(green.coroutine(self.on_close)())
 
 
 def main():
