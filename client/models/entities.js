@@ -114,7 +114,7 @@ export class Actor extends Entity {
     this.inventory = message.inventory.map(
       (message) => itemRegistry.makeItem(message));
 
-    this.moving = false;
+    this.isMoving = false;
     this.moveRemaining = 0;
   }
 
@@ -134,7 +134,7 @@ export class Actor extends Entity {
     this.location = this.location
         .offset(this.getDirectionVector().scale(this.moveRemaining))
         .map(Math.round);
-    this.moving = true;
+    this.isMoving = true;
     this.moveRemaining = 1;
   }
 
@@ -216,9 +216,9 @@ export class Player extends Actor {
       }
     }
 
-    if (!didMove && this.moving) {
+    if (!didMove && this.isMoving) {
       // We've stopped moving entirely.
-      this.moving = false;
+      this.isMoving = false;
       protocol.send(new packets.StopMovePacket());
     }
 

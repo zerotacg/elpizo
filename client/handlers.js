@@ -54,13 +54,13 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.STOP_MOVE, (origin, message) => {
-    game.realm.getEntity(origin).moving = false;
+    game.realm.getEntity(origin).isMoving = false;
   });
 
   protocol.on(packets.Packet.Type.TELEPORT, (origin, message) => {
     var entity = game.realm.getEntity(origin);
 
-    entity.moving = false;
+    entity.isMoving = false;
     entity.moveRemaining = 0;
     entity.location = geometry.Vector2.fromProtobuf(message.location);
     entity.direction = message.direction;
