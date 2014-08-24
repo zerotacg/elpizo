@@ -120,28 +120,28 @@ export function makeMobSprite(resourceName) {
               collections.repeat(3, (i) =>
                   new geometry.Vector2(32 * i, 32 * 0)),
               new geometry.Vector2(0, 0),
-              2),
+              3),
           w: new Sprite(
               resourceName,
               new geometry.Vector2(32, 32),
               collections.repeat(3, (i) =>
                   new geometry.Vector2(32 * i, 32 * 1)),
               new geometry.Vector2(0, 0),
-              2),
+              3),
           s: new Sprite(
               resourceName,
               new geometry.Vector2(32, 32),
               collections.repeat(3, (i) =>
                   new geometry.Vector2(32 * i, 32 * 2)),
               new geometry.Vector2(0, 0),
-              2),
+              3),
           e: new Sprite(
               resourceName,
               new geometry.Vector2(32, 32),
               collections.repeat(3, (i) =>
                   new geometry.Vector2(32 * i, 32 * 3)),
               new geometry.Vector2(0, 0),
-              2)
+              3)
       }
   };
 }
