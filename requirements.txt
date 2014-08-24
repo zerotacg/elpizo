@@ -8,3 +8,5 @@ statsd
 asyncio_redis
 websockets
 coloredlogs
+Flask-Async
+aiohttp

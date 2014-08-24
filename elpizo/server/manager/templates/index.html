@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <title>elpizo.server.manager</title>
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/dojo/1.10.0/dijit/themes/claro/claro.css" />
+    <style type="text/css">
+    html, body {
+      font: 13px "Helvetica Neue", Helvetica, Arial, sans-serif;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+    }
+    </style>
+  </head>
+  <body class="claro">
+    <div data-dojo-type="dojo/store/JsonRest"
+         data-dojo-id="store"
+         data-dojo-props="target: 'store.json'">
+      <script type="dojo/method"
+              data-dojo-event="getChildren"
+              data-dojo-args="object">
+        return this.query({id: object.id}).then(function (items) {
+          return items[0].items;
+        });
+      </script>
+    </div>
+
+    <div data-dojo-type="dijit/tree/ObjectStoreModel"
+         data-dojo-id="storeModel"
+         data-dojo-props="store: store, query: {id: 'root'}">
+      <script type="dojo/method"
+              data-dojo-event="mayHaveChildren"
+              data-dojo-args="item">
+         return item.hasChildren;
+      </script>
+     </div>
+
+    <div data-dojo-type="dijit/layout/BorderContainer"
+         data-dojo-props="design: 'sidebar', liveSplitters: true"
+         style="width: 100%; height: 100%;">
+        <div data-dojo-type="dijit/Tree"
+             data-dojo-props="region: 'leading', splitter: true, model: storeModel"
+             style="width: 20%;">
+          <script type="dojo/method"
+                  data-dojo-event="onClick"
+                  data-dojo-args="item">
+              require(["dojox/html/entities"], function(entities) {
+                if (!item.isRecord) {
+                  inspector.set("content", "<em>This item doesn't have a protobuf.</em>");
+                } else {
+                  inspector.set("content", "<em>Please wait...</em>");
+                  store.query({id: item.id, proto: true}).then(function (items) {
+                    inspector.set("content",
+                                  "<pre>" +
+                                  entities.encode(items[0].proto) +
+                                  "</pre>");
+                  });
+                }
+              });
+          </script>
+        </div>
+        <div data-dojo-type="dijit/layout/ContentPane"
+             data-dojo-props="region: 'center'"
+             data-dojo-id="inspector">
+          <h1>elpizo.server.manager</h1>
+          <p>Not much to see here yet, sorry.</p>
+        </div>
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/dojo/1.10.0/dojo/dojo.js" data-dojo-config="parseOnLoad: true"></script>
+  </body>
+</html>

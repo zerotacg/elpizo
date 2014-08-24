@@ -46,6 +46,11 @@ class RegionStore(record.Store):
                        for entity_id in region.entity_ids}
     return region
 
+  def keys(self):
+    for key in super().keys():
+      x, y = key.split(",")
+      yield geometry.Vector2(int(x), int(y))
+
 
 class EntityStore(record.Store):
   def __init__(self, parent, kvs):

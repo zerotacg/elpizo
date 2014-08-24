@@ -118,7 +118,7 @@ class Store(object):
     Load all of the store into memory.
     """
     for key in self.keys():
-      self.load(key)
+      yield self.load(key)
 
   def create(self, record):
     """
