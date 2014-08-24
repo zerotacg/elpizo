@@ -12,21 +12,21 @@ from elpizo.models.npcs import slime
 from elpizo.util import green
 
 
-def initdb(server):
-  server.store.lock()
+def initdb(app):
+  app.store.lock()
   try:
     input("This will DELETE ALL DATA from the database! Press ENTER to "
           "continue, or Ctrl+C to abort. ")
   except KeyboardInterrupt:
-    server.store.unlock()
+    app.store.unlock()
     return
 
-  green.await_coro(server.store.redis.flushdb())
+  green.await_coro(app.store.redis.flushdb())
 
-  server.store.lock()
+  app.store.lock()
 
   windvale = realm.Realm(name="Windvale", size=geometry.Vector2(128, 128))
-  server.store.realms.create(windvale)
+  app.store.realms.create(windvale)
 
   for base_y in range(0, windvale.size.y, realm.Region.SIZE):
     for base_x in range(0, windvale.size.x, realm.Region.SIZE):
@@ -109,7 +109,7 @@ def initdb(server):
 
   logging.info("Created Windvale.")
 
-  server.store.entities.create(entities.Player(
+  app.store.entities.create(entities.Player(
       name="Valjean",
       gender="male",
       body="light",
@@ -124,7 +124,7 @@ def initdb(server):
       legs_item=equipment.TealPants(),
       feet_item=equipment.BrownShoes()))
 
-  server.store.entities.create(entities.Player(
+  app.store.entities.create(entities.Player(
       name="Marius",
       gender="male",
       body="light",
@@ -136,7 +136,7 @@ def initdb(server):
       inventory=[],
       legs_item=equipment.TealPants()))
 
-  server.store.entities.create(entities.Player(
+  app.store.entities.create(entities.Player(
       name="Courfeyrac",
       gender="male",
       body="light",
@@ -148,7 +148,7 @@ def initdb(server):
       inventory=[],
       legs_item=equipment.TealPants()))
 
-  server.store.entities.create(entities.Player(
+  app.store.entities.create(entities.Player(
       name="Enjolras",
       gender="male",
       body="light",
@@ -160,7 +160,7 @@ def initdb(server):
       inventory=[],
       legs_item=equipment.TealPants()))
 
-  server.store.entities.create(slime.GreenSlime(
+  app.store.entities.create(slime.GreenSlime(
       name="Green Slime",
       direction=1,
       health=10,
@@ -168,7 +168,7 @@ def initdb(server):
       location=geometry.Vector2(12, 16),
       inventory=[]))
 
-  server.store.entities.create(entities.Drop(
+  app.store.entities.create(entities.Drop(
       item=restorative.Carrot(),
       location=geometry.Vector2(0, 1),
       realm_id=windvale.id))
@@ -177,7 +177,7 @@ def initdb(server):
 
 
 def main():
-  server.Server(config.make_parser().parse_args()).once(initdb)
+  server.Application(config.make_parser().parse_args()).once(initdb)
 
 
 if __name__ == "__main__":

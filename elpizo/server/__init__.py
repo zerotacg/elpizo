@@ -1,77 +1,33 @@
 import asyncio
 import asyncio_redis
-import coloredlogs
 import logging
 import statsd
 import websockets
 
 from asyncio_redis import encoders
-from elpizo.models import entities
-from elpizo.models import items
-from elpizo.models.items import registry as item_registry
-from elpizo.models.npcs import registry as npc_registry
+from elpizo import platform
 from elpizo.server import bus
 from elpizo.server import config
 from elpizo.server import handlers
 from elpizo.server import store
-from elpizo.server.util import kvs
 from elpizo.util import green
-from elpizo.util import mint
 from elpizo.util import net
-
-item_registry.initialize()
-npc_registry.initialize()
 
 logger = logging.getLogger(__name__)
 
 
-class Server(object):
-  def __init__(self, config, loop=None):
-    self.config = config
-    self.loop = loop or asyncio.get_event_loop()
-
-  @property
-  def debug(self):
-    return self.config.debug
-
-  def start(self):
-    logger.info("Welcome to elpizo.server!")
-
-    if self.debug:
-      logger.warn("Server is running in DEBUG mode! Tracebacks will be visible "
-                  "to the client!")
-
-    logger.info("Item types registered: %d", len(items.Item.REGISTRY))
-    logger.info("NPC types registered: %d", len(entities.NPC.REGISTRY))
-
-    with open(self.config.mint_key) as f:
-      self.mint = mint.Mint(f)
-    logger.info("Initialized mint (can mint: %s)", self.mint.can_mint)
-
+class Application(platform.Application):
+  def on_start(self):
     self.bus = bus.Bus()
-
     self.store = store.GameStore(green.await_coro(asyncio_redis.Pool.create(
         host=self.config.redis_host, port=self.config.redis_port,
         encoder=encoders.BytesEncoder())))
     self.statsd = statsd.StatsClient(self.config.statsd_host,
                                      self.config.statsd_port,
                                      prefix="elpizo")
-    self.start_event.set()
-
-  def serve(self):
-    logger.info("Server starting on port %s.", self.config.bind_port)
-    self.store.lock()
-
-    green.await_coro(
-        websockets.serve(green.coroutine(self.accept),
-                         self.config.bind_host,
-                         self.config.bind_port))
-
-  def accept(self, websocket, path):
-    handlers.Dispatcher(self, net.Transport(websocket)).run()
 
   def on_close(self):
-    logger.info("Server shutting down.")
+    logger.info("Application shutting down.")
 
     if self.store.is_locked:
       logger.info("Flushing stores.")
@@ -82,36 +38,27 @@ class Server(object):
 
     logger.info("Goodbye.")
 
-  def once(self, _f, *args, **kwargs):
-    def _wrapper():
-      green.await_coro(self.start_event.wait())
 
-      try:
-        _f(self, *args, **kwargs)
-      finally:
-        self.loop.stop()
+class Server(Application):
+  def on_start(self):
+    super().on_start()
+    self.listen(self.config.bind_port, self.config.bind_host)
 
-    self.loop.call_soon_threadsafe(green.coroutine(_wrapper))
-    self.run(False)
+  def listen(self, port, host):
+    logger.info("Server listening on %s:%s.", host, port)
+    self.store.lock()
 
-  def run(self, serve=True):
-    coloredlogs.install(getattr(logging, self.config.log_level, None))
+    green.await_coro(
+        websockets.serve(green.coroutine(self.accept),
+                         host, port))
 
-    logger.info("Using event loop: %s", type(self.loop).__name__)
-
-    self.start_event = asyncio.Event()
-
-    self.loop.run_until_complete(green.coroutine(self.start)())
-
-    if serve:
-      self.loop.run_until_complete(green.coroutine(self.serve)())
-
-    try:
-      self.loop.run_forever()
-    finally:
-      self.loop.run_until_complete(green.coroutine(self.on_close)())
+  def accept(self, websocket, path):
+    handlers.Dispatcher(self, net.Transport(websocket)).run()
 
 
 def main():
-  server = Server(config.make_parser().parse_args())
-  server.run()
+  Server(config.make_parser().parse_args()).run()
+
+
+if __name__ == "__main__":
+  main()

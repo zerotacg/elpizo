@@ -4,7 +4,6 @@ import math
 from elpizo import models
 from elpizo.models import geometry
 from elpizo.protos import realm_pb2
-from elpizo.server.util import kvs
 from elpizo.util import record
 
 

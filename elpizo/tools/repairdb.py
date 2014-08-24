@@ -6,20 +6,20 @@ from elpizo.server import config
 from elpizo.util import green
 
 
-def repair(server):
+def repair(app):
   input("Please MAKE SURE that no other instances of the server are running. "
         "Proceeding will BREAK THE LOCK! Press ENTER to continue or Ctrl+C "
         "to abort. ")
 
-  green.await_coro(server.store.redis.delete([
+  green.await_coro(app.store.redis.delete([
       store.GameStore._LOCK_KEY.encode("utf-8")]))
   logging.info("Lock broken.")
 
-  server.store.lock()
+  app.store.lock()
 
 
 def main():
-  server.Server(config.make_parser().parse_args()).once(repair)
+  server.Application(config.make_parser().parse_args()).once(repair)
 
 
 if __name__ == "__main__":
