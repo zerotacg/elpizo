@@ -47,7 +47,7 @@ def coroutine(f, *, loop=None):
     def _inner():
       try:
         result = f(*args, **kwargs)
-      except Exception as e:
+      except BaseException as e:
         fut.set_exception(e)
       else:
         fut.set_result(result)
