@@ -376,7 +376,7 @@ class RendererVisitor extends entities.EntityVisitor {
   }
 
   visitActor(entity) {
-      var state = entity.moving ? "walking" : "standing";
+      var state = entity.isMoving ? "walking" : "standing";
       var direction = entity.direction == entities.Directions.N ? "n" :
                       entity.direction == entities.Directions.W ? "w" :
                       entity.direction == entities.Directions.S ? "s" :
