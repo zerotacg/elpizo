@@ -22,10 +22,9 @@ message Packet {
     PICK_UP = 12;
     DESPAWN_ENTITY = 13;
     INVENTORY = 14;
-    REGION_CHANGE = 15;
-    ECHO = 16;
-    TURN = 17;
-    ATTACK = 18;
+    ECHO = 15;
+    TURN = 16;
+    ATTACK = 17;
   }
 
   optional Type type = 1;
@@ -170,15 +169,6 @@ message InventoryPacket {
   option (packet_type) = INVENTORY;
 
   optional Item item = 1;
-}
-
-message RegionChangePacket {
-  // Sent by the server to indicate that an entity has changed regions.
-  //
-  // Direction: Server -> Client
-  option (packet_type) = REGION_CHANGE;
-
-  repeated Vector2 locations = 1;
 }
 
 message EchoPacket {
