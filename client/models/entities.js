@@ -219,9 +219,9 @@ export class Player extends Actor {
               inputState.stick(input.Key.UP) ||
               inputState.stick(input.Key.RIGHT) ||
               inputState.stick(input.Key.DOWN)) {
-            targetEntities.forEach((entity) => {
-              protocol.send(new packets.AttackPacket({actorId: entity.id}));
-            })
+            protocol.send(new packets.AttackPacket({
+                actorIds: targetEntities.map((entity) => entity.id)
+            }));
             this.attackRemaining = 0;
           }
         }

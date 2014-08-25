@@ -92,6 +92,6 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.ATTACK, (origin, message) => {
-    console.log(origin, "attacked", message.actorId);
+    game.realm.getEntity(origin).attackRemaining = 0;
   });
 }

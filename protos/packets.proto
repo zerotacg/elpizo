@@ -208,5 +208,8 @@ message AttackPacket {
   // Direction: Server <-> Client
   option (packet_type) = ATTACK;
 
-  optional string actor_id = 1;
+  // The client is required to indicate the actors it attacked as the actors
+  // may have moved from their original position on the server, but the client
+  // state may not have been synchronized yet.
+  repeated string actor_ids = 1;
 }

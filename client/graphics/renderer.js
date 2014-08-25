@@ -288,7 +288,8 @@ export class Renderer extends events.EventEmitter {
           for (var i = 0; i < 4; ++i) {
             var dv = entities.getDirectionVector(i);
             var isPassable = region.isPassable(
-                region.location.offset(new geometry.Vector2(rx, ry)), i);
+                (new geometry.Rectangle(rx, ry, 1, 1)).offset(region.location),
+                i);
 
             dv.x = -dv.x;
             dv.y = -dv.y;
