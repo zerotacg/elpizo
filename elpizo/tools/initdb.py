@@ -2,7 +2,6 @@ import asyncio
 import logging
 
 from elpizo import server
-from elpizo.server import config
 from elpizo.models import entities
 from elpizo.models import geometry
 from elpizo.models import realm
@@ -177,7 +176,7 @@ def initdb(app):
 
 
 def main():
-  server.Application(config.make_parser().parse_args()).once(initdb)
+  server.Application(server.make_config_parser().parse_args()).once(initdb)
 
 
 if __name__ == "__main__":

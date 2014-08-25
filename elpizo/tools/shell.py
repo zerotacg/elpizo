@@ -4,7 +4,6 @@ import threading
 import os
 
 from elpizo import server
-from elpizo.server import config
 from elpizo.util import shell
 
 logger = logging.getLogger(__name__)
@@ -41,8 +40,17 @@ app     -> An instance of elpizo.server.server.Application.
 
 
 def main():
-  shell.Shell(ServerShell, config.make_parser().parse_args(),
-              banner1=BANNER).mainloop()
+  parser = server.make_config_parser()
+  shell.add_parser_arguments(parser)
+  conf = parser.parse_args()
+
+  s = shell.Shell(ServerShell, conf, banner1=BANNER)
+
+  if conf.filename is not None:
+    with open(conf.filename, "r") as f:
+      s.thread.do(s.ex, f.read())
+  else:
+    s.mainloop()
 
 
 if __name__ == "__main__":

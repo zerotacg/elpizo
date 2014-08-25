@@ -10,6 +10,14 @@ from elpizo.util import net
 logger = logging.getLogger(__name__)
 
 
+def make_config_parser(*args, **kwargs):
+  parser = platform.make_config_parser(*args, **kwargs)
+  parser.add_argument("--connect-uri", action="store",
+                      default="ws://localhost:8081/socket",
+                      help="Address to connect to.")
+  return parser
+
+
 class Client(platform.Application):
   def make_protocol(self, transport):
     raise NotImplementedError

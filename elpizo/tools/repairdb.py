@@ -2,7 +2,6 @@ import logging
 
 from elpizo import server
 from elpizo.server import store
-from elpizo.server import config
 from elpizo.util import green
 
 
@@ -16,7 +15,7 @@ def repair(app):
 
 
 def main():
-  server.Application(config.make_parser().parse_args()).once(repair)
+  server.Application(server.make_config_parser().parse_args()).once(repair)
 
 
 if __name__ == "__main__":

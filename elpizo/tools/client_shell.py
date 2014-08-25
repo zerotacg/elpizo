@@ -3,7 +3,6 @@ import os
 import threading
 
 from elpizo import client
-from elpizo.client import config
 from elpizo.protos import packets_pb2
 from elpizo.util import net
 from elpizo.util import shell
@@ -52,14 +51,23 @@ app     -> An instance of elpizo.client.client.Client.
 
 
 def main():
-  parser = config.make_parser()
+  parser = client.make_config_parser()
   parser.add_argument("credentials", help="Credentials to mint.")
   parser.add_argument("--token-expiry",
                       help="When to expire credentials. NOTE: Credentials "
                            "cannot be revoked without generating a new minting "
                            "key pair!", type=int, default=100)
+  shell.add_parser_arguments(parser)
 
-  shell.Shell(ClientShell, parser.parse_args(), banner1=BANNER).mainloop()
+  conf = parser.parse_args()
+
+  s = shell.Shell(ClientShell, conf, banner1=BANNER)
+
+  if conf.filename is not None:
+    with open(conf.filename, "r") as f:
+      s.thread.do(s.ex, f.read())
+  else:
+    s.mainloop()
 
 
 if __name__ == "__main__":

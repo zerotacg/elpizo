@@ -14,6 +14,10 @@ from IPython.utils import warn
 logger = logging.getLogger(__name__)
 
 
+def add_parser_arguments(parser):
+  parser.add_argument("filename", help="Filename to execute", nargs="?")
+
+
 class ShellThread(threading.Thread):
   daemon = True
 

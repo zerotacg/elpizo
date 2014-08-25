@@ -2,7 +2,6 @@ import base64
 import socket
 import sys
 
-from elpizo import config
 from elpizo import platform
 from urllib import parse
 
@@ -19,7 +18,7 @@ def do_mint(app, credentials, expiry):
 
 
 def main():
-  parser = config.make_parser()
+  parser = platform.make_config_parser()
   parser.add_argument("credentials", help="Credentials to mint.")
   parser.add_argument("--token-expiry",
                       help="When to expire credentials. NOTE: Credentials "

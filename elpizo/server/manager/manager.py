@@ -3,7 +3,6 @@ import logging
 
 from aiohttp import wsgi
 from elpizo import server
-from elpizo.server import config
 from elpizo.server.manager import views
 from elpizo.util import green
 
@@ -33,4 +32,4 @@ class Manager(server.Application):
 
 
 def main():
-  Manager(config.make_parser().parse_args()).run()
+  Manager(server.make_config_parser().parse_args()).run()

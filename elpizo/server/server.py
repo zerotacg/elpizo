@@ -7,13 +7,29 @@ import websockets
 from asyncio_redis import encoders
 from elpizo import platform
 from elpizo.server import bus
-from elpizo.server import config
 from elpizo.server import handlers
 from elpizo.server import store
 from elpizo.util import green
 from elpizo.util import net
 
 logger = logging.getLogger(__name__)
+
+
+def make_config_parser(*args, **kwargs):
+  parser = platform.make_config_parser(*args, **kwargs)
+  parser.add_argument("--bind-host", action="store", default="localhost",
+                      help="Host to bind to.")
+  parser.add_argument("--bind-port", action="store", default=8765, type=int,
+                      help="Port to bind to.")
+  parser.add_argument("--redis-host", action="store", default="localhost",
+                      help="Redis host to connect to.")
+  parser.add_argument("--redis-port", action="store", default=6379, type=int,
+                      help="Redis port to connect to.")
+  parser.add_argument("--statsd-host", action="store", default="localhost",
+                      help="statsd host to connect to.")
+  parser.add_argument("--statsd-port", action="store", default=8125, type=int,
+                      help="statsd port to connect to.")
+  return parser
 
 
 class Application(platform.Application):
@@ -60,7 +76,7 @@ class Server(Application):
 
 
 def main():
-  Server(config.make_parser().parse_args()).run()
+  Server(make_config_parser().parse_args()).run()
 
 
 if __name__ == "__main__":
