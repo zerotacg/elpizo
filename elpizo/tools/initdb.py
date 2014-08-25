@@ -166,7 +166,7 @@ def initdb(app):
       direction=1,
       health=10,
       realm_id=windvale.id,
-      location=geometry.Vector2(12, 16),
+      location=geometry.Vector2(0, 2),
       inventory=[]))
 
   app.store.entities.create(entities.Drop(

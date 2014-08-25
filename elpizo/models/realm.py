@@ -19,6 +19,10 @@ class Realm(record.ProtobufRecord):
   def to_protobuf(self):
     return realm_pb2.Realm(name=self.name, size=self.size.to_protobuf())
 
+  @property
+  def bounds(self):
+    return geometry.Rectangle(0, 0, self.size.x, self.size.y)
+
   @classmethod
   def from_protobuf(cls, proto):
     return cls(name=proto.name,
@@ -46,12 +50,23 @@ class Realm(record.ProtobufRecord):
       self.regions.save_all()
 
   def is_passable(self, bounds, direction):
-    try:
-      regions = list(self.load_intersecting_regions(bounds))
-    except KeyError:
+    if not self.bounds.contains(bounds):
       return False
 
-    for region in self.load_intersecting_regions(bounds):
+    regions = []
+
+    for y in range(Region.floor(bounds.top), Region.ceil(bounds.bottom),
+                   Region.SIZE):
+      for x in range(Region.floor(bounds.left), Region.ceil(bounds.right),
+                     Region.SIZE):
+        try:
+          region = self.regions.load(geometry.Vector2(x, y))
+        except KeyError:
+          return False
+        else:
+          regions.append(region)
+
+    for region in regions:
       if not region.is_passable(bounds, direction):
         return False
 

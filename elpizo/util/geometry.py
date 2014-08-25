@@ -55,9 +55,9 @@ class Rectangle(object):
     return self.left < other.right and self.right > other.left and \
            self.top < other.bottom and self.bottom > other.top
 
-  def contains(self, vec):
-    return self.left <= vec.x and self.right > vec.x and \
-           self.top <= vec.y and self.bottom > vec.y
+  def contains(self, other):
+    return self.left <= other.left and self.right >= other.right and \
+           self.top <= other.top and self.bottom >= other.bottom
 
   def offset(self, vec):
     return self.__class__(self.left + vec.x, self.top + vec.y,

@@ -35,13 +35,13 @@ export class Realm {
     // This should only be called at region boundaries, to ensure that
     // off-screen regions aren't culled away prematurely.
     Object.keys(this.regions).map((k) => {
-      if (!bbox.contains(this.regions[k].location)) {
+      if (!bbox.contains(this.regions[k].getBounds())) {
         delete this.regions[k];
       }
     });
 
     Object.keys(this.entities).map((k) => {
-      if (!bbox.contains(this.entities[k].location)) {
+      if (!bbox.contains(this.entities[k].getBounds())) {
         delete this.entities[k];
       }
     });
@@ -51,7 +51,15 @@ export class Realm {
     return this.getRegionAt(location.map(Region.floor));
   }
 
+  getBounds() {
+    return new geometry.Rectangle(0, 0, this.size.x, this.size.y);
+  }
+
   isPassable(bounds, direction) {
+    if (!this.getBounds().contains(bounds)) {
+      return false;
+    }
+
     for (var y = Region.floor(bounds.top);
          y < Region.ceil(bounds.getBottom());
          y += Region.SIZE) {

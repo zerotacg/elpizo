@@ -220,7 +220,9 @@ export class Player extends Actor {
               inputState.stick(input.Key.RIGHT) ||
               inputState.stick(input.Key.DOWN)) {
             protocol.send(new packets.AttackPacket({
-                actorIds: targetEntities.map((entity) => entity.id)
+                actorIds: targetEntities
+                    .filter((entity) => entity instanceof Actor)
+                    .map((entity) => entity.id)
             }));
             this.attackRemaining = 0;
           }

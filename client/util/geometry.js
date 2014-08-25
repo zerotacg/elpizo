@@ -81,9 +81,9 @@ export class Rectangle {
            this.top < other.getBottom() && this.getBottom() > other.top;
   }
 
-  contains(vec) {
-    return this.left <= vec.x && this.getRight() > vec.x &&
-           this.top <= vec.y && this.getBottom() > vec.y;
+  contains(other) {
+    return this.left <= other.left && this.getRight() >= other.getRight() &&
+           this.top <= other.top && this.getBottom() >= other.getBottom();
   }
 
   offset(vec) {
