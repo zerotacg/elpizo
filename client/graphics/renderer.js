@@ -315,7 +315,7 @@ export class Renderer extends events.EventEmitter {
 
     ctx.save();
     ctx.translate(sOffset.x, sOffset.y);
-    entity.visit(new RendererVisitor(this, ctx));
+    entity.accept(new RendererVisitor(this, ctx));
     ctx.restore();
   }
 }

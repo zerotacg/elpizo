@@ -33,7 +33,7 @@ export class Entity {
     return true;
   }
 
-  visit(visitor) {
+  accept(visitor) {
     visitor.visitEntity(this);
   }
 }
@@ -46,8 +46,8 @@ export class Building extends Entity {
     this.doorPosition = message.doorPosition;
   }
 
-  visit(visitor) {
-    super.visit(visitor);
+  accept(visitor) {
+    super.accept(visitor);
     visitor.visitBuilding(this);
   }
 
@@ -73,8 +73,8 @@ export class Drop extends Entity {
     protocol.send(new packets.PickUpPacket({dropId: this.id}));
   }
 
-  visit(visitor) {
-    super.visit(visitor);
+  accept(visitor) {
+    super.accept(visitor);
     visitor.visitDrop(this);
   }
 }
@@ -175,8 +175,8 @@ export class Actor extends Entity {
     }
   }
 
-  visit(visitor) {
-    super.visit(visitor);
+  accept(visitor) {
+    super.accept(visitor);
     visitor.visitActor(this);
   }
 }
@@ -295,8 +295,8 @@ export class Player extends Actor {
     }
   }
 
-  visit(visitor) {
-    super.visit(visitor);
+  accept(visitor) {
+    super.accept(visitor);
     visitor.visitPlayer(this);
   }
 }
@@ -309,8 +309,8 @@ export class NPC extends Actor {
     this.species = message.species;
   }
 
-  visit(visitor) {
-    super.visit(visitor);
+  accept(visitor) {
+    super.accept(visitor);
     visitor.visitNPC(this);
   }
 }
