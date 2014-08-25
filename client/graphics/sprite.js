@@ -36,55 +36,85 @@ export function makeHumanoidSprite(resourceName) {
   return {
       standing: {
           n: new Sprite(resourceName,
-                        new geometry.Vector2(32, 64),
-                        [new geometry.Vector2(16, 64 * 0)],
-                        new geometry.Vector2(0, 32),
+                        new geometry.Vector2(64, 64),
+                        [new geometry.Vector2(0, 64 * 8)],
+                        new geometry.Vector2(16, 32),
                         0),
           w: new Sprite(resourceName,
-                        new geometry.Vector2(32, 64),
-                        [new geometry.Vector2(16, 64 * 1)],
-                        new geometry.Vector2(0, 32),
+                        new geometry.Vector2(64, 64),
+                        [new geometry.Vector2(0, 64 * 9)],
+                        new geometry.Vector2(16, 32),
                         0),
           s: new Sprite(resourceName,
-                        new geometry.Vector2(32, 64),
-                        [new geometry.Vector2(16, 64 * 2)],
-                        new geometry.Vector2(0, 32),
+                        new geometry.Vector2(64, 64),
+                        [new geometry.Vector2(0, 64 * 10)],
+                        new geometry.Vector2(16, 32),
                         0),
           e: new Sprite(resourceName,
-                        new geometry.Vector2(32, 64),
-                        [new geometry.Vector2(16, 64 * 3)],
-                        new geometry.Vector2(0, 32),
+                        new geometry.Vector2(64, 64),
+                        [new geometry.Vector2(0, 64 * 11)],
+                        new geometry.Vector2(16, 32),
                         0)
       },
       walking: {
           n: new Sprite(
               resourceName,
-              new geometry.Vector2(32, 64),
+              new geometry.Vector2(64, 64),
               collections.repeat(8, (i) =>
-                  new geometry.Vector2(16 + 64 * (i + 1), 64 * 8)),
-              new geometry.Vector2(0, 32),
+                  new geometry.Vector2(64 * (i + 1), 64 * 8)),
+              new geometry.Vector2(16, 32),
               4),
           w: new Sprite(
               resourceName,
-              new geometry.Vector2(32, 64),
+              new geometry.Vector2(64, 64),
               collections.repeat(8, (i) =>
-                  new geometry.Vector2(16 + 64 * (i + 1), 64 * 9)),
-              new geometry.Vector2(0, 32),
+                  new geometry.Vector2(64 * (i + 1), 64 * 9)),
+              new geometry.Vector2(16, 32),
               4),
           s: new Sprite(
               resourceName,
-              new geometry.Vector2(32, 64),
+              new geometry.Vector2(64, 64),
               collections.repeat(8, (i) =>
-                  new geometry.Vector2(16 + 64 * (i + 1), 64 * 10)),
-              new geometry.Vector2(0, 32),
+                  new geometry.Vector2(64 * (i + 1), 64 * 10)),
+              new geometry.Vector2(16, 32),
               4),
           e: new Sprite(
               resourceName,
-              new geometry.Vector2(32, 64),
+              new geometry.Vector2(64, 64),
               collections.repeat(8, (i) =>
-                  new geometry.Vector2(16 + 64 * (i + 1), 64 * 11)),
-              new geometry.Vector2(0, 32),
+                  new geometry.Vector2(64 * (i + 1), 64 * 11)),
+              new geometry.Vector2(16, 32),
               4)
+      },
+      slashing: {
+          n: new Sprite(
+              resourceName,
+              new geometry.Vector2(64, 64),
+              collections.repeat(5, (i) =>
+                  new geometry.Vector2(64 * (i + 1), 64 * 12)),
+              new geometry.Vector2(16, 32),
+              5),
+          w: new Sprite(
+              resourceName,
+              new geometry.Vector2(64, 64),
+              collections.repeat(5, (i) =>
+                  new geometry.Vector2(64 * (i + 1), 64 * 13)),
+              new geometry.Vector2(16, 32),
+              5),
+          s: new Sprite(
+              resourceName,
+              new geometry.Vector2(64, 64),
+              collections.repeat(5, (i) =>
+                  new geometry.Vector2(64 * (i + 1), 64 * 14)),
+              new geometry.Vector2(16, 32),
+              5),
+          e: new Sprite(
+              resourceName,
+              new geometry.Vector2(64, 64),
+              collections.repeat(5, (i) =>
+                  new geometry.Vector2(64 * (i + 1), 64 * 15)),
+              new geometry.Vector2(16, 32),
+              5)
       }
   };
 }
@@ -114,6 +144,36 @@ export function makeMobSprite(resourceName) {
                         0)
       },
       walking: {
+          n: new Sprite(
+              resourceName,
+              new geometry.Vector2(32, 32),
+              collections.repeat(3, (i) =>
+                  new geometry.Vector2(32 * i, 32 * 0)),
+              new geometry.Vector2(0, 0),
+              3),
+          w: new Sprite(
+              resourceName,
+              new geometry.Vector2(32, 32),
+              collections.repeat(3, (i) =>
+                  new geometry.Vector2(32 * i, 32 * 1)),
+              new geometry.Vector2(0, 0),
+              3),
+          s: new Sprite(
+              resourceName,
+              new geometry.Vector2(32, 32),
+              collections.repeat(3, (i) =>
+                  new geometry.Vector2(32 * i, 32 * 2)),
+              new geometry.Vector2(0, 0),
+              3),
+          e: new Sprite(
+              resourceName,
+              new geometry.Vector2(32, 32),
+              collections.repeat(3, (i) =>
+                  new geometry.Vector2(32 * i, 32 * 3)),
+              new geometry.Vector2(0, 0),
+              3)
+      },
+      slashing: {
           n: new Sprite(
               resourceName,
               new geometry.Vector2(32, 32),

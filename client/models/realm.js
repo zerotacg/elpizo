@@ -51,15 +51,23 @@ export class Realm {
     return this.getRegionAt(location.map(Region.floor));
   }
 
-  isPassable(location, direction) {
-    var region = this.getClosestRegionTo(location);
-    if (region === null || !region.isPassable(location, direction)) {
-      return false;
+  isPassable(bounds, direction) {
+    for (var y = Region.floor(bounds.top);
+         y < Region.ceil(bounds.getBottom());
+         y += Region.SIZE) {
+      for (var x = Region.floor(bounds.left);
+           x < Region.ceil(bounds.getRight());
+           x += Region.SIZE) {
+        var region = this.getRegionAt(new geometry.Vector2(x, y));
+        if (region === null || !region.isPassable(bounds, direction)) {
+          return false;
+        }
+      }
     }
 
-    if (this.getAllEntities().filter(
-        (entity) => !entity.isPassable(location, direction)).some((entity) =>
-      entity.getBounds().contains(location))) {
+    if (this.getAllEntities().some((entity) =>
+        entity.getBounds().intersects(bounds) &&
+        !entity.isPassable(direction))) {
       return false;
     }
 
@@ -107,10 +115,19 @@ export class Region {
     return [this.location.x, this.location.y].join(",");
   }
 
-  isPassable(location, direction) {
-    location = location.offset(this.location.negate());
-    return !!((this.passabilities.getCell(location.x, location.y) >>
-        direction) & 0x1);
+  isPassable(bounds, direction) {
+    bounds = bounds.offset(this.location.negate());
+
+    for (var y = bounds.top; y < bounds.getBottom(); ++y) {
+      for (var x = bounds.left; x < bounds.getRight(); ++x) {
+        var passability = this.passabilities.getCell(x, y);
+        if (passability !== null && !((passability >> direction) & 0x1)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   getBounds() {

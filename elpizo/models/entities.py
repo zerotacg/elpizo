@@ -75,6 +75,9 @@ class Entity(record.PolymorphicProtobufRecord):
     for region in self.regions:
       region.entities.add(self)
 
+  def is_passable(self, direction):
+    return False
+
 
 class Actor(Entity):
   BASE_SPEED = 5
@@ -108,6 +111,9 @@ class Actor(Entity):
     if getattr(self, "feet_item", None):
       message.feet_item.MergeFrom(self.feet_item.to_protobuf())
 
+    if getattr(self, "weapon", None):
+      message.weapon.MergeFrom(self.weapon.to_protobuf())
+
     proto.Extensions[entities_pb2.Actor.ext].MergeFrom(message)
     return proto
 
@@ -132,7 +138,9 @@ class Actor(Entity):
                   legs_item=items.Item.from_protobuf_polymorphic(proto.legs_item)
                       if proto.HasField("legs_item") else None,
                   feet_item=items.Item.from_protobuf_polymorphic(proto.feet_item)
-                      if proto.HasField("feet_item") else None)
+                      if proto.HasField("feet_item") else None,
+                  weapon=items.Item.from_protobuf_polymorphic(proto.weapon)
+                      if proto.HasField("weapon") else None)
     return record
 
   def get_realm(self, realm_store):
@@ -229,3 +237,6 @@ class Drop(Entity):
     proto = proto.Extensions[entities_pb2.Drop.ext]
     record.update(item=items.Item.from_protobuf_polymorphic(proto.item))
     return record
+
+  def is_passable(self, direction):
+    return True

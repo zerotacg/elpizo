@@ -45,14 +45,20 @@ class Realm(record.ProtobufRecord):
       logger.info("Saving all child regions for realm: %s", self.id)
       self.regions.save_all()
 
-  def is_passable(self, location, direction):
+  def is_passable(self, bounds, direction):
     try:
-      region = self.regions.load_closest(location)
+      regions = list(self.load_intersecting_regions(bounds))
     except KeyError:
       return False
 
-    if not region.is_passable(location, direction):
-      return False
+    for region in self.load_intersecting_regions(bounds):
+      if not region.is_passable(bounds, direction):
+        return False
+
+      for entity in region.entities:
+        if entity.bounds.intersects(bounds) and \
+           not entity.is_passable(direction):
+         return False
 
     return True
 
@@ -101,11 +107,16 @@ class Region(record.ProtobufRecord):
                passabilities=list(proto.passabilities),
                entity_ids=list(proto.entity_ids))
 
-  def is_passable(self, location, direction):
-    location = location.offset(self.location.negate())
-    i = location.y * Region.SIZE + location.x
+  def is_passable(self, bounds, direction):
+    bounds = bounds.offset(self.location.negate())
 
-    return bool((self.passabilities[i] >> direction) & 0x1)
+    for y in range(bounds.top, bounds.bottom):
+      for x in range(bounds.left, bounds.right):
+        if 0 <= x < Region.SIZE and 0 <= y < Region.SIZE and \
+          not ((self.passabilities[y * Region.SIZE + x] >> direction) & 0x1):
+          return False
+
+    return True
 
 
 class Layer(object):

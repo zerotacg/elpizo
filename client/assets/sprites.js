@@ -33,6 +33,9 @@ export default = {
   "equipment.male.brown_shoes":
       sprite.makeHumanoidSprite("equipment/male/brown_shoes.png"),
 
+  "equipment.male.dagger":
+      sprite.makeHumanoidSprite("equipment/male/dagger.png"),
+
   "tile.grassland":
       sprite.makeAutotile("tiles/TileA2.png",
                           new geometry.Vector2(8 * 32, 6 * 32)),

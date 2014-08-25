@@ -29,8 +29,8 @@ export class Entity {
   onContact(avatar, protocol) {
   }
 
-  isPassable(location, direction) {
-    return true;
+  isPassable(direction) {
+    return false;
   }
 
   accept(visitor) {
@@ -49,14 +49,6 @@ export class Building extends Entity {
   accept(visitor) {
     visitor.visitBuilding(this);
   }
-
-  isPassable(location, direction) {
-    if (location.x == this.getBounds().left + this.doorPosition &&
-        location.y == this.getBounds().getBottom() - 1) {
-      return true;
-    }
-    return false;
-  }
 }
 
 export class Drop extends Entity {
@@ -74,6 +66,10 @@ export class Drop extends Entity {
 
   accept(visitor) {
     visitor.visitDrop(this);
+  }
+
+  isPassable(direction) {
+    return true;
   }
 }
 export var Directions = {
@@ -123,8 +119,8 @@ export class Actor extends Entity {
       (message) => itemRegistry.makeItem(message));
 
     this.isMoving = false;
+    this.attackRemaining = 1;
     this.moveRemaining = 0;
-    this.attackCooldown = 0;
   }
 
   getPreviousLocation() {
@@ -151,11 +147,16 @@ export class Actor extends Entity {
     return Actor.BASE_SPEED;
   }
 
+  getAttackCooldown() {
+    return Actor.DEFAULT_ATTACK_COOLDOWN;
+  }
+
   update(dt) {
     super.update(dt);
 
     // Update attack cooldown.
-    this.attackCooldown = Math.max(0, this.attackCooldown - dt);
+    this.attackRemaining = Math.min(1, this.attackRemaining + dt *
+                                       this.getAttackCooldown());
 
     // Update move remaining.
     if (this.moveRemaining > 0) {
@@ -178,13 +179,13 @@ export class Actor extends Entity {
   }
 }
 
-Actor.BASE_SPEED = 5;
-Actor.DEFAULT_ATTACK_COOLDOWN = 1000;
+Actor.BASE_SPEED = 4;
+Actor.DEFAULT_ATTACK_COOLDOWN = 2;
 
 export class Player extends Actor {
   updateAsAvatar(dt, inputState, protocol) {
-    // Don't allow any avatar updates if there are movements pending.
-    if (this.moveRemaining > 0) {
+    // Don't allow any avatar updates if there are movements or attacks pending.
+    if (this.moveRemaining > 0 || this.attackRemaining < 1) {
       return;
     }
 
@@ -213,32 +214,25 @@ export class Player extends Actor {
 
       if (attackMode) {
         // Attack mode logic.
-        if (this.attackCooldown === 0) {
+        if (this.attackRemaining >= 1) {
           if (inputState.stick(input.Key.LEFT) ||
               inputState.stick(input.Key.UP) ||
               inputState.stick(input.Key.RIGHT) ||
               inputState.stick(input.Key.DOWN)) {
             targetEntities.forEach((entity) => {
               protocol.send(new packets.AttackPacket({actorId: entity.id}));
-              this.attackCooldown = this.weapon !== null ?
-                                    this.weapon.cooldown :
-                                    Actor.DEFAULT_ATTACK_COOLDOWN;
             })
+            this.attackRemaining = 0;
           }
         }
       } else {
         // Movement mode logic.
-        if (this.realm.isPassable(target, this.direction) &&
-            targetEntities.length === 0) {
+        if (this.realm.isPassable(targetBounds, this.direction)) {
           this.step();
           didMove = true;
 
           protocol.send(new packets.MovePacket());
 
-          // Trigger all target contacts (before we arrive, but this is the
-          // only time we can guarantee it.)
-          // NOTE: not reachable code right now, but will be once
-          // intersectability is implemented
           targetEntities.forEach((entity) =>
             entity.onContact(this, protocol));
         }

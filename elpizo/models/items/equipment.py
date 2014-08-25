@@ -11,3 +11,7 @@ class TealPants(items.Item):
 
 class BrownShoes(items.Item):
   TYPE = "brown_shoes"
+
+
+class Dagger(items.Item):
+  TYPE = "dagger"

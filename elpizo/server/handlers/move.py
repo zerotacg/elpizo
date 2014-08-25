@@ -20,7 +20,8 @@ def on_move(protocol, actor, message):
         entities.Entity.DIRECTION_VECTORS[actor.direction])
 
   # Check for realm passability.
-  if not actor.realm.is_passable(new_location, actor.direction):
+  if not actor.realm.is_passable(actor.bbox.offset(new_location),
+                                 actor.direction):
     protocol.send(actor.id, packets_pb2.TeleportPacket(
         location=actor.location.to_protobuf(),
         direction=actor.direction))
@@ -30,19 +31,6 @@ def on_move(protocol, actor, message):
 
   with actor.movement():
     actor.location = new_location
-
-  # Check for entity-entity passability. We have to do the movement first to
-  # ensure that we're searching the correct regions (but we just revert later).
-  for region in actor.regions:
-    for entity in region.entities:
-      if entity is not actor and entity.bounds.intersects(actor.bounds):
-        with actor.movement():
-          actor.location = old_location
-
-        protocol.send(actor.id, packets_pb2.TeleportPacket(
-            location=actor.location.to_protobuf(),
-            direction=actor.direction))
-        return
 
   for region in last_regions:
     protocol.server.bus.broadcast(

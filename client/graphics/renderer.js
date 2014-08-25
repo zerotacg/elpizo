@@ -380,7 +380,19 @@ class RendererVisitor extends entities.EntityVisitor {
   visitActor(entity) {
     super.visitActor(entity);
 
-    var state = entity.isMoving ? "walking" : "standing";
+    var attacking = entity.attackRemaining < 1;
+
+    var state = entity.isMoving ? "walking" :
+                attacking ? "slashing" :
+                "standing";
+
+    var elapsed;
+    if (attacking) {
+      elapsed = entity.attackRemaining;
+    } else {
+      elapsed = this.renderer.elapsed * entity.getSpeed();
+    }
+
     var direction = entity.direction == entities.Directions.N ? "n" :
                     entity.direction == entities.Directions.W ? "w" :
                     entity.direction == entities.Directions.S ? "s" :
@@ -401,15 +413,15 @@ class RendererVisitor extends entities.EntityVisitor {
         entity.headItem,
         entity.torsoItem,
         entity.legsItem,
-        entity.feetItem
+        entity.feetItem,
+        entity.weapon
     ]
         .filter((item) => item !== null)
         .map((item) => ["equipment", entity.gender, item.type].join(".")));
 
     names.forEach((name) => {
         sprites[name][state][direction]
-            .render(this.renderer.resources, this.ctx,
-                    this.renderer.elapsed * entity.getSpeed());
+            .render(this.renderer.resources, this.ctx, elapsed);
     })
   }
 

@@ -7,6 +7,7 @@ from elpizo.models import geometry
 from elpizo.models import realm
 from elpizo.models.items import equipment
 from elpizo.models.items import restorative
+from elpizo.models.items import weapons
 from elpizo.models.npcs import slime
 from elpizo.util import green
 
@@ -121,7 +122,8 @@ def initdb(app):
       inventory=[],
       torso_item=equipment.WhiteLongsleeveShirt(),
       legs_item=equipment.TealPants(),
-      feet_item=equipment.BrownShoes()))
+      feet_item=equipment.BrownShoes(),
+      weapon=equipment.Dagger()))
 
   app.store.entities.create(entities.Player(
       name="Marius",

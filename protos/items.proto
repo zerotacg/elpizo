@@ -8,6 +8,4 @@ message Weapon {
   extend Item {
     optional Weapon ext = 100;
   }
-
-  optional uint32 cooldown = 1;
 }
