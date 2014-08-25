@@ -47,7 +47,6 @@ export class Building extends Entity {
   }
 
   accept(visitor) {
-    super.accept(visitor);
     visitor.visitBuilding(this);
   }
 
@@ -74,7 +73,6 @@ export class Drop extends Entity {
   }
 
   accept(visitor) {
-    super.accept(visitor);
     visitor.visitDrop(this);
   }
 }
@@ -176,7 +174,6 @@ export class Actor extends Entity {
   }
 
   accept(visitor) {
-    super.accept(visitor);
     visitor.visitActor(this);
   }
 }
@@ -296,7 +293,6 @@ export class Player extends Actor {
   }
 
   accept(visitor) {
-    super.accept(visitor);
     visitor.visitPlayer(this);
   }
 }
@@ -310,7 +306,6 @@ export class NPC extends Actor {
   }
 
   accept(visitor) {
-    super.accept(visitor);
     visitor.visitNPC(this);
   }
 }
@@ -320,17 +315,22 @@ export class EntityVisitor {
   }
 
   visitBuilding(building) {
+    this.visitEntity(building);
   }
 
   visitDrop(drop) {
+    this.visitEntity(drop);
   }
 
   visitActor(actor) {
+    this.visitEntity(actor);
   }
 
   visitPlayer(player) {
+    this.visitActor(player);
   }
 
   visitNPC(npc) {
+    this.visitActor(npc);
   }
 }

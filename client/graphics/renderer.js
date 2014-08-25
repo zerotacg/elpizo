@@ -354,6 +354,8 @@ class RendererVisitor extends entities.EntityVisitor {
   }
 
   visitEntity(entity) {
+    super.visitEntity(entity);
+
     if (this.renderer.debug) {
       this.ctx.save();
       this.ctx.fillStyle = "rgba(0, 0, 255, 0.25)";
@@ -376,50 +378,58 @@ class RendererVisitor extends entities.EntityVisitor {
   }
 
   visitActor(entity) {
-      var state = entity.isMoving ? "walking" : "standing";
-      var direction = entity.direction == entities.Directions.N ? "n" :
-                      entity.direction == entities.Directions.W ? "w" :
-                      entity.direction == entities.Directions.S ? "s" :
-                      entity.direction == entities.Directions.E ? "e" :
-                      null;
+    super.visitActor(entity);
 
-      var names = [["body", entity.gender, entity.body].join(".")];
+    var state = entity.isMoving ? "walking" : "standing";
+    var direction = entity.direction == entities.Directions.N ? "n" :
+                    entity.direction == entities.Directions.W ? "w" :
+                    entity.direction == entities.Directions.S ? "s" :
+                    entity.direction == entities.Directions.E ? "e" :
+                    null;
 
-      if (entity.facial !== null) {
-        names.push(["facial", entity.gender, entity.facial].join("."));
-      }
+    var names = [["body", entity.gender, entity.body].join(".")];
 
-      if (entity.hair !== null) {
-        names.push(["hair", entity.gender, entity.hair].join("."));
-      }
+    if (entity.facial !== null) {
+      names.push(["facial", entity.gender, entity.facial].join("."));
+    }
 
-      [].push.apply(names, [
-          entity.headItem,
-          entity.torsoItem,
-          entity.legsItem,
-          entity.feetItem
-      ]
-          .filter((item) => item !== null)
-          .map((item) => ["equipment", entity.gender, item.type].join(".")));
+    if (entity.hair !== null) {
+      names.push(["hair", entity.gender, entity.hair].join("."));
+    }
 
-      names.forEach((name) => {
-          sprites[name][state][direction]
-              .render(this.renderer.resources, this.ctx,
-                      this.renderer.elapsed * entity.getSpeed());
-      })
+    [].push.apply(names, [
+        entity.headItem,
+        entity.torsoItem,
+        entity.legsItem,
+        entity.feetItem
+    ]
+        .filter((item) => item !== null)
+        .map((item) => ["equipment", entity.gender, item.type].join(".")));
+
+    names.forEach((name) => {
+        sprites[name][state][direction]
+            .render(this.renderer.resources, this.ctx,
+                    this.renderer.elapsed * entity.getSpeed());
+    })
   }
 
   visitFixture(entity) {
-      sprites[["fixture", entity.fixtureType].join(".")]
-          .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
+    super.visitFixture(entity);
+
+    sprites[["fixture", entity.fixtureType].join(".")]
+        .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
   }
 
   visitDrop(entity) {
+    super.visitDrop(entity);
+
     sprites[["item", entity.item.type].join(".")]
         .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
   }
 
   visitPlayer(entity) {
+    super.visitPlayer(entity);
+
     this.ctx.translate(16, -32);
 
     var baseWidth = this.ctx.measureText(entity.name).width;
@@ -435,6 +445,8 @@ class RendererVisitor extends entities.EntityVisitor {
   }
 
   visitBuilding(entity) {
+    super.visitBuilding(entity);
+
     drawAutotileRectangle(this.renderer,
                           new geometry.Rectangle(entity.bbox.left,
                                                  entity.bbox.top,
