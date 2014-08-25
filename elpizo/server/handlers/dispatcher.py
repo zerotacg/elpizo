@@ -3,6 +3,7 @@ import traceback
 
 from elpizo.protos import packets_pb2
 from elpizo.models import geometry
+from elpizo.server.handlers import attack
 from elpizo.server.handlers import chat
 from elpizo.server.handlers import echo
 from elpizo.server.handlers import hello
@@ -66,6 +67,7 @@ class Dispatcher(net.Protocol):
     raise e
 
 
+Dispatcher.register(packets_pb2.Packet.ATTACK, attack.on_attack)
 Dispatcher.register(packets_pb2.Packet.CHAT, chat.on_chat)
 Dispatcher.register(packets_pb2.Packet.ECHO, echo.on_echo)
 Dispatcher.register(packets_pb2.Packet.HELLO, hello.on_hello)

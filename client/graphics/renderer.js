@@ -420,17 +420,17 @@ class RendererVisitor extends entities.EntityVisitor {
   }
 
   visitPlayer(entity) {
+    this.ctx.translate(16, -32);
+
+    var baseWidth = this.ctx.measureText(entity.name).width;
+    var width = baseWidth + 16;
+
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    this.ctx.fillRect(-width / 2, -8, width, 12 + 8);
+
+    this.ctx.fillStyle = colors.makeColorForString(entity.name);
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
-
-    var color = colors.makeColorForString(entity.name);
-    this.ctx.strokeStyle = colors.contrasting(color);
-    this.ctx.fillStyle = color;
-
-    this.ctx.lineWidth = 3;
-
-    this.ctx.translate(16, -28);
-    this.ctx.strokeText(entity.name, 0, 0);
     this.ctx.fillText(entity.name, 0, 0);
   }
 

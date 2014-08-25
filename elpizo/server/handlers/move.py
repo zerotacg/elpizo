@@ -53,32 +53,25 @@ def on_move(protocol, actor, message):
       set(region.location for region in last_regions)
 
   if region_diff:
-    for region in actor.regions:
-      protocol.server.bus.broadcast(
-          ("region", actor.realm.id, region.location),
-          actor.id, packets_pb2.EntityPacket(
-              entity=actor.to_public_protobuf()))
+    actor.broadcast_to_regions(protocol.server.bus, packets_pb2.EntityPacket(
+          entity=actor.to_public_protobuf()))
+
+    # Manually broadcast RegionChange
+    region_change_message = packets_pb2.RegionChangePacket(
+        locations=[location.to_protobuf() for location in region_diff])
 
     for region in last_regions:
       protocol.server.bus.broadcast(
           ("region", actor.realm.id, region.location),
-          actor.id, packets_pb2.RegionChangePacket(
-              locations=[location.to_protobuf() for location in region_diff]))
+          actor.id, region_change_message)
 
   protocol.last_move_time = now
 
 
 def on_stop_move(protocol, actor, message):
-  for region in actor.regions:
-    protocol.server.bus.broadcast(
-        ("region", actor.realm.id, region.location),
-        actor.id, message)
+  actor.broadcast_to_regions(protocol.server.bus, message)
 
 
 def on_turn(protocol, actor, message):
   actor.direction = message.direction
-
-  for region in actor.regions:
-    protocol.server.bus.broadcast(
-        ("region", actor.realm.id, region.location),
-        actor.id, message)
+  actor.broadcast_to_regions(protocol.server.bus, message)

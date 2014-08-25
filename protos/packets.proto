@@ -25,6 +25,7 @@ message Packet {
     REGION_CHANGE = 15;
     ECHO = 16;
     TURN = 17;
+    ATTACK = 18;
   }
 
   optional Type type = 1;
@@ -198,4 +199,14 @@ message TurnPacket {
   option (packet_type) = TURN;
 
   optional Entity.Direction direction = 1;
+}
+
+message AttackPacket {
+  // Sent by the client to indicate an actor to attack; sent by the server to
+  // indicate a client has attacked.
+  //
+  // Direction: Server <-> Client
+  option (packet_type) = ATTACK;
+
+  optional string actor_id = 1;
 }

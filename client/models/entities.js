@@ -106,16 +106,27 @@ export class Actor extends Entity {
     this.hair = message.hair;
     this.facial = message.facial;
 
-    this.headItem = message.headItem && itemRegistry.makeItem(message.headItem);
-    this.torsoItem = message.torsoItem && itemRegistry.makeItem(message.torsoItem);
-    this.legsItem = message.legsItem && itemRegistry.makeItem(message.legsItem);
-    this.feetItem = message.feetItem && itemRegistry.makeItem(message.feetItem);
+    this.headItem = message.headItem &&
+        itemRegistry.makeItem(message.headItem);
+
+    this.torsoItem = message.torsoItem &&
+        itemRegistry.makeItem(message.torsoItem);
+
+    this.legsItem = message.legsItem &&
+        itemRegistry.makeItem(message.legsItem);
+
+    this.feetItem = message.feetItem &&
+        itemRegistry.makeItem(message.feetItem);
+
+    this.weapon = message.weapon &&
+        itemRegistry.makeItem(message.weapon);
 
     this.inventory = message.inventory.map(
       (message) => itemRegistry.makeItem(message));
 
     this.isMoving = false;
     this.moveRemaining = 0;
+    this.attackCooldown = 0;
   }
 
   getPreviousLocation() {
@@ -145,6 +156,10 @@ export class Actor extends Entity {
   update(dt) {
     super.update(dt);
 
+    // Update attack cooldown.
+    this.attackCooldown = Math.max(0, this.attackCooldown - dt);
+
+    // Update move remaining.
     if (this.moveRemaining > 0) {
       var aDistance = Math.min(this.getSpeed() * dt, this.moveRemaining);
 
@@ -167,12 +182,16 @@ export class Actor extends Entity {
 }
 
 Actor.BASE_SPEED = 5;
+Actor.DEFAULT_ATTACK_COOLDOWN = 1000;
 
 export class Player extends Actor {
   updateAsAvatar(dt, inputState, protocol) {
+    // Don't allow any avatar updates if there are movements pending.
     if (this.moveRemaining > 0) {
       return;
     }
+
+    var attackMode = inputState.held(input.Key.ALT);
 
     // Check for movement.
     var direction = inputState.held(input.Key.LEFT) ? Directions.W :
@@ -181,8 +200,6 @@ export class Player extends Actor {
                     inputState.held(input.Key.DOWN) ? Directions.S :
                     null;
 
-    var move = !inputState.held(input.Key.ALT);
-
     var didMove = false;
 
     if (direction !== null) {
@@ -190,16 +207,32 @@ export class Player extends Actor {
         // Send a turn packet.
         this.direction = direction;
         protocol.send(new packets.TurnPacket({direction: direction}))
-      } else if (move) {
-        var target = this.location.offset(this.getDirectionVector());
-        var targetBounds = this.bbox.offset(target);
+      }
 
-        var intersecting = this.realm.getAllEntities()
-            .filter((entity) =>
-                entity.getBounds().intersects(targetBounds) && entity !== this);
+      var target = this.location.offset(this.getDirectionVector());
+      var targetBounds = this.bbox.offset(target);
+      var targetEntities = this.realm.getAllEntities().filter((entity) =>
+        entity.getBounds().intersects(targetBounds) && entity !== this);
 
+      if (attackMode) {
+        // Attack mode logic.
+        if (this.attackCooldown === 0) {
+          if (inputState.stick(input.Key.LEFT) ||
+              inputState.stick(input.Key.UP) ||
+              inputState.stick(input.Key.RIGHT) ||
+              inputState.stick(input.Key.DOWN)) {
+            targetEntities.forEach((entity) => {
+              protocol.send(new packets.AttackPacket({actorId: entity.id}));
+              this.attackCooldown = this.weapon !== null ?
+                                    this.weapon.cooldown :
+                                    Actor.DEFAULT_ATTACK_COOLDOWN;
+            })
+          }
+        }
+      } else {
+        // Movement mode logic.
         if (this.realm.isPassable(target, this.direction) &&
-            intersecting.length === 0) {
+            targetEntities.length === 0) {
           this.step();
           didMove = true;
 
@@ -209,9 +242,8 @@ export class Player extends Actor {
           // only time we can guarantee it.)
           // NOTE: not reachable code right now, but will be once
           // intersectability is implemented
-          intersecting
-              .forEach((entity) =>
-                entity.onContact(this, protocol));
+          targetEntities.forEach((entity) =>
+            entity.onContact(this, protocol));
         }
       }
     }
@@ -222,28 +254,26 @@ export class Player extends Actor {
       protocol.send(new packets.StopMovePacket());
     }
 
-    // Check for interactions.
-    var interactions = [];
+    if (inputState.stick(input.Key.Z)) {
+      var intersecting = this.realm.getAllEntities().filter((entity) =>
+        entity.getBounds().intersects(this.getBounds()) &&
+        entity !== this);
 
-    if (inputState.unstick(input.Key.Z)) {
-      this.realm.getAllEntities().forEach((entity) => {
-        if (entity === this) {
-          return;
-        }
+      var adjacents = this.realm.getAllEntities().filter((entity) =>
+        entity.getBounds().intersects(
+            this.getBounds().offset(this.getDirectionVector())) &&
+        entity !== this);
 
-        if (entity.getBounds().contains(this.location)) {
-          interactions.push({
-              entity: entity,
-              contained: true
-          });
-        } else if (entity.getBounds().contains(
-            this.location.offset(this.getDirectionVector()))) {
-          interactions.push({
-              entity: entity,
-              contained: false
-          });
-        }
-      });
+      // Check for interactions.
+      var interactions = [];
+      [].push.apply(interactions, intersecting.map((entity) => ({
+          entity: entity,
+          intersecting: true
+      })));
+      [].push.apply(interactions, adjacents.map((entity) => ({
+          entity: entity,
+          intersecting: false
+      })));
 
       console.log(interactions);
 
@@ -257,7 +287,7 @@ export class Player extends Actor {
       }
 
       var head = interactions[0];
-      if (head.contained) {
+      if (head.intersecting) {
         head.entity.onIntersectingInteract(this, protocol);
       } else {
         head.entity.onAdjacentInteract(this, protocol);

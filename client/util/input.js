@@ -5,11 +5,11 @@ export class InputState {
 
     window.onkeydown = (e) => {
       this.keysDown[e.which] = e;
-      this.keysStuck[e.which] = e;
     };
 
     window.onkeyup = (e) => {
       delete this.keysDown[e.which];
+      delete this.keysStuck[e.which];
     };
   }
 
@@ -17,10 +17,14 @@ export class InputState {
     return this.keysDown[key] || null;
   }
 
-  unstick(key) {
-    var r = !!this.keysStuck[key];
-    delete this.keysStuck[key];
-    return r;
+  stick(key) {
+    if (!this.keysDown[key]) {
+      return false;
+    }
+
+    var wasKeyStuck = !!this.keysStuck[key];
+    this.keysStuck[key] = true;
+    return !wasKeyStuck;
   }
 }
 

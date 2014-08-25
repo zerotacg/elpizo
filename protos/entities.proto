@@ -59,8 +59,9 @@ message Actor {
   optional Item torso_item = 8;
   optional Item legs_item = 9;
   optional Item feet_item = 10;
+  optional Item weapon = 11;
 
-  repeated Item inventory = 11;
+  repeated Item inventory = 12;
 }
 
 message Player {

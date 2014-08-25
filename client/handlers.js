@@ -90,4 +90,8 @@ export function install(game) {
       game.realm.removeEntity(origin);
     }
   });
+
+  protocol.on(packets.Packet.Type.ATTACK, (origin, message) => {
+    console.log(origin, "attacked", message.actorId);
+  });
 }
