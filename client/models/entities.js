@@ -17,6 +17,18 @@ export class Entity {
     return this.bbox.offset(this.location);
   }
 
+  getDirectionVector() {
+    return getDirectionVector(this.direction);
+  }
+
+  getTargetLocation() {
+    return this.location.offset(this.getDirectionVector());
+  }
+
+  getTargetBounds() {
+    return this.bounds.offset(this.getDirectionVector());
+  }
+
   update(dt) {
   }
 
@@ -72,6 +84,7 @@ export class Drop extends Entity {
     return true;
   }
 }
+
 export var Directions = {
     N: 0,
     W: 1,
@@ -121,14 +134,6 @@ export class Actor extends Entity {
     this.isMoving = false;
     this.attackRemaining = 1;
     this.moveRemaining = 0;
-  }
-
-  getPreviousLocation() {
-    return this.location.offset(this.getDirectionVector());
-  }
-
-  getDirectionVector() {
-    return getDirectionVector(this.direction);
   }
 
   step() {
@@ -207,7 +212,7 @@ export class Player extends Actor {
         protocol.send(new packets.TurnPacket({direction: direction}))
       }
 
-      var target = this.location.offset(this.getDirectionVector());
+      var target = this.getTargetLocation();
       var targetBounds = this.bbox.offset(target);
       var targetEntities = this.realm.getAllEntities().filter((entity) =>
         entity.getBounds().intersects(targetBounds) && entity !== this);
@@ -253,8 +258,7 @@ export class Player extends Actor {
         entity !== this);
 
       var adjacents = this.realm.getAllEntities().filter((entity) =>
-        entity.getBounds().intersects(
-            this.getBounds().offset(this.getDirectionVector())) &&
+        entity.getBounds().intersects(this.getTargetBounds()) &&
         entity !== this);
 
       // Check for interactions.

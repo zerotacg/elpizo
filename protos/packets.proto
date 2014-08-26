@@ -25,6 +25,7 @@ message Packet {
     ECHO = 15;
     TURN = 16;
     ATTACK = 17;
+    DAMAGE = 18;
   }
 
   optional Type type = 1;
@@ -202,4 +203,13 @@ message AttackPacket {
   // may have moved from their original position on the server, but the client
   // state may not have been synchronized yet.
   repeated string actor_ids = 1;
+}
+
+message DamagePacket {
+  // Sent by the server to indicate an actor has been damaged.
+  //
+  // Direction: Server -> Client
+  option (packet_type) = DAMAGE;
+
+  optional uint32 damage = 1;
 }

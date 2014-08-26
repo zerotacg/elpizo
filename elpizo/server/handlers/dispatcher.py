@@ -34,6 +34,7 @@ class Dispatcher(net.Protocol):
 
     self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
     self.last_move_time = 0
+    self.last_attack_time = 0
 
   def on_message(self, origin, message):
     type = message.DESCRIPTOR.GetOptions().Extensions[packets_pb2.packet_type]

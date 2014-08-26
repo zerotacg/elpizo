@@ -44,6 +44,8 @@ def on_move(protocol, actor, message):
     actor.broadcast_to_regions(protocol.server.bus, packets_pb2.EntityPacket(
           entity=actor.to_public_protobuf()))
 
+  actor.log_location(now, old_location)
+  actor.retain_log_after(now - 1)
   protocol.last_move_time = now
 
 

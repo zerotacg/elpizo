@@ -48,8 +48,7 @@ export function install(game) {
   protocol.on(packets.Packet.Type.MOVE, (origin, message) => {
     var entity = game.realm.getEntity(origin);
 
-    if (!renderer.getCacheBounds().intersects(
-        entity.getBounds().offset(entity.getDirectionVector()))) {
+    if (!renderer.getCacheBounds().intersects(entity.getTargetBounds())) {
       game.realm.removeEntity(origin);
     } else {
       game.realm.getEntity(origin).step();
@@ -92,5 +91,9 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.ATTACK, (origin, message) => {
     game.realm.getEntity(origin).attackRemaining = 0;
+  });
+
+  protocol.on(packets.Packet.Type.DAMAGE, (origin, message) => {
+    game.realm.getEntity(origin).health -= message.damage;
   });
 }

@@ -1,3 +1,4 @@
+import collections
 import contextlib
 
 from elpizo.models import geometry
@@ -18,6 +19,10 @@ class Entity(record.PolymorphicProtobufRecord):
       2: geometry.Vector2( 0,  1),  # S
       3: geometry.Vector2( 1,  0)   # E
   }
+
+  @property
+  def direction_vector(self):
+    return self.DIRECTION_VECTORS[self.direction]
 
   @classmethod
   def register(cls, subclass):
@@ -50,6 +55,14 @@ class Entity(record.PolymorphicProtobufRecord):
                direction=proto.direction)
 
   @property
+  def target_location(self):
+    return self.location.offset(self.direction_vector)
+
+  @property
+  def target_bounds(self):
+    return self.bounds.offset(self.direction_vector)
+
+  @property
   def bounds(self):
     return self.bbox.offset(self.location)
 
@@ -57,11 +70,18 @@ class Entity(record.PolymorphicProtobufRecord):
   def regions(self):
     return self.realm.load_intersecting_regions(self.bounds)
 
-  def broadcast_to_regions(self, bus, message):
+  def broadcast_to_regions(self, bus, message, *, exclude_self=True):
     for region in self.regions:
       bus.broadcast(
           ("region", self.realm.id, region.location),
-          self.id, message)
+          self.id, message, exclude_self=exclude_self)
+
+  def broadcast_to_regions_for(self, bus, origin, message, *,
+                               exclude_self=True):
+    for region in self.regions:
+      bus.broadcast(
+          ("region", self.realm.id, region.location),
+          origin, message, exclude_self=exclude_self)
 
   @contextlib.contextmanager
   def movement(self):
@@ -80,11 +100,48 @@ class Entity(record.PolymorphicProtobufRecord):
 
 
 class Actor(Entity):
-  BASE_SPEED = 5
+  BASE_SPEED = 4
+  DEFAULT_ATTACK_COOLDOWN = 2
+
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.location_log = collections.deque()
+
+  def log_location(self, time, location):
+    self.location_log.append((time, location))
+
+  def retain_log_after(self, since):
+    while self.location_log:
+      time, head  = self.location_log[0]
+      if time < since:
+        self.location_log.popleft()
+      else:
+        break
+
+  @property
+  def all_locations(self):
+    for _, location in self.location_log:
+      yield location
+    yield self.location
 
   @property
   def speed(self):
     return self.BASE_SPEED
+
+  @property
+  def attack_cooldown(self):
+    return self.DEFAULT_ATTACK_COOLDOWN
+
+  def damage(self, v):
+    old_health = self.health
+    self.health = max([0, self.health - v])
+    return old_health - self.health
+
+  @property
+  def attack_strength(self):
+    if self.weapon is not None:
+      return 1  # TODO: something sensible here
+    return 1
 
   def to_protobuf(self):
     proto = super().to_protobuf()
