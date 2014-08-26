@@ -60,15 +60,12 @@ class Bus(object):
 
     # BEGIN CRITICAL SECTION: Acquire the broadcast lock, in case someone
     # wants to run code post-subscribe.
-    lock = self.broadcast_lock_for(id, channel)
-    green.await_coro(lock.acquire())
-    try:
-      protocol.send(origin, message)
-    except websockets.exceptions.InvalidStateError:
-      logger.warn("Client transport closed during broadcast: %d", id)
-      return
-    finally:
-      lock.release()
+    with green.locking(self.broadcast_lock_for(id, channel)):
+      try:
+        protocol.send(origin, message)
+      except websockets.exceptions.InvalidStateError:
+        logger.warn("Client transport closed during broadcast: %d", id)
+        return
     # END CRITICAL SECTION
 
   def broadcast(self, channel, origin, message, *, exclude_origin=True):

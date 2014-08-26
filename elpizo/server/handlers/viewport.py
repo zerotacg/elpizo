@@ -32,9 +32,8 @@ def on_viewport(protocol, actor, message):
       # region's channel, so that we manage to send all information about the
       # region to the actor before they are allowed to receive broadcasts on the
       # channel.
-      lock = protocol.server.bus.broadcast_lock_for(actor.id, region_channel)
-      green.await_coro(lock.acquire())
-      try:
+      with green.locking(
+          protocol.server.bus.broadcast_lock_for(actor.id, region_channel)):
         protocol.server.bus.subscribe(actor.id, region_channel)
 
         for entity in region.entities:
@@ -42,6 +41,4 @@ def on_viewport(protocol, actor, message):
             protocol.send(
                 entity.id,
                 packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
-      finally:
-        lock.release()
       # END CRITICAL SECTION

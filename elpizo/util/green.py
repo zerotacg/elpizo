@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import functools
 import greenlet
 
@@ -37,3 +38,10 @@ def coroutine(f):
     return r
 
   return _wrapper
+
+
+@contextlib.contextmanager
+def locking(lock):
+  await_coro(lock.acquire())
+  yield
+  lock.release()

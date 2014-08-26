@@ -23,22 +23,17 @@ def on_move(protocol, actor, message):
   #
   # Passability checking MUST be done within the critical section, as we only
   # know where we're moving to within the critical section.
-  green.await_coro(actor.location_lock.acquire())
-
-  passable = True
-  try:
+  with green.locking(actor.location_lock):
     new_location = actor.location.offset(
           entities.Entity.DIRECTION_VECTORS[actor.direction])
 
     # Check for realm passability.
-    if actor.realm.is_passable(actor.bbox.offset(new_location),
-                               actor.direction):
+    passable = actor.realm.is_passable(actor.bbox.offset(new_location),
+                                       actor.direction)
+
+    if passable:
       with actor.movement():
         actor.location = new_location
-    else:
-      passable = False
-  finally:
-    actor.location_lock.release()
   # END CRITICAL SECTION
 
   if not passable:
