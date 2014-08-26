@@ -1,5 +1,6 @@
 from elpizo.models import geometry
 from elpizo.protos import packets_pb2
+from elpizo.util import green
 
 
 def on_viewport(protocol, actor, message):
@@ -7,27 +8,41 @@ def on_viewport(protocol, actor, message):
   cache_bounds = geometry.Rectangle.from_protobuf(message.bounds)
   protocol.cache_bounds = cache_bounds
 
-  known_regions = set()
+  last_region_locations = {
+      region.location
+      for region in actor.realm.load_intersecting_regions(last_cache_bounds)}
 
-  for region in \
-      actor.realm.load_intersecting_regions(last_cache_bounds):
-    protocol.server.bus.unsubscribe(
-        actor.id,
-        ("region", actor.realm.id, region.location))
-    known_regions.add(region.location)
+  new_regions = list(actor.realm.load_intersecting_regions(cache_bounds))
 
-  for region in actor.realm.load_intersecting_regions(cache_bounds):
-    if region.location not in known_regions:
+  # Unsubscribe from last regions that aren't present in new regions.
+  for location in last_region_locations - \
+                  {region.location for region in new_regions}:
+    protocol.server.bus.unsubscribe(actor.id,
+                                    ("region", actor.realm.id, location))
+
+  for region in new_regions:
+    if region.location not in last_region_locations:
+      region_channel = ("region", actor.realm.id, region.location)
+
       protocol.send(None, packets_pb2.RegionPacket(
           location=region.location.to_protobuf(),
           region=region.to_public_protobuf(actor.realm)))
 
-      for entity in region.entities:
-        if entity.id != actor.id:
-          protocol.send(
-              entity.id,
-              packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
+      # BEGIN CRITICAL SECTION: We have to acquire the broadcast lock for the
+      # region's channel, so that we manage to send all information about the
+      # region to the actor before they are allowed to receive broadcasts on the
+      # channel.
+      green.await_coro(
+          protocol.server.bus.broadcast_locks[actor.id][region_channel]
+              .acquire())
+      try:
+        protocol.server.bus.subscribe(actor.id, region_channel)
 
-    protocol.server.bus.subscribe(
-        actor.id,
-        ("region", actor.realm.id, region.location))
+        for entity in region.entities:
+          if entity.id != actor.id:
+            protocol.send(
+                entity.id,
+                packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
+      finally:
+        protocol.server.bus.broadcast_locks[actor.id][region_channel].release()
+      # END CRITICAL SECTION

@@ -21,10 +21,8 @@ def on_move(protocol, actor, message):
   # BEGIN CRITICAL SECTION: We need to update the location of the actor, and
   # ensure no conflicting writes occur due to greenlet switching during IO.
   #
-  # Make SURE this critical section is as small as possible!
-  #
-  #  * Passability checking MUST be done within the critical section, as we only
-  #    know where we're moving to within the critical section.
+  # Passability checking MUST be done within the critical section, as we only
+  # know where we're moving to within the critical section.
   green.await_coro(actor.location_lock.acquire())
 
   passable = True
