@@ -1,6 +1,7 @@
 import asyncio
 import collections
 import logging
+import websockets.exceptions
 
 from elpizo.util import green
 
@@ -57,16 +58,15 @@ class Bus(object):
       logger.warn("Client disappeared during broadcast: %d", id)
       return
 
-    if not protocol.transport.is_open:
-      logger.warn("Client transport closed during broadcast: %d", id)
-      return
-
     # BEGIN CRITICAL SECTION: Acquire the broadcast lock, in case someone
     # wants to run code post-subscribe.
     lock = self.broadcast_lock_for(id, channel)
     green.await_coro(lock.acquire())
     try:
       protocol.send(origin, message)
+    except websockets.exceptions.InvalidStateError:
+      logger.warn("Client transport closed during broadcast: %d", id)
+      return
     finally:
       lock.release()
     # END CRITICAL SECTION
