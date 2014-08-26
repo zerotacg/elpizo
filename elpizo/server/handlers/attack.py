@@ -14,7 +14,10 @@ def on_attack(protocol, actor, message):
     target = protocol.server.store.entities.load(actor_id)
 
     for location in target.all_locations:
-      if actor.target_bounds.intersects(target.bbox.offset(location)):
+      target_bounds = target.bbox.offset(location)
+
+      if actor.target_bounds.intersects(target_bounds) or \
+         actor.bounds.intersects(target_bounds):
         damage_packet = packets_pb2.DamagePacket(damage=target.damage(
             actor.attack_strength))
         actor.broadcast_to_regions_for(protocol.server.bus, target.id,

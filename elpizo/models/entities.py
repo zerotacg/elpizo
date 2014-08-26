@@ -1,3 +1,4 @@
+import asyncio
 import collections
 import contextlib
 
@@ -104,6 +105,7 @@ class Actor(Entity):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.location_log = collections.deque()
+    self.location_lock = asyncio.Lock()
 
   def log_location(self, time, location):
     self.location_log.append((time, location))
@@ -200,6 +202,9 @@ class Actor(Entity):
 
   def get_realm(self, realm_store):
     return realm_store.find(self.realm_id)
+
+  def is_passable(self, direction):
+    return True
 
 
 @Entity.register

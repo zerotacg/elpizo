@@ -194,6 +194,10 @@ export class Actor extends Entity {
   accept(visitor) {
     visitor.visitActor(this);
   }
+
+  isPassable(direction) {
+    return true;
+  }
 }
 
 Actor.BASE_SPEED = 4;
@@ -227,7 +231,8 @@ export class Player extends Actor {
       var target = this.getTargetLocation();
       var targetBounds = this.bbox.offset(target);
       var targetEntities = this.realm.getAllEntities().filter((entity) =>
-        entity.getBounds().intersects(targetBounds) && entity !== this);
+        (entity.getBounds().intersects(targetBounds) ||
+         entity.getBounds().intersects(this.getBounds())) && entity !== this);
 
       if (attackMode) {
         // Attack mode logic.
