@@ -13,13 +13,14 @@ class Bus(object):
     self.protocols = {}
     self.broadcast_locks = {}
     self.channels = collections.defaultdict(set)
-    self.subscriptions = collections.defaultdict(set)
+    self.subscriptions = {}
 
   def add(self, id, protocol):
     logger.debug("Added ID to bus: %d", id)
 
     self.protocols[id] = protocol
     self.broadcast_locks[id] = collections.defaultdict(asyncio.Lock)
+    self.subscriptions[id] = set()
 
   def remove(self, id):
     logger.debug("Removed ID from bus: %d", id)
@@ -45,6 +46,9 @@ class Bus(object):
     self.channels[channel].remove(id)
     self.subscriptions[id].remove(channel)
 
+  def broadcast_lock_for(self, id, channel):
+    return self.broadcast_locks[id][channel]
+
   def broadcast(self, channel, origin, message, *, exclude_origin=True):
     for id in list(self.channels[channel]):
       if id == origin and exclude_origin:
@@ -61,9 +65,10 @@ class Bus(object):
 
         # BEGIN CRITICAL SECTION: Acquire the broadcast lock, in case someone
         # wants to run code post-subscribe.
-        green.await_coro(self.broadcast_locks[id][channel].acquire())
+        lock = self.broadcast_lock_for(id, channel)
+        green.await_coro(lock.acquire())
         try:
           protocol.send(origin, message)
         finally:
-          self.broadcast_locks[id][channel].release()
+          lock.release()
         # END CRITICAL SECTION
