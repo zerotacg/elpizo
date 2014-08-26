@@ -25,8 +25,7 @@ def await_coro(coro, *, loop=None):
 
 def coroutine(f):
   """
-  Make a coroutine. Returns a future which is fulfilled upon the coroutine's
-  completion.
+  Make a coroutine. Returns a function that creates an asyncio coroutine.
   """
 
   @functools.wraps(f)
