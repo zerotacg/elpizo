@@ -29,7 +29,7 @@ export class Entity extends timing.Timed {
   }
 
   getTargetBounds() {
-    return this.bounds.offset(this.getDirectionVector());
+    return this.getBounds().offset(this.getDirectionVector());
   }
 
   update(dt) {

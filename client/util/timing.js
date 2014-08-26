@@ -1,6 +1,6 @@
 export class CountdownTimer {
-  constructor() {
-    this.reset(0);
+  constructor(max) {
+    this.reset(max || 0);
   }
 
   reset(remaining) {
@@ -18,6 +18,10 @@ export class CountdownTimer {
 
   getElapsed() {
     return this.max - this.remaining;
+  }
+
+  getElapsedRatio() {
+    return this.getElapsed() / this.max;
   }
 }
 

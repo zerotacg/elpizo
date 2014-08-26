@@ -4,8 +4,10 @@ module models from "client/models";
 module geometry from "client/models/geometry";
 module itemRegistry from "client/models/items/registry";
 module realm from "client/models/realm";
-module objects from "client/util/objects";
 module packets from "client/protos/packets";
+module damage from "client/ui/overlay/damage.react";
+module objects from "client/util/objects";
+module timing from "client/util/timing";
 
 export function install(game) {
   var protocol = game.protocol;
@@ -95,7 +97,11 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.DAMAGE, (origin, message) => {
-    game.realm.getEntity(origin).health -= message.damage;
-    console.log(message.damage, "damage!");
+    var entity = game.realm.getEntity(origin);
+    entity.health -= message.damage;
+    renderer.addTimedComponent(damage.DamageNumber({
+        damage: message.damage,
+        entity: entity
+    }), new timing.CountdownTimer(1));
   });
 }

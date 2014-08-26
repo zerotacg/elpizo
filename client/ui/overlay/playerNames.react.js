@@ -7,9 +7,9 @@ module colors from "client/util/colors";
 var PlayerName = React.createClass({
   render: function () {
     var entity = this.props.entity;
+    var renderer = this.props.renderer;
 
-    var position = this.props.renderer.toScreenCoords(
-        this.props.entity.location);
+    var position = renderer.toScreenCoords(entity.location);
 
     return <div className="player-name"
                 style={{transform: "translate(" +

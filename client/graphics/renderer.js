@@ -43,6 +43,18 @@ export class Renderer extends events.EventEmitter {
     this.style = window.getComputedStyle(this.el);
 
     this.sBounds = new geometry.Rectangle(0, 0, 0, 0);
+
+    // We also hold React components here, which need to be parented onto the
+    // overlay during the React tick phase.
+    this.components = [];
+  }
+
+  addTimedComponent(comp, timer) {
+    comp.props.timer = timer;
+    comp.props.renderer = this;
+
+    comp.props.key = new Date().valueOf();
+    this.components.push(comp);
   }
 
   setDebug(debug) {
@@ -139,6 +151,20 @@ export class Renderer extends events.EventEmitter {
 
     this.renderTerrain(realm);
     this.renderEntities(realm);
+    this.updateComponents(dt);
+  }
+
+  updateComponents(dt) {
+    var components = this.components;
+    this.components = [];
+
+    components.forEach((comp) => {
+      var timer = comp.props.timer;
+      timer.update(dt);
+      if (!timer.isStopped()) {
+        this.components.push(comp);
+      }
+    });
   }
 
   renderTerrain(r) {
