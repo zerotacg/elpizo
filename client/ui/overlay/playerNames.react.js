@@ -14,7 +14,7 @@ var PlayerName = React.createClass({
     return <div className="player-name"
                 style={{transform: "translate(" +
                     (position.x + 16 + "px") + "," +
-                    (position.y - 42 + "px") + ")"}}>
+                    (position.y + 32 - 32 * entity.getHeight() - 16) + "px)"}}>
       <div className="inner"
            style={{color: colors.makeColorForString(entity.name)}}>{entity.name}</div>
     </div>;

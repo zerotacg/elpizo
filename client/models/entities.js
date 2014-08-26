@@ -16,6 +16,10 @@ export class Entity extends timing.Timed {
     this.direction = message.direction;
   }
 
+  getHeight() {
+    return this.bbox.height;
+  }
+
   getBounds() {
     return this.bbox.offset(this.location);
   }
@@ -290,6 +294,12 @@ export class Player extends Actor {
         head.entity.onAdjacentInteract(this, protocol);
       }
     }
+  }
+
+  getHeight() {
+    // TODO: this might be overriden sometime maybe? It's only used for
+    // rendering...
+    return 1.75;
   }
 
   accept(visitor) {
