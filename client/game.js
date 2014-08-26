@@ -14,9 +14,8 @@ module realm from "client/models/realm";
 module ui from "client/ui/main.react";
 
 function waitFor(emitter, event) {
-  return new promise.Promise((resolve, reject) => {
-    emitter.once(event, resolve);
-  });
+  return new promise.Promise((resolve, reject) =>
+    emitter.once(event, resolve));
 }
 
 export class Game extends events.EventEmitter {

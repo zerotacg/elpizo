@@ -5,7 +5,7 @@ module React from "react";
 module chat from "client/ui/chat.react";
 module debug from "client/ui/debug.react";
 module loading from "client/ui/loading.react";
-module overlay from "client/ui/overlay.react";
+module overlay from "client/ui/overlay/overlay.react";
 
 export var UI = React.createClass({
   onKeyDown: function (e) {

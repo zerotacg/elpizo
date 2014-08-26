@@ -6,6 +6,7 @@ module realm from "client/models/realm";
 module functions from "client/util/functions";
 module geometry from "client/util/geometry";
 module objects from "client/util/objects";
+module timing from "client/util/timing";
 
 export class Renderer extends events.EventEmitter {
   constructor(resources, parent) {
@@ -96,8 +97,10 @@ export class Renderer extends events.EventEmitter {
     this.el.style.height = sh + "px";
 
     var sBounds = this.el.getBoundingClientRect();
-    this.sBounds = geometry.Rectangle.fromCorners(sBounds.left, sBounds.top,
-                                         sBounds.right, sBounds.bottom);
+    this.sBounds = geometry.Rectangle.fromCorners(sBounds.left,
+                                                  sBounds.top,
+                                                  sBounds.right,
+                                                  sBounds.bottom);
 
     this.terrainCanvas.width = sw;
     this.terrainCanvas.height = sh;
@@ -114,11 +117,11 @@ export class Renderer extends events.EventEmitter {
   }
 
   getViewportBounds() {
-    var size = this.fromScreenCoords(new geometry.Vector2(this.sBounds.width,
-                                                 this.sBounds.height));
+    var size = this.fromScreenCoords(new geometry.Vector2(
+        this.sBounds.width, this.sBounds.height));
 
     return new geometry.Rectangle(this.topLeft.x, this.topLeft.y,
-                         Math.ceil(size.x), Math.ceil(size.y));
+                                  Math.ceil(size.x), Math.ceil(size.y));
   }
 
   getCacheBounds() {
@@ -252,7 +255,7 @@ export class Renderer extends events.EventEmitter {
     for (var ry = 0; ry < realm.Region.SIZE; ++ry) {
       for (var rx = 0; rx < realm.Region.SIZE; ++rx) {
         region.layers.forEach((layer) => {
-          var spriteSet = sprites["tile." + layer.terrain];
+          var spriteSet = sprites[["tile", layer.terrain].join(".")];
 
           var tileNum = layer.tiles.getCell(rx, ry);
           if (tileNum < 0) {
