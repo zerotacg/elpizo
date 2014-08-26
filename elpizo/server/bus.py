@@ -49,26 +49,34 @@ class Bus(object):
   def broadcast_lock_for(self, id, channel):
     return self.broadcast_locks[id][channel]
 
+  def _send_to_channel(self, id, channel, origin, message):
+    try:
+      protocol = self.get(id)
+    except KeyError:
+      # A client disappeared while we were iterating.
+      logger.warn("Client disappeared during broadcast: %d", id)
+      return
+
+    if not protocol.transport.is_open:
+      logger.warn("Client transport closed during broadcast: %d", id)
+      return
+
+    # BEGIN CRITICAL SECTION: Acquire the broadcast lock, in case someone
+    # wants to run code post-subscribe.
+    lock = self.broadcast_lock_for(id, channel)
+    green.await_coro(lock.acquire())
+    try:
+      protocol.send(origin, message)
+    finally:
+      lock.release()
+    # END CRITICAL SECTION
+
   def broadcast(self, channel, origin, message, *, exclude_origin=True):
+    futures = []
     for id in list(self.channels[channel]):
       if id == origin and exclude_origin:
         continue
-      try:
-        protocol = self.get(id)
-      except KeyError:
-        # A client disappeared while we were iterating.
-        logger.warn("Client disappeared during broadcast: %d", id)
-      else:
-        if not protocol.transport.is_open:
-          logger.warn("Client transport closed during broadcast: %d", id)
-          continue
+      futures.append(green.coroutine(self._send_to_channel)(
+          id, channel, origin, message))
 
-        # BEGIN CRITICAL SECTION: Acquire the broadcast lock, in case someone
-        # wants to run code post-subscribe.
-        lock = self.broadcast_lock_for(id, channel)
-        green.await_coro(lock.acquire())
-        try:
-          protocol.send(origin, message)
-        finally:
-          lock.release()
-        # END CRITICAL SECTION
+    green.await_coro(asyncio.gather(*futures))

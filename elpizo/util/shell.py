@@ -57,7 +57,8 @@ class ShellThread(threading.Thread):
       else:
         fut.set_result(result)
 
-    self.loop.call_soon_threadsafe(green.coroutine(_wrapper))
+    self.loop.call_soon_threadsafe(
+        asyncio.async, green.coroutine(_wrapper)())
 
     try:
       return fut.result()

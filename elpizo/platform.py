@@ -63,7 +63,7 @@ class Application(object):
       finally:
         self.loop.stop()
 
-    self.loop.call_soon_threadsafe(green.coroutine(_wrapper))
+    asyncio.async(green.coroutine(_wrapper)(), loop=self.loop)
     self.run()
 
   def run(self):
