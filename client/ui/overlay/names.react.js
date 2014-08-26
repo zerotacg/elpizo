@@ -4,7 +4,7 @@ module React from "react";
 
 module colors from "client/util/colors";
 
-var PlayerName = React.createClass({
+var Name = React.createClass({
   render: function () {
     var entity = this.props.entity;
     var renderer = this.props.renderer;
@@ -21,16 +21,18 @@ var PlayerName = React.createClass({
   }
 });
 
-export var PlayerNames = React.createClass({
+export var Names = React.createClass({
   render: function () {
     if (this.props.game.realm === null) {
       return null;
     }
 
-    var entities = this.props.game.realm.getAllEntities().map((entity) =>
-        <PlayerName key={entity.id} entity={entity}
-                    renderer={this.props.game.renderer} />);
+    var names = this.props.game.realm.getAllEntities()
+      .filter((entity) => entity.name)
+      .map((entity) =>
+          <Name key={entity.id} entity={entity}
+                renderer={this.props.game.renderer} />);
 
-    return <div>{entities}</div>;
+    return <div>{names}</div>;
   }
 });

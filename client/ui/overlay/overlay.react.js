@@ -2,7 +2,7 @@
 
 module React from "react";
 
-module playerNames from "client/ui/overlay/playerNames.react";
+module names from "client/ui/overlay/names.react";
 
 export var Overlay = React.createClass({
   render: function () {
@@ -14,7 +14,7 @@ export var Overlay = React.createClass({
                 style={{transform: "translate(" +
                     (-position.x + "px") + "," +
                     (-position.y + "px") + ")"}}>
-      <playerNames.PlayerNames game={this.props.game} />
+      <names.Names game={this.props.game} />
       <div className="components">{renderer.components}</div>
     </div>;
   }
