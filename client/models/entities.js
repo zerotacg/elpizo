@@ -145,7 +145,7 @@ export class Actor extends Entity {
     this.addTimer("move", new timing.CountdownTimer());
   }
 
-  step() {
+  move() {
     // Move the entity one tile forward.
     //
     // It will forcibly normalize the location (may be janky, but will always be
@@ -159,6 +159,15 @@ export class Actor extends Entity {
     this.isMoving = true;
 
     moveTimer.reset(1 / this.getSpeed());
+  }
+
+  stopMove() {
+    this.isMoving = false;
+    this.getTimer("move").reset(0);
+  }
+
+  attack() {
+    this.getTimer("attack").reset(1 / this.getAttackCooldown());
   }
 
   getSpeed() {
@@ -222,8 +231,7 @@ export class Player extends Actor {
 
       if (attackMode) {
         // Attack mode logic.
-        var attackTimer = this.getTimer("attack");
-        if (attackTimer.isStopped()) {
+        if (this.getTimer("attack").isStopped()) {
           if (inputState.stick(input.Key.LEFT) ||
               inputState.stick(input.Key.UP) ||
               inputState.stick(input.Key.RIGHT) ||
@@ -233,13 +241,13 @@ export class Player extends Actor {
                     .filter((entity) => entity instanceof Actor)
                     .map((entity) => entity.id)
             }));
-            attackTimer.reset(1 / this.getAttackCooldown());
+            this.attack();
           }
         }
       } else {
         // Movement mode logic.
         if (this.realm.isPassable(targetBounds, this.direction)) {
-          this.step();
+          this.move();
           didMove = true;
 
           protocol.send(new packets.MovePacket());

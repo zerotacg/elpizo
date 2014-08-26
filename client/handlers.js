@@ -53,7 +53,7 @@ export function install(game) {
     if (!renderer.getCacheBounds().intersects(entity.getTargetBounds())) {
       game.realm.removeEntity(origin);
     } else {
-      game.realm.getEntity(origin).step();
+      game.realm.getEntity(origin).move();
     }
   });
 
@@ -68,8 +68,7 @@ export function install(game) {
   protocol.on(packets.Packet.Type.TELEPORT, (origin, message) => {
     var entity = game.realm.getEntity(origin);
 
-    entity.isMoving = false;
-    entity.getTimer("move").reset(entity.getSpeed());
+    entity.stopMove();
     entity.location = geometry.Vector2.fromProtobuf(message.location);
     entity.direction = message.direction;
   });
@@ -93,7 +92,7 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.ATTACK, (origin, message) => {
     var entity = game.realm.getEntity(origin);
-    entity.getTimer("attack").reset(entity.getAttackCooldown());
+    entity.attack();
   });
 
   protocol.on(packets.Packet.Type.DAMAGE, (origin, message) => {
