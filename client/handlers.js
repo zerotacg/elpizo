@@ -67,7 +67,7 @@ export function install(game) {
     var entity = game.realm.getEntity(origin);
 
     entity.isMoving = false;
-    entity.moveRemaining = 0;
+    entity.getTimer("move").reset(entity.getSpeed());
     entity.location = geometry.Vector2.fromProtobuf(message.location);
     entity.direction = message.direction;
   });
@@ -90,7 +90,8 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.ATTACK, (origin, message) => {
-    game.realm.getEntity(origin).attackRemaining = 0;
+    var entity = game.realm.getEntity(origin);
+    entity.getTimer("attack").reset(entity.getAttackCooldown());
   });
 
   protocol.on(packets.Packet.Type.DAMAGE, (origin, message) => {

@@ -381,7 +381,9 @@ class RendererVisitor extends entities.EntityVisitor {
   visitActor(entity) {
     super.visitActor(entity);
 
-    var attacking = entity.attackRemaining < 1;
+    var attackTimer = entity.getTimer("attack");
+
+    var attacking = !attackTimer.isStopped();
 
     var state = entity.isMoving ? "walking" :
                 attacking ? "slashing" :
@@ -389,7 +391,7 @@ class RendererVisitor extends entities.EntityVisitor {
 
     var elapsed;
     if (attacking) {
-      elapsed = entity.attackRemaining;
+      elapsed = attackTimer.getElapsed() * entity.getAttackCooldown();
     } else {
       elapsed = this.renderer.elapsed * entity.getSpeed();
     }

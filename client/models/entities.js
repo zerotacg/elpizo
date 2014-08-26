@@ -2,9 +2,12 @@ module geometry from "client/models/geometry";
 module itemRegistry from "client/models/items/registry";
 module packets from "client/protos/packets";
 module input from "client/util/input";
+module timing from "client/util/timing";
 
-export class Entity {
+export class Entity extends timing.Timed {
   constructor(message) {
+    super();
+
     this.id = message.id;
     this.type = message.type;
     this.realmId = message.realmId;
@@ -30,6 +33,7 @@ export class Entity {
   }
 
   update(dt) {
+    super.update(dt);
   }
 
   onAdjacentInteract(avatar, protocol) {
@@ -132,8 +136,9 @@ export class Actor extends Entity {
       (message) => itemRegistry.makeItem(message));
 
     this.isMoving = false;
-    this.attackRemaining = 1;
-    this.moveRemaining = 0;
+
+    this.addTimer("attack", new timing.CountdownTimer());
+    this.addTimer("move", new timing.CountdownTimer());
   }
 
   step() {
@@ -141,11 +146,15 @@ export class Actor extends Entity {
     //
     // It will forcibly normalize the location (may be janky, but will always be
     // correct).
+    var moveTimer = this.getTimer("move");
+
     this.location = this.location
-        .offset(this.getDirectionVector().scale(this.moveRemaining))
+        .offset(this.getDirectionVector().scale(
+            moveTimer.remaining / this.getSpeed()))
         .map(Math.round);
     this.isMoving = true;
-    this.moveRemaining = 1;
+
+    moveTimer.reset(1 / this.getSpeed());
   }
 
   getSpeed() {
@@ -159,23 +168,13 @@ export class Actor extends Entity {
   update(dt) {
     super.update(dt);
 
-    // Update attack cooldown.
-    this.attackRemaining = Math.min(1, this.attackRemaining + dt *
-                                       this.getAttackCooldown());
-
-    // Update move remaining.
-    if (this.moveRemaining > 0) {
-      var aDistance = Math.min(this.getSpeed() * dt, this.moveRemaining);
-
+    // Round out the location if the movement timer is 0.
+    var moveTimer = this.getTimer("move");
+    if (moveTimer.isStopped()) {
+      this.location = this.location.map(Math.round);
+    } else {
       this.location = this.location
-          .offset(this.getDirectionVector().scale(aDistance))
-
-      this.moveRemaining -= aDistance;
-
-      if (this.moveRemaining <= 0) {
-        this.location = this.location.map(Math.round);
-        this.moveRemaining = 0;
-      }
+          .offset(this.getDirectionVector().scale(dt * this.getSpeed()));
     }
   }
 
@@ -189,8 +188,8 @@ Actor.DEFAULT_ATTACK_COOLDOWN = 2;
 
 export class Player extends Actor {
   updateAsAvatar(dt, inputState, protocol) {
-    // Don't allow any avatar updates if there are movements or attacks pending.
-    if (this.moveRemaining > 0 || this.attackRemaining < 1) {
+    // Don't allow any avatar updates if there are any timers pending.
+    if (!this.areAllTimersStopped()) {
       return;
     }
 
@@ -219,7 +218,8 @@ export class Player extends Actor {
 
       if (attackMode) {
         // Attack mode logic.
-        if (this.attackRemaining >= 1) {
+        var attackTimer = this.getTimer("attack");
+        if (attackTimer.isStopped()) {
           if (inputState.stick(input.Key.LEFT) ||
               inputState.stick(input.Key.UP) ||
               inputState.stick(input.Key.RIGHT) ||
@@ -229,7 +229,7 @@ export class Player extends Actor {
                     .filter((entity) => entity instanceof Actor)
                     .map((entity) => entity.id)
             }));
-            this.attackRemaining = 0;
+            attackTimer.reset(1 / this.getAttackCooldown());
           }
         }
       } else {
