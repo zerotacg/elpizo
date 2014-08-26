@@ -18,7 +18,7 @@ def on_attack(protocol, actor, message):
         damage_packet = packets_pb2.DamagePacket(damage=target.damage(
             actor.attack_strength))
         actor.broadcast_to_regions_for(protocol.server.bus, target.id,
-                                       damage_packet, exclude_self=False)
+                                       damage_packet, exclude_origin=False)
         break
 
   actor.broadcast_to_regions(protocol.server.bus, message)

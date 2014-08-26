@@ -38,9 +38,9 @@ class Bus(object):
     self.channels[channel].remove(id)
     self.subscriptions[id].remove(channel)
 
-  def broadcast(self, channel, origin, message, *, exclude_self=True):
+  def broadcast(self, channel, origin, message, *, exclude_origin=True):
     for id in list(self.channels[channel]):
-      if id == origin and exclude_self:
+      if id == origin and exclude_origin:
         continue
       try:
         protocol = self.get(id)

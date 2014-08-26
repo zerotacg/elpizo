@@ -95,5 +95,6 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.DAMAGE, (origin, message) => {
     game.realm.getEntity(origin).health -= message.damage;
+    console.log(message.damage, "damage!");
   });
 }
