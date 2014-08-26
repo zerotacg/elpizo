@@ -3,7 +3,6 @@ module events from "events";
 module sprites from "client/assets/sprites";
 module entities from "client/models/entities";
 module realm from "client/models/realm";
-module colors from "client/util/colors";
 module functions from "client/util/functions";
 module geometry from "client/util/geometry";
 module objects from "client/util/objects";
@@ -444,19 +443,6 @@ class RendererVisitor extends entities.EntityVisitor {
 
   visitPlayer(entity) {
     super.visitPlayer(entity);
-
-    this.ctx.translate(16, -32);
-
-    var baseWidth = this.ctx.measureText(entity.name).width;
-    var width = baseWidth + 16;
-
-    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    this.ctx.fillRect(-width / 2, -8, width, 12 + 8);
-
-    this.ctx.fillStyle = colors.makeColorForString(entity.name);
-    this.ctx.textAlign = "center";
-    this.ctx.textBaseline = "middle";
-    this.ctx.fillText(entity.name, 0, 0);
   }
 
   visitBuilding(entity) {

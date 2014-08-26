@@ -52,6 +52,28 @@ a {
   width: 100%;
   height: 100%;
   z-index: 1;
+  overflow: hidden;
+
+  .overlay {
+    position: absolute;
+
+    .player-name {
+      position: absolute;
+      white-space: nowrap;
+
+      .inner {
+        position: relative;
+        left: -50%;
+        padding: 4px 8px;
+        background: rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    -webkit-user-select: none;
+    user-select: none;
+
+    cursor: default;
+  }
 
   .log {
     background: rgba(0, 0, 0, 0.5);

@@ -41,9 +41,7 @@ export class Game extends events.EventEmitter {
     this.inputState = new input.InputState(window);
 
     this.uiRoot = document.createElement("div");
-    this.uiRoot.className = "ui-root";
     parent.appendChild(this.uiRoot);
-
     this.uiRootComponent = ui.UI({game: this});
 
     // Render the React components once.
