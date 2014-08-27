@@ -63,7 +63,7 @@ class Bus(object):
     with green.locking(self.broadcast_lock_for(id, channel)):
       try:
         protocol.send(origin, message)
-      except websockets.exceptions.InvalidStateError:
+      except websockets.exceptions.InvalidState:
         logger.warn("Client transport closed during broadcast: %d", id)
         return
     # END CRITICAL SECTION

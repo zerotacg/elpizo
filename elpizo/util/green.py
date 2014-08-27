@@ -34,7 +34,12 @@ def coroutine(f):
     g = greenlet.greenlet(f)
     r = g.switch(*args, **kwargs)
     while isinstance(r, asyncio.Future):
-      r = g.switch((yield from r))
+      try:
+        next_r = yield from r
+      except BaseException as e:
+        r = g.throw(e)
+      else:
+        r = g.switch(next_r)
     return r
 
   return _wrapper

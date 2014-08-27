@@ -1,5 +1,6 @@
 import logging
 import traceback
+import websockets
 
 from elpizo.protos import packets_pb2
 from elpizo.models import geometry
@@ -69,7 +70,10 @@ class Dispatcher(net.Protocol):
     if self.server.debug:
       text += "\n\n" + "".join(traceback.format_exception(*exc_info))
 
-    self.send(None, packets_pb2.ErrorPacket(text=text))
+    try:
+      self.send(None, packets_pb2.ErrorPacket(text=text))
+    except websockets.exceptions.InvalidState:
+      pass
     raise e
 
 
