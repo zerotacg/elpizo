@@ -38,15 +38,20 @@ class Dispatcher(net.Protocol):
 
   def on_message(self, origin, message):
     type = message.DESCRIPTOR.GetOptions().Extensions[packets_pb2.packet_type]
+    packet_name = Dispatcher.PACKET_NAMES.get(
+        type, "opcode {}".format(type))
 
-    try:
-      handler = self.HANDLERS[type]
-    except KeyError:
-      packet_name = Dispatcher.PACKET_NAMES.get(
-          type, "opcode {}".format(type))
-      logger.warn("Unhandled packet: %s", packet_name)
-    else:
-      handler(self, self.actor, message)
+    with self.server.statsd.timer("on_message"), \
+         self.server.statsd.timer("packets." + packet_name), \
+         self.server.statsd.timer("actors." + (self.actor.id
+                                               if self.actor is not None
+                                               else "_")):
+      try:
+        handler = self.HANDLERS[type]
+      except KeyError:
+        logger.warn("Unhandled packet: %s", packet_name)
+      else:
+        handler(self, self.actor, message)
 
   def on_close(self):
     if self.actor is not None:
