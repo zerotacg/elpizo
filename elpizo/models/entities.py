@@ -72,15 +72,10 @@ class Entity(record.PolymorphicProtobufRecord):
     return self.realm.load_intersecting_regions(self.bounds)
 
   def broadcast_to_regions(self, bus, message, *, exclude_origin=True):
-    self.broadcast_to_regions_for(bus, self.id, message,
-                                  exclude_origin=exclude_origin)
-
-  def broadcast_to_regions_for(self, bus, origin, message, *,
-                               exclude_origin=True):
     for region in self.regions:
       bus.broadcast(
           ("region", self.realm.id, region.location),
-          origin, message, exclude_origin=exclude_origin)
+          self.id, message, exclude_origin=exclude_origin)
 
   @contextlib.contextmanager
   def movement(self):

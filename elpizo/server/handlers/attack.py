@@ -18,10 +18,11 @@ def on_attack(protocol, actor, message):
 
       if actor.target_bounds.intersects(target_bounds) or \
          actor.bounds.intersects(target_bounds):
-        damage_packet = packets_pb2.DamagePacket(damage=target.damage(
-            actor.attack_strength))
-        actor.broadcast_to_regions_for(protocol.server.bus, target.id,
-                                       damage_packet, exclude_origin=False)
+        target.broadcast_to_regions(
+            protocol.server.bus,
+            packets_pb2.DamagePacket(damage=target.damage(
+                actor.attack_strength)),
+            exclude_origin=False)
         break
 
   actor.broadcast_to_regions(protocol.server.bus, message)
