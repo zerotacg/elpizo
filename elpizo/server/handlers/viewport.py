@@ -13,9 +13,9 @@ def on_viewport(protocol, actor, message):
       for region in actor.realm.load_intersecting_regions(last_cache_bounds)}
 
   new_regions = list(actor.realm.load_intersecting_regions(cache_bounds))
+  new_region_locations = {region.location for region in new_regions}
 
-  removed_region_locations = last_region_locations - \
-                             {region.location for region in new_regions}
+  removed_region_locations = last_region_locations - new_region_locations
 
   # Unsubscribe from last regions that aren't present in new regions.
   for location in removed_region_locations:

@@ -18,6 +18,8 @@ def on_move(protocol, actor, message):
   old_location = actor.location
   last_regions = list(actor.regions)
 
+  original_actor_protobuf = actor.to_public_protobuf()
+
   # BEGIN CRITICAL SECTION: We need to update the location of the actor, and
   # ensure no conflicting writes occur due to greenlet switching during IO.
   #
@@ -42,17 +44,20 @@ def on_move(protocol, actor, message):
         direction=actor.direction))
     return
 
+  region_diff = set(region.location for region in actor.regions) - \
+      set(region.location for region in last_regions)
+
+  # If we've moved into a new region, we need to inform clients in these regions
+  # that we've entered the region -- but using the pre-move protobuf so that
+  # the entity moves into the correct region.
+  if region_diff:
+    actor.broadcast_to_regions(protocol.server.bus, packets_pb2.EntityPacket(
+          entity=original_actor_protobuf))
+
   for region in last_regions:
     protocol.server.bus.broadcast(
         ("region", actor.realm.id, region.location),
         actor.id, message)
-
-  region_diff = set(region.location for region in actor.regions) - \
-      set(region.location for region in last_regions)
-
-  if region_diff:
-    actor.broadcast_to_regions(protocol.server.bus, packets_pb2.EntityPacket(
-          entity=actor.to_public_protobuf()))
 
   # We don't need strict sequentiality of the location log, so we keep this out
   # of the critical section.
