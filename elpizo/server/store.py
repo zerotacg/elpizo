@@ -88,7 +88,8 @@ class GameStore(object):
     # this acquires an advisory lock -- locking is not mandatory, but I don't
     # suggest you try bypassing it.
     if not green.await_coro(
-        self.redis.setnx(self._LOCK_KEY.encode("utf-8"), b"")):
+        self.redis.set(self._LOCK_KEY.encode("utf-8"), b"",
+                       only_if_not_exists=True)):
       raise StoreError("""\
 Store is locked. This generally occurs if the server was uncleanly shut down, \
 or another copy of the server is running. If you are sure another copy of the \
