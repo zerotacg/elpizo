@@ -195,10 +195,23 @@ class Actor(Entity):
                       if proto.HasField("weapon") else None)
     return record
 
+  @property
+  def equipment(self):
+    return [item for item in
+            [self.head_item, self.torso_item, self.legs_item, self.feet_item,
+             self.weapon] if item is not None]
+
+  @property
+  def full_inventory(self):
+    return self.inventory + self.equipment
+
   def get_realm(self, realm_store):
     return realm_store.find(self.realm_id)
 
   def is_passable(self, direction):
+    return True
+
+  def is_damageable(self):
     return True
 
 
@@ -222,6 +235,9 @@ class Player(Actor):
     proto = proto.Extensions[entities_pb2.Player.ext]
     record.update(online=proto.online)
     return record
+
+  def is_damageable(self):
+    return False
 
 
 class NPC(Actor):
@@ -264,6 +280,9 @@ class NPC(Actor):
     record = super().from_protobuf(proto)
     proto = proto.Extensions[entities_pb2.NPC.ext]
     return record
+
+  def is_damageable(self):
+    return True
 
 
 @Entity.register

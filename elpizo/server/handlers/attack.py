@@ -1,5 +1,6 @@
 import time
 
+from elpizo.models.entities import Drop
 from elpizo.protos import packets_pb2
 
 
@@ -16,13 +17,30 @@ def on_attack(protocol, actor, message):
     for location in target.all_locations:
       target_bounds = target.bbox.offset(location)
 
-      if actor.target_bounds.intersects(target_bounds) or \
-         actor.bounds.intersects(target_bounds):
+      if (actor.target_bounds.intersects(target_bounds) or \
+          actor.bounds.intersects(target_bounds)) and \
+         target.is_damageable():
         target.broadcast_to_regions(
             protocol.server.bus,
             packets_pb2.DamagePacket(damage=target.damage(
                 actor.attack_strength)),
             exclude_origin=False)
+        if target.health == 0:
+          # TODO: replace this with better dying
+          target.broadcast_to_regions(
+              protocol.server.bus,
+              packets_pb2.DespawnEntityPacket())
+          protocol.server.store.entities.destroy(target)
+
+          for item in target.full_inventory:
+            drop = Drop(item=item,
+                        location=target.location,
+                        realm_id=target.realm_id)
+            protocol.server.store.entities.create(drop)
+
+            drop.broadcast_to_regions(
+                protocol.server.bus,
+                packets_pb2.EntityPacket(entity=drop.to_public_protobuf()))
         break
 
   actor.broadcast_to_regions(protocol.server.bus, message)

@@ -164,15 +164,10 @@ def initdb(app):
   app.store.entities.create(slime.GreenSlime(
       name="Green Slime",
       direction=1,
-      health=10,
+      health=2,
       realm_id=windvale.id,
       location=geometry.Vector2(0, 2),
-      inventory=[]))
-
-  app.store.entities.create(entities.Drop(
-      item=restorative.Carrot(),
-      location=geometry.Vector2(0, 1),
-      realm_id=windvale.id))
+      inventory=[restorative.Carrot()]))
 
   logging.info("Created players.")
 
