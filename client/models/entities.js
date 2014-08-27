@@ -255,6 +255,7 @@ export class Player extends Actor {
           this.move();
           didMove = true;
 
+          console.log("step!");
           protocol.send(new packets.MovePacket());
 
           targetEntities.forEach((entity) =>
