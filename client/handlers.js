@@ -62,7 +62,7 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.TURN, withEntity((entity, message) => {
-    entity.direction = message.direction;
+    entity.turn(message.direction);
   }));
 
   protocol.on(packets.Packet.Type.STOP_MOVE, withEntity((entity, message) => {

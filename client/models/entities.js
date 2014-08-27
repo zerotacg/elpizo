@@ -145,20 +145,29 @@ export class Actor extends Entity {
     this.addTimer("move", new timing.CountdownTimer());
   }
 
-  move() {
-    // Move the entity one tile forward.
-    //
-    // It will forcibly normalize the location (may be janky, but will always be
-    // correct).
+  finishMove() {
     var moveTimer = this.getTimer("move");
 
     this.location = this.location
         .offset(this.getDirectionVector().scale(
             moveTimer.remaining / this.getSpeed()))
         .map(Math.round);
-    this.isMoving = true;
+    moveTimer.reset(0);
+  }
 
-    moveTimer.reset(1 / this.getSpeed());
+  turn(direction) {
+    this.finishMove();
+    this.direction = direction;
+  }
+
+  move() {
+    // Move the entity one tile forward.
+    //
+    // It will forcibly normalize the location (may be janky, but will always be
+    // correct).
+    this.isMoving = true;
+    this.finishMove();
+    this.getTimer("move").reset(1 / this.getSpeed());
   }
 
   stopMove() {
@@ -224,7 +233,7 @@ export class Player extends Actor {
     if (direction !== null) {
       if (this.direction !== direction) {
         // Send a turn packet.
-        this.direction = direction;
+        this.turn(direction);
         protocol.send(new packets.TurnPacket({direction: direction}))
       }
 
