@@ -14,9 +14,11 @@ def on_viewport(protocol, actor, message):
 
   new_regions = list(actor.realm.load_intersecting_regions(cache_bounds))
 
+  removed_region_locations = last_region_locations - \
+                             {region.location for region in new_regions}
+
   # Unsubscribe from last regions that aren't present in new regions.
-  for location in last_region_locations - \
-                  {region.location for region in new_regions}:
+  for location in removed_region_locations:
     protocol.server.bus.unsubscribe(actor.id,
                                     ("region", actor.realm.id, location))
 
@@ -42,3 +44,9 @@ def on_viewport(protocol, actor, message):
                 entity.id,
                 packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
       # END CRITICAL SECTION
+
+  # The client should now remove all entities in regions it doesn't know about.
+  for location in removed_region_locations:
+    for entity in actor.realm.regions.load(location).entities:
+      if not entity.bounds.intersects(cache_bounds):
+        protocol.send(entity.id, packets_pb2.DespawnEntityPacket())

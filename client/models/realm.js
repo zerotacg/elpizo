@@ -39,12 +39,6 @@ export class Realm {
         delete this.regions[k];
       }
     });
-
-    Object.keys(this.entities).map((k) => {
-      if (!bbox.contains(this.entities[k].getBounds())) {
-        delete this.entities[k];
-      }
-    });
   }
 
   getClosestRegionTo(location) {

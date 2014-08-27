@@ -15,19 +15,9 @@ export function install(game) {
 
   function withEntity(f) {
     return (origin, message) => {
-      var entity = game.realm.getEntity(origin);
-      if (entity === null) {
-        // DON'T PANIC! Sometimes we might have already expunged the entity from
-        // the realm's entities, in which case we'll get the entity data again
-        // from the server once our viewport is adjusted to contain the entity.
-        console.warn("Could not find entity " + origin + " in current realm.");
-        return;
-      }
-
-      return f(entity, message);
+      return f(game.realm.getEntity(origin), message);
     }
   }
-
 
   protocol.on(packets.Packet.Type.REALM, (origin, message) => {
     game.setRealm(new realm.Realm(message.realm));
