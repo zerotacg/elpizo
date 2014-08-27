@@ -43,5 +43,7 @@ def coroutine(f):
 @contextlib.contextmanager
 def locking(lock):
   await_coro(lock.acquire())
-  yield
-  lock.release()
+  try:
+    yield
+  finally:
+    lock.release()
