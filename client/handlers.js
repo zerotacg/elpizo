@@ -17,9 +17,10 @@ export function install(game) {
     return (origin, message) => {
       var entity = game.realm.getEntity(origin);
       if (entity === null) {
-        console.warn("Could not find entity " + origin + " in current realm. " +
-                     "This is probably okay if you're switching viewport " +
-                     "regions.");
+        // DON'T PANIC! Sometimes we might have already expunged the entity from
+        // the realm's entities, in which case we'll get the entity data again
+        // from the server once our viewport is adjusted to contain the entity.
+        console.warn("Could not find entity " + origin + " in current realm.");
         return;
       }
 
