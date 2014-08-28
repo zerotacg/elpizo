@@ -240,35 +240,13 @@ class Player(Actor):
     return False
 
 
+@Entity.register
 class NPC(Actor):
-  _TYPE_PREFIX = "npc"
-
-  @support.classproperty
-  def TYPE(cls):
-    return ".".join([cls._TYPE_PREFIX, cls.SPECIES])
-
-  @support.classproperty
-  def REGISTRY(cls):
-    registry = {}
-    for k, v in super().REGISTRY.items():
-      type, *rest = k.split(".")
-      if type != cls._TYPE_PREFIX:
-        continue
-
-      species, = rest
-      registry[species] = v
-    return registry
+  TYPE = "npc"
 
   def __init__(self, *args, **kwargs):
     self.bbox = geometry.Rectangle(0, 0, 1, 1)
     super().__init__(*args, **kwargs)
-
-  def to_protected_protobuf(self):
-    proto = super().to_protected_protobuf()
-    proto.type = self._TYPE_PREFIX
-    proto.Extensions[entities_pb2.NPC.ext].MergeFrom(
-        entities_pb2.NPC(species=self.SPECIES))
-    return proto
 
   def to_protobuf(self):
     proto = super().to_protobuf()

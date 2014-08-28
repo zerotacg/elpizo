@@ -8,7 +8,6 @@ from elpizo.models import realm
 from elpizo.models.items import equipment
 from elpizo.models.items import restorative
 from elpizo.models.items import weapons
-from elpizo.models.npcs import slime
 from elpizo.util import green
 
 
@@ -161,8 +160,10 @@ def initdb(app):
       inventory=[],
       legs_item=equipment.TealPants()))
 
-  app.store.entities.create(slime.GreenSlime(
+  app.store.entities.create(entities.NPC(
       name="Green Slime",
+      gender="neuter",
+      body="green_slime",
       direction=1,
       health=5,
       realm_id=windvale.id,

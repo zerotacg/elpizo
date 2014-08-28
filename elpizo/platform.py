@@ -6,12 +6,10 @@ import logging
 from elpizo.models import entities
 from elpizo.models import items
 from elpizo.models.items import registry as item_registry
-from elpizo.models.npcs import registry as npc_registry
 from elpizo.util import green
 from elpizo.util import mint
 
 item_registry.initialize()
-npc_registry.initialize()
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +37,6 @@ class Application(object):
 
   def start(self):
     logger.info("Item types registered: %d", len(items.Item.REGISTRY))
-    logger.info("NPC types registered: %d", len(entities.NPC.REGISTRY))
 
     with open(self.config.mint_key) as f:
       self.mint = mint.Mint(f)
