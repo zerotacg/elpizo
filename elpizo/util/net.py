@@ -43,7 +43,8 @@ class Protocol(object):
   @classmethod
   def deserialize_packet(cls, raw):
     packet = packets_pb2.Packet.FromString(raw)
-    return packet.origin, cls.PACKETS[packet.type].FromString(packet.payload)
+    return packet.origin if packet.HasField("origin") else None, \
+           cls.PACKETS[packet.type].FromString(packet.payload)
 
   def on_open(self):
     pass

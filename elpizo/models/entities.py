@@ -239,6 +239,10 @@ class Player(Actor):
   def is_damageable(self):
     return False
 
+  @property
+  def bus_key(self):
+    return ("player", self.id)
+
 
 @Entity.register
 class NPC(Actor):

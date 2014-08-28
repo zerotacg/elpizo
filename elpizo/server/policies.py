@@ -1,32 +1,82 @@
 import logging
 
+from elpizo.protos import packets_pb2
+
+
 logger = logging.getLogger(__name__)
 
 
 class UnauthenticatedPolicy(object):
-  def get(self, origin, server):
+  def on_hello(self, protocol):
+    pass
+
+  def get(self, origin):
     return None
 
-  def finish(self, server):
+  def on_finish(self):
     pass
 
 
 class PlayerPolicy(object):
-  def __init__(self, player):
-    self.player = player
+  def __init__(self, id, server):
+    self.server = server
+    self.player = server.store.entities.load(id)
 
-  def get(self, origin, server):
+  def on_hello(self, protocol):
+    if self.server.bus.has(self.player.bus_key):
+      # We remove the protocol from the player associated with the bus, since
+      # we're switching the player to a different protocol.
+      last_protocol = self.server.bus.get(self.player.bus_key)
+      last_protocol.send(None, packets_pb2.ErrorPacket(
+          text="Session collision."))
+      last_protocol.bind_policy(UnauthenticatedPolicy())
+      last_protocol.transport.close()
+      self.server.bus.remove(self.player.bus_key)
+
+    self.server.bus.add(self.player.bus_key, protocol)
+
+    protocol.send(
+        None,
+        packets_pb2.RealmPacket(realm=self.player.realm.to_public_protobuf()))
+    protocol.send(
+        self.player.id,
+        packets_pb2.EntityPacket(entity=self.player.to_protected_protobuf()))
+    protocol.send(self.player.id, packets_pb2.AvatarPacket())
+
+    # Only self.players get chat access.
+    self.server.bus.subscribe(self.player.bus_key, ("conversation",
+                                                    self.player.name))
+    self.server.bus.subscribe(self.player.bus_key, ("chatroom", "global"))
+
+  def get(self, origin):
     return self.player
 
-  def finish(self, server):
+  def on_finish(self):
     self.player.save()
     logger.info("Flushing player %s to database.", self.player.id)
-    server.bus.remove(self.player.id)
+    self.server.bus.remove(self.player.bus_key)
 
 
 class NPCPolicy(object):
-  def get(self, origin, server):
-    return server.store.entities.load(origin)
+  def __init__(self, id, server):
+    self.server = server
+    self.id = id
 
-  def finish(self, server):
-    pass
+  @property
+  def bus_key(self):
+    return ("npc", self.id)
+
+  def on_hello(self, protocol):
+    self.server.bus.add(self.bus_key, protocol)
+
+  def get(self, origin):
+    return self.server.store.entities.load(origin)
+
+  def on_finish(self):
+    self.server.bus.remove(self.bus_key)
+
+
+REGISTRY = {
+    "player": PlayerPolicy,
+    "npc": NPCPolicy
+}

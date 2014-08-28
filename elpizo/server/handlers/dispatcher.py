@@ -28,27 +28,26 @@ class Dispatcher(net.Protocol):
   def register(cls, type, f):
     cls.HANDLERS[type] = f
 
-  def bind_actor_policy(self, policy):
-    self.actor_policy = policy
+  def bind_policy(self, policy):
+    self.policy = policy
 
   def on_open(self):
-    self.bind_actor_policy(policies.UnauthenticatedPolicy())
+    self.bind_policy(policies.UnauthenticatedPolicy())
 
     self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
     self.last_move_time = 0
     self.last_attack_time = 0
 
   def on_message(self, origin, message):
-    actor = self.actor_policy.get(origin, self.server)
+    actor = self.policy.get(origin)
 
     if actor is None:
-      actor_id = "_"
+      actor_id = "(unknown)"
     else:
       actor_id = actor.id
 
     type = message.DESCRIPTOR.GetOptions().Extensions[packets_pb2.packet_type]
-    packet_name = Dispatcher.PACKET_NAMES.get(
-        type, "opcode {}".format(type))
+    packet_name = Dispatcher.PACKET_NAMES.get(type, "opcode {}".format(type))
 
     with self.server.statsd.timer("on_message"), \
          self.server.statsd.timer("packets." + packet_name), \
@@ -61,7 +60,7 @@ class Dispatcher(net.Protocol):
         handler(self, actor, message)
 
   def on_close(self):
-    self.actor_policy.finish(self.server)
+    self.policy.on_finish()
 
   def on_error(self, e, exc_info):
     if isinstance(e, net.ProtocolError):

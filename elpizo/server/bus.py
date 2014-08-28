@@ -9,6 +9,15 @@ from elpizo.util import green
 logger = logging.getLogger(__name__)
 
 
+def prefixes(path):
+  current = ()
+  yield current
+
+  for part in path:
+    current += (part,)
+    yield current
+
+
 class Bus(object):
   def __init__(self):
     self.protocols = {}
@@ -76,12 +85,14 @@ class Bus(object):
         return
     # END CRITICAL SECTION
 
-  def broadcast(self, channel, origin, message, *, exclude_origin=True):
+  def broadcast(self, route, origin, message, *, exclude_origin=True):
     futures = []
-    for id in list(self.channels[channel]):
-      if id == origin and exclude_origin:
-        continue
-      futures.append(green.coroutine(self._send_to_channel)(
-          id, channel, origin, message))
 
-    green.await_coro(asyncio.gather(*futures))
+    for channel in prefixes(route):
+      for id in list(self.channels.get(channel, set())):
+        if id == origin and exclude_origin:
+          continue
+        futures.append(green.coroutine(self._send_to_channel)(
+            id, channel, origin, message))
+
+    return asyncio.gather(*futures)

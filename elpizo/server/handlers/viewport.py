@@ -19,7 +19,7 @@ def on_viewport(protocol, actor, message):
 
   # Unsubscribe from last regions that aren't present in new regions.
   for location in removed_region_locations:
-    protocol.server.bus.unsubscribe(actor.id,
+    protocol.server.bus.unsubscribe(actor.bus_key,
                                     ("region", actor.realm.id, location))
 
   for region in new_regions:
@@ -35,14 +35,15 @@ def on_viewport(protocol, actor, message):
       # region to the actor before they are allowed to receive broadcasts on the
       # channel.
       with green.locking(
-          protocol.server.bus.broadcast_lock_for(actor.id, region_channel)):
-        protocol.server.bus.subscribe(actor.id, region_channel)
+          protocol.server.bus.broadcast_lock_for(actor.bus_key,
+                                                 region_channel)):
+        protocol.server.bus.subscribe(actor.bus_key, region_channel)
 
         for entity in region.entities:
           if entity.id != actor.id:
             protocol.send(
-                entity.id,
-                packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
+              entity.id,
+              packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
       # END CRITICAL SECTION
 
   # The client should now remove all entities in regions it doesn't know about.
