@@ -211,7 +211,7 @@ class Actor(Entity):
   def is_passable(self, direction):
     return True
 
-  def is_damageable(self):
+  def is_damageable_by(self, attacker):
     return True
 
   @property
@@ -240,8 +240,11 @@ class Player(Actor):
     record.update(online=proto.online)
     return record
 
-  def is_damageable(self):
-    return False
+  def is_damageable_by(self, attacker):
+    if isinstance(attacker, Player):
+      # no PVP (for now)
+      return False
+    return True
 
 
 @Entity.register
@@ -254,16 +257,23 @@ class NPC(Actor):
 
   def to_protobuf(self):
     proto = super().to_protobuf()
-    proto.Extensions[entities_pb2.NPC.ext].MergeFrom(entities_pb2.NPC())
+    proto.Extensions[entities_pb2.NPC.ext].MergeFrom(entities_pb2.NPC(
+        behavior=self.behavior))
+    return proto
+
+  def to_public_protobuf(self):
+    proto = super().to_public_protobuf()
+    proto.Extensions[entities_pb2.NPC.ext].ClearField("behavior")
     return proto
 
   @classmethod
   def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
     proto = proto.Extensions[entities_pb2.NPC.ext]
+    record.update(behavior=proto.behavior)
     return record
 
-  def is_damageable(self):
+  def is_damageable_by(self, attacker):
     return True
 
 

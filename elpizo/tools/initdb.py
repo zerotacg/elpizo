@@ -168,7 +168,8 @@ def initdb(app):
       health=5,
       realm_id=windvale.id,
       location=geometry.Vector2(0, 2),
-      inventory=[restorative.Carrot()]))
+      inventory=[restorative.Carrot()],
+      behavior="wander"))
 
   logging.info("Created players.")
 

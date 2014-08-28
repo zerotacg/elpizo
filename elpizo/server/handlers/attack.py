@@ -19,11 +19,11 @@ def on_attack(protocol, actor, message):
 
       if (actor.target_bounds.intersects(target_bounds) or \
           actor.bounds.intersects(target_bounds)) and \
-         target.is_damageable():
+         target.is_damageable_by(actor):
         damage_packet = packets_pb2.DamagePacket(
             damage=target.damage(actor.attack_strength))
         target.broadcast_to_regions(protocol.server.bus, damage_packet)
-        protocol.server.bus.send(target.id, target.id, damage_packet)
+        protocol.server.bus.send(target.bus_key, target.id, damage_packet)
         if target.health == 0:
           target.broadcast_to_regions(protocol.server.bus,
                                       packets_pb2.DeathPacket())

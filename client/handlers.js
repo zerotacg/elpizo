@@ -67,7 +67,7 @@ export function install(game) {
     if (!renderer.getCacheBounds().intersects(entity.getTargetBounds())) {
       game.realm.removeEntity(entity.id);
     } else {
-      game.realm.getEntity(entity.id).move();
+      entity.move();
     }
   }));
 

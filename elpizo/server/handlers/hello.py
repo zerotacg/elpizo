@@ -18,7 +18,8 @@ def on_hello(protocol, actor, message):
   try:
     policy_factory = policies.REGISTRY[auth_realm]
   except KeyError:
-    raise net.ProtocolError("Unknown authentication realm.")
+    raise net.ProtocolError("Unknown authentication realm: {}".format(
+        auth_realm))
 
   policy = policy_factory(id, protocol.server)
   protocol.bind_policy(policy)
@@ -26,6 +27,9 @@ def on_hello(protocol, actor, message):
 
 
 def on_whoami(protocol, actor, message):
+  protocol.send(
+      None,
+      packets_pb2.RealmPacket(realm=actor.realm.to_public_protobuf()))
   protocol.send(
       actor.id,
       packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))

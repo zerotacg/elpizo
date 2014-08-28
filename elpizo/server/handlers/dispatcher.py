@@ -39,7 +39,7 @@ class Dispatcher(net.Protocol):
     self.last_attack_time = 0
 
   def on_message(self, origin, message):
-    actor = self.policy.get(origin)
+    actor = self.policy.get_actor(origin)
 
     if actor is not None:
       try:
@@ -49,7 +49,9 @@ class Dispatcher(net.Protocol):
         self.server.bus.add(actor.bus_key, self)
       else:
         if bus_protocol is not self:
-          logger.error("Mismatched protocols in bus for actor %s.", actor.id)
+          logger.error("Mismatched protocols in bus for actor %s " +
+                       "(overwrote it anyway).", actor.id)
+          self.server.bus.add(actor.bus_key, self)
 
     if actor is None:
       actor_id = "(unknown)"

@@ -10,7 +10,7 @@ class UnauthenticatedPolicy(object):
   def on_hello(self, protocol):
     pass
 
-  def get(self, origin):
+  def get_actor(self, origin):
     return None
 
   def on_finish(self):
@@ -48,7 +48,7 @@ class PlayerPolicy(object):
                                                     self.player.name))
     self.server.bus.subscribe(self.player.bus_key, ("chatroom", "global"))
 
-  def get(self, origin):
+  def get_actor(self, origin):
     return self.player
 
   def on_finish(self):
@@ -68,8 +68,9 @@ class NPCPolicy(object):
 
   def on_hello(self, protocol):
     self.server.bus.add(self.bus_key, protocol)
+    logger.info("Hello, NPC server %s!", self.id)
 
-  def get(self, origin):
+  def get_actor(self, origin):
     return self.server.store.entities.load(origin) if origin is not None else \
            None
 

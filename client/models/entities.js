@@ -341,8 +341,6 @@ export class NPC extends Actor {
   constructor(message) {
     super(message);
     message = message[".NPC.ext"];
-
-    this.species = message.species;
   }
 
   accept(visitor) {

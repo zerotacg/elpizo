@@ -77,5 +77,5 @@ message NPC {
     optional NPC ext = 107;
   }
 
-  optional string species = 1;
+  optional string behavior = 1;
 }

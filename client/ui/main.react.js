@@ -13,9 +13,10 @@ export var UI = React.createClass({
   },
 
   render: function () {
+    // We copy the log because we need to know if it changed length.
     return <div className="ui-root" onKeyDown={this.onKeyDown}>
       <overlay.Overlay game={this.props.game} />
-      <log.Log game={this.props.game} />
+      <log.Log game={this.props.game} log={this.props.game.log.slice()} />
       <debug.Debug game={this.props.game} />
       <loading.Loading game={this.props.game} />
     </div>;

@@ -10,7 +10,7 @@ var COMMANDS = {
   debug: (game) => {
     game.setDebug(!game.debug);
 
-    game.log.push(InfoMessageEntry({
+    game.appendToLog(InfoMessageEntry({
         text: "Debug mode " + (game.debug ? "on" : "off") + "."
     }));
   },
@@ -22,11 +22,11 @@ var COMMANDS = {
       r = eval(cmd);
       evalOk = true;
     } catch (e) {
-      game.log.push(<pre className="info">&lt;&lt;! {e.toString()}</pre>);
+      game.appendToLog(<pre className="info">&lt;&lt;! {e.toString()}</pre>);
     }
 
     if (evalOk) {
-      game.log.push(<pre className="info">&lt;&lt;&lt; {objects.repr(r)}</pre>);
+      game.appendToLog(<pre className="info">&lt;&lt;&lt; {objects.repr(r)}</pre>);
     }
   },
 
@@ -69,13 +69,12 @@ export var InfoMessageEntry = React.createClass({
 export var Log = React.createClass({
   getInitialState: function () {
     return {
-        pendingMessage: "",
-        messages: []
+        pendingMessage: ""
     };
   },
 
   componentDidUpdate: function (prevProps, prevState) {
-    if (prevState.messages.length === this.state.messages.length) {
+    if (prevProps.log.length === this.props.log.length) {
       return;
     }
 
@@ -103,7 +102,7 @@ export var Log = React.createClass({
       var rest = parts.slice(1).join(" ").trim();
 
       if (!objects.hasOwnProp.call(COMMANDS, commandName)) {
-        this.props.game.log.push(InfoMessageEntry({
+        this.props.game.appendToLog(InfoMessageEntry({
           text: "No such command: " + commandName
         }))
       } else {
@@ -125,7 +124,7 @@ export var Log = React.createClass({
   },
 
   render: function () {
-    var messages = this.props.game.log.map((entry) =>
+    var messages = this.props.log.map((entry) =>
         <li key={entry.id}>{entry.node}</li>);
 
     return <form className="log" onSubmit={this.handleSubmit}>
