@@ -164,7 +164,7 @@ def initdb(app):
   app.store.entities.create(slime.GreenSlime(
       name="Green Slime",
       direction=1,
-      health=2,
+      health=5,
       realm_id=windvale.id,
       location=geometry.Vector2(0, 2),
       inventory=[restorative.Carrot()]))

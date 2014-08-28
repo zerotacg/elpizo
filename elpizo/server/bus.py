@@ -39,6 +39,14 @@ class Bus(object):
   def has(self, id):
     return id in self.protocols
 
+  def send(self, id, origin, message):
+    try:
+      protocol = self.get(id)
+    except KeyError:
+      return
+    else:
+      protocol.send(origin, message)
+
   def subscribe(self, id, channel):
     self.channels[channel].add(id)
     self.subscriptions[id].add(channel)

@@ -140,9 +140,11 @@ export class Actor extends Entity {
       (message) => itemRegistry.makeItem(message));
 
     this.isMoving = false;
+    this.isDying = false;
 
     this.addTimer("attack", new timing.CountdownTimer());
     this.addTimer("move", new timing.CountdownTimer());
+    this.addTimer("death", new timing.CountdownTimer());
   }
 
   finishMove() {
@@ -197,6 +199,12 @@ export class Actor extends Entity {
     } else {
       this.location = this.location
           .offset(this.getDirectionVector().scale(dt * this.getSpeed()));
+    }
+
+    var deathTimer = this.getTimer("death");
+    if (this.isDying && deathTimer.isStopped()) {
+      // We've died, so remove ourselves from the realm.
+      this.realm.removeEntity(this.id);
     }
   }
 

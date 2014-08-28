@@ -89,6 +89,7 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.DEATH, withEntity((entity, message) => {
+    entity.isDying = true;
     game.realm.removeEntity(entity.id);
   }));
 
