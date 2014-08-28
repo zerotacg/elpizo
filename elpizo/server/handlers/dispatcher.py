@@ -41,6 +41,16 @@ class Dispatcher(net.Protocol):
   def on_message(self, origin, message):
     actor = self.policy.get(origin)
 
+    if actor is not None:
+      try:
+        bus_protocol = self.server.bus.get(actor.bus_key)
+      except KeyError:
+        # Update the bus with the actor's bus key every time we get a message.
+        self.server.bus.add(actor.bus_key, self)
+      else:
+        if bus_protocol is not self:
+          logger.error("Mismatched protocols in bus for actor %s.", actor.id)
+
     if actor is None:
       actor_id = "(unknown)"
     else:
@@ -88,3 +98,4 @@ Dispatcher.register(packets_pb2.Packet.MOVE, move.on_move)
 Dispatcher.register(packets_pb2.Packet.STOP_MOVE, move.on_stop_move)
 Dispatcher.register(packets_pb2.Packet.TURN, move.on_turn)
 Dispatcher.register(packets_pb2.Packet.VIEWPORT, viewport.on_viewport)
+Dispatcher.register(packets_pb2.Packet.WHOAMI, hello.on_whoami)

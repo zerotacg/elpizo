@@ -1,6 +1,7 @@
 import functools
 
 from elpizo.models import entities
+from elpizo.protos import packets_pb2
 from elpizo.server import policies
 from elpizo.util import mint
 from elpizo.util import net
@@ -22,3 +23,9 @@ def on_hello(protocol, actor, message):
   policy = policy_factory(id, protocol.server)
   protocol.bind_policy(policy)
   policy.on_hello(protocol)
+
+
+def on_whoami(protocol, actor, message):
+  protocol.send(
+      actor.id,
+      packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))

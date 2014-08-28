@@ -214,6 +214,10 @@ class Actor(Entity):
   def is_damageable(self):
     return True
 
+  @property
+  def bus_key(self):
+    return (self.TYPE, self.id)
+
 
 @Entity.register
 class Player(Actor):
@@ -238,10 +242,6 @@ class Player(Actor):
 
   def is_damageable(self):
     return False
-
-  @property
-  def bus_key(self):
-    return ("player", self.id)
 
 
 @Entity.register

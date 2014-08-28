@@ -19,10 +19,15 @@ class NPCServer(client.Client):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
 
-    self.id = self.config.id or uuid.uuid4().hex
+  def on_start(self):
     self.realms = {}
 
-  def on_start(self):
+    if self.config.id is None:
+      self.id = uuid.uuid4().hex
+      logger.warn("ID not specified in config, generated ID %s.", self.id)
+    else:
+      self.id = self.config.id
+
     logger.info("Hello, I am NPC server %s.", self.id)
     super().on_start()
 

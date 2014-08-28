@@ -70,7 +70,8 @@ class NPCPolicy(object):
     self.server.bus.add(self.bus_key, protocol)
 
   def get(self, origin):
-    return self.server.store.entities.load(origin)
+    return self.server.store.entities.load(origin) if origin is not None else \
+           None
 
   def on_finish(self):
     self.server.bus.remove(self.bus_key)

@@ -27,6 +27,7 @@ message Packet {
     ATTACK = 17;
     DAMAGE = 18;
     DEATH = 19;
+    WHOAMI = 20;
   }
 
   optional Type type = 1;
@@ -220,4 +221,12 @@ message DeathPacket {
   //
   // Direction: Server -> Client
   option (packet_type) = DEATH;
+}
+
+message WhoamiPacket {
+  // Sent by the client to request its entity from the server. Generally only
+  // useful for the NPC server which can authenticate as any NPC.
+  //
+  // Direction: Client -> Server
+  option (packet_type) = WHOAMI;
 }
