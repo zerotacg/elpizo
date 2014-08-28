@@ -26,6 +26,7 @@ message Packet {
     TURN = 16;
     ATTACK = 17;
     DAMAGE = 18;
+    DEATH = 19;
   }
 
   optional Type type = 1;
@@ -212,4 +213,11 @@ message DamagePacket {
   option (packet_type) = DAMAGE;
 
   optional uint32 damage = 1;
+}
+
+message DeathPacket {
+  // Sent by the server to indicate an entity has died.
+  //
+  // Direction: Server -> Client
+  option (packet_type) = DEATH;
 }

@@ -20,16 +20,16 @@ def on_attack(protocol, actor, message):
       if (actor.target_bounds.intersects(target_bounds) or \
           actor.bounds.intersects(target_bounds)) and \
          target.is_damageable():
-        target.broadcast_to_regions(
-            protocol.server.bus,
-            packets_pb2.DamagePacket(damage=target.damage(
-                actor.attack_strength)),
-            exclude_origin=False)
+        target_protocol = protocol.server.bus.get(target.id)
+
+        damage_packet = packets_pb2.DamagePacket(
+            damage=target.damage(actor.attack_strength))
+        target.broadcast_to_regions(protocol.server.bus, damage_packet)
+        target_protocol.send(target.id, damage_packet)
         if target.health == 0:
-          # TODO: replace this with better dying
-          target.broadcast_to_regions(
-              protocol.server.bus,
-              packets_pb2.DespawnEntityPacket())
+          target.broadcast_to_regions(protocol.server.bus,
+                                      packets_pb2.DeathPacket())
+          target_protocol.send(target.id, packets_pb2.DeathPacket())
           protocol.server.store.entities.destroy(target)
 
           for item in target.full_inventory:

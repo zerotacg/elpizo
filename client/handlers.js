@@ -15,7 +15,16 @@ export function install(game) {
 
   function withEntity(f) {
     return (origin, message) => {
-      return f(game.realm.getEntity(origin), message);
+      var entity = game.realm.getEntity(origin);
+
+      if (entity.realm.id !== game.realm.id) {
+        console.warn("Got invalid entity realm ID (" +
+                     entity.realmId + ") for current realm (" +
+                     game.realm.id + "), discarding.");
+        return;
+      }
+
+      return f(entity, message);
     }
   }
 
@@ -76,13 +85,10 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.DESPAWN_ENTITY, withEntity((entity, message) => {
-    if (entity.realm.id !== game.realm.id) {
-      console.warn("Got invalid entity realm ID (" +
-                   entity.realmId + ") for current realm (" +
-                   game.realm.id + "), discarding.");
-      return;
-    }
+    game.realm.removeEntity(entity.id);
+  }));
 
+  protocol.on(packets.Packet.Type.DEATH, withEntity((entity, message) => {
     game.realm.removeEntity(entity.id);
   }));
 
