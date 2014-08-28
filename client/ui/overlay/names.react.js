@@ -23,15 +23,15 @@ var Name = React.createClass({
 
 export var Names = React.createClass({
   render: function () {
-    if (this.props.game.realm === null) {
+    if (this.props.realm === null) {
       return null;
     }
 
-    var names = this.props.game.realm.getAllEntities()
+    var names = this.props.realm.getAllEntities()
       .filter((entity) => entity.name)
       .map((entity) =>
           <Name key={entity.id} entity={entity}
-                renderer={this.props.game.renderer} />);
+                renderer={this.props.renderer} />);
 
     return <div>{names}</div>;
   }

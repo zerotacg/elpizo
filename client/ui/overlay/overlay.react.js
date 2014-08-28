@@ -6,6 +6,7 @@ module names from "client/ui/overlay/names.react";
 
 export var Overlay = React.createClass({
   render: function () {
+    var realm = this.props.game.realm;
     var renderer = this.props.game.renderer;
 
     var position = renderer.toScreenCoords(renderer.topLeft);
@@ -14,7 +15,7 @@ export var Overlay = React.createClass({
                 style={{transform: "translate(" +
                     (-position.x + "px") + "," +
                     (-position.y + "px") + ")"}}>
-      <names.Names game={this.props.game} />
+      <names.Names realm={realm} renderer={renderer} />
       <div className="components">{renderer.components}</div>
     </div>;
   }
