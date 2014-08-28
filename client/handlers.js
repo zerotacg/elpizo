@@ -8,6 +8,7 @@ module packets from "client/protos/packets";
 module damage from "client/ui/overlay/damage.react";
 module objects from "client/util/objects";
 module timing from "client/util/timing";
+module log from "client/ui/log.react";
 
 export function install(game) {
   var protocol = game.protocol;
@@ -84,6 +85,14 @@ export function install(game) {
     entity.direction = message.direction;
   }));
 
+
+  protocol.on(packets.Packet.Type.STATUS, withEntity((entity, message) => {
+    game.appendToLog(log.StatusMessageEntry({
+        origin: entity.name,
+        text: (message.online ? "connected" : "disconnected") + "."
+    }));
+  }));
+
   protocol.on(packets.Packet.Type.DESPAWN_ENTITY, withEntity((entity, message) => {
     game.realm.removeEntity(entity.id);
   }));
@@ -94,7 +103,9 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.INVENTORY, (origin, message) => {
-    game.me.inventory.push(itemRegistry.makeItem(message.item));
+    var item = itemRegistry.makeItem(message.item);
+    game.me.inventory.push(item);
+    game.appendToLog(log.InfoMessageEntry({text: "You picked up: " + item.type}));
   });
 
   protocol.on(packets.Packet.Type.ATTACK, withEntity((entity, message) => {
@@ -108,4 +119,20 @@ export function install(game) {
         entity: entity
     }), new timing.CountdownTimer(1));
   }));
+
+  protocol.on(packets.Packet.Type.CHAT, (origin, message) => {
+    game.appendToLog(log.ChatMessageEntry({
+        origin: message.actorName,
+        text: message.text
+    }));
+  });
+
+  protocol.on(packets.Packet.Type.ECHO, (origin, message) => {
+    var startTime = parseFloat(message.payload);
+    var endTime = new Date().valueOf();
+
+    game.appendToLog(log.InfoMessageEntry({
+        text: "Latency: " + (endTime - startTime) + "ms"
+    }));
+  });
 }

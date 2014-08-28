@@ -22,6 +22,8 @@ export class Game extends events.EventEmitter {
   constructor(parent) {
     super();
 
+    this.log = [];
+
     window.onerror = this.onError.bind(this);
     this.lastError = null;
 
@@ -62,6 +64,13 @@ export class Game extends events.EventEmitter {
     });
 
     this.setDebug(qs.debug === "on");
+  }
+
+  appendToLog(node) {
+    this.log.push({
+        id: new Date().valueOf(),
+        node: node
+    });
   }
 
   onError(msg, file, lineno, colno, e) {
