@@ -11,6 +11,7 @@ from elpizo.server.handlers import hello
 from elpizo.server.handlers import item
 from elpizo.server.handlers import move
 from elpizo.server.handlers import viewport
+from elpizo.server import policies
 from elpizo.util import net
 
 logger = logging.getLogger(__name__)
@@ -27,38 +28,40 @@ class Dispatcher(net.Protocol):
   def register(cls, type, f):
     cls.HANDLERS[type] = f
 
-  def bind_actor(self, actor):
-    self.actor = actor
+  def bind_actor_policy(self, policy):
+    self.actor_policy = policy
 
   def on_open(self):
-    self.actor = None
+    self.bind_actor_policy(policies.UnauthenticatedPolicy())
 
     self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
     self.last_move_time = 0
     self.last_attack_time = 0
 
   def on_message(self, origin, message):
+    actor = self.actor_policy.get(origin, self.server)
+
+    if actor is None:
+      actor_id = "_"
+    else:
+      actor_id = actor.id
+
     type = message.DESCRIPTOR.GetOptions().Extensions[packets_pb2.packet_type]
     packet_name = Dispatcher.PACKET_NAMES.get(
         type, "opcode {}".format(type))
 
     with self.server.statsd.timer("on_message"), \
          self.server.statsd.timer("packets." + packet_name), \
-         self.server.statsd.timer("actors." + (self.actor.id
-                                               if self.actor is not None
-                                               else "_")):
+         self.server.statsd.timer("actors." + actor_id):
       try:
         handler = self.HANDLERS[type]
       except KeyError:
         logger.warn("Unhandled packet: %s", packet_name)
       else:
-        handler(self, self.actor, message)
+        handler(self, actor, message)
 
   def on_close(self):
-    if self.actor is not None:
-      self.actor.save()
-      logger.info("Flushing actor %s to database.", self.actor.id)
-      self.server.bus.remove(self.actor.id)
+    self.actor_policy.finish(self.server)
 
   def on_error(self, e, exc_info):
     if isinstance(e, net.ProtocolError):

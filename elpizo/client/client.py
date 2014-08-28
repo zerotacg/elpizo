@@ -36,5 +36,5 @@ class Client(platform.Application):
     self.protocol = self.make_protocol(transport)
     self.protocol.run()
 
-  def send(self, message):
-    self.protocol.send(None, message)
+  def send(self, id, message):
+    self.protocol.send(id, message)
