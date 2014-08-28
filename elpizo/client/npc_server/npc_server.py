@@ -3,8 +3,9 @@ import logging
 import uuid
 
 from elpizo import client
-from elpizo.client.npc_server import handlers
 from elpizo.client.npc_server import behaviors
+from elpizo.client.npc_server import handlers
+from elpizo.client.npc_server import store
 from elpizo.client.npc_server.behaviors import registry
 from elpizo.util import green
 
@@ -25,9 +26,9 @@ class NPCServer(client.Client):
   def on_start(self):
     logger.info("Behaviors registered: %d", len(behaviors.Behavior.REGISTRY))
 
-    self.realms = {}
+    self.store = store.Store()
+
     self.npcs = {}
-    self.entities = {}
 
     if self.config.id is None:
       self.id = uuid.uuid4().hex

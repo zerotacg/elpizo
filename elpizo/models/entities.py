@@ -21,6 +21,8 @@ class Entity(record.PolymorphicProtobufRecord):
       3: geometry.Vector2( 1,  0)   # E
   }
 
+  DIRECTIONS = {v: k for k, v in DIRECTION_VECTORS.items()}
+
   @property
   def direction_vector(self):
     return self.DIRECTION_VECTORS[self.direction]
@@ -270,7 +272,8 @@ class NPC(Actor):
   def from_protobuf(cls, proto):
     record = super().from_protobuf(proto)
     proto = proto.Extensions[entities_pb2.NPC.ext]
-    record.update(behavior=proto.behavior)
+    record.update(behavior=proto.behavior
+                           if proto.HasField("behavior") else None)
     return record
 
   def is_damageable_by(self, attacker):
@@ -306,3 +309,24 @@ class Drop(Entity):
 
   def is_passable(self, direction):
     return True
+
+
+class EntityStore(record.Store):
+  def __init__(self, parent, kvs):
+    self.parent = parent
+    super().__init__(Entity.find, kvs)
+
+  def add(self, entity):
+    super().add(entity)
+    entity.realm = self.parent.realms.load(entity.realm_id)
+
+  def create(self, entity):
+    super().create(entity)
+    for region in entity.regions:
+      region.entities.add(entity)
+      region.save()
+
+  def destroy(self, entity):
+    super().destroy(entity)
+    for region in entity.regions:
+      region.entities.remove(entity)

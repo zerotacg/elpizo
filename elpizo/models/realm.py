@@ -145,3 +145,40 @@ class Layer(object):
   @classmethod
   def from_protobuf(cls, proto):
     return cls(terrain=proto.terrain, tiles=list(proto.tiles))
+
+
+class RealmStore(record.Store):
+  def __init__(self, parent, kvs):
+    self.parent = parent
+    super().__init__(Realm.find, kvs)
+
+  def add(self, realm):
+    super().add(realm)
+    realm.regions = self.parent.make_region_store(realm)
+
+  def expire(self, realm):
+    super().expire(realm)
+    realm.regions.expire_all()
+
+
+class RegionStore(record.Store):
+  def __init__(self, entities, kvs):
+    self.entities = entities
+    super().__init__(self.find, kvs)
+
+  def load(self, vec):
+    return super().load("{x},{y}".format(x=vec.x, y=vec.y))
+
+  def load_closest(self, location):
+    return self.load(location.map(Region.floor))
+
+  def find(self, id, kvs):
+    region = Region.find(id, kvs)
+    region.entities = {self.entities.load(entity_id)
+                       for entity_id in region.entity_ids}
+    return region
+
+  def keys(self):
+    for key in super().keys():
+      x, y = key.split(",")
+      yield geometry.Vector2(int(x), int(y))

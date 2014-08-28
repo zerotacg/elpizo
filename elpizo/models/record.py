@@ -1,5 +1,7 @@
 from elpizo.util import record
 
+Store = record.Store
+
 
 class ProtobufRecord(record.Record):
   def serialize(self):

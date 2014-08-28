@@ -10,3 +10,4 @@ websockets
 coloredlogs
 Flask-Async
 aiohttp
+networkx
