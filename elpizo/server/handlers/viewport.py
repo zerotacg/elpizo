@@ -47,8 +47,7 @@ def on_viewport(protocol, actor, message):
     region = actor.realm.regions.load(location)
     region_channel = ("region", actor.realm.id, region.location)
 
-    protocol.server.bus.unsubscribe(actor.bus_key,
-                                    ("region", actor.realm.id, location))
+    protocol.server.bus.unsubscribe(actor.bus_key, region_channel)
 
     for entity in list(region.entities):
       if not entity.bounds.intersects(cache_bounds):
