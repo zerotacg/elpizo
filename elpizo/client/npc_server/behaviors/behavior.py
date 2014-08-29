@@ -1,6 +1,5 @@
 import asyncio
 import networkx
-
 from elpizo.models import entities
 from elpizo.protos import packets_pb2
 from elpizo.util import geometry

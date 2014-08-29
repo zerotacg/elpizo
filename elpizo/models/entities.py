@@ -29,12 +29,6 @@ class Entity(record.PolymorphicProtobufRecord):
 
   DIRECTIONS = {v: k for k, v in DIRECTION_VECTORS.items()}
 
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-    self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
-    self.last_move_time = 0
-    self.last_attack_time = 0
-
   @property
   def direction_vector(self):
     return self.DIRECTION_VECTORS[self.direction]

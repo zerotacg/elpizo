@@ -36,7 +36,7 @@ class Pursue(behaviors.Behavior):
     except behaviors.IncompletePathGraphError:
       logger.warn("Sorry, path graph is incomplete.")
     else:
-      self.wait_move(2)
+      self.wait_move(random.randint(10, 30) / 10.)
       self.stop_move()
 
   def on_attacked(self, attacker):

@@ -161,7 +161,7 @@ def initdb(app):
       inventory=[],
       legs_item=equipment.TealPants()))
 
-  for _ in range(50):
+  for _ in range(10):
     app.store.entities.create(entities.NPC(
         name="Green Slime",
         gender="neuter",
@@ -169,9 +169,9 @@ def initdb(app):
         direction=1,
         health=100,
         realm_id=windvale.id,
-        location=geometry.Vector2(random.randint(0, 50), random.randint(0, 50)),
+        location=geometry.Vector2(random.randint(0, 32), random.randint(0, 32)),
         inventory=[restorative.Carrot()],
-        behavior="wander"))
+        behavior="pursue"))
 
   logging.info("Created players.")
 
