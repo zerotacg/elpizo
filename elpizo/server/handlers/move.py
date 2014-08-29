@@ -61,9 +61,9 @@ def on_move(protocol, actor, message):
           entity=original_actor_protobuf))
 
   for region in last_regions:
-    protocol.server.bus.broadcast(
-        ("region", actor.realm.id, region.location),
-        actor.id, message)
+    actor.broadcast(protocol.server.bus,
+                    ("region", actor.realm.id, region.location),
+                    message)
 
 
 def on_stop_move(protocol, actor, message):

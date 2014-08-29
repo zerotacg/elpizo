@@ -53,6 +53,6 @@ class Wander(behaviors.Behavior):
     if self.npc.realm.path_graph.has_edge(
       self.npc.location, self.npc.target_location):
       self.move()
+      self.wait_move()
 
-    self.wait_move()
     self.stop_move()

@@ -26,21 +26,16 @@ def on_viewport(protocol, actor, message):
           location=region.location.to_protobuf(),
           region=region.to_public_protobuf(actor.realm)))
 
-      # BEGIN CRITICAL SECTION: We have to acquire the broadcast lock for the
-      # region's channel, so that we manage to send all information about the
-      # region to the actor before they are allowed to receive broadcasts on the
-      # channel.
-      with green.locking(
-          protocol.server.bus.broadcast_lock_for(actor.bus_key,
-                                                 region_channel)):
-        protocol.server.bus.subscribe(actor.bus_key, region_channel)
+      # The client may receive extraneous packets regarding entities it doesn't
+      # yet know about, but it will eventually receive up-to-date information
+      # about them.
+      protocol.server.bus.subscribe(actor.bus_key, region_channel)
 
-        for entity in list(region.entities):
-          if entity.id != actor.id:
-            protocol.send(
-              entity.id,
-              packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
-      # END CRITICAL SECTION
+      for entity in list(region.entities):
+        if entity.id != actor.id:
+          protocol.send(
+            entity.id,
+            packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
 
   # The client should now remove all entities in regions it doesn't know about.
   for location in removed_region_locations:

@@ -18,6 +18,9 @@ class UnauthenticatedPolicy(object):
   def get_actor(self, origin):
     return None
 
+  def can_receive_broadcasts_from(self, origin):
+    return False
+
   def on_finish(self):
     pass
 
@@ -59,6 +62,10 @@ class PlayerPolicy(object):
   def get_actor(self, origin):
     return self.player
 
+  def can_receive_broadcasts_from(self, origin):
+    # Don't receive our own broadcasts.
+    return origin is not self.player
+
   def on_finish(self):
     self.player.save()
     logger.info("Flushing player %s to database.", self.player.id)
@@ -86,29 +93,29 @@ class NPCPolicy(object):
 
       for region in realm.regions.load_all():
         region_channel = ("region", realm.id, region.location)
+        self.server.bus.subscribe(self.bus_key, region_channel)
 
-        with green.locking(self.server.bus.broadcast_lock_for(
-          self.bus_key, region_channel)):
-          self.server.bus.subscribe(self.bus_key, region_channel)
+        protocol.send(None, packets_pb2.RegionPacket(
+            location=region.location.to_protobuf(),
+            region=region.to_public_protobuf(realm)))
 
-          protocol.send(None, packets_pb2.RegionPacket(
-              location=region.location.to_protobuf(),
-              region=region.to_public_protobuf(realm)))
-
-          for entity in region.entities:
-            protocol.send(entity.id, packets_pb2.EntityPacket(
-                entity=entity.to_public_protobuf() \
-                       if not isinstance(entity, entities.NPC) \
-                       else entity.to_protected_protobuf()))
+        for entity in region.entities:
+          protocol.send(entity.id, packets_pb2.EntityPacket(
+              entity=entity.to_public_protobuf() \
+                     if not isinstance(entity, entities.NPC) \
+                     else entity.to_protected_protobuf()))
 
 
   def on_whoami(self, actor, protocol):
-    self.server.bus.add(actor.bus_key, protocol)
     self.npcs.add(actor)
 
   def get_actor(self, origin):
     return self.server.store.entities.load(origin) if origin is not None else \
            None
+
+  def can_receive_broadcasts_from(self, origin):
+    # Don't receive broadcasts we sent.
+    return origin not in self.npcs
 
   def on_finish(self):
     logger.warn("NPC server %s died!", self.id)

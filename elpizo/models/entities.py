@@ -1,13 +1,19 @@
 import asyncio
 import collections
 import contextlib
+import logging
+import websockets
 
 from elpizo.models import geometry
 from elpizo.models import realm
 from elpizo.models import items
 from elpizo.models import record
 from elpizo.protos import entities_pb2
+from elpizo.util import green
 from elpizo.util import support
+
+
+logger = logging.getLogger(__name__)
 
 
 class Entity(record.PolymorphicProtobufRecord):
@@ -73,12 +79,6 @@ class Entity(record.PolymorphicProtobufRecord):
   def regions(self):
     return self.realm.load_intersecting_regions(self.bounds)
 
-  def broadcast_to_regions(self, bus, message, *, exclude_origin=True):
-    for region in self.regions:
-      bus.broadcast(
-          ("region", self.realm.id, region.location),
-          self.id, message, exclude_origin=exclude_origin)
-
   @contextlib.contextmanager
   def movement(self):
     initial_regions = list(self.regions)
@@ -93,6 +93,42 @@ class Entity(record.PolymorphicProtobufRecord):
 
   def is_passable(self, direction):
     return False
+
+  def _send_via_channel(self, bus, bus_key, channel, message):
+    try:
+      protocol = bus.get(bus_key)
+    except KeyError:
+      # A client disappeared while we were iterating.
+      logger.warn("Client disappeared during broadcast: %s", bus_key)
+      return
+
+    if not protocol.policy.can_receive_broadcasts_from(self):
+      # Broadcasts from this entity are not permitted.
+      return
+
+    try:
+      protocol.send(self.id, message)
+    except websockets.exceptions.InvalidState:
+      logger.warn("Client transport closed during broadcast: %s", bus_key)
+      return
+
+  def broadcast(self, bus, channel, message):
+    futures = []
+
+    for bus_key in list(bus.channels.get(channel, set())):
+      futures.append(green.coroutine(self._send_via_channel)(
+          bus, bus_key, channel, message))
+
+    return asyncio.gather(*futures)
+
+  def broadcast_to_regions(self, bus, message):
+    futures = []
+
+    for region in self.regions:
+      futures.append(self.broadcast(
+          bus, ("region", self.realm.id, region.location), message))
+
+    return asyncio.gather(*futures)
 
 
 class Actor(Entity):

@@ -13,10 +13,8 @@ def on_pick_up(protocol, actor, message):
      drop.location != actor.location:
     return
 
-  for region in drop.regions:
-    protocol.server.bus.broadcast(
-        ("region", drop.realm.id, region.location),
-        drop.id, packets_pb2.DespawnEntityPacket())
+  drop.broadcast_to_regions(protocol.server.bus,
+                            packets_pb2.DespawnEntityPacket())
 
   protocol.send(None, packets_pb2.InventoryPacket(item=drop.item.to_protobuf()))
   actor.inventory.append(drop.item)
