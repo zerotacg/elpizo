@@ -79,16 +79,18 @@ class NPCPolicy(object):
     self.server.bus.add(self.bus_key, protocol)
     logger.info("Hello, NPC server %s!", self.id)
 
-    with green.locking(self.server.bus.broadcast_lock_for(self.bus_key,
-                                                          ("region",))):
-      self.server.bus.subscribe(self.bus_key, ("region",))
+    for realm in self.server.store.realms.load_all():
+      protocol.send(
+          None,
+          packets_pb2.RealmPacket(realm=realm.to_public_protobuf()))
 
-      for realm in self.server.store.realms.load_all():
-        protocol.send(
-            None,
-            packets_pb2.RealmPacket(realm=realm.to_public_protobuf()))
+      for region in realm.regions.load_all():
+        region_channel = ("region", realm.id, region.location)
 
-        for region in realm.regions.load_all():
+        with green.locking(self.server.bus.broadcast_lock_for(
+          self.bus_key, region_channel)):
+          self.server.bus.subscribe(self.bus_key, region_channel)
+
           protocol.send(None, packets_pb2.RegionPacket(
               location=region.location.to_protobuf(),
               region=region.to_public_protobuf(realm)))

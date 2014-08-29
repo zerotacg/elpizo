@@ -67,7 +67,7 @@ class Bus(object):
   def broadcast_lock_for(self, bus_key, channel):
     return self.broadcast_locks[bus_key][channel]
 
-  def _send_to_channel(self, bus_key, channel, origin, message):
+  def _send_via_channel(self, bus_key, channel, origin, message):
     try:
       protocol = self.get(bus_key)
     except KeyError:
@@ -92,7 +92,7 @@ class Bus(object):
       for bus_key in list(self.channels.get(channel, set())):
         if bus_key == origin and exclude_origin:
           continue
-        futures.append(green.coroutine(self._send_to_channel)(
+        futures.append(green.coroutine(self._send_via_channel)(
             bus_key, channel, origin, message))
 
     return asyncio.gather(*futures)

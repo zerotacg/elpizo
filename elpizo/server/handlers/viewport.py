@@ -35,7 +35,7 @@ def on_viewport(protocol, actor, message):
                                                  region_channel)):
         protocol.server.bus.subscribe(actor.bus_key, region_channel)
 
-        for entity in region.entities:
+        for entity in list(region.entities):
           if entity.id != actor.id:
             protocol.send(
               entity.id,
@@ -47,12 +47,9 @@ def on_viewport(protocol, actor, message):
     region = actor.realm.regions.load(location)
     region_channel = ("region", actor.realm.id, region.location)
 
-    with green.locking(
-        protocol.server.bus.broadcast_lock_for(actor.bus_key,
-                                               region_channel)):
-      protocol.server.bus.unsubscribe(actor.bus_key,
-                                      ("region", actor.realm.id, location))
+    protocol.server.bus.unsubscribe(actor.bus_key,
+                                    ("region", actor.realm.id, location))
 
-      for entity in region.entities:
-        if not entity.bounds.intersects(cache_bounds):
-          protocol.send(entity.id, packets_pb2.DespawnEntityPacket())
+    for entity in list(region.entities):
+      if not entity.bounds.intersects(cache_bounds):
+        protocol.send(entity.id, packets_pb2.DespawnEntityPacket())

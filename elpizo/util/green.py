@@ -4,6 +4,7 @@ import functools
 import greenlet
 import logging
 import time
+import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -53,20 +54,22 @@ LOCK_WARNING_TIME = 0.5
 
 @contextlib.contextmanager
 def locking(lock):
-  start_time = time.monotonic()
+  start_time = time.time()
   await_coro(lock.acquire())
-  critical_section_start_time = time.monotonic()
+  critical_section_start_time = time.time()
 
   acquire_time = critical_section_start_time - start_time
   if acquire_time > LOCK_WARNING_TIME:
-    logger.warn("Waited too long on lock: %.2fs", acquire_time)
+    logger.warn("Waited too long for %r: %.2fs\n\n%s",
+                lock, acquire_time, "".join(traceback.format_stack()))
 
   try:
     yield
   finally:
     lock.release()
-  end_time = time.monotonic()
+  end_time = time.time()
 
   critical_section_time = end_time - critical_section_start_time
   if critical_section_time > LOCK_WARNING_TIME:
-    logger.warn("Held lock for too long: %.2fs", critical_section_time)
+    logger.warn("Held %r for too long: %.2fs\n\n%s",
+                lock, critical_section_time, "".join(traceback.format_stack()))
