@@ -41,18 +41,6 @@ class Dispatcher(net.Protocol):
   def on_message(self, origin, message):
     actor = self.policy.get_actor(origin)
 
-    if actor is not None:
-      try:
-        bus_protocol = self.server.bus.get(actor.bus_key)
-      except KeyError:
-        # Update the bus with the actor's bus key every time we get a message.
-        self.server.bus.add(actor.bus_key, self)
-      else:
-        if bus_protocol is not self:
-          logger.error("Mismatched protocols in bus for actor %s " +
-                       "(overwrote it anyway).", actor.id)
-          self.server.bus.add(actor.bus_key, self)
-
     if actor is None:
       actor_id = "(unknown)"
     else:

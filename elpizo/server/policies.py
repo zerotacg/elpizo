@@ -10,6 +10,9 @@ class UnauthenticatedPolicy(object):
   def on_hello(self, protocol):
     pass
 
+  def on_whoami(self, actor, protocol):
+    pass
+
   def get_actor(self, origin):
     return None
 
@@ -48,6 +51,9 @@ class PlayerPolicy(object):
                                                     self.player.name))
     self.server.bus.subscribe(self.player.bus_key, ("chatroom", "global"))
 
+  def on_whoami(self, actor, protocol):
+    pass
+
   def get_actor(self, origin):
     return self.player
 
@@ -61,6 +67,7 @@ class NPCPolicy(object):
   def __init__(self, id, server):
     self.server = server
     self.id = id
+    self.npcs = set()
 
   @property
   def bus_key(self):
@@ -70,12 +77,18 @@ class NPCPolicy(object):
     self.server.bus.add(self.bus_key, protocol)
     logger.info("Hello, NPC server %s!", self.id)
 
+  def on_whoami(self, actor, protocol):
+    self.server.bus.add(actor.bus_key, protocol)
+    self.npcs.add(actor)
+
   def get_actor(self, origin):
     return self.server.store.entities.load(origin) if origin is not None else \
            None
 
   def on_finish(self):
     self.server.bus.remove(self.bus_key)
+    for npc in self.npcs:
+      self.server.bus.remove(npc.bus_key)
 
 
 REGISTRY = {
