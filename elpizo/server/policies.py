@@ -12,9 +12,6 @@ class UnauthenticatedPolicy(object):
   def on_hello(self, protocol):
     pass
 
-  def on_whoami(self, actor, protocol):
-    pass
-
   def get_actor(self, origin):
     return None
 
@@ -56,15 +53,12 @@ class PlayerPolicy(object):
                                                     self.player.name))
     self.server.bus.subscribe(self.player.bus_key, ("chatroom", "global"))
 
-  def on_whoami(self, actor, protocol):
-    pass
-
   def get_actor(self, origin):
     return self.player
 
-  def can_receive_broadcasts_from(self, origin):
+  def can_receive_broadcasts_from(self, entity):
     # Don't receive our own broadcasts.
-    return origin is not self.player
+    return entity is not self.player
 
   def on_finish(self):
     self.player.save()
@@ -100,22 +94,22 @@ class NPCPolicy(object):
             region=region.to_public_protobuf(realm)))
 
         for entity in region.entities:
+          if isinstance(entity, entities.NPC):
+            self.npcs.add(entity)
+            entity_protobuf = entity.to_protected_protobuf()
+          else:
+            entity_protobuf = entity.to_public_protobuf()
+
           protocol.send(entity.id, packets_pb2.EntityPacket(
-              entity=entity.to_public_protobuf() \
-                     if not isinstance(entity, entities.NPC) \
-                     else entity.to_protected_protobuf()))
-
-
-  def on_whoami(self, actor, protocol):
-    self.npcs.add(actor)
+              entity=entity_protobuf))
 
   def get_actor(self, origin):
     return self.server.store.entities.load(origin) if origin is not None else \
            None
 
-  def can_receive_broadcasts_from(self, origin):
+  def can_receive_broadcasts_from(self, entity):
     # Don't receive broadcasts we sent.
-    return origin not in self.npcs
+    return entity not in self.npcs
 
   def on_finish(self):
     logger.warn("NPC server %s died!", self.id)
@@ -124,7 +118,6 @@ class NPCPolicy(object):
     for npc in self.npcs:
       npc.save()
       logger.info("Flushing NPC %s to database.", npc.id)
-      self.server.bus.remove(npc.bus_key)
 
 
 REGISTRY = {

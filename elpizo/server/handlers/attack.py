@@ -6,7 +6,7 @@ from elpizo.protos import packets_pb2
 
 def on_attack(protocol, actor, message):
   now = time.monotonic()
-  dt = now - protocol.last_attack_time
+  dt = now - actor.last_attack_time
 
   if dt < 1 / actor.attack_cooldown * 0.5: # compensate for slow connections by 0.5
     return
@@ -44,4 +44,4 @@ def on_attack(protocol, actor, message):
                 packets_pb2.EntityPacket(entity=drop.to_public_protobuf()))
         break
 
-  protocol.last_attack_time = now
+  actor.last_attack_time = now

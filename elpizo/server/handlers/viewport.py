@@ -5,9 +5,9 @@ from elpizo.util import green
 
 
 def on_viewport(protocol, actor, message):
-  last_cache_bounds = protocol.cache_bounds
+  last_cache_bounds = actor.cache_bounds
   cache_bounds = geometry.Rectangle.from_protobuf(message.bounds)
-  protocol.cache_bounds = cache_bounds
+  actor.cache_bounds = cache_bounds
 
   last_region_locations = {
       region.location

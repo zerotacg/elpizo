@@ -30,4 +30,3 @@ def on_whoami(protocol, actor, message):
   protocol.send(
       actor.id,
       packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))
-  protocol.policy.on_whoami(actor, protocol)

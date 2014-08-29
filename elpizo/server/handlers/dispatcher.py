@@ -34,10 +34,6 @@ class Dispatcher(net.Protocol):
   def on_open(self):
     self.bind_policy(policies.UnauthenticatedPolicy())
 
-    self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
-    self.last_move_time = 0
-    self.last_attack_time = 0
-
   def on_message(self, origin, message):
     actor = self.policy.get_actor(origin)
 

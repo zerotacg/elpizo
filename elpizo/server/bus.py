@@ -24,10 +24,9 @@ class Bus(object):
   def remove(self, bus_key):
     logger.debug("Removed key from bus: %d", bus_key)
 
+    del self.protocols[bus_key]
     for channel in list(self.subscriptions[bus_key]):
       self.unsubscribe(bus_key, channel)
-
-    del self.protocols[bus_key]
     del self.subscriptions[bus_key]
 
   def get(self, bus_key):

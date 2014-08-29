@@ -18,7 +18,7 @@ export function install(game) {
     return (origin, message) => {
       var entity = game.realm.getEntity(origin);
       if (entity === null) {
-        console.error("Missing entity " + origin + ".");
+        console.warn("Missing entity " + origin + "; probably transient.");
         return;
       }
 
