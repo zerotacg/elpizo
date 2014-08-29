@@ -26,9 +26,6 @@ class Dispatcher(net.Protocol):
         token=self.server.mint.mint(".".join(["npc", self.server.id])
             .encode("utf-8"))))
 
-    # TODO: This is just for debugging, remove me!
-    self.send("5", packets_pb2.WhoamiPacket())
-
   def on_message(self, origin, message):
     type = message.DESCRIPTOR.GetOptions().Extensions[packets_pb2.packet_type]
     packet_name = Dispatcher.PACKET_NAMES.get(type, "opcode {}".format(type))

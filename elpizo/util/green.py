@@ -2,6 +2,10 @@ import asyncio
 import contextlib
 import functools
 import greenlet
+import logging
+import time
+
+logger = logging.getLogger(__name__)
 
 
 def await(fut):
@@ -47,8 +51,20 @@ def coroutine(f):
 
 @contextlib.contextmanager
 def locking(lock):
+  start_time = time.monotonic()
   await_coro(lock.acquire())
+  critical_section_start_time = time.monotonic()
+
+  acquire_time = critical_section_start_time - start_time
+  if acquire_time > 2.0:
+    logger.warn("Waited too long on lock: %.2fs", acquire_time)
+
   try:
     yield
   finally:
     lock.release()
+  end_time = time.monotonic()
+
+  critical_section_time = end_time - critical_section_start_time
+  if critical_section_time > 2.0:
+    logger.warn("Held lock for too long: %.2fs", critical_section_time)

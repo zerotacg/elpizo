@@ -165,7 +165,7 @@ def initdb(app):
       gender="neuter",
       body="green_slime",
       direction=1,
-      health=5,
+      health=100,
       realm_id=windvale.id,
       location=geometry.Vector2(0, 2),
       inventory=[restorative.Carrot()],

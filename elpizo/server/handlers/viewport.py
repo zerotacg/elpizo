@@ -1,3 +1,4 @@
+from elpizo.models import entities
 from elpizo.models import geometry
 from elpizo.protos import packets_pb2
 from elpizo.util import green
@@ -21,6 +22,8 @@ def on_viewport(protocol, actor, message):
   for location in removed_region_locations:
     protocol.server.bus.unsubscribe(actor.bus_key,
                                     ("region", actor.realm.id, location))
+
+  npcs_to_start = []
 
   for region in new_regions:
     if region.location not in last_region_locations:

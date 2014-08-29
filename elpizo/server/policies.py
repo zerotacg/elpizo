@@ -1,6 +1,8 @@
 import logging
 
+from elpizo.models import entities
 from elpizo.protos import packets_pb2
+from elpizo.util import green
 
 
 logger = logging.getLogger(__name__)
@@ -77,6 +79,27 @@ class NPCPolicy(object):
     self.server.bus.add(self.bus_key, protocol)
     logger.info("Hello, NPC server %s!", self.id)
 
+    with green.locking(self.server.bus.broadcast_lock_for(self.bus_key,
+                                                          ("region",))):
+      self.server.bus.subscribe(self.bus_key, ("region",))
+
+      for realm in self.server.store.realms.load_all():
+        protocol.send(
+            None,
+            packets_pb2.RealmPacket(realm=realm.to_public_protobuf()))
+
+        for region in realm.regions.load_all():
+          protocol.send(None, packets_pb2.RegionPacket(
+              location=region.location.to_protobuf(),
+              region=region.to_public_protobuf(realm)))
+
+          for entity in region.entities:
+            protocol.send(entity.id, packets_pb2.EntityPacket(
+                entity=entity.to_public_protobuf() \
+                       if not isinstance(entity, entities.NPC) \
+                       else entity.to_protected_protobuf()))
+
+
   def on_whoami(self, actor, protocol):
     self.server.bus.add(actor.bus_key, protocol)
     self.npcs.add(actor)
@@ -86,8 +109,12 @@ class NPCPolicy(object):
            None
 
   def on_finish(self):
+    logger.warn("NPC server %s died!", self.id)
+
     self.server.bus.remove(self.bus_key)
     for npc in self.npcs:
+      npc.save()
+      logger.info("Flushing NPC %s to database.", npc.id)
       self.server.bus.remove(npc.bus_key)
 
 

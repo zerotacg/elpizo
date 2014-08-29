@@ -28,9 +28,6 @@ def on_hello(protocol, actor, message):
 
 def on_whoami(protocol, actor, message):
   protocol.send(
-      None,
-      packets_pb2.RealmPacket(realm=actor.realm.to_public_protobuf()))
-  protocol.send(
       actor.id,
       packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))
   protocol.policy.on_whoami(actor, protocol)

@@ -14,18 +14,22 @@ def with_entity(f):
 
 
 def on_entity(protocol, origin, message):
+  try:
+    old_entity = protocol.server.store.entities.load(origin)
+  except KeyError:
+    pass
+  else:
+    protocol.server.store.entities.expire(old_entity)
+
   entity = entities.Entity.from_protobuf_polymorphic(message.entity)
   entity.update(id=origin)
   protocol.server.store.entities.add(entity)
 
-  if isinstance(entity, entities.NPC) and entity.behavior is not None:
+  if isinstance(entity, entities.NPC) and entity.behavior is not None and \
+      entity.id not in protocol.server.npcs:
     behavior_factory = behaviors.Behavior.REGISTRY[entity.behavior]
     behavior = behavior_factory(protocol, entity)
     protocol.server.start_behavior(behavior)
-
-    # TODO: request a chunk more sanely
-    protocol.send(origin, packets_pb2.ViewportPacket(
-        bounds=entity.realm.bounds.to_protobuf()))
 
 
 @with_entity

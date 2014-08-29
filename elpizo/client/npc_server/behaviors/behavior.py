@@ -33,10 +33,19 @@ class Behavior(object):
     cls.REGISTRY[subclass.NAME] = subclass
     return subclass
 
+  @property
+  def server(self):
+    return self.protocol.server
+
   def run(self):
-    pass
+    while True:
+      self.on_update()
+      self.be_nice()
 
   def on_attacked(self, attacker):
+    pass
+
+  def on_update(self):
     pass
 
   def be_nice(self):

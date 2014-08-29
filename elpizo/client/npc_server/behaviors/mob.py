@@ -15,31 +15,28 @@ class Pursue(behaviors.Behavior):
 
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-    self.target = None
+    self.target_id = None
 
-  def run(self):
-    while True:
-      if self.target is None:
-        self.be_nice()
-        continue
+  def on_update(self):
+    if self.target_id is None:
+      return
 
-      target = self.target.location.offset(
-          entities.Entity.DIRECTION_VECTORS[self.target.direction].negate())
+    target = self.server.store.entities.load(self.target_id)
 
-      if target == self.npc.location:
-        self.be_nice()
-        continue
+    target_location = target.location.offset(
+        entities.Entity.DIRECTION_VECTORS[target.direction].negate())
 
-      try:
-        self.move_towards(target)
-      except behaviors.PassabilityError:
-        logger.warn("No path to %r?", target)
-      except behaviors.IncompletePathGraphError:
-        logger.warn("Sorry, path graph is incomplete.")
-      else:
-        self.wait_move()
+    if target_location == self.npc.location:
+      return
 
-      self.be_nice()
+    try:
+      self.move_towards(target_location)
+    except behaviors.PassabilityError:
+      logger.warn("No path to %r?", target_location)
+    except behaviors.IncompletePathGraphError:
+      logger.warn("Sorry, path graph is incomplete.")
+    else:
+      self.wait_move()
 
   def on_attacked(self, attacker):
-    self.target = attacker
+    self.target_id = attacker.id
