@@ -152,7 +152,7 @@ export class Actor extends Entity {
 
     this.location = this.location
         .offset(this.getDirectionVector().scale(
-            moveTimer.remaining / this.getSpeed()))
+            moveTimer.remaining * this.getSpeed()))
         .map(Math.round);
     moveTimer.reset(0);
   }
