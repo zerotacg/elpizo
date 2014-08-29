@@ -50,6 +50,11 @@ def on_move(protocol, entity, message):
 
 
 @with_entity
+def on_stop_move(protocol, entity, message):
+  pass
+
+
+@with_entity
 def on_teleport(protocol, entity, message):
   entity.direction = message.direction
   entity.location = geometry.Vector2.from_protobuf(message.location)

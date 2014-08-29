@@ -85,6 +85,6 @@ class Behavior(object):
 
     self.move()
 
-  def wait_move(self):
-      green.await_coro(asyncio.sleep(1 / self.npc.speed))
+  def wait_move(self, scale=1):
+    green.await_coro(asyncio.sleep(1 / self.npc.speed * scale))
 

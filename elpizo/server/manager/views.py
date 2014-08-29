@@ -102,6 +102,6 @@ def _get_sort_key(node):
   if isinstance(obj, realm.Region):
     return (obj.location.x, obj.location.y)
   if isinstance(obj, record.Record):
-    return obj.id
+    return int(obj.id)
 
   return node.name

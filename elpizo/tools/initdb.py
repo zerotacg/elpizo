@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import random
 
 from elpizo import server
 from elpizo.models import entities
@@ -160,16 +161,17 @@ def initdb(app):
       inventory=[],
       legs_item=equipment.TealPants()))
 
-  app.store.entities.create(entities.NPC(
-      name="Green Slime",
-      gender="neuter",
-      body="green_slime",
-      direction=1,
-      health=100,
-      realm_id=windvale.id,
-      location=geometry.Vector2(0, 2),
-      inventory=[restorative.Carrot()],
-      behavior="pursue"))
+  for _ in range(50):
+    app.store.entities.create(entities.NPC(
+        name="Green Slime",
+        gender="neuter",
+        body="green_slime",
+        direction=1,
+        health=100,
+        realm_id=windvale.id,
+        location=geometry.Vector2(random.randint(0, 50), random.randint(0, 50)),
+        inventory=[restorative.Carrot()],
+        behavior="wander"))
 
   logging.info("Created players.")
 

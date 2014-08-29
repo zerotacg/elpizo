@@ -9,11 +9,11 @@ def on_move(protocol, actor, message):
   now = time.monotonic()
   dt = now - protocol.last_move_time
 
-  if dt < 1 / actor.speed * 0.5: # compensate for slow connections by 0.5
-    protocol.send(actor.id, packets_pb2.TeleportPacket(
-        location=actor.location.to_protobuf(),
-        direction=actor.direction))
-    return
+  #if dt < 1 / actor.speed * 0.25: # compensate for slow connections by 0.25
+  #  protocol.send(actor.id, packets_pb2.TeleportPacket(
+  #      location=actor.location.to_protobuf(),
+  #      direction=actor.direction))
+  #  return
 
   old_location = actor.location
   last_regions = list(actor.regions)
@@ -38,6 +38,12 @@ def on_move(protocol, actor, message):
         actor.location = new_location
   # END CRITICAL SECTION
 
+  # We don't need strict sequentiality of the location log, so we keep this out
+  # of the critical section.
+  protocol.last_move_time = now
+  actor.log_location(now, old_location)
+  actor.retain_log_after(now - 1)
+
   if not passable:
     protocol.send(actor.id, packets_pb2.TeleportPacket(
         location=actor.location.to_protobuf(),
@@ -58,12 +64,6 @@ def on_move(protocol, actor, message):
     protocol.server.bus.broadcast(
         ("region", actor.realm.id, region.location),
         actor.id, message)
-
-  # We don't need strict sequentiality of the location log, so we keep this out
-  # of the critical section.
-  actor.log_location(now, old_location)
-  actor.retain_log_after(now - 1)
-  protocol.last_move_time = now
 
 
 def on_stop_move(protocol, actor, message):

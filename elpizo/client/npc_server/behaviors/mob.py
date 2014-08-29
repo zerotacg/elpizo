@@ -36,7 +36,23 @@ class Pursue(behaviors.Behavior):
     except behaviors.IncompletePathGraphError:
       logger.warn("Sorry, path graph is incomplete.")
     else:
-      self.wait_move()
+      self.wait_move(2)
+      self.stop_move()
 
   def on_attacked(self, attacker):
     self.target_id = attacker.id
+
+
+class Wander(behaviors.Behavior):
+  NAME = "wander"
+
+  def on_update(self):
+    direction = random.choice(list(entities.Entity.DIRECTION_VECTORS.keys()))
+    self.turn(direction)
+
+    if self.npc.realm.path_graph.has_edge(
+      self.npc.location, self.npc.target_location):
+      self.move()
+
+    self.wait_move(2)
+    self.stop_move()

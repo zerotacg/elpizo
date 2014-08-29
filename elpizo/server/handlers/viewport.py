@@ -18,13 +18,6 @@ def on_viewport(protocol, actor, message):
 
   removed_region_locations = last_region_locations - new_region_locations
 
-  # Unsubscribe from last regions that aren't present in new regions.
-  for location in removed_region_locations:
-    protocol.server.bus.unsubscribe(actor.bus_key,
-                                    ("region", actor.realm.id, location))
-
-  npcs_to_start = []
-
   for region in new_regions:
     if region.location not in last_region_locations:
       region_channel = ("region", actor.realm.id, region.location)
@@ -51,6 +44,15 @@ def on_viewport(protocol, actor, message):
 
   # The client should now remove all entities in regions it doesn't know about.
   for location in removed_region_locations:
-    for entity in actor.realm.regions.load(location).entities:
-      if not entity.bounds.intersects(cache_bounds):
-        protocol.send(entity.id, packets_pb2.DespawnEntityPacket())
+    region = actor.realm.regions.load(location)
+    region_channel = ("region", actor.realm.id, region.location)
+
+    with green.locking(
+        protocol.server.bus.broadcast_lock_for(actor.bus_key,
+                                               region_channel)):
+      protocol.server.bus.unsubscribe(actor.bus_key,
+                                      ("region", actor.realm.id, location))
+
+      for entity in region.entities:
+        if not entity.bounds.intersects(cache_bounds):
+          protocol.send(entity.id, packets_pb2.DespawnEntityPacket())

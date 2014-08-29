@@ -17,6 +17,10 @@ export function install(game) {
   function withEntity(f) {
     return (origin, message) => {
       var entity = game.realm.getEntity(origin);
+      if (entity === null) {
+        console.error("Missing entity " + origin + ".");
+        return;
+      }
 
       if (entity.realm.id !== game.realm.id) {
         console.warn("Got invalid entity realm ID (" +
@@ -64,11 +68,7 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.MOVE, withEntity((entity, message) => {
-    if (!renderer.getCacheBounds().intersects(entity.getTargetBounds())) {
-      game.realm.removeEntity(entity.id);
-    } else {
-      entity.move();
-    }
+    entity.move();
   }));
 
   protocol.on(packets.Packet.Type.TURN, withEntity((entity, message) => {
@@ -80,6 +80,7 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.TELEPORT, withEntity((entity, message) => {
+    console.warn("Teleported!");
     entity.stopMove();
     entity.location = geometry.Vector2.fromProtobuf(message.location);
     entity.direction = message.direction;
