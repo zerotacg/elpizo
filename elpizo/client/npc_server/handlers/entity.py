@@ -25,7 +25,7 @@ def on_entity(protocol, origin, message):
 
     # TODO: request a chunk more sanely
     protocol.send(origin, packets_pb2.ViewportPacket(
-        bounds=geometry.Rectangle(0, 0, 16, 16).to_protobuf()))
+        bounds=entity.realm.bounds.to_protobuf()))
 
 
 @with_entity

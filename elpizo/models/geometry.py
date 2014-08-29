@@ -10,6 +10,9 @@ class Vector2(geometry.Vector2):
   def from_protobuf(cls, proto):
     return cls(proto.x, proto.y)
 
+  def __repr__(self):
+    return "models.geometry." + super().__repr__()
+
 
 class Rectangle(geometry.Rectangle):
   def to_protobuf(self):
@@ -19,3 +22,6 @@ class Rectangle(geometry.Rectangle):
   @classmethod
   def from_protobuf(cls, proto):
     return cls(proto.left, proto.top, proto.width, proto.height)
+
+  def __repr__(self):
+    return "models.geometry." + super().__repr__()

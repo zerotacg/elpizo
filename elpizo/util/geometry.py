@@ -1,3 +1,7 @@
+import functools
+
+
+@functools.total_ordering
 class Vector2(object):
   def __init__(self, x, y):
     self.x = x
@@ -21,6 +25,11 @@ class Vector2(object):
   def __eq__(self, other):
     return self.x == other.x and self.y == other.y
 
+  def __lt__(self, other):
+    # NOTE: This ordering is meaningless and is only used for things such as
+    # heap ordering.
+    return (self.x, self.y) < (other.x, other.y)
+
   def __repr__(self):
     return "Vector2({x}, {y})".format(**self.__dict__)
 
@@ -28,6 +37,7 @@ class Vector2(object):
     return hash((Vector2, self.x, self.y))
 
 
+@functools.total_ordering
 class Rectangle(object):
   def __init__(self, left, top, width, height):
     self.left = left
@@ -69,6 +79,12 @@ class Rectangle(object):
   def __eq__(self, other):
     return self.left == other.left and self.top == other.top and \
            self.width == other.width and self.height == other.height
+
+  def __lt__(self, other):
+    # NOTE: This ordering is meaningless and is only used for things such as
+    # heap ordering.
+    return (self.left, self.top, self.width. self.height) < \
+           (other.left, other.top, other.width, other.height)
 
   def __repr__(self):
     return "Rectangle({left}, {top}, {width}, {height})".format(**self.__dict__)

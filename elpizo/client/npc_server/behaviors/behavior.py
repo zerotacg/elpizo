@@ -17,6 +17,10 @@ class PassabilityError(Exception):
   pass
 
 
+class IncompletePathGraphError(Exception):
+  pass
+
+
 class Behavior(object):
   REGISTRY = {}
 
@@ -56,6 +60,8 @@ class Behavior(object):
     try:
       path = networkx.astar_path(self.npc.realm.path_graph, self.npc.location,
                                  target_location, manhattan)
+    except KeyError:
+      raise IncompletePathGraphError
     except networkx.NetworkXNoPath:
       raise PassabilityError
 
