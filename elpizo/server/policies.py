@@ -53,10 +53,7 @@ class PlayerPolicy(object):
     self.server.bus.subscribe(self.player.bus_key, ("conversation",
                                                     self.player.name))
     self.server.bus.subscribe(self.player.bus_key, ("chatroom", "global"))
-
-    self.player.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
-    self.player.last_move_time = 0
-    self.player.last_attack_time = 0
+    self.player.ephemeral = entities.Ephemeral()
 
   def get_actor(self, origin):
     return self.player
@@ -101,9 +98,7 @@ class NPCPolicy(object):
         for entity in region.entities:
           if isinstance(entity, entities.NPC):
             self.npcs.add(entity)
-            entity.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
-            entity.last_move_time = 0
-            entity.last_attack_time = 0
+            entity.ephemeral = entities.Ephemeral()
 
             entity_protobuf = entity.to_protected_protobuf()
           else:

@@ -7,7 +7,7 @@ from elpizo.util import green
 
 def on_move(protocol, actor, message):
   now = time.monotonic()
-  dt = now - actor.last_move_time
+  dt = now - actor.ephemeral.last_move_time
 
   if dt < 1 / actor.speed * 0.25: # compensate for slow connections by 0.25
     protocol.send(actor.id, packets_pb2.TeleportPacket(
@@ -40,7 +40,7 @@ def on_move(protocol, actor, message):
 
   # We don't need strict sequentiality of the location log, so we keep this out
   # of the critical section.
-  actor.last_move_time = now
+  actor.ephemeral.last_move_time = now
   actor.log_location(now, old_location)
   actor.retain_log_after(now - 1)
 

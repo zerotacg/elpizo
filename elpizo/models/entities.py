@@ -16,6 +16,13 @@ from elpizo.util import support
 logger = logging.getLogger(__name__)
 
 
+class Ephemeral(object):
+  def __init__(self):
+    self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
+    self.last_move_time = 0
+    self.last_attack_time = 0
+
+
 class Entity(record.PolymorphicProtobufRecord):
   PROTOBUF_TYPE = entities_pb2.Entity
   REGISTRY = {}
