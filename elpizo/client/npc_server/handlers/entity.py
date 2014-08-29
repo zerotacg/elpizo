@@ -49,3 +49,11 @@ def on_move(protocol, entity, message):
 def on_teleport(protocol, entity, message):
   entity.direction = message.direction
   entity.location = geometry.Vector2.from_protobuf(message.location)
+
+
+@with_entity
+def on_attack(protocol, entity, message):
+  for target_id in message.actor_ids:
+    if target_id in protocol.server.npcs:
+      npc = protocol.server.npcs[target_id]
+      npc.on_attacked(entity)

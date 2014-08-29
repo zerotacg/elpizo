@@ -72,7 +72,7 @@ class Bus(object):
       protocol = self.get(bus_key)
     except KeyError:
       # A client disappeared while we were iterating.
-      logger.warn("Client disappeared during broadcast: %d", bus_key)
+      logger.warn("Client disappeared during broadcast: %s", bus_key)
       return
 
     # BEGIN CRITICAL SECTION: Acquire the broadcast lock, in case someone
@@ -81,7 +81,7 @@ class Bus(object):
       try:
         protocol.send(origin, message)
       except websockets.exceptions.InvalidState:
-        logger.warn("Client transport closed during broadcast: %d", bus_key)
+        logger.warn("Client transport closed during broadcast: %s", bus_key)
         return
     # END CRITICAL SECTION
 

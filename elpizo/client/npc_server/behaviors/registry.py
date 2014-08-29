@@ -3,4 +3,4 @@ from elpizo.client.npc_server.behaviors import mob
 
 
 def initialize():
-  behaviors.Behavior.register(mob.Wander)
+  behaviors.Behavior.register(mob.Pursue)

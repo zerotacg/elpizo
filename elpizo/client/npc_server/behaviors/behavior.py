@@ -36,7 +36,7 @@ class Behavior(object):
   def run(self):
     pass
 
-  def on_damage(self, damage):
+  def on_attacked(self, attacker):
     pass
 
   def be_nice(self):

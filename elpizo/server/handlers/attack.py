@@ -11,6 +11,8 @@ def on_attack(protocol, actor, message):
   if dt < 1 / actor.attack_cooldown * 0.5: # compensate for slow connections by 0.5
     return
 
+  actor.broadcast_to_regions(protocol.server.bus, message)
+
   for actor_id in message.actor_ids:
     target = protocol.server.store.entities.load(actor_id)
 
@@ -41,7 +43,5 @@ def on_attack(protocol, actor, message):
                 protocol.server.bus,
                 packets_pb2.EntityPacket(entity=drop.to_public_protobuf()))
         break
-
-  actor.broadcast_to_regions(protocol.server.bus, message)
 
   protocol.last_attack_time = now
