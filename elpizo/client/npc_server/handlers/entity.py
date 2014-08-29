@@ -35,12 +35,14 @@ def on_despawn_entity(protocol, entity, message):
 
 @with_entity
 def on_turn(protocol, entity, message):
-  entity.direction = message.direction
+  if entity.id not in protocol.server.npcs:
+    entity.direction = message.direction
 
 
 @with_entity
 def on_move(protocol, entity, message):
-  entity.location = entity.target_location
+  if entity.id not in protocol.server.npcs:
+    entity.location = entity.target_location
 
 
 @with_entity

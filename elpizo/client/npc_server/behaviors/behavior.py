@@ -56,7 +56,7 @@ class Behavior(object):
   def stop_move(self):
     self.send(packets_pb2.StopMovePacket())
 
-  def move_to(self, target_location):
+  def move_towards(self, target_location):
     try:
       path = networkx.astar_path(self.npc.realm.path_graph, self.npc.location,
                                  target_location, manhattan)
@@ -65,13 +65,17 @@ class Behavior(object):
     except networkx.NetworkXNoPath:
       raise PassabilityError
 
-    for current, next in zip(path, path[1:]):
-      direction = entities.Entity.DIRECTIONS[next.offset(current.negate())]
+    if len(path) == 1:
+      return
 
-      if direction != self.npc.direction:
-        self.turn(direction)
+    current, next, *_ = path
+    direction = entities.Entity.DIRECTIONS[next.offset(current.negate())]
 
-      self.move()
+    if direction != self.npc.direction:
+      self.turn(direction)
+
+    self.move()
+
+  def wait_move(self):
       green.await_coro(asyncio.sleep(1 / self.npc.speed))
 
-    self.stop_move()

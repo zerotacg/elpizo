@@ -13,14 +13,20 @@ class Wander(behaviors.Behavior):
   NAME = "wander"
 
   def run(self):
+    target = geometry.Vector2(5, 21)
+
     while True:
       try:
-        self.move_to(geometry.Vector2(5, 5))
+        self.move_towards(target)
       except behaviors.PassabilityError:
         pass
       except behaviors.IncompletePathGraphError:
         logger.warn("Sorry, path graph is incomplete.")
       else:
-        break
+        if self.npc.location == target:
+          self.stop_move()
+          break
+
+        self.wait_move()
 
       self.be_nice()
