@@ -36,6 +36,8 @@ export class Renderer extends events.EventEmitter {
     this.regionTerrainCache = {};
     this.elapsed = 0;
 
+    this._nextComponentId = 0;
+
     window.onresize = functions.debounce(() => {
       this.refit();
     }, 500);
@@ -53,7 +55,8 @@ export class Renderer extends events.EventEmitter {
     comp.props.timer = timer;
     comp.props.renderer = this;
 
-    comp.props.key = new Date().valueOf();
+    comp.props.key = this._nextComponentId;
+    ++this._nextComponentId;
     this.components.push(comp);
   }
 

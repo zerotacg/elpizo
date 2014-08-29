@@ -67,10 +67,7 @@ export class Game extends events.EventEmitter {
   }
 
   appendToLog(node) {
-    this.log.push({
-        id: new Date().valueOf(),
-        node: node
-    });
+    this.log.push(node);
   }
 
   onError(msg, file, lineno, colno, e) {

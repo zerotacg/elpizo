@@ -11,7 +11,6 @@ def on_chat(protocol, actor, message):
   actor.broadcast(
       protocol.server.bus,
       (ns, name),
-      actor.id,
       packets_pb2.ChatPacket(target=message.target,
                              actor_name=actor.name,
                              text=message.text))

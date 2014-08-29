@@ -124,8 +124,7 @@ export var Log = React.createClass({
   },
 
   render: function () {
-    var messages = this.props.log.map((entry) =>
-        <li key={entry.id}>{entry.node}</li>);
+    var messages = this.props.log.map((entry, i) => <li key={i}>{entry}</li>);
 
     return <form className="log" onSubmit={this.handleSubmit}>
       <ul className="messages">
