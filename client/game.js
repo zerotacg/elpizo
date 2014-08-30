@@ -207,7 +207,7 @@ export class Game extends events.EventEmitter {
       startTime = currentTime;
 
       if (this.running) {
-        window.setTimeout(cont, 0);
+        window.setTimeout(cont, 1 / 60);
       }
     };
     cont();

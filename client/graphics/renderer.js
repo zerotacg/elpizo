@@ -3,6 +3,7 @@ module events from "events";
 module sprites from "client/assets/sprites";
 module entities from "client/models/entities";
 module realm from "client/models/realm";
+module colors from "client/util/colors";
 module functions from "client/util/functions";
 module geometry from "client/util/geometry";
 module objects from "client/util/objects";
@@ -457,6 +458,20 @@ class RendererVisitor extends entities.EntityVisitor {
         sprites[name][state][direction]
             .render(this.renderer.resources, this.ctx, elapsed);
     })
+
+    // Render the name card.
+    this.ctx.translate(16, 32 - 32 * entity.getHeight() - 16);
+
+    var baseWidth = this.ctx.measureText(entity.name).width;
+    var width = baseWidth + 8;
+
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    this.ctx.fillRect(-width / 2, -10, width, 20);
+
+    this.ctx.fillStyle = colors.makeColorForString(entity.name);
+    this.ctx.textAlign = "center";
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillText(entity.name, 0, 0);
   }
 
   visitFixture(entity) {
