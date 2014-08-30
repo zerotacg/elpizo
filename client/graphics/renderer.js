@@ -61,9 +61,12 @@ export class Renderer extends events.EventEmitter {
   addTimedComponent(id, comp, timer) {
     delete this.components[id];
 
-    comp.props.timer = timer;
-    comp.props.renderer = this;
-    comp.props.key = this.nextComponentKey;
+    objects.extend(comp.props, {
+        timer: timer,
+        renderer: this,
+        key: this.nextComponentKey
+    });
+
     ++this.nextComponentKey;
     this.components[id] = comp;
   }

@@ -10,6 +10,10 @@ export class Sprite {
     this.speedFactor = speedFactor || 0;
   }
 
+  getResource(resources) {
+    return resources.get("sprites/" + this.resourceName);
+  }
+
   render(resources, ctx, elapsed) {
     var frame = this.frames[
         Math.floor(elapsed * this.speedFactor) %
@@ -17,7 +21,7 @@ export class Sprite {
 
     ctx.save();
     ctx.translate(-this.offset.x, -this.offset.y);
-    ctx.drawImage(resources.get("sprites/" + this.resourceName),
+    ctx.drawImage(this.getResource(resources),
                   frame.x, frame.y, this.size.x, this.size.y,
                   0, 0, this.size.x, this.size.y);
     ctx.restore();

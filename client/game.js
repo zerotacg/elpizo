@@ -44,7 +44,10 @@ export class Game extends events.EventEmitter {
 
     this.uiRoot = document.createElement("div");
     parent.appendChild(this.uiRoot);
-    this.uiRootComponent = ui.UI({game: this});
+    this.uiRootComponent = ui.UI({
+        game: this,
+        showInventory: false
+    });
 
     // Render the React components once.
     this.renderReact();
@@ -225,6 +228,11 @@ export class Game extends events.EventEmitter {
     if (this.inputState.stick(input.Key.RETURN)) {
       window.setTimeout(() => this.uiRoot.querySelector(".log input").focus(),
                         0);
+    }
+
+    if (this.inputState.stick(input.Key.I)) {
+      this.uiRootComponent.props.showInventory =
+          !this.uiRootComponent.props.showInventory;
     }
 
     // Update the realm first.

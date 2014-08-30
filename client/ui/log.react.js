@@ -79,7 +79,7 @@ export var Log = React.createClass({
       return;
     }
 
-    var node = this.getDOMNode().querySelector(".messages");
+    var node = this.refs.messages.getDOMNode();
     node.scrollTop = node.scrollHeight;
   },
 
@@ -91,7 +91,7 @@ export var Log = React.createClass({
     e.preventDefault();
     var pendingMessage = this.state.pendingMessage;
     this.setState({pendingMessage: ""});
-    this.getDOMNode().querySelector("input").blur();
+    this.refs.text.getDOMNode().blur();
 
     if (pendingMessage.trim().length === 0) {
       return;
@@ -130,11 +130,12 @@ export var Log = React.createClass({
     var messages = this.props.log.map((entry, i) => <li key={i}>{entry}</li>);
 
     return <form className="log" onSubmit={this.handleSubmit}>
-      <ul className="messages">
+      <ul className="messages" ref="messages">
         {messages}
       </ul>
       <input type="text" onChange={this.onChange}
              value={this.state.pendingMessage}
+             ref="text"
              placeholder="Chat message" />
     </form>;
   }
