@@ -14,7 +14,7 @@ message Packet {
     AVATAR = 4;
     REALM = 5;
     REGION = 6;
-    //VIEWPORT = 7;
+    // VIEWPORT = 7;
     ENTITY = 8;
     STOP_MOVE = 9;
     TELEPORT = 10;
@@ -30,6 +30,8 @@ message Packet {
     WHOAMI = 20;
     SIGHT = 21;
     UNSIGHT = 22;
+    ENTER = 23;
+    EXIT = 24;
   }
 
   optional Type type = 1;
@@ -77,6 +79,8 @@ message MovePacket {
   //
   // Direction: Server <-> Client
   option (packet_type) = MOVE;
+
+  optional Vector2 location = 1;
 }
 
 message AvatarPacket {
@@ -238,6 +242,30 @@ message UnsightPacket {
   //
   // Direction: Client -> Server
   option (packet_type) = UNSIGHT;
+
+  optional Vector2 location = 1;
+}
+
+message EnterPacket {
+  // Sent by the server when an entity first enters a region (i.e. its bounding
+  // box just intersected the region).
+  //
+  // Direction: Server -> Client
+  option (packet_type) = ENTER;
+
+  optional Vector2 location = 1;
+
+  // This field is advisory -- the client may choose to integrate it into its
+  // list of entities, if it doesn't have the entity.
+  optional Entity entity = 2;
+}
+
+message ExitPacket {
+  // Sent by the server when an entity completely exits a region (i.e. its
+  // bounding box no longer intersects the region).
+  //
+  // Direction: Server -> Client
+  option (packet_type) = EXIT;
 
   optional Vector2 location = 1;
 }

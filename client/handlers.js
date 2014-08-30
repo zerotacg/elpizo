@@ -56,8 +56,8 @@ export function install(game) {
       return;
     }
 
-    if (objects.hasOwnProp.call(game.realm.entities, message.entity.id)) {
-      return;
+    if (objects.hasOwnProp.call(game.realm.entities, origin)) {
+      console.warn("Entity " + origin + " already exists.");
     }
 
     game.realm.addEntity(origin, models.makeEntity(message.entity));
@@ -68,7 +68,41 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.MOVE, withEntity((entity, message) => {
+    entity.finishMove();
+
+    var targetLocation = entity.getTargetLocation();
+    var expectedLocation = geometry.Vector2.fromProtobuf(message.location);
+
+    if (!targetLocation.equals(expectedLocation)) {
+      console.warn("Entity " + entity.id + " will not move into the correct " +
+                   "position. This is transient for large entities occupying " +
+                   "multiple regions. (" +
+                   "expected: " + expectedLocation.toString() + ", " +
+                   "actual: " + targetLocation.toString() + ", " +
+                   "original: " + entity.location.toString() +
+                   ")");
+      return;
+    }
+
     entity.move();
+  }));
+
+  protocol.on(packets.Packet.Type.ENTER, (origin, message) => {
+    if (objects.hasOwnProp.call(game.realm.entities, origin)) {
+      return;
+    }
+
+    game.realm.addEntity(origin, models.makeEntity(message.entity));
+  });
+
+  protocol.on(packets.Packet.Type.EXIT, withEntity((entity, message) => {
+    if (!game.clientBounds.contains(new geometry.Rectangle(
+        message.location.x, message.location.y,
+        realm.Region.SIZE, realm.Region.SIZE))) {
+      // If no target locations are contained by the client bounds, we remove
+      // the entity.
+      game.realm.removeEntity(entity.id);
+    }
   }));
 
   protocol.on(packets.Packet.Type.TURN, withEntity((entity, message) => {

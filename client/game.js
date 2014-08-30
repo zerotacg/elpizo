@@ -161,7 +161,10 @@ export class Game extends events.EventEmitter {
         return;
       }
 
-      this.realm.removeRegion(this.realm.getRegionAt(location));
+      var region = this.realm.getRegionAt(location);
+      if (region !== null) {
+        this.realm.removeRegion(region);
+      }
       this.protocol.send(new packets.UnsightPacket({
           location: location
       }));

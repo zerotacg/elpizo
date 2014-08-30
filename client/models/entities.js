@@ -172,14 +172,16 @@ export class Actor extends Entity {
     //
     // It will forcibly normalize the location (may be janky, but will always be
     // correct).
+    var moveTimer = this.getTimer("move");
+
     this.isMoving = true;
     this.finishMove();
-    this.getTimer("move").reset(1 / this.getSpeed());
+    moveTimer.reset(1 / this.getSpeed());
   }
 
   stopMove() {
     this.isMoving = false;
-    this.getTimer("move").reset(0);
+    this.finishMove();
   }
 
   attack() {
@@ -195,12 +197,16 @@ export class Actor extends Entity {
   }
 
   update(dt) {
+    var moveTimer = this.getTimer("move");
+    var lastRemaining = moveTimer.remaining;
+
     super.update(dt);
 
     // Round out the location if the movement timer is 0.
-    var moveTimer = this.getTimer("move");
     if (moveTimer.isStopped()) {
-      this.location = this.location.map(Math.round);
+      this.location = this.location
+          .offset(this.getDirectionVector().scale(lastRemaining * this.getSpeed()))
+          .map(Math.round);
     } else {
       this.location = this.location
           .offset(this.getDirectionVector().scale(dt * this.getSpeed()));
@@ -311,8 +317,8 @@ export class Player extends Actor {
         return;
       }
 
-      var target = this.getTargetLocation();
-      var targetBounds = this.bbox.offset(target);
+      var targetLocation = this.getTargetLocation();
+      var targetBounds = this.bbox.offset(targetLocation);
       var targetEntities = this.realm.getAllEntities().filter((entity) =>
           (entity.getBounds().intersects(targetBounds) ||
           entity.getBounds().intersects(this.getBounds())) && entity !== this);
@@ -322,7 +328,7 @@ export class Player extends Actor {
         this.move();
         didMove = true;
 
-        protocol.send(new packets.MovePacket());
+        protocol.send(new packets.MovePacket({location: targetLocation}));
 
         targetEntities.forEach((entity) =>
           entity.onContact(this, protocol));

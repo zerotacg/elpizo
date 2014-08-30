@@ -46,6 +46,10 @@ export class Vector2 {
   equals(other) {
     return this.x === other.x && this.y === other.y;
   }
+
+  toString() {
+    return "Vector2(" + this.x + ", " + this.y + ")";
+  }
 }
 
 export class Rectangle {
@@ -103,6 +107,11 @@ export class Rectangle {
   equals(other) {
     return this.left === other.left && this.top === other.top &&
            this.width === other.width && this.height === other.height;
+  }
+
+  toString() {
+    return "Rectangle(" + this.left + ", " + this.top + ", " +
+                          this.width + ", " + this.height + ")";
   }
 }
 

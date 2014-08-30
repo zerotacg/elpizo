@@ -59,7 +59,7 @@ class Behavior(object):
 
   def move(self):
     self.npc.location = self.npc.target_location
-    self.send(packets_pb2.MovePacket())
+    self.send(packets_pb2.MovePacket(location=self.npc.location.to_protobuf()))
 
   def stop_move(self):
     self.send(packets_pb2.StopMovePacket())
