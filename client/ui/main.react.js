@@ -6,6 +6,7 @@ module debug from "client/ui/debug.react";
 module inventory from "client/ui/inventory.react";
 module loading from "client/ui/loading.react";
 module log from "client/ui/log.react";
+module stats from "client/ui/stats.react";
 module overlay from "client/ui/overlay/overlay.react";
 
 export var UI = React.createClass({
@@ -21,6 +22,7 @@ export var UI = React.createClass({
       <log.Log game={this.props.game} log={this.props.game.log.slice()} />
       <debug.Debug game={this.props.game} />
       <loading.Loading game={this.props.game} />
+      <stats.Stats game={this.props.game} />
     </div>;
   }
 });

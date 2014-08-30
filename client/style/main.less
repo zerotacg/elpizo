@@ -176,8 +176,8 @@ a {
     background: rgba(0, 0, 0, 0.5);
 
     position: absolute;
-    left: 10px;
-    bottom: 10px;
+    left: 16px;
+    bottom: 16px;
 
     width: 480px;
     height: 200px;
@@ -234,10 +234,11 @@ a {
 
   .debug {
     position: absolute;
-    right: 10px;
-    top: 10px;
+    right: 16px;
+    top: 16px;
+
     background: rgba(0, 0, 0, 0.5);
-    padding: 10px;
+    padding: 8px;
 
     font: @mono-font;
 
@@ -333,6 +334,52 @@ a {
         img {
           display: block;
         }
+      }
+    }
+  }
+
+  .stats {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 16px;
+
+    display: flex;
+
+    .avatar {
+      height: 64px;
+      width: 48px;
+      margin-left: -16px;
+      margin-top: -8px;
+      margin-right: 8px;
+    }
+
+    .info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .name {
+      padding: 2px 0;
+    }
+
+    .health {
+      list-style: none;
+
+      padding: 2px 0;
+      margin: 0;
+      margin-left: -8px;
+
+      .tick {
+        width: 16px;
+        height: 16px;
+
+        background: #f44;
+        float: left;
+        margin-left: 8px;
       }
     }
   }

@@ -402,6 +402,31 @@ function drawAutotileRectangle(renderer, rect, autotile, ctx) {
   }
 }
 
+export function getActorSpriteNames(actor) {
+  var names = [["body", actor.gender, actor.body].join(".")];
+
+  if (actor.facial !== null) {
+    names.push(["facial", actor.gender, actor.facial].join("."));
+  }
+
+  if (actor.hair !== null) {
+    names.push(["hair", actor.gender, actor.hair].join("."));
+  }
+
+  [].push.apply(names, [
+      actor.headItem,
+      actor.torsoItem,
+      actor.legsItem,
+      actor.feetItem,
+      actor.weapon
+  ]
+      .filter((item) => item !== null)
+      .map((item) => ["equipment", actor.gender, item.type].join(".")));
+
+  return names;
+}
+
+
 class RendererVisitor extends entities.EntityVisitor {
   constructor(renderer, ctx) {
     this.renderer = renderer;
@@ -456,27 +481,7 @@ class RendererVisitor extends entities.EntityVisitor {
                     entity.direction == entities.Directions.E ? "e" :
                     null;
 
-    var names = [["body", entity.gender, entity.body].join(".")];
-
-    if (entity.facial !== null) {
-      names.push(["facial", entity.gender, entity.facial].join("."));
-    }
-
-    if (entity.hair !== null) {
-      names.push(["hair", entity.gender, entity.hair].join("."));
-    }
-
-    [].push.apply(names, [
-        entity.headItem,
-        entity.torsoItem,
-        entity.legsItem,
-        entity.feetItem,
-        entity.weapon
-    ]
-        .filter((item) => item !== null)
-        .map((item) => ["equipment", entity.gender, item.type].join(".")));
-
-    names.forEach((name) => {
+    getActorSpriteNames(entity).forEach((name) => {
         sprites[name][state][direction]
             .render(this.renderer.resources, this.ctx, elapsed);
     })
