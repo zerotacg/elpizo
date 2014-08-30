@@ -460,17 +460,17 @@ class RendererVisitor extends entities.EntityVisitor {
     })
 
     // Render the name card.
-    this.ctx.translate(16, 32 - 32 * entity.getHeight() - 16);
+    this.ctx.translate(16, 32);
 
     var baseWidth = this.ctx.measureText(entity.name).width;
     var width = baseWidth + 8;
 
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    this.ctx.fillRect(-width / 2, -10, width, 20);
+    this.ctx.fillRect(-width / 2, 0, width, 20);
 
     this.ctx.fillStyle = colors.makeColorForString(entity.name);
     this.ctx.textAlign = "center";
-    this.ctx.textBaseline = "middle";
+    this.ctx.textBaseline = "top";
     this.ctx.fillText(entity.name, 0, 0);
   }
 
