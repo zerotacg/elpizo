@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 class Ephemera(object):
   def __init__(self):
-    self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
     self.last_move_time = 0
     self.last_attack_time = 0
 
@@ -101,6 +100,9 @@ class Entity(record.PolymorphicProtobufRecord):
   def is_passable(self, direction):
     return False
 
+  def is_damageable_by(self, attacker):
+    return False
+
   def broadcast(self, bus, channel, message):
     futures = []
 
@@ -128,9 +130,6 @@ class Entity(record.PolymorphicProtobufRecord):
           bus, ("region", self.realm.id, region.location), message))
 
     return asyncio.gather(*futures)
-
-  def is_damageable_by(self, attacker):
-    return False
 
 
 class Actor(Entity):
@@ -254,6 +253,18 @@ class Actor(Entity):
   @property
   def bus_key(self):
     return (self.TYPE, self.id)
+
+  def subscribe(self, bus, channel):
+    bus.subscribe(self.bus_key, channel)
+
+  def unsubscribe(self, bus, channel):
+    bus.unsubscribe(self.bus_key, channel)
+
+  def add_to_bus(self, bus, protocol):
+    bus.add(self.bus_key, protocol)
+
+  def remove_from_bus(self, bus):
+    bus.remove(self.bus_key)
 
 
 @Entity.register

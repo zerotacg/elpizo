@@ -16,7 +16,7 @@ def on_sight(protocol, actor, message):
   # yet know about, but it will eventually receive up-to-date information
   # about them.
   region_channel = ("region", actor.realm.id, region.location)
-  protocol.server.bus.subscribe(actor.bus_key, region_channel)
+  actor.subscribe(protocol.server.bus, region_channel)
 
   for entity in list(region.entities):
     if entity.id != actor.id:
@@ -30,7 +30,7 @@ def on_unsight(protocol, actor, message):
       message.location))
 
   region_channel = ("region", actor.realm.id, region.location)
-  protocol.server.bus.unsubscribe(actor.bus_key, region_channel)
+  actor.unsubscribe(protocol.server.bus, region_channel)
 
   for entity in list(region.entities):
     if list(entity.regions) == [region]:

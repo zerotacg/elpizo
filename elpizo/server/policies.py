@@ -39,7 +39,7 @@ class PlayerPolicy(object):
       last_protocol.transport.close()
       self.server.bus.remove(self.player.bus_key)
 
-    self.server.bus.add(self.player.bus_key, protocol)
+    self.player.add_to_bus(self.server.bus, protocol)
 
     protocol.send(
         None,
@@ -50,9 +50,8 @@ class PlayerPolicy(object):
     protocol.send(self.player.id, packets_pb2.AvatarPacket())
 
     # Only self.players get chat access.
-    self.server.bus.subscribe(self.player.bus_key, ("conversation",
-                                                    self.player.name))
-    self.server.bus.subscribe(self.player.bus_key, ("chatroom", "global"))
+    self.player.subscribe(self.server.bus, ("conversation", self.player.name))
+    self.player.subscribe(self.server.bus, ("chatroom", "global"))
     self.player.ephemera = entities.Ephemera()
 
   def get_actor(self, origin):
@@ -65,7 +64,7 @@ class PlayerPolicy(object):
   def on_finish(self):
     self.player.save()
     logger.info("Flushing player %s to database.", self.player.id)
-    self.server.bus.remove(self.player.bus_key)
+    self.player.remove_from_bus(self.server.bus)
 
 
 class NPCPolicy(object):
