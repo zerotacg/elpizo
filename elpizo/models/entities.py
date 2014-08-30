@@ -129,6 +129,9 @@ class Entity(record.PolymorphicProtobufRecord):
 
     return asyncio.gather(*futures)
 
+  def is_damageable_by(self, attacker):
+    return False
+
 
 class Actor(Entity):
   BASE_SPEED = 4
@@ -246,9 +249,6 @@ class Actor(Entity):
     return realm_store.find(self.realm_id)
 
   def is_passable(self, direction):
-    return True
-
-  def is_damageable_by(self, attacker):
     return True
 
   @property

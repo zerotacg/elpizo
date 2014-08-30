@@ -485,8 +485,8 @@ class RendererVisitor extends entities.EntityVisitor {
 
     this.ctx.fillStyle = colors.makeColorForString(entity.name);
     this.ctx.textAlign = "center";
-    this.ctx.textBaseline = "top";
-    this.ctx.fillText(entity.name, 0, 0);
+    this.ctx.textBaseline = "middle";
+    this.ctx.fillText(entity.name, 0, 8);
   }
 
   visitFixture(entity) {

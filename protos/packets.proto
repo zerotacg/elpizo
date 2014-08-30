@@ -201,10 +201,10 @@ message AttackPacket {
   // Direction: Server <-> Client
   option (packet_type) = ATTACK;
 
-  // The client is required to indicate the actors it attacked as the actors
+  // The client is required to indicate the entities it attacked as the entities
   // may have moved from their original position on the server, but the client
   // state may not have been synchronized yet.
-  repeated string actor_ids = 1;
+  repeated string entity_ids = 1;
 }
 
 message DamagePacket {

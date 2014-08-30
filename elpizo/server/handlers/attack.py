@@ -15,8 +15,8 @@ def on_attack(protocol, actor, message):
 
   actor.ephemera.last_attack_time = now
 
-  for actor_id in message.actor_ids:
-    target = protocol.server.store.entities.load(actor_id)
+  for entity_id in message.entity_ids:
+    target = protocol.server.store.entities.load(entity_id)
 
     for location in target.all_locations:
       target_bounds = target.bbox.offset(location)

@@ -49,6 +49,10 @@ export class Entity extends timing.Timed {
     return false;
   }
 
+  isDamageableBy(attacker) {
+    return false;
+  }
+
   accept(visitor) {
     visitor.visitEntity(this);
   }
@@ -223,66 +227,27 @@ export class Player extends Actor {
       return;
     }
 
-    var attackMode = inputState.held(input.Key.ALT);
-
-    // Check for movement.
-    var direction = inputState.held(input.Key.LEFT) ? Directions.W :
-                    inputState.held(input.Key.UP) ? Directions.N :
-                    inputState.held(input.Key.RIGHT) ? Directions.E :
-                    inputState.held(input.Key.DOWN) ? Directions.S :
-                    null;
-
-    var didMove = false;
-
-    if (direction !== null) {
-      if (this.direction !== direction) {
-        // Send a turn packet.
-        this.turn(direction);
-        protocol.send(new packets.TurnPacket({direction: direction}))
-      }
-
+    if (inputState.stick(input.Key.X)) {
+      // Attack.
       var target = this.getTargetLocation();
       var targetBounds = this.bbox.offset(target);
+
       var targetEntities = this.realm.getAllEntities().filter((entity) =>
-        (entity.getBounds().intersects(targetBounds) ||
-         entity.getBounds().intersects(this.getBounds())) && entity !== this);
+          (entity.getBounds().intersects(targetBounds) ||
+          entity.getBounds().intersects(this.getBounds())) && entity !== this);
 
-      if (attackMode) {
-        // Attack mode logic.
-        if (this.getTimer("attack").isStopped()) {
-          if (inputState.stick(input.Key.LEFT) ||
-              inputState.stick(input.Key.UP) ||
-              inputState.stick(input.Key.RIGHT) ||
-              inputState.stick(input.Key.DOWN)) {
-            protocol.send(new packets.AttackPacket({
-                actorIds: targetEntities
-                    .filter((entity) => entity instanceof Actor)
-                    .map((entity) => entity.id)
-            }));
-            this.attack();
-          }
-        }
-      } else {
-        // Movement mode logic.
-        if (this.realm.isPassable(targetBounds, this.direction)) {
-          this.move();
-          didMove = true;
+      protocol.send(new packets.AttackPacket({
+          entityIds: targetEntities
+              .filter((entity) => entity.isDamageableBy(this))
+              .map((entity) => entity.id)
+      }));
 
-          protocol.send(new packets.MovePacket());
-
-          targetEntities.forEach((entity) =>
-            entity.onContact(this, protocol));
-        }
-      }
-    }
-
-    if (!didMove && this.isMoving) {
-      // We've stopped moving entirely.
-      this.isMoving = false;
+      this.stopMove();
       protocol.send(new packets.StopMovePacket());
-    }
 
-    if (inputState.stick(input.Key.Z)) {
+      this.attack();
+      return;
+    } else if (inputState.stick(input.Key.Z)) {
       var intersecting = this.realm.getAllEntities().filter((entity) =>
         entity.getBounds().intersects(this.getBounds()) &&
         entity !== this);
@@ -319,11 +284,56 @@ export class Player extends Actor {
       } else {
         head.entity.onAdjacentInteract(this, protocol);
       }
+      return;
+    }
+
+    // Check for movement.
+    var direction = inputState.held(input.Key.LEFT) ? Directions.W :
+                    inputState.held(input.Key.UP) ? Directions.N :
+                    inputState.held(input.Key.RIGHT) ? Directions.E :
+                    inputState.held(input.Key.DOWN) ? Directions.S :
+                    null;
+
+    var didMove = false;
+
+    if (direction !== null) {
+      if (this.direction !== direction) {
+        // Send a turn packet.
+        this.turn(direction);
+        protocol.send(new packets.TurnPacket({direction: direction}))
+      }
+
+      var target = this.getTargetLocation();
+      var targetBounds = this.bbox.offset(target);
+      var targetEntities = this.realm.getAllEntities().filter((entity) =>
+          (entity.getBounds().intersects(targetBounds) ||
+          entity.getBounds().intersects(this.getBounds())) && entity !== this);
+
+      // Movement mode logic.
+      if (this.realm.isPassable(targetBounds, this.direction)) {
+        this.move();
+        didMove = true;
+
+        protocol.send(new packets.MovePacket());
+
+        targetEntities.forEach((entity) =>
+          entity.onContact(this, protocol));
+      }
+    }
+
+    if (!didMove && this.isMoving) {
+      // We've stopped moving entirely.
+      this.isMoving = false;
+      protocol.send(new packets.StopMovePacket());
     }
   }
 
   accept(visitor) {
     visitor.visitPlayer(this);
+  }
+
+  isDamageableBy(attacker) {
+    return !(attacker instanceof Player);
   }
 }
 
@@ -335,6 +345,10 @@ export class NPC extends Actor {
 
   accept(visitor) {
     visitor.visitNPC(this);
+  }
+
+  isDamageableBy(attacker) {
+    return true;
   }
 }
 
