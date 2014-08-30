@@ -109,10 +109,6 @@ class Entity(record.PolymorphicProtobufRecord):
       logger.warn("Client disappeared during broadcast: %s", bus_key)
       return
 
-    if not protocol.policy.can_receive_broadcasts_from(self):
-      # Broadcasts from this entity are not permitted.
-      return
-
     try:
       protocol.send(self.id, message)
     except websockets.exceptions.InvalidState:
@@ -123,6 +119,15 @@ class Entity(record.PolymorphicProtobufRecord):
     futures = []
 
     for bus_key in list(bus.channels.get(channel, set())):
+      try:
+        protocol = bus.get(bus_key)
+      except KeyError:
+        pass
+      else:
+        if not protocol.policy.can_receive_broadcasts_from(self):
+          # Broadcasts from this entity are not permitted.
+          continue
+
       futures.append(green.coroutine(self._send_via_channel)(
           bus, bus_key, channel, message))
 

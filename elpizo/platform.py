@@ -30,6 +30,7 @@ class Application(object):
   def __init__(self, config, loop=None):
     self.config = config
     self.loop = loop or asyncio.get_event_loop()
+    self.loop.set_debug(self.debug)
 
   @property
   def debug(self):
