@@ -117,10 +117,13 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.DAMAGE, withEntity((entity, message) => {
     entity.health -= message.damage;
-    renderer.addTimedComponent(["damage", entity.id].join("."), damage.DamageNumber({
-        damage: message.damage,
-        entity: entity
-    }), new timing.CountdownTimer(1));
+    renderer.addTimedComponent(
+        ["damage", entity.id].join("."),
+        damage.DamageNumber({
+            damage: message.damage,
+            entity: entity
+        }),
+        new timing.CountdownTimer(1));
   }));
 
   protocol.on(packets.Packet.Type.CHAT, (origin, message) => {
@@ -128,10 +131,18 @@ export function install(game) {
         origin: message.actorName,
         text: message.text
     }));
-    renderer.addTimedComponent(["bubble", entity.id].join("."), bubble.Bubble({
-        text: message.text,
-        entity: entity
-    }), new timing.CountdownTimer(1));
+
+    var entity = game.realm.getEntity(origin);
+
+    if (entity !== null) {
+      renderer.addTimedComponent(
+          ["bubble", entity.id].join("."),
+          bubble.Bubble({
+              text: message.text,
+              entity: entity
+        }),
+        new timing.CountdownTimer(1));
+    }
   });
 
   protocol.on(packets.Packet.Type.ECHO, (origin, message) => {
