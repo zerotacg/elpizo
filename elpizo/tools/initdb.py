@@ -161,7 +161,7 @@ def initdb(app):
       inventory=[],
       legs_item=equipment.TealPants()))
 
-  for _ in range(50):
+  for _ in range(1):
     app.store.entities.create(entities.NPC(
         name="Green Slime",
         gender="neuter",
