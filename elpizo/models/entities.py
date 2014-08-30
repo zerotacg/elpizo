@@ -101,20 +101,6 @@ class Entity(record.PolymorphicProtobufRecord):
   def is_passable(self, direction):
     return False
 
-  def _send_via_channel(self, bus, bus_key, channel, message):
-    try:
-      protocol = bus.get(bus_key)
-    except KeyError:
-      # A client disappeared while we were iterating.
-      logger.warn("Client disappeared during broadcast: %s", bus_key)
-      return
-
-    try:
-      protocol.send(self.id, message)
-    except websockets.exceptions.InvalidState:
-      logger.warn("Client transport closed during broadcast: %s", bus_key)
-      return
-
   def broadcast(self, bus, channel, message):
     futures = []
 
@@ -122,14 +108,15 @@ class Entity(record.PolymorphicProtobufRecord):
       try:
         protocol = bus.get(bus_key)
       except KeyError:
-        pass
+        # A client disappeared while we were iterating.
+        logger.warn("Client disappeared during broadcast: %s", bus_key)
+        continue
       else:
         if not protocol.policy.can_receive_broadcasts_from(self):
           # Broadcasts from this entity are not permitted.
           continue
 
-      futures.append(green.coroutine(self._send_via_channel)(
-          bus, bus_key, channel, message))
+      futures.append(green.coroutine(protocol.send)(self.id, message))
 
     return asyncio.gather(*futures)
 
