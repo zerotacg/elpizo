@@ -145,6 +145,7 @@ export class Actor extends Entity {
     this.addTimer("attack", new timing.CountdownTimer());
     this.addTimer("move", new timing.CountdownTimer());
     this.addTimer("death", new timing.CountdownTimer());
+    this.addTimer("turn", new timing.CountdownTimer());
   }
 
   finishMove() {
@@ -219,6 +220,7 @@ export class Actor extends Entity {
 
 Actor.BASE_SPEED = 4;
 Actor.DEFAULT_ATTACK_COOLDOWN = 2;
+Actor.TURN_TIME = 0.1;
 
 export class Player extends Actor {
   updateAsAvatar(dt, inputState, protocol) {
@@ -300,7 +302,9 @@ export class Player extends Actor {
       if (this.direction !== direction) {
         // Send a turn packet.
         this.turn(direction);
-        protocol.send(new packets.TurnPacket({direction: direction}))
+        protocol.send(new packets.TurnPacket({direction: direction}));
+        this.getTimer("turn").reset(Actor.TURN_TIME);
+        return;
       }
 
       var target = this.getTargetLocation();
