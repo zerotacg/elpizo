@@ -67,6 +67,11 @@ export var Debug = React.createClass({
           <th>Avatar Position</th>
           <td>{maybeAvatarPosition !== null ? maybeAvatarPosition : "(no avatar)"}</td>
         </tr>
+
+        <tr>
+          <th>Frame Rate</th>
+          <td>{(1 / game.renderer.lastRenderTime).toFixed(0)} fps</td>
+        </tr>
       </table>
     </div>;
   },

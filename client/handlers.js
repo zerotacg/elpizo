@@ -76,11 +76,12 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.STOP_MOVE, withEntity((entity, message) => {
-    entity.isMoving = false;
+    entity.stopMove();
   }));
 
   protocol.on(packets.Packet.Type.TELEPORT, withEntity((entity, message) => {
-    console.warn("Teleported!");
+    console.warn("Entity " + entity.id + " teleported!");
+
     entity.stopMove();
     entity.location = geometry.Vector2.fromProtobuf(message.location);
     entity.direction = message.direction;

@@ -36,6 +36,7 @@ export class Renderer extends events.EventEmitter {
 
     this.regionTerrainCache = {};
     this.elapsed = 0;
+    this.lastRenderTime = 0;
 
     this._nextComponentId = 0;
 
@@ -152,10 +153,11 @@ export class Renderer extends events.EventEmitter {
 
   render(realm, dt) {
     this.elapsed += dt;
-
     this.renderTerrain(realm);
     this.renderEntities(realm);
     this.updateComponents(dt);
+
+    this.lastRenderTime = this.lastRenderTime * 0.9 + dt * 0.1;
   }
 
   updateComponents(dt) {
