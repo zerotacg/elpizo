@@ -3,7 +3,6 @@
 module React from "react";
 
 module packets from "client/protos/packets";
-module bubble from "client/ui/overlay/bubble.react";
 module colors from "client/util/colors";
 module objects from "client/util/objects";
 module timing from "client/util/timing";
@@ -117,12 +116,8 @@ export var Log = React.createClass({
           origin: this.props.game.me.name,
           text: pendingMessage
       }));
-      this.props.game.renderer.addTimedComponent(
-          ["bubble", this.props.game.me.id].join("."),
-          bubble.Bubble({
-              text: pendingMessage,
-              entity: this.props.game.me
-          }), new timing.CountdownTimer(3));
+      this.props.game.renderer.addChatBubble(
+          this.props.game.me, pendingMessage);
 
       this.props.game.protocol.send(new packets.ChatPacket({
           target: "chatroom.global",

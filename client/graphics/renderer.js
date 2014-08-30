@@ -3,6 +3,7 @@ module events from "events";
 module sprites from "client/assets/sprites";
 module entities from "client/models/entities";
 module realm from "client/models/realm";
+module bubble from "client/ui/overlay/bubble.react";
 module colors from "client/util/colors";
 module functions from "client/util/functions";
 module geometry from "client/util/geometry";
@@ -61,6 +62,15 @@ export class Renderer extends events.EventEmitter {
     comp.props.key = this.nextComponentKey;
     ++this.nextComponentKey;
     this.components[id] = comp;
+  }
+
+  addChatBubble(entity, message) {
+    this.addTimedComponent(
+        ["bubble", entity.id].join("."),
+        bubble.Bubble({
+            text: message,
+            entity: entity
+        }), new timing.CountdownTimer(3));
   }
 
   setDebug(debug) {

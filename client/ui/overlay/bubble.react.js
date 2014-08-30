@@ -9,13 +9,14 @@ export var Bubble = React.createClass({
 
     var position = renderer.toScreenCoords(entity.location);
 
-    return <div className="bubble"
-                style={{
-                    left: position.x + 16 + "px",
-                    top: position.y - 32 + "px"}}>
-      <div className="anchor">
-        <div className="inner">
-          {this.props.text}
+    return <div style={{
+      transform: "translate(" + (position.x + 16 + "px") + "," +
+                                (position.y - 32 + "px") + ")"}}>
+      <div className="bubble">
+        <div className="anchor">
+          <div className="inner">
+            {this.props.text}
+          </div>
         </div>
       </div>
     </div>;
