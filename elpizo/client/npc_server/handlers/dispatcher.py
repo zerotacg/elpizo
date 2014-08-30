@@ -41,11 +41,18 @@ class Dispatcher(net.Protocol):
     raise net.ProtocolError("Connection closed.")
 
 
+def noop(protocol, origin, message):
+  # We don't make use of entry/exit notifications.
+  pass
+
+
 Dispatcher.register(packets_pb2.Packet.ATTACK, entity.on_attack)
 Dispatcher.register(packets_pb2.Packet.DAMAGE, entity.on_damage)
 Dispatcher.register(packets_pb2.Packet.DESPAWN_ENTITY, entity.on_despawn_entity)
+Dispatcher.register(packets_pb2.Packet.ENTER, noop)
 Dispatcher.register(packets_pb2.Packet.ENTITY, entity.on_entity)
 Dispatcher.register(packets_pb2.Packet.ERROR, error.on_error)
+Dispatcher.register(packets_pb2.Packet.EXIT, noop)
 Dispatcher.register(packets_pb2.Packet.REGION, realm.on_region)
 Dispatcher.register(packets_pb2.Packet.REALM, realm.on_realm)
 Dispatcher.register(packets_pb2.Packet.MOVE, entity.on_move)

@@ -224,7 +224,7 @@ export class Actor extends Entity {
   }
 
   isPassable(direction) {
-    return true;
+    return false;
   }
 }
 

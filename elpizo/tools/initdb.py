@@ -161,13 +161,13 @@ def initdb(app):
       inventory=[],
       legs_item=equipment.TealPants()))
 
-  for _ in range(1):
+  for _ in range(25):
     app.store.entities.create(entities.NPC(
         name="Green Slime",
         gender="neuter",
         body="green_slime",
         direction=1,
-        health=100,
+        health=5,
         realm_id=windvale.id,
         location=geometry.Vector2(random.randint(0, 32), random.randint(0, 32)),
         inventory=[restorative.Carrot()],

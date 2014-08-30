@@ -248,7 +248,7 @@ class Actor(Entity):
     return realm_store.find(self.realm_id)
 
   def is_passable(self, direction):
-    return True
+    return False
 
   @property
   def bus_key(self):
