@@ -48,6 +48,29 @@ a {
   z-index: 0;
 }
 
+// TODO: support non-webkit
+@-webkit-keyframes bubble {
+  0% {
+    opacity: 0;
+    transform: translate(0, 16px);
+  }
+
+  10% {
+    opacity: 1.0;
+    transform: translate(0, 0);
+  }
+
+  90% {
+    opacity: 1.0;
+    transform: translate(0, 0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(0, -16px);
+  }
+}
+
 .ui-root {
   width: 100%;
   height: 100%;
@@ -57,24 +80,60 @@ a {
   .overlay {
     position: absolute;
 
-    .player-name {
-      position: absolute;
-      white-space: nowrap;
-
-      .inner {
-        position: relative;
-        left: -50%;
-        padding: 2px 4px;
-        background: rgba(0, 0, 0, 0.5);
-        font-size: 12px;
-      }
-    }
-
     .components {
       position: absolute;
 
+      .bubble {
+        position: absolute;
+
+        animation: bubble 3s;
+        -webkit-animation: bubble 3s;
+        width: 200px;
+
+        .anchor {
+          position: absolute;
+          width: auto;
+          bottom: 0;
+
+          .inner {
+            position: relative;
+            left: -50%;
+
+            min-width: 20px;
+            max-width: 200px;
+
+            padding: 4px 8px;
+            text-align: center;
+            background: #fff;
+            color: #000;
+            font-size: 12px;
+            word-wrap: break-word;
+
+            &:before {
+              top: 100%;
+              left: 50%;
+              border: solid transparent;
+              content: " ";
+              height: 0;
+              width: 0;
+              position: absolute;
+              pointer-events: none;
+            }
+
+            &:before {
+              border-top-color: #fff;
+              border-width: 6px;
+              margin-left: -6px;
+            }
+          }
+        }
+      }
+
       .damage {
         position: absolute;
+
+        animation: bubble 1s;
+        -webkit-animation: bubble 1s;
 
         .inner {
           position: relative;

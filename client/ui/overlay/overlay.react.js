@@ -9,11 +9,14 @@ export var Overlay = React.createClass({
 
     var position = renderer.toScreenCoords(renderer.topLeft);
 
+    var components = Object.keys(renderer.components).map((k) =>
+        renderer.components[k]);
+
     return <div className="overlay"
                 style={{transform: "translate(" +
                     (-position.x + "px") + "," +
                     (-position.y + "px") + ")"}}>
-      <div className="components">{renderer.components}</div>
+      <div className="components">{components}</div>
     </div>;
   }
 });

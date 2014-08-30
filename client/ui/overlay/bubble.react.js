@@ -2,19 +2,21 @@
 
 module React from "react";
 
-export var DamageNumber = React.createClass({
+export var Bubble = React.createClass({
   render: function () {
     var entity = this.props.entity;
     var renderer = this.props.renderer;
 
     var position = renderer.toScreenCoords(entity.location);
 
-    return <div className="damage"
+    return <div className="bubble"
                 style={{
                     left: position.x + 16 + "px",
                     top: position.y - 32 + "px"}}>
-      <div className="inner">
-        {this.props.damage}
+      <div className="anchor">
+        <div className="inner">
+          {this.props.text}
+        </div>
       </div>
     </div>;
   }

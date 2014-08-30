@@ -5,6 +5,7 @@ module geometry from "client/models/geometry";
 module itemRegistry from "client/models/items/registry";
 module realm from "client/models/realm";
 module packets from "client/protos/packets";
+module bubble from "client/ui/overlay/bubble.react";
 module damage from "client/ui/overlay/damage.react";
 module objects from "client/util/objects";
 module timing from "client/util/timing";
@@ -116,7 +117,7 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.DAMAGE, withEntity((entity, message) => {
     entity.health -= message.damage;
-    renderer.addTimedComponent(damage.DamageNumber({
+    renderer.addTimedComponent(["damage", entity.id].join("."), damage.DamageNumber({
         damage: message.damage,
         entity: entity
     }), new timing.CountdownTimer(1));
@@ -127,6 +128,10 @@ export function install(game) {
         origin: message.actorName,
         text: message.text
     }));
+    renderer.addTimedComponent(["bubble", entity.id].join("."), bubble.Bubble({
+        text: message.text,
+        entity: entity
+    }), new timing.CountdownTimer(1));
   });
 
   protocol.on(packets.Packet.Type.ECHO, (origin, message) => {

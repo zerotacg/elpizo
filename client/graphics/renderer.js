@@ -38,7 +38,7 @@ export class Renderer extends events.EventEmitter {
     this.elapsed = 0;
     this.lastRenderTime = 0;
 
-    this._nextComponentId = 0;
+    this.nextComponentKey = 0;
 
     window.onresize = functions.debounce(() => {
       this.refit();
@@ -50,16 +50,17 @@ export class Renderer extends events.EventEmitter {
 
     // We also hold React components here, which need to be parented onto the
     // overlay during the React tick phase.
-    this.components = [];
+    this.components = {};
   }
 
-  addTimedComponent(comp, timer) {
+  addTimedComponent(id, comp, timer) {
+    delete this.components[id];
+
     comp.props.timer = timer;
     comp.props.renderer = this;
-
-    comp.props.key = this._nextComponentId;
-    ++this._nextComponentId;
-    this.components.push(comp);
+    comp.props.key = this.nextComponentKey;
+    ++this.nextComponentKey;
+    this.components[id] = comp;
   }
 
   setDebug(debug) {
@@ -162,13 +163,15 @@ export class Renderer extends events.EventEmitter {
 
   updateComponents(dt) {
     var components = this.components;
-    this.components = [];
+    this.components = {};
 
-    components.forEach((comp) => {
+    Object.keys(components).forEach((k) => {
+      var comp = components[k];
+
       var timer = comp.props.timer;
       timer.update(dt);
       if (!timer.isStopped()) {
-        this.components.push(comp);
+        this.components[k] = comp;
       }
     });
   }
