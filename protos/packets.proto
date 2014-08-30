@@ -14,7 +14,7 @@ message Packet {
     AVATAR = 4;
     REALM = 5;
     REGION = 6;
-    VIEWPORT = 7;
+    //VIEWPORT = 7;
     ENTITY = 8;
     STOP_MOVE = 9;
     TELEPORT = 10;
@@ -28,6 +28,8 @@ message Packet {
     DAMAGE = 18;
     DEATH = 19;
     WHOAMI = 20;
+    SIGHT = 21;
+    UNSIGHT = 22;
   }
 
   optional Type type = 1;
@@ -101,15 +103,6 @@ message RegionPacket {
 
   optional Vector2 location = 1;
   optional Region region = 2;
-}
-
-message ViewportPacket {
-  // Sent by the client to indicate its viewport size.
-  //
-  // Direction: Client -> Server
-  option (packet_type) = VIEWPORT;
-
-  optional Rectangle bounds = 1;
 }
 
 message EntityPacket {
@@ -229,4 +222,22 @@ message WhoamiPacket {
   //
   // Direction: Client -> Server
   option (packet_type) = WHOAMI;
+}
+
+message SightPacket {
+  // Sent by the client to request sight of a given region.
+  //
+  // Direction: Client -> Server
+  option (packet_type) = SIGHT;
+
+  optional Vector2 location = 1;
+}
+
+message UnsightPacket {
+  // Sent by the client to request the removal of sight from a given region.
+  //
+  // Direction: Client -> Server
+  option (packet_type) = UNSIGHT;
+
+  optional Vector2 location = 1;
 }

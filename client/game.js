@@ -8,6 +8,7 @@ module handlers from "client/handlers";
 module packets from "client/protos/packets";
 module net from "client/util/net";
 module input from "client/util/input";
+module objects from "client/util/objects";
 module resources from "client/util/resources";
 module geometry from "client/models/geometry";
 module realm from "client/models/realm";
@@ -64,6 +65,7 @@ export class Game extends events.EventEmitter {
     });
 
     this.setDebug(qs.debug === "on");
+    this.clientBounds = new geometry.Rectangle(0, 0, 0, 0);
   }
 
   appendToLog(node) {
@@ -80,15 +82,6 @@ export class Game extends events.EventEmitter {
       // Something has gone horribly wrong, bail out!
       console.error(e.stack);
     }
-  }
-
-  getViewportPacket() {
-    var bounds = this.renderer.getCacheBounds();
-
-    return new packets.ViewportPacket({
-        bounds: geometry.Rectangle.prototype.copy.call(
-            this.renderer.getCacheBounds()).toProtobuf()
-    });
   }
 
   setDebug(v) {
@@ -119,24 +112,79 @@ export class Game extends events.EventEmitter {
     }
   }
 
-  onViewportChange(bounds, lastBounds) {
+  onViewportChange() {
     if (this.realm === null) {
       return;
     }
 
-    var currentTopLeft = bounds.getTopLeft().map(realm.Region.floor);
-    var currentBottomRight = bounds.getBottomRight().map(realm.Region.ceil);
+    var bounds = this.renderer.getCacheBounds();
 
-    var lastTopLeft = lastBounds.getTopLeft().map(realm.Region.floor);
-    var lastBottomRight = lastBounds.getBottomRight().map(realm.Region.ceil);
+    var toRemove = {};
+    var toAdd = {};
 
-    if (currentTopLeft.x !== lastTopLeft.x ||
-        currentTopLeft.y !== lastTopLeft.y ||
-        currentBottomRight.x !== lastBottomRight.x ||
-        currentBottomRight.y !== lastBottomRight.y) {
-      this.realm.retainRegions(this.renderer.getCacheBounds());
-      this.protocol.send(this.getViewportPacket());
+    for (var y = this.clientBounds.top;
+         y < this.clientBounds.getBottom();
+         y += realm.Region.SIZE) {
+      for (var x = this.clientBounds.left;
+           x < this.clientBounds.getRight();
+           x += realm.Region.SIZE) {
+        var key = [x, y].join(",");
+        toRemove[key] = true;
+      }
     }
+
+    for (var y = bounds.top;
+         y < bounds.getBottom();
+         y += realm.Region.SIZE) {
+      for (var x = bounds.left;
+           x < bounds.getRight();
+           x += realm.Region.SIZE) {
+        var key = [x, y].join(",");
+
+        if (objects.hasOwnProp.call(toRemove, key)) {
+          delete toRemove[key];
+        } else {
+          toAdd[key] = true;
+        }
+      }
+    }
+
+    Object.keys(toRemove).forEach((k) => {
+      var [x, y] = k.split(",");
+      x = parseInt(x, 10);
+      y = parseInt(y, 10);
+
+      var location = new geometry.Vector2(x, y);
+
+      if (!this.realm.getBounds().contains(new geometry.Rectangle(
+          location.x, location.y, realm.Region.SIZE, realm.Region.SIZE))) {
+        return;
+      }
+
+      this.realm.removeRegion(this.realm.getRegionAt(location));
+      this.protocol.send(new packets.UnsightPacket({
+          location: location
+      }));
+    });
+
+    Object.keys(toAdd).forEach((k) => {
+      var [x, y] = k.split(",");
+      x = parseInt(x, 10);
+      y = parseInt(y, 10);
+
+      var location = new geometry.Vector2(x, y);
+
+      if (!this.realm.getBounds().contains(new geometry.Rectangle(
+          location.x, location.y, realm.Region.SIZE, realm.Region.SIZE))) {
+        return;
+      }
+
+      this.protocol.send(new packets.SightPacket({
+          location: location
+      }));
+    });
+
+    this.clientBounds = bounds;
   }
 
   onTransportOpen() {
@@ -168,7 +216,6 @@ export class Game extends events.EventEmitter {
     console.log("Hello! Your player id is:", id);
     this.me = this.realm.getEntity(id);
     this.renderer.center(this.me.location);
-    this.protocol.send(this.getViewportPacket());
   }
 
   update(dt) {

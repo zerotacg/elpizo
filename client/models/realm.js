@@ -31,16 +31,6 @@ export class Realm {
     return Object.keys(this.regions).map((k) => this.regions[k]);
   }
 
-  retainRegions(bbox) {
-    // This should only be called at region boundaries, to ensure that
-    // off-screen regions aren't culled away prematurely.
-    Object.keys(this.regions).map((k) => {
-      if (!bbox.contains(this.regions[k].getBounds())) {
-        delete this.regions[k];
-      }
-    });
-  }
-
   getClosestRegionTo(location) {
     return this.getRegionAt(location.map(Region.floor));
   }

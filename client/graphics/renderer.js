@@ -24,10 +24,14 @@ export class Renderer extends events.EventEmitter {
 
     this.terrainCanvas = this.createCanvas();
     this.terrainCanvas.style.zIndex = 0;
+    this.terrainCanvas.width = 0;
+    this.terrainCanvas.height = 0;
     this.el.appendChild(this.terrainCanvas);
 
     this.entityCanvas = this.createCanvas();
     this.entityCanvas.style.zIndex = 1;
+    this.entityCanvas.width = 0;
+    this.entityCanvas.height = 0;
     this.el.appendChild(this.entityCanvas);
 
     this.topLeft = new geometry.Vector2(0, 0);
@@ -115,7 +119,7 @@ export class Renderer extends events.EventEmitter {
   setTopLeft(v) {
     var previous = this.getViewportBounds();
     this.topLeft = v;
-    this.emit("viewportChange", this.getViewportBounds(), previous);
+    this.emit("viewportChange");
   }
 
   setScreenViewportSize(sw, sh) {
@@ -136,7 +140,7 @@ export class Renderer extends events.EventEmitter {
     this.entityCanvas.width = sw;
     this.entityCanvas.height = sh;
 
-    this.emit("viewportChange", this.getViewportBounds(), previous);
+    this.emit("viewportChange");
   }
 
   refit() {

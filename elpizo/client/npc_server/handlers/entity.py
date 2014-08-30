@@ -62,7 +62,12 @@ def on_teleport(protocol, entity, message):
 
 @with_entity
 def on_attack(protocol, entity, message):
-  for target_id in message.actor_ids:
+  for target_id in message.entity_ids:
     if target_id in protocol.server.npcs:
       npc = protocol.server.npcs[target_id]
       npc.on_attacked(entity)
+
+
+@with_entity
+def on_damage(protocol, entity, message):
+  entity.health -= message.damage
