@@ -27,6 +27,8 @@ class Pursue(behaviors.Behavior):
         entities.Entity.DIRECTION_VECTORS[target.direction].negate())
 
     if target_location == self.npc.location:
+      self.attack(target.id)
+      self.sleep(2)
       return
 
     try:

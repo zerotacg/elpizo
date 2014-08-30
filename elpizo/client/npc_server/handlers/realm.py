@@ -33,9 +33,7 @@ def on_region(protocol, origin, message):
   region.location = geometry.Vector2.from_protobuf(message.region.location)
   region.update(
       entities=set(),
-      path_graph=green.await_coro(
-          protocol.server.loop.run_in_executor(None, compute_path_graph,
-                                               region)))
+      path_graph=compute_path_graph(region))
   r.regions.add(region)
 
   start_time = time.monotonic()

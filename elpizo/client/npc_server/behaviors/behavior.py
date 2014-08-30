@@ -48,7 +48,7 @@ class Behavior(object):
     pass
 
   def be_nice(self):
-    green.await_coro(asyncio.sleep(0))
+    self.sleep(0)
 
   def turn(self, direction):
     self.npc.direction = direction
@@ -64,14 +64,11 @@ class Behavior(object):
   def stop_move(self):
     self.send(packets_pb2.StopMovePacket())
 
+  def attack(self, *actor_ids):
+    self.send(packets_pb2.AttackPacket(actor_ids=actor_ids))
+
   def move_towards(self, target_location):
-    try:
-      path = networkx.astar_path(self.npc.realm.path_graph, self.npc.location,
-                                 target_location, manhattan)
-    except KeyError:
-      raise IncompletePathGraphError
-    except networkx.NetworkXNoPath:
-      raise PassabilityError
+    path = self.compute_path(target_location)
 
     if len(path) == 1:
       return
@@ -84,6 +81,17 @@ class Behavior(object):
 
     self.move()
 
-  def wait_move(self, scale=1):
-    green.await_coro(asyncio.sleep(1 / self.npc.speed * scale))
+  def compute_path(self, target_location):
+    try:
+      return networkx.astar_path(self.npc.realm.path_graph, self.npc.location,
+                                 target_location, manhattan)
+    except KeyError:
+      raise IncompletePathGraphError
+    except networkx.NetworkXNoPath:
+      raise PassabilityError
 
+  def sleep(self, secs):
+    green.await_coro(asyncio.sleep(secs))
+
+  def wait_move(self, scale=1):
+    self.sleep(1 / self.npc.speed * scale)
