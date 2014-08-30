@@ -485,7 +485,7 @@ class RendererVisitor extends entities.EntityVisitor {
     var width = baseWidth + 8;
 
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    this.ctx.fillRect(-width / 2, 0, width, 24);
+    this.ctx.fillRect(-width / 2, 0, width, 20);
 
     this.ctx.fillStyle = colors.makeColorForString(entity.name);
     this.ctx.textAlign = "center";
