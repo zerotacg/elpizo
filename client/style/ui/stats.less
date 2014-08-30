@@ -1,0 +1,48 @@
+.stats {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+
+  border-radius: 4px;
+
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px 16px;
+
+  display: flex;
+
+  .avatar {
+    margin-left: -16px;
+    height: 64px;
+    width: 64px;
+    margin-top: -8px;
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .name {
+    padding: 2px 0;
+  }
+
+  .health {
+    list-style: none;
+
+    padding: 2px 0;
+    margin: 0;
+    margin-left: -8px;
+
+    .tick {
+      width: 16px;
+      height: 16px;
+
+      background: #f44;
+      float: left;
+      margin-left: 8px;
+
+      border-radius: 4px;
+    }
+  }
+}

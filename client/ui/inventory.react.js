@@ -4,22 +4,26 @@ module React from "react";
 
 module sprites from "client/assets/sprites";
 
+var Item = React.createClass({
+  render: function () {
+    var sprite = sprites[["item", this.props.item.type].join(".")];
+    return <img src={sprite.getResource(this.props.resources).src} />;
+  }
+})
+
 export var Inventory = React.createClass({
   render: function () {
-    if (!this.props.show) {
+    var me = this.props.game.me;
+    if (me === null) {
       return null;
     }
 
     var resources = this.props.game.resources;
 
-    var items = this.props.game.me.inventory.map((item, i) => {
-      var sprite = sprites[["item", item.type].join(".")];
-      return <li key={i}>
-        <img src={sprite.getResource(resources).src} />
-      </li>;
-    })
+    var items = me.inventory.map((item, i) =>
+      <li key={i}><Item resources={resources} item={item} /></li>);
 
-    return <div className="inventory">
+    return <div className={"inventory " + (this.props.show ? "" : "hidden")}>
       <div className="heading">Inventory</div>
       <ul>{items}</ul>
     </div>;

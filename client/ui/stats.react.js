@@ -6,39 +6,52 @@ module renderer from "client/graphics/renderer";
 module colors from "client/util/colors";
 module sprites from "client/assets/sprites";
 
+var Avatar = React.createClass({
+  render: function () {
+    var paperdoll = renderer.getActorSpriteNames(this.props.me).map(
+      (spriteName) => {
+        var sprite = sprites[spriteName].standing.s;
+
+        var firstFrame = sprite.frames[0];
+        var img = sprite.getResource(this.props.resources);
+        if (img === null) {
+          return null;
+        }
+
+        return "url(\"" +
+               img.src + "\") " +
+               -firstFrame.x + "px " +
+               -firstFrame.y + "px " +
+               "no-repeat";
+      }).filter((x) => x !== null).reverse().join(", ");
+
+    return <div className="avatar" style={{background: paperdoll}} />;
+  }
+});
+
+var HealthTicks = React.createClass({
+  render: function () {
+    var ticks = [];
+    for (var i = 0; i < this.props.health; ++i) {
+      ticks.push(<li key={i} className="tick"></li>);
+    }
+    return <ul className="health">{ticks}</ul>;
+  }
+});
+
 export var Stats = React.createClass({
   render: function () {
-    var resources = this.props.game.resources;
     var me = this.props.game.me;
 
     if (me === null) {
       return null;
     }
 
-    var ticks = [];
-    for (var i = 0; i < me.health; ++i) {
-      ticks.push(<li key={i} className="tick"></li>);
-    }
-
-    //console.log(renderer.getActorSpriteNames(me));
-    var paperdoll = "";
-
-    if (this.props.game.resourcesLoaded) {
-      paperdoll = renderer.getActorSpriteNames(me).map((spriteName) => {
-        var sprite = sprites[spriteName].standing.s;
-        var firstFrame = sprite.frames[0];
-        return "url(\"" + sprite.getResource(resources).src + "\") " +
-               -firstFrame.x + "px " +
-               -firstFrame.y + "px " +
-               "no-repeat";
-      }).reverse().join(", ");
-    }
-
     return <div className="stats">
-      <div className="avatar" style={{background: paperdoll}}/>
+      <Avatar resources={this.props.game.resources} me={me} />
       <div className="info">
         <div className="name" style={{color: colors.makeColorForString(me.name)}}>{me.name}</div>
-        <ul className="health">{ticks}</ul>
+        <HealthTicks health={me.health} />
       </div>
     </div>;
   }

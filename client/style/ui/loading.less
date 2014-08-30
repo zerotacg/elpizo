@@ -47,3 +47,48 @@
     -webkit-transform: rotate(-360deg);
   }
 }
+
+.loading {
+  position: absolute;
+  left: 0;
+  top: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .error {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+
+    padding: 5px 0;
+
+    .inner {
+      width: 75%;
+
+      h1 {
+        margin: 0;
+        padding: 5px 0;
+        font-size: 3em;
+      }
+
+      pre {
+        border-left: 2px solid rgba(255, 255, 255, 0.4);
+        padding-left: 8px;
+        white-space: pre-wrap;
+      }
+    }
+  }
+
+  background: rgba(0, 0, 0, 0.8);
+
+  width: 100%;
+  height: 100%;
+}
