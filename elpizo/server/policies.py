@@ -53,7 +53,7 @@ class PlayerPolicy(object):
     self.server.bus.subscribe(self.player.bus_key, ("conversation",
                                                     self.player.name))
     self.server.bus.subscribe(self.player.bus_key, ("chatroom", "global"))
-    self.player.ephemeral = entities.Ephemeral()
+    self.player.ephemera = entities.Ephemera()
 
   def get_actor(self, origin):
     return self.player
@@ -98,7 +98,7 @@ class NPCPolicy(object):
         for entity in region.entities:
           if isinstance(entity, entities.NPC):
             self.npcs.add(entity)
-            entity.ephemeral = entities.Ephemeral()
+            entity.ephemera = entities.Ephemera()
 
             entity_protobuf = entity.to_protected_protobuf()
           else:

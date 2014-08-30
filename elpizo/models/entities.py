@@ -16,7 +16,7 @@ from elpizo.util import support
 logger = logging.getLogger(__name__)
 
 
-class Ephemeral(object):
+class Ephemera(object):
   def __init__(self):
     self.cache_bounds = geometry.Rectangle(0, 0, 0, 0)
     self.last_move_time = 0
