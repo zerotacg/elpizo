@@ -95,6 +95,11 @@ class Region(record.ProtobufRecord):
   def id(self):
     return "{x},{y}".format(x=self.location.x, y=self.location.y)
 
+  @property
+  def bounds(self):
+    return geometry.Rectangle(self.location.x, self.location.y,
+                              self.SIZE, self.SIZE)
+
   @id.setter
   def id(self, v):
     if v is None:
