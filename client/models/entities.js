@@ -56,6 +56,10 @@ export class Entity extends timing.Timed {
   accept(visitor) {
     visitor.visitEntity(this);
   }
+
+  getHeight() {
+    return this.bbox.height;
+  }
 }
 
 export class Building extends Entity {
@@ -338,6 +342,10 @@ export class Player extends Actor {
 
   isDamageableBy(attacker) {
     return !(attacker instanceof Player);
+  }
+
+  getHeight() {
+    return 2;
   }
 }
 

@@ -11,7 +11,7 @@ export var Bubble = React.createClass({
 
     return <div style={{
       transform: "translate(" + (position.x + 16 + "px") + "," +
-                                (position.y - 32 + "px") + ")"}}>
+                                (position.y - (entity.getHeight() - 1) * 32 + 16 + "px") + ")"}}>
       <div className="bubble">
         <div className="anchor">
           <div className="inner">
