@@ -1,23 +1,15 @@
 @-webkit-keyframes zoom {
-  0% {
-    opacity: 0;
-    transform: scale(0);
-  }
+  0% { opacity: 0; transform: scale(0); }
+  10% { opacity: 1.0; transform: scale(2); }
+  90% { opacity: 1.0; transform: scale(2); }
+  100% { opacity: 0; transform: scale(4); }
+}
 
-  10% {
-    opacity: 1.0;
-    transform: scale(2);
-  }
-
-  90% {
-    opacity: 1.0;
-    transform: scale(2);
-  }
-
-  100% {
-    opacity: 0;
-    transform: scale(4);
-  }
+@keyframes zoom {
+  0% { opacity: 0; transform: scale(0); }
+  10% { opacity: 1.0; transform: scale(2); }
+  90% { opacity: 1.0; transform: scale(2); }
+  100% { opacity: 0; transform: scale(4); }
 }
 
 .damage {
