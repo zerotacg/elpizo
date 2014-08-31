@@ -32,6 +32,9 @@ def on_discard(protocol, actor, message):
                        realm_id=actor.realm_id)
   protocol.server.store.entities.create(drop)
 
+  protocol.send(actor.id, packets_pb2.DiscardPacket(
+        inventory_index=message.inventory_index))
+
   drop.broadcast_to_regions(
       protocol.server.bus,
       packets_pb2.EntityPacket(entity=drop.to_public_protobuf()))
@@ -67,19 +70,27 @@ def on_modify_equipment(protocol, actor, message):
     # at all times).
     actor.broadcast_to_regions(
         protocol.server.bus,
-        packets_pb2.InventoryPacket(item=entity.to_public_protobuf()))
+        packets_pb2.InventoryPacket(item=equipment.to_protobuf()))
 
     actor.broadcast_to_regions(
         protocol.server.bus,
         packets_pb2.ModifyEquipmentPacket(slot=message.slot, inventory_index=0))
+
+    # We inform the client of equipment modifications and discards, such that
+    # their state is consistent.
+    protocol.send(actor.id, packets_pb2.ModifyEquipmentPacket(
+        slot=message.slot, inventory_index=message.inventory_index))
   elif current_equipment is not None:
     # Handle dequipping.
     setattr(actor, slot_name, None)
     actor.inventory.append(current_equipment)
-    protocol.send(actor.id,
-                  packets_pb2.InventoryPacket(
-                      item=current_equipment.to_protobuf()))
 
     actor.broadcast_to_regions(
         protocol.server.bus,
         packets_pb2.ModifyEquipmentPacket(slot=message.slot))
+
+    # We don't inform the client they've dequipped, because that's safer than
+    # allowing them to assume they've equipped.
+    protocol.send(actor.id,
+                  packets_pb2.InventoryPacket(
+                      item=current_equipment.to_protobuf()))

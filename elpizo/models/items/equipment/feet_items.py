@@ -1,5 +1,9 @@
 from elpizo.models.items import equipment
 
 
-class BrownShoes(equipment.FeetItem):
+class FeetItem(equipment.Equipment):
+  SLOT = 3
+
+
+class BrownShoes(FeetItem):
   TYPE = "brown_shoes"

@@ -1,5 +1,9 @@
 from elpizo.models.items import equipment
 
 
-class WhiteLongsleeveShirt(equipment.TorsoItem):
+class TorsoItem(equipment.Equipment):
+  SLOT = 1
+
+
+class WhiteLongsleeveShirt(TorsoItem):
   TYPE = "white_longsleeve_shirt"

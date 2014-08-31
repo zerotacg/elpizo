@@ -1,11 +1,10 @@
 module exports from "client/exports";
 
-module titles from "client/constants/titles";
 module models from "client/models";
 module entities from "client/models/entities";
 module geometry from "client/models/geometry";
+module equipment from "client/models/items/equipment";
 module itemRegistry from "client/models/items/registry";
-module items from "client/models/items";
 module realm from "client/models/realm";
 module packets from "client/protos/packets";
 module damage from "client/ui/overlay/damage.react";
@@ -147,12 +146,11 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.INVENTORY, withEntity((entity, message) => {
     var item = itemRegistry.makeItem(message.item);
-    var title = titles.items[item.type];
     entity.inventory.push(item);
 
     if (entity === game.me) {
       game.appendToLog(log.InfoMessageEntry({
-          text: "You put the " + title.singular + " in your bag."
+          text: "You put the " + item.getSingularName() + " in your bag."
       }));
     }
   }));
@@ -195,12 +193,19 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.MODIFY_EQUIPMENT, withEntity((entity, message) => {
-    var slot = items.Equipment.SLOT_NAMES[message.slot];
+    var slot = equipment.Equipment.SLOT_NAMES[message.slot];
 
     if (message.inventoryIndex !== null) {
       // Handle equipping.
-      entity[slot] = entity.inventory[message.inventoryIndex];
-      entity.discard(message.inventoryIndex)
+      var item = entity.inventory[message.inventoryIndex];
+      entity[slot] = item;
+      entity.discard(message.inventoryIndex);
+
+      if (entity === game.me) {
+        game.appendToLog(log.InfoMessageEntry({
+            text: "You equip the " + item.getSingularName() + "."
+        }));
+      }
     } else {
       // Handle dequipping.
       entity[slot] = null;

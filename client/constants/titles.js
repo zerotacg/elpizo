@@ -23,35 +23,3 @@ export var terrain = {
     "tropical_rain_forest": "Tropical Rainforest",
     "tropical_seasonal_forest": "Savanna"
 };
-
-export var items = {
-    "carrot": {
-        singular: "carrot",
-        plural: "carrots",
-        indefinite: "a carrot"
-    },
-
-    "white_longsleeve_shirt": {
-        singular: "white long-sleeved shirt",
-        plural: "white long-sleeved shirts",
-        indefinite: "a white long-sleeved shirt",
-    },
-
-    "teal_pants": {
-        singular: "teal pants",
-        plural: "teal pants",
-        indefinite: "a pair of teal pants"
-    },
-
-    "brown_shoes": {
-        singular: "brown shoes",
-        plural: "brown shoes",
-        indefinite: "a pair of brown shoes"
-    },
-
-    "dagger": {
-        singular: "dagger",
-        plural: "daggers",
-        indefinite: "a dagger"
-    }
-};

@@ -3,18 +3,19 @@
 module React from "react";
 
 module sprites from "client/assets/sprites";
-module titles from "client/constants/titles";
 module entities from "client/models/entities";
 module items from "client/models/items";
+module equipment from "client/models/items/equipment";
 module packets from "client/protos/packets";
 
 var Item = React.createClass({
   render: function () {
     var displayName = "(no item)";
     var background = null;
+    var onClick = () => { };
 
     if (this.props.item !== null) {
-      displayName = titles.items[this.props.item.type].indefinite;
+      displayName = this.props.item.getIndefiniteName();
 
       var sprite = sprites[["item", this.props.item.type].join(".")];
       var img = sprite.getResource(this.props.resources);
@@ -24,9 +25,11 @@ var Item = React.createClass({
                    -firstFrame.x + "px " +
                    -firstFrame.y + "px " +
                    "no-repeat";
+
+      onClick = this.props.onClick;
     }
 
-    return <a className="item" onClick={this.props.onClick} title={displayName}>
+    return <a className="item" onClick={onClick} title={displayName}>
       <div className="sprite" style={{background: background}} />
       <div className="title">{displayName}</div>
     </a>;
@@ -34,20 +37,37 @@ var Item = React.createClass({
 })
 
 export var Inventory = React.createClass({
-  discard: function (i) {
+  drop: function (i) {
     this.props.game.protocol.send(new packets.DiscardPacket({
         inventoryIndex: i
     }));
-    this.props.game.me.discard(i);
   },
 
   dequip: function (slot) {
-    var equipment = this.props.game.me[slot];
+    var item = this.props.game.me[slot];
     this.props.game.me[slot] = null;
 
     this.props.game.protocol.send(new packets.ModifyEquipmentPacket({
-        slot: items.Equipment.SLOTS[slot],
+        slot: item.getSlot(),
         inventoryIndex: null
+    }));
+  },
+
+  equip: function (i) {
+    var item = this.props.game.me.inventory[i];
+
+    var slot = equipment.Equipment.SLOT_NAMES[item.getSlot()]
+    if (this.props.game.me[slot] !== null) {
+      // Make sure we dequip the item in the slot first.
+      this.props.game.protocol.send(new packets.ModifyEquipmentPacket({
+          slot: item.getSlot(),
+          inventoryIndex: null
+      }));
+    }
+
+    this.props.game.protocol.send(new packets.ModifyEquipmentPacket({
+        slot: item.getSlot(),
+        inventoryIndex: i
     }));
   },
 
@@ -61,8 +81,11 @@ export var Inventory = React.createClass({
 
     var items = me.inventory.map((item, i) =>
       <li key={i}>
-        <Item resources={resources} item={item}
-              onClick={this.discard.bind(this, i)} />
+        <Item resources={resources} item={item} />
+        <ul className="menu">
+          <li><a onClick={this.equip.bind(this, i)}>Equip</a></li>
+          <li><a onClick={this.drop.bind(this, i)}>Drop</a></li>
+        </ul>
       </li>);
 
     return <div className={"inventory"+ (this.props.show ? "" : " hidden")}>
