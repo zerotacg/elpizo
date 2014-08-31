@@ -220,6 +220,13 @@ export class Actor extends Entity {
     return Actor.DEFAULT_ATTACK_COOLDOWN;
   }
 
+  getAdjacentInteractions() {
+    return [{
+      title: "???",
+      f: () => { }
+    }];
+  }
+
   update(dt) {
     var moveTimer = this.getTimer("move");
     var lastRemaining = moveTimer.remaining;
