@@ -1,4 +1,5 @@
 module items from "client/models/items";
+module packets from "client/protos/packets";
 
 export class Equipment extends items.Item {
   constructor(message) {
@@ -6,8 +7,31 @@ export class Equipment extends items.Item {
     message = message[".Equipment.ext"];
   }
 
-  accept(visitor) {
-    visitor.visitEquipment(this);
+  doEquip(protocol, me, index) {
+    var item = me.inventory[index];
+    var slot = Equipment.SLOT_NAMES[item.getSlot()];
+
+    if (me[slot] !== null) {
+      // Make sure we dequip the item in the slot first.
+      protocol.send(new packets.ModifyEquipmentPacket({
+          slot: item.getSlot(),
+          inventoryIndex: null
+      }));
+    }
+
+    protocol.send(new packets.ModifyEquipmentPacket({
+        slot: item.getSlot(),
+        inventoryIndex: index
+    }));
+  }
+
+  getInventoryActions() {
+    var actions = super.getInventoryActions();
+    actions.unshift({
+        title: "Equip",
+        f: this.doEquip.bind(this)
+    });
+    return actions;
   }
 }
 

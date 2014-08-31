@@ -37,14 +37,10 @@ var HealthTicks = React.createClass({
 
 export var Stats = React.createClass({
   render: function () {
-    var me = this.props.game.me;
-
-    if (me === null) {
-      return null;
-    }
+    var me = this.props.me;
 
     return <div className="stats">
-      <Avatar resources={this.props.game.resources} me={me} />
+      <Avatar resources={this.props.resources} me={me} />
       <div className="info">
         <div className="name" style={{color: colors.makeColorForString(me.name)}}>{me.name}</div>
         <HealthTicks health={me.health} />

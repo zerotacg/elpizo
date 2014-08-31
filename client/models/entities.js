@@ -16,6 +16,10 @@ export class Entity extends timing.Timed {
     this.direction = message.direction;
   }
 
+  getTitle() {
+    return "(unknown)";
+  }
+
   getBounds() {
     return this.bbox.offset(this.location);
   }
@@ -36,13 +40,15 @@ export class Entity extends timing.Timed {
     super.update(dt);
   }
 
-  onAdjacentInteract(avatar, protocol) {
+  getAdjacentInteractions() {
+    return [];
   }
 
-  onIntersectingInteract(avatar, protocol) {
+  getIntersectingInteractions() {
+    return [];
   }
 
-  onContact(avatar, protocol) {
+  onContact(protocol, me) {
   }
 
   isPassableBy(entity, direction) {
@@ -79,9 +85,23 @@ export class Drop extends Entity {
     this.item = itemRegistry.makeItem(message.item);
   }
 
-  onIntersectingInteract(avatar, protocol) {
-    // Attempt to pick up the drop.
+  getTitle() {
+    return this.item.getIndefiniteTitle();
+  }
+
+  doPickUp(protocol, me) {
     protocol.send(new packets.PickUpPacket({dropId: this.id}));
+  }
+
+  getIntersectingInteractions() {
+    var interactions = super.getIntersectingInteractions();
+
+    interactions.push({
+        title: "Pick up",
+        f: this.doPickUp.bind(this)
+    });
+
+    return interactions;
   }
 
   accept(visitor) {
@@ -146,6 +166,10 @@ export class Actor extends Entity {
     this.addTimer("move", new timing.CountdownTimer());
     this.addTimer("death", new timing.CountdownTimer());
     this.addTimer("turn", new timing.CountdownTimer());
+  }
+
+  getTitle() {
+    return this.name;
   }
 
   discard(index) {
@@ -233,6 +257,11 @@ Actor.DEFAULT_ATTACK_COOLDOWN = 2;
 Actor.TURN_TIME = 0.1;
 
 export class Player extends Actor {
+  constructor(message) {
+    super(message);
+    this.interactions = [];
+  }
+
   doAttack(protocol) {
     // Attack.
     var targetBounds = this.bbox.offset(this.getTargetLocation());
@@ -264,30 +293,43 @@ export class Player extends Actor {
     var interactions = [];
     [].push.apply(interactions, intersecting.map((entity) => ({
         entity: entity,
-        intersecting: true
-    })));
+        actions: entity.getIntersectingInteractions()
+    })).filter((group) => group.actions.length > 0));
     [].push.apply(interactions, adjacents.map((entity) => ({
         entity: entity,
-        intersecting: false
-    })));
+        actions: entity.getAdjacentInteractions()
+    })).filter((group) => group.actions.length > 0));
 
-    console.log(interactions);
+    this.interactions = interactions;
+  }
 
-    if (interactions.length === 0) {
+  doMove(protocol, direction) {
+    var didMove = false;
+    if (this.direction !== direction) {
+      // Send a turn packet.
+      this.turn(direction);
+      protocol.send(new packets.TurnPacket({direction: direction}));
+      this.getTimer("turn").reset(Actor.TURN_TIME);
       return;
     }
 
-    if (interactions.length > 1) {
-      console.warn("NOT IMPLEMENTED: MULTIPLE ENTITY INTERACTION");
-      return;
-    }
+    var targetLocation = this.getTargetLocation();
+    var targetBounds = this.bbox.offset(targetLocation);
+    var targetEntities = this.realm.getAllEntities().filter((entity) =>
+        (entity.getBounds().intersects(targetBounds) ||
+        entity.getBounds().intersects(this.getBounds())) && entity !== this);
 
-    var head = interactions[0];
-    if (head.intersecting) {
-      head.entity.onIntersectingInteract(this, protocol);
-    } else {
-      head.entity.onAdjacentInteract(this, protocol);
+    // Movement mode logic.
+    if (this.realm.isPassableBy(this, targetBounds, this.direction)) {
+      this.move();
+      didMove = true;
+
+      protocol.send(new packets.MovePacket({location: targetLocation}));
+
+      targetEntities.forEach((entity) =>
+        entity.onContact(protocol, this));
     }
+    return didMove;
   }
 
   updateAsAvatar(dt, inputState, protocol) {
@@ -296,11 +338,14 @@ export class Player extends Actor {
       return;
     }
 
-    if (inputState.stick(input.Key.X)) {
-      this.doAttack(protocol);
-      return;
-    } else if (inputState.stick(input.Key.Z)) {
+    if (inputState.stick(input.Key.Z)) {
       this.doInteract(protocol);
+      return;
+    }
+
+    if (inputState.stick(input.Key.X)) {
+      this.interactions = [];
+      this.doAttack(protocol);
       return;
     }
 
@@ -314,30 +359,8 @@ export class Player extends Actor {
     var didMove = false;
 
     if (direction !== null) {
-      if (this.direction !== direction) {
-        // Send a turn packet.
-        this.turn(direction);
-        protocol.send(new packets.TurnPacket({direction: direction}));
-        this.getTimer("turn").reset(Actor.TURN_TIME);
-        return;
-      }
-
-      var targetLocation = this.getTargetLocation();
-      var targetBounds = this.bbox.offset(targetLocation);
-      var targetEntities = this.realm.getAllEntities().filter((entity) =>
-          (entity.getBounds().intersects(targetBounds) ||
-          entity.getBounds().intersects(this.getBounds())) && entity !== this);
-
-      // Movement mode logic.
-      if (this.realm.isPassableBy(this, targetBounds, this.direction)) {
-        this.move();
-        didMove = true;
-
-        protocol.send(new packets.MovePacket({location: targetLocation}));
-
-        targetEntities.forEach((entity) =>
-          entity.onContact(this, protocol));
-      }
+      this.interactions = [];
+      didMove = this.doMove(protocol, direction);
     }
 
     if (!didMove && this.isMoving) {

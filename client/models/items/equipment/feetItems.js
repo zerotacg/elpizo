@@ -11,15 +11,15 @@ export class FeetItem extends equipment.Equipment {
 }
 
 export class BrownShoes extends FeetItem {
-  getSingularName() {
+  getSingularTitle() {
     return "brown shoes";
   }
 
-  getPluralName() {
+  getPluralTitle() {
     return "brown shoes";
   }
 
-  getIndefiniteName() {
+  getIndefiniteTitle() {
     return "a pair of brown shoes";
   }
 }

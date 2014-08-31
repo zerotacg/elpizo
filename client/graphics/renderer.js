@@ -58,11 +58,10 @@ export class Renderer extends events.EventEmitter {
     this.components = {};
   }
 
-  addTimedComponent(id, comp, timer) {
+  addComponent(id, comp) {
     delete this.components[id];
 
     objects.extend(comp.props, {
-        timer: timer,
         renderer: this,
         key: this.nextComponentKey
     });
@@ -72,12 +71,13 @@ export class Renderer extends events.EventEmitter {
   }
 
   addChatBubble(entity, message) {
-    this.addTimedComponent(
+    this.addComponent(
         ["bubble", entity.id].join("."),
         bubble.Bubble({
             text: message,
-            entity: entity
-        }), new timing.CountdownTimer(3));
+            entity: entity,
+            timer: new timing.CountdownTimer(3)
+        }));
   }
 
   setDebug(debug) {
@@ -186,6 +186,10 @@ export class Renderer extends events.EventEmitter {
       var comp = components[k];
 
       var timer = comp.props.timer;
+      if (timer === null) {
+        return;
+      }
+
       timer.update(dt);
       if (!timer.isStopped()) {
         this.components[k] = comp;

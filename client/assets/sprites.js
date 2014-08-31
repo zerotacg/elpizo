@@ -33,7 +33,7 @@ export default = {
   "item.dagger":
       new sprite.Sprite("equipment/male/dagger.png",
                         new geometry.Vector2(32, 32),
-                        [new geometry.Vector2(24, 64 * 10 + 32)],
+                        [new geometry.Vector2(22, 64 * 10 + 32)],
                         new geometry.Vector2(0, 0), 0),
 
   "body.male.light":

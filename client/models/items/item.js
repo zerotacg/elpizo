@@ -1,24 +1,34 @@
 module items from "client/protos/items";
+module packets from "client/protos/packets";
 
 export class Item {
   constructor(message) {
     this.type = message.type;
   }
 
-  getSingularName() {
+  getSingularTitle() {
     return "(type: " + this.type + ", inflection: singular)";
   }
 
-  getPluralName() {
+  getPluralTitle() {
     return "(type: " + this.type + ", inflection: plural)";
   }
 
-  getIndefiniteName() {
+  getIndefiniteTitle() {
     return "(type: " + this.type + ", inflection: indefinite)";
   }
 
-  accept(visitor) {
-    visitor.visitItem(this);
+  doDrop(protocol, me, index) {
+    protocol.send(new packets.DiscardPacket({
+        inventoryIndex: index
+    }));
+  }
+
+  getInventoryActions() {
+    return [{
+        title: "Drop",
+        f: this.doDrop.bind(this)
+    }];
   }
 }
 

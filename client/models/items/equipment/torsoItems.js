@@ -11,15 +11,15 @@ export class TorsoItem extends equipment.Equipment {
 }
 
 export class WhiteLongsleeveShirt extends TorsoItem {
-  getSingularName() {
+  getSingularTitle() {
     return "white long-sleeved shirt";
   }
 
-  getPluralName() {
+  getPluralTitle() {
     return "white long-sleeved shirts";
   }
 
-  getIndefiniteName() {
+  getIndefiniteTitle() {
     return "a white long-sleeved shirt";
   }
 }

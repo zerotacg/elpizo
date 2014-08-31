@@ -12,15 +12,15 @@ class Weapon extends equipment.Equipment {
 }
 
 export class Dagger extends Weapon {
-  getSingularName() {
+  getSingularTitle() {
     return "dagger";
   }
 
-  getPluralName() {
+  getPluralTitle() {
     return "daggers";
   }
 
-  getIndefiniteName() {
+  getIndefiniteTitle() {
     return "a dagger";
   }
 }

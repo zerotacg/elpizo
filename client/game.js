@@ -235,6 +235,10 @@ export class Game extends events.EventEmitter {
           !this.uiRootComponent.props.showInventory;
     }
 
+    if (this.inputState.stick(input.Key.ESCAPE)) {
+      this.uiRootComponent.props.showInventory = false;
+    }
+
     // Update the realm first.
     if (this.realm !== null) {
       this.realm.update(dt);

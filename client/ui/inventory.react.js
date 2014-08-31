@@ -8,14 +8,14 @@ module items from "client/models/items";
 module equipment from "client/models/items/equipment";
 module packets from "client/protos/packets";
 
-var Item = React.createClass({
+export var Item = React.createClass({
   render: function () {
-    var displayName = "(no item)";
+    var title = "(no item)";
     var background = null;
     var onClick = () => { };
 
     if (this.props.item !== null) {
-      displayName = this.props.item.getIndefiniteName();
+      title = this.props.item.getIndefiniteTitle();
 
       var sprite = sprites[["item", this.props.item.type].join(".")];
       var img = sprite.getResource(this.props.resources);
@@ -29,89 +29,45 @@ var Item = React.createClass({
       onClick = this.props.onClick;
     }
 
-    return <a className="item" onClick={onClick} title={displayName}>
-      <div className="sprite" style={{background: background}} />
-      <div className="title">{displayName}</div>
+    return <a className="item" onClick={onClick} title={title}>
+      <span className="sprite" style={{background: background}} />
+      <span className="title">{title}</span>
     </a>;
   }
 })
 
-class ItemMenuVisitor {
-  constructor(comp, i) {
-    this.comp = comp;
-    this.i = i;
-    this.items = [];
-  }
-
-  visitItem(item) {
-    this.items.push(<li key="drop">
-      <a onClick={this.comp.drop.bind(this.comp, this.i)}>Drop</a>
-    </li>);
-  }
-
-  visitEquipment(item) {
-    this.items.push(<li key="equip">
-      <a onClick={this.comp.equip.bind(this.comp, this.i)}>Equip</a>
-    </li>);
-
-    this.visitItem(item);
-  }
-}
-
 export var Inventory = React.createClass({
-  drop: function (i) {
-    this.props.game.protocol.send(new packets.DiscardPacket({
-        inventoryIndex: i
-    }));
-  },
-
   dequip: function (slot) {
-    var item = this.props.game.me[slot];
-    this.props.game.me[slot] = null;
+    var item = this.props.me[slot];
+    this.props.me[slot] = null;
 
-    this.props.game.protocol.send(new packets.ModifyEquipmentPacket({
+    this.props.protocol.send(new packets.ModifyEquipmentPacket({
         slot: item.getSlot(),
         inventoryIndex: null
     }));
   },
 
-  equip: function (i) {
-    var item = this.props.game.me.inventory[i];
-
-    var slot = equipment.Equipment.SLOT_NAMES[item.getSlot()]
-    if (this.props.game.me[slot] !== null) {
-      // Make sure we dequip the item in the slot first.
-      this.props.game.protocol.send(new packets.ModifyEquipmentPacket({
-          slot: item.getSlot(),
-          inventoryIndex: null
-      }));
-    }
-
-    this.props.game.protocol.send(new packets.ModifyEquipmentPacket({
-        slot: item.getSlot(),
-        inventoryIndex: i
-    }));
-  },
-
   render: function () {
-    var me = this.props.game.me;
-    if (me === null) {
-      return null;
-    }
+    var me = this.props.me;
 
-    var resources = this.props.game.resources;
+    var resources = this.props.resources;
 
     var items = me.inventory.map((item, i) => {
-      var visitor = new ItemMenuVisitor(this, i);
-      item.accept(visitor);
+      var menu = item.getInventoryActions().map((action, j) =>
+        <li key={j}>
+          <a onClick={action.f.bind(item,
+                                    this.props.protocol,
+                                    this.props.me,
+                                    i)}>{action.title}</a>
+        </li>);
 
       return <li key={i}>
         <Item resources={resources} item={item} />
-        <ul className="menu">{visitor.items}</ul>
+        <ul className="actions">{menu}</ul>
       </li>
     }).reverse();
 
-    return <div className={"inventory"+ (this.props.show ? "" : " hidden")}>
+    return <div className={"inventory" + (this.props.show ? "" : " hidden")}>
       <div className="wrapper">
         <div className="bag">
           <div className="heading">Bag</div>

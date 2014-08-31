@@ -150,7 +150,7 @@ export function install(game) {
 
     if (entity === game.me) {
       game.appendToLog(log.InfoMessageEntry({
-          text: "You put the " + item.getSingularName() + " in your bag."
+          text: "You put the " + item.getSingularTitle() + " in your bag."
       }));
     }
   }));
@@ -161,13 +161,13 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.DAMAGE, withEntity((entity, message) => {
     entity.health -= message.damage;
-    renderer.addTimedComponent(
+    renderer.addComponent(
         ["damage", entity.id].join("."),
         damage.DamageNumber({
             damage: message.damage,
-            entity: entity
-        }),
-        new timing.CountdownTimer(1));
+            entity: entity,
+            timer: new timing.CountdownTimer(1)
+        }));
   }));
 
   protocol.on(packets.Packet.Type.CHAT, (origin, message) => {
@@ -203,7 +203,7 @@ export function install(game) {
 
       if (entity === game.me) {
         game.appendToLog(log.InfoMessageEntry({
-            text: "You equip the " + item.getSingularName() + "."
+            text: "You equip the " + item.getSingularTitle() + "."
         }));
       }
     } else {

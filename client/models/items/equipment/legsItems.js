@@ -11,15 +11,15 @@ export class LegsItem extends equipment.Equipment {
 }
 
 export class TealPants extends LegsItem {
-  getSingularName() {
+  getSingularTitle() {
     return "teal pants";
   }
 
-  getPluralName() {
+  getPluralTitle() {
     return "teal pants";
   }
 
-  getIndefiniteName() {
+  getIndefiniteTitle() {
     return "a pair of teal pants";
   }
 }
