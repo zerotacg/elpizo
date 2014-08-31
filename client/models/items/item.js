@@ -6,12 +6,12 @@ export class Item {
     this.type = message.type;
   }
 
-  getSingularTitle() {
-    return "(type: " + this.type + ", inflection: singular)";
-  }
-
   getPluralTitle() {
     return "(type: " + this.type + ", inflection: plural)";
+  }
+
+  getDefiniteTitle() {
+    return "(type: " + this.type + ", inflection: definite)";
   }
 
   getIndefiniteTitle() {

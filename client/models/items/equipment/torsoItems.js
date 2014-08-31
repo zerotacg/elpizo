@@ -8,15 +8,19 @@ export class TorsoItem extends equipment.Equipment {
   getSlot() {
     return 1;
   }
+
+  getEquipVerb() {
+    return "put on";
+  }
 }
 
 export class WhiteLongsleeveShirt extends TorsoItem {
-  getSingularTitle() {
-    return "white long-sleeved shirt";
-  }
-
   getPluralTitle() {
     return "white long-sleeved shirts";
+  }
+
+  getDefiniteTitle() {
+    return "the white long-sleeved shirt";
   }
 
   getIndefiniteTitle() {

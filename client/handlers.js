@@ -1,5 +1,3 @@
-module exports from "client/exports";
-
 module models from "client/models";
 module entities from "client/models/entities";
 module geometry from "client/models/geometry";
@@ -146,7 +144,7 @@ export function install(game) {
 
     if (entity === game.me) {
       game.appendToLog(log.InfoMessageEntry({
-          text: "You dropped " + item.getIndefiniteTitle() + "."
+          text: "You drop " + item.getDefiniteTitle() + "."
       }));
     }
   }));
@@ -157,7 +155,7 @@ export function install(game) {
 
     if (entity === game.me) {
       game.appendToLog(log.InfoMessageEntry({
-          text: "You put the " + item.getSingularTitle() + " in your bag."
+          text: "You put " + item.getDefiniteTitle() + " in your bag."
       }));
     }
   }));
@@ -210,7 +208,8 @@ export function install(game) {
 
       if (entity === game.me) {
         game.appendToLog(log.InfoMessageEntry({
-            text: "You equip the " + item.getSingularTitle() + "."
+            text: "You " + item.getEquipVerb() + " " + item.getDefiniteTitle() +
+                  "."
         }));
       }
     } else {

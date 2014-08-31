@@ -9,15 +9,19 @@ class Weapon extends equipment.Equipment {
   getSlot() {
     return 4;
   }
+
+  getEquipVerb() {
+    return "wield";
+  }
 }
 
 export class Dagger extends Weapon {
-  getSingularTitle() {
-    return "dagger";
-  }
-
   getPluralTitle() {
     return "daggers";
+  }
+
+  getDefiniteTitle() {
+    return "the dagger";
   }
 
   getIndefiniteTitle() {

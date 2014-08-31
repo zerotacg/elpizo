@@ -8,15 +8,19 @@ export class LegsItem extends equipment.Equipment {
   getSlot() {
     return 2;
   }
+
+  getEquipVerb() {
+    return "put on";
+  }
 }
 
 export class TealPants extends LegsItem {
-  getSingularTitle() {
+  getPluralTitle() {
     return "teal pants";
   }
 
-  getPluralTitle() {
-    return "teal pants";
+  getDefiniteTitle() {
+    return "the pair of teal pants";
   }
 
   getIndefiniteTitle() {
