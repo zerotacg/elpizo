@@ -5,6 +5,10 @@ export class Equipment extends items.Item {
     super(message);
     message = message[".Equipment.ext"];
   }
+
+  accept(visitor) {
+    visitor.visitEquipment(this);
+  }
 }
 
 Equipment.SLOT_NAMES = {

@@ -36,6 +36,28 @@ var Item = React.createClass({
   }
 })
 
+class ItemMenuVisitor {
+  constructor(comp, i) {
+    this.comp = comp;
+    this.i = i;
+    this.items = [];
+  }
+
+  visitItem(item) {
+    this.items.push(<li key="drop">
+      <a onClick={this.comp.drop.bind(this.comp, this.i)}>Drop</a>
+    </li>);
+  }
+
+  visitEquipment(item) {
+    this.items.push(<li key="equip">
+      <a onClick={this.comp.equip.bind(this.comp, this.i)}>Equip</a>
+    </li>);
+
+    this.visitItem(item);
+  }
+}
+
 export var Inventory = React.createClass({
   drop: function (i) {
     this.props.game.protocol.send(new packets.DiscardPacket({
@@ -80,18 +102,14 @@ export var Inventory = React.createClass({
     var resources = this.props.game.resources;
 
     var items = me.inventory.map((item, i) => {
-      if (item === null) {
-        return null;
-      }
+      var visitor = new ItemMenuVisitor(this, i);
+      item.accept(visitor);
 
       return <li key={i}>
         <Item resources={resources} item={item} />
-        <ul className="menu">
-          <li><a onClick={this.equip.bind(this, i)}>Equip</a></li>
-          <li><a onClick={this.drop.bind(this, i)}>Drop</a></li>
-        </ul>
+        <ul className="menu">{visitor.items}</ul>
       </li>
-    }).filter((node) => node !== null);
+    }).reverse();
 
     return <div className={"inventory"+ (this.props.show ? "" : " hidden")}>
       <div className="wrapper">

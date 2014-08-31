@@ -16,6 +16,10 @@ export class Item {
   getIndefiniteName() {
     return "(type: " + this.type + ", inflection: indefinite)";
   }
+
+  accept(visitor) {
+    visitor.visitItem(this);
+  }
 }
 
 Item.REGISTRY = {};
