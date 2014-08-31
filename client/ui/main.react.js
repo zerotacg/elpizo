@@ -25,24 +25,24 @@ export var UI = React.createClass({
         <log.Log game={this.props.game} log={this.props.game.log.slice()} />
         <debug.Debug game={this.props.game} />
       </div>;
-    }
 
-    if (this.props.game.me !== null) {
-      var interactionsMenu =
-          this.props.game.me.interactions.length > 0 ?
-          <interactions.InteractionsMenu me={this.props.game.me}
-                                         protocol={this.props.game.protocol} /> :
-          null;
+      if (this.props.game.me !== null) {
+        var interactionsMenu =
+            this.props.game.me.interactions.length > 0 ?
+            <interactions.InteractionsMenu me={this.props.game.me}
+                                           protocol={this.props.game.protocol} /> :
+            null;
 
-      hudElements = <div>
-        <stats.Stats me={this.props.game.me}
-                     resources={this.props.game.resources} />
-        <inventory.Inventory me={this.props.game.me}
-                             resources={this.props.game.resources}
-                             protocol={this.props.game.protocol}
-                             show={this.props.showInventory} />
-        {interactionsMenu}
-      </div>;
+        hudElements = <div>
+          <stats.Stats me={this.props.game.me}
+                       resources={this.props.game.resources} />
+          <inventory.Inventory me={this.props.game.me}
+                               resources={this.props.game.resources}
+                               protocol={this.props.game.protocol}
+                               show={this.props.showInventory} />
+          {interactionsMenu}
+        </div>;
+      }
     }
 
     // We copy the log because we need to know if it changed length.
