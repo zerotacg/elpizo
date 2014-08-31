@@ -78,7 +78,7 @@ export var InteractionsMenu = React.createClass({
         <input type="radio" name="item" id="interactions-menu-cancel"
                onChange={this.setAction.bind(this, null)}
                checked={this.state.actionIndex === null} />
-        <label htmlFor="interactions-menu-cancel"
+        <label htmlFor="interactions-menu-cancel" className="cancel"
                onClick={this.runAction.bind(this, null)}>Cancel</label>
         <button type="submit" tabIndex="-1"></button>
       </form>

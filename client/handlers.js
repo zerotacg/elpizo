@@ -141,7 +141,14 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.DISCARD, withEntity((entity, message) => {
+    var item = entity.inventory[message.inventoryIndex];
     entity.discard(message.inventoryIndex);
+
+    if (entity === game.me) {
+      game.appendToLog(log.InfoMessageEntry({
+          text: "You dropped " + item.getIndefiniteTitle() + "."
+      }));
+    }
   }));
 
   protocol.on(packets.Packet.Type.INVENTORY, withEntity((entity, message) => {

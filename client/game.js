@@ -225,7 +225,8 @@ export class Game extends events.EventEmitter {
   }
 
   update(dt) {
-    if (this.inputState.stick(input.Key.RETURN)) {
+    if (this.inputState.stick(input.Key.RETURN) ||
+        this.inputState.stick(input.Key.T)) {
       window.setTimeout(() => this.uiRoot.querySelector(".log input").focus(),
                         0);
     }
