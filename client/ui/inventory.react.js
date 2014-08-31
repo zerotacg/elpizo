@@ -63,6 +63,10 @@ export var Inventory = React.createClass({
           slot: item.getSlot(),
           inventoryIndex: null
       }));
+
+      // We set the inventory to null here, so we don't mess up indexes (and
+      // we'll get a DiscardPacket telling us to get rid of this index later).
+      this.props.game.me.inventory[i] = null;
     }
 
     this.props.game.protocol.send(new packets.ModifyEquipmentPacket({
@@ -79,14 +83,19 @@ export var Inventory = React.createClass({
 
     var resources = this.props.game.resources;
 
-    var items = me.inventory.map((item, i) =>
-      <li key={i}>
+    var items = me.inventory.map((item, i) => {
+      if (item === null) {
+        return null;
+      }
+
+      return <li key={i}>
         <Item resources={resources} item={item} />
         <ul className="menu">
           <li><a onClick={this.equip.bind(this, i)}>Equip</a></li>
           <li><a onClick={this.drop.bind(this, i)}>Drop</a></li>
         </ul>
-      </li>);
+      </li>
+    }).filter((node) => node !== null);
 
     return <div className={"inventory"+ (this.props.show ? "" : " hidden")}>
       <div className="wrapper">
