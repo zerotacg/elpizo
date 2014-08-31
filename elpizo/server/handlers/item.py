@@ -25,12 +25,13 @@ def on_pick_up(protocol, actor, message):
 
 
 def on_discard(protocol, actor, message):
-  item = actor.inventory[message.inventory_index]
   try:
-    del actor.inventory[message.inventory_index]
+    item = actor.inventory[message.inventory_index]
   except IndexError:
     # The client probably has a stale list.
-    pass
+    return
+
+  del actor.inventory[message.inventory_index]
 
   drop = entities.Drop(item=item, location=actor.location,
                        realm_id=actor.realm_id)
