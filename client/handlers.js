@@ -200,12 +200,6 @@ export function install(game) {
       var item = entity.inventory[message.inventoryIndex];
       entity[slot] = item;
       entity.discard(message.inventoryIndex);
-
-      if (entity === game.me) {
-        game.appendToLog(log.InfoMessageEntry({
-            text: "You equip the " + item.getSingularName() + "."
-        }));
-      }
     } else {
       // Handle dequipping.
       entity[slot] = null;
