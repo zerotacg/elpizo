@@ -6,9 +6,11 @@ from elpizo import server
 from elpizo.models import entities
 from elpizo.models import geometry
 from elpizo.models import realm
-from elpizo.models.items import equipment
 from elpizo.models.items import restorative
-from elpizo.models.items import weapons
+from elpizo.models.items.equipment import feet_items
+from elpizo.models.items.equipment import legs_items
+from elpizo.models.items.equipment import torso_items
+from elpizo.models.items.equipment import weapons
 from elpizo.util import green
 
 
@@ -120,9 +122,9 @@ def initdb(app):
       realm_id=windvale.id,
       location=geometry.Vector2(0, 0),
       inventory=[],
-      torso_item=equipment.WhiteLongsleeveShirt(),
-      legs_item=equipment.TealPants(),
-      feet_item=equipment.BrownShoes(),
+      torso_item=torso_items.WhiteLongsleeveShirt(),
+      legs_item=legs_items.TealPants(),
+      feet_item=feet_items.BrownShoes(),
       weapon=weapons.Dagger()))
 
   app.store.entities.create(entities.Player(
@@ -135,7 +137,7 @@ def initdb(app):
       realm_id=windvale.id,
       location=geometry.Vector2(0, 16),
       inventory=[],
-      legs_item=equipment.TealPants()))
+      legs_item=legs_items.TealPants()))
 
   app.store.entities.create(entities.Player(
       name="Courfeyrac",
@@ -147,7 +149,7 @@ def initdb(app):
       realm_id=windvale.id,
       location=geometry.Vector2(16, 16),
       inventory=[],
-      legs_item=equipment.TealPants()))
+      legs_item=legs_items.TealPants()))
 
   app.store.entities.create(entities.Player(
       name="Enjolras",
@@ -159,7 +161,7 @@ def initdb(app):
       realm_id=windvale.id,
       location=geometry.Vector2(12, 16),
       inventory=[],
-      legs_item=equipment.TealPants()))
+      legs_item=legs_items.TealPants()))
 
   for _ in range(25):
     app.store.entities.create(entities.NPC(

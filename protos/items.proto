@@ -6,9 +6,10 @@ message Item {
 
 message Equipment {
   extend Item {
-    optional Item ext = 100;
+    optional Equipment ext = 100;
   }
 
+  // Keep this enum in sync with elpizo.models.items.equipment.
   enum Slot {
     HEAD_ITEM = 0;
     TORSO_ITEM = 1;

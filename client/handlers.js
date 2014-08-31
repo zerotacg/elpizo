@@ -198,9 +198,11 @@ export function install(game) {
     var slot = items.Equipment.SLOT_NAMES[message.slot];
 
     if (message.inventoryIndex !== null) {
+      // Handle equipping.
       entity[slot] = entity.inventory[message.inventoryIndex];
       entity.discard(message.inventoryIndex)
     } else {
+      // Handle dequipping.
       entity[slot] = null;
     }
   }));
