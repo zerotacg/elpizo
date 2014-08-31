@@ -54,13 +54,14 @@ def on_modify_equipment(protocol, actor, message):
   if message.HasField("inventory_index"):
     # Handle equipping.
     if current_equipment is not None:
-      # The actor should modify equipment out of this slot first.
+      # The client should modify equipment out of this slot first.
       return
 
     equipment = actor.inventory[message.inventory_index]
 
     if equipment.SLOT != message.slot:
-      raise ValueError("Equipment cannot be placed into this slot.")
+      # The client's state probably didn't converge yet.
+      return
 
     setattr(actor, slot_name, equipment)
     del actor.inventory[message.inventory_index]
