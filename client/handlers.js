@@ -1,5 +1,6 @@
 module exports from "client/exports";
 
+module titles from "client/constants/titles";
 module models from "client/models";
 module geometry from "client/models/geometry";
 module itemRegistry from "client/models/items/registry";
@@ -140,8 +141,12 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.INVENTORY, (origin, message) => {
     var item = itemRegistry.makeItem(message.item);
+    var title = titles.items[item.type];
     game.me.inventory.push(item);
-    game.appendToLog(log.InfoMessageEntry({text: "You picked up: " + item.type}));
+    game.appendToLog(log.InfoMessageEntry({
+        text: "You picked up " + title.indefiniteArticle + " " +
+              title.singular + "."
+    }));
   });
 
   protocol.on(packets.Packet.Type.ATTACK, withEntity((entity, message) => {

@@ -35,14 +35,8 @@ export class Realm {
     return this.getRegionAt(location.map(Region.floor));
   }
 
-  getBounds() {
-    return new geometry.Rectangle(0, 0, this.size.x, this.size.y);
-  }
-
-  isPassable(bounds, direction) {
-    if (!this.getBounds().contains(bounds)) {
-      return false;
-    }
+  getIntersectingRegions(bounds) {
+    var regions = [];
 
     for (var y = Region.floor(bounds.top);
          y < Region.ceil(bounds.getBottom());
@@ -50,11 +44,29 @@ export class Realm {
       for (var x = Region.floor(bounds.left);
            x < Region.ceil(bounds.getRight());
            x += Region.SIZE) {
-        var region = this.getRegionAt(new geometry.Vector2(x, y));
-        if (region === null || !region.isPassable(bounds, direction)) {
-          return false;
-        }
+        regions.push(this.getRegionAt(new geometry.Vector2(x, y)));
       }
+    }
+
+    return regions;
+  }
+
+  getBounds() {
+    return new geometry.Rectangle(0, 0, this.size.x, this.size.y);
+  }
+
+  isTerrainPassable(bounds, direction) {
+    if (!this.getBounds().contains(bounds)) {
+      return false;
+    }
+
+    return this.getIntersectingRegions(bounds).some((region) =>
+        region !== null && region.isPassable(bounds, direction));
+  }
+
+  isPassable(bounds, direction) {
+    if (!this.isTerrainPassable(bounds, direction)) {
+      return false;
     }
 
     if (this.getAllEntities().some((entity) =>
@@ -107,7 +119,7 @@ export class Region {
     return [this.location.x, this.location.y].join(",");
   }
 
-  isPassable(bounds, direction) {
+  isTerrainPassable(bounds, direction) {
     bounds = bounds.offset(this.location.negate());
 
     for (var y = bounds.top; y < bounds.getBottom(); ++y) {
@@ -120,6 +132,10 @@ export class Region {
     }
 
     return true;
+  }
+
+  isPassable(bounds, direction) {
+    return this.isTerrainPassable(bounds, direction);
   }
 
   getBounds() {

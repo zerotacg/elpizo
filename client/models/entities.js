@@ -246,7 +246,9 @@ export class Player extends Actor {
 
       var targetEntities = this.realm.getAllEntities().filter((entity) =>
           (entity.getBounds().intersects(targetBounds) ||
-          entity.getBounds().intersects(this.getBounds())) && entity !== this);
+          entity.getBounds().intersects(this.getBounds())) &&
+          this.realm.isTerrainPassable(targetBounds, this.direction) &&
+          entity !== this);
 
       protocol.send(new packets.AttackPacket({
           entityIds: targetEntities

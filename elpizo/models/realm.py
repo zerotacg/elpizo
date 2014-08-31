@@ -49,33 +49,29 @@ class Realm(record.ProtobufRecord):
       logger.info("Saving all child regions for realm: %s", self.id)
       self.regions.save_all()
 
+  def is_terrain_passable(self, bounds, direction):
+    if not self.bounds.contains(bounds):
+      return False
+
+    try:
+      regions = list(self.load_intersecting_regions(bounds))
+    except KeyError:
+      return False
+
+    return all(region.is_terrain_passable(bounds, direction) for region in
+               regions)
+
   def is_passable(self, bounds, direction):
     if not self.bounds.contains(bounds):
       return False
 
-    regions = []
+    try:
+      regions = list(self.load_intersecting_regions(bounds))
+    except KeyError:
+      return False
 
-    for y in range(Region.floor(bounds.top), Region.ceil(bounds.bottom),
-                   Region.SIZE):
-      for x in range(Region.floor(bounds.left), Region.ceil(bounds.right),
-                     Region.SIZE):
-        try:
-          region = self.regions.load(geometry.Vector2(x, y))
-        except KeyError:
-          return False
-        else:
-          regions.append(region)
-
-    for region in regions:
-      if not region.is_passable(bounds, direction):
-        return False
-
-      for entity in region.entities:
-        if entity.bounds.intersects(bounds) and \
-           not entity.is_passable(direction):
-         return False
-
-    return True
+    return all(region.is_passable(bounds, direction) for region in
+               regions)
 
 
 class Region(record.ProtobufRecord):
@@ -127,7 +123,7 @@ class Region(record.ProtobufRecord):
                passabilities=list(proto.passabilities),
                entity_ids=list(proto.entity_ids))
 
-  def is_passable(self, bounds, direction):
+  def is_terrain_passable(self, bounds, direction):
     bounds = bounds.offset(self.location.negate())
 
     for y in range(bounds.top, bounds.bottom):
@@ -135,6 +131,17 @@ class Region(record.ProtobufRecord):
         if 0 <= x < Region.SIZE and 0 <= y < Region.SIZE and \
           not ((self.passabilities[y * Region.SIZE + x] >> direction) & 0x1):
           return False
+
+    return True
+
+  def is_passable(self, bounds, direction):
+    if not self.is_terrain_passable(bounds, direction):
+      return False
+
+    for entity in self.entities:
+      if entity.bounds.intersects(bounds) and \
+         not entity.is_passable(direction):
+       return False
 
     return True
 

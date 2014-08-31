@@ -3,11 +3,31 @@
 module React from "react";
 
 module sprites from "client/assets/sprites";
+module titles from "client/constants/titles";
 
 var Item = React.createClass({
   render: function () {
+    var title = titles.items[this.props.item.type];
+
     var sprite = sprites[["item", this.props.item.type].join(".")];
-    return <img src={sprite.getResource(this.props.resources).src} />;
+    var img = sprite.getResource(this.props.resources);
+    var firstFrame = sprite.frames[0];
+
+    var background = "url(\"" + img.src + "\") " +
+                     -firstFrame.x + "px " +
+                     -firstFrame.y + "px " +
+                     "no-repeat";
+
+    return <button className="item"
+            type="button"
+            onClick={this.onClick}>
+      <div className="sprite" style={{background: background}} />
+      {title.indefiniteArticle + " " + title.singular}
+    </button>;
+  },
+
+  onClick: function () {
+    console.log("use me!");
   }
 })
 

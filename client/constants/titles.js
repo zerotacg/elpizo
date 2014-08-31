@@ -1,8 +1,3 @@
-export var actor = {
-    "human": "Human",
-    "wyrm": "Wyrm"
-};
-
 export var terrain = {
     "ocean": "Ocean",
     "coast": "Coast",
@@ -27,4 +22,12 @@ export var terrain = {
     "subtropical_desert": "Subtropical Desert",
     "tropical_rain_forest": "Tropical Rainforest",
     "tropical_seasonal_forest": "Savanna"
+};
+
+export var items = {
+    "carrot": {
+        singular: "carrot",
+        plural: "carrots",
+        indefiniteArticle: "a"
+    }
 };

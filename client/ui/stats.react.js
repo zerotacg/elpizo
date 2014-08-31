@@ -18,8 +18,7 @@ var Avatar = React.createClass({
           return null;
         }
 
-        return "url(\"" +
-               img.src + "\") " +
+        return "url(\"" + img.src + "\") " +
                -firstFrame.x + "px " +
                -firstFrame.y + "px " +
                "no-repeat";
