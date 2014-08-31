@@ -32,6 +32,8 @@ message Packet {
     UNSIGHT = 22;
     ENTER = 23;
     EXIT = 24;
+    DISCARD = 25;
+    MODIFY_EQUIPMENT = 26;
   }
 
   optional Type type = 1;
@@ -268,4 +270,29 @@ message ExitPacket {
   option (packet_type) = EXIT;
 
   optional Vector2 location = 1;
+}
+
+message DiscardPacket {
+  // Sent by the server when the client discards an item from inventory; sent by
+  // the client to indicate to the server an item has been discarded. To discard
+  // an equipped item, the client must modify its equipment first, then discard
+  // the resulting item.
+  //
+  // Direction: Server <-> Client
+  option (packet_type) = DISCARD;
+
+  optional uint32 inventory_index = 1;
+}
+
+message ModifyEquipmentPacket {
+  // Sent by the server when the client modifies a piece of equipment; sent by
+  // the client to request modification of equipment. If an actor attempts to
+  // modify equipment into an already filled equipment slot, the request is
+  // rejected with an error.
+  //
+  // Direction: Server <-> Client
+  option (packet_type) = MODIFY_EQUIPMENT;
+
+  optional Equipment.Slot slot = 1;
+  optional uint32 inventory_index = 2;
 }

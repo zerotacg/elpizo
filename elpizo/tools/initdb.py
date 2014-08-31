@@ -123,7 +123,7 @@ def initdb(app):
       torso_item=equipment.WhiteLongsleeveShirt(),
       legs_item=equipment.TealPants(),
       feet_item=equipment.BrownShoes(),
-      weapon=equipment.Dagger()))
+      weapon=weapons.Dagger()))
 
   app.store.entities.create(entities.Player(
       name="Marius",

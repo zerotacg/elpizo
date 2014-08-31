@@ -2,8 +2,10 @@ module exports from "client/exports";
 
 module titles from "client/constants/titles";
 module models from "client/models";
+module entities from "client/models/entities";
 module geometry from "client/models/geometry";
 module itemRegistry from "client/models/items/registry";
+module items from "client/models/items";
 module realm from "client/models/realm";
 module packets from "client/protos/packets";
 module damage from "client/ui/overlay/damage.react";
@@ -139,14 +141,21 @@ export function install(game) {
     game.realm.removeEntity(entity.id);
   }));
 
-  protocol.on(packets.Packet.Type.INVENTORY, (origin, message) => {
+  protocol.on(packets.Packet.Type.DISCARD, withEntity((entity, message) => {
+    entity.discard(message.inventoryIndex);
+  }));
+
+  protocol.on(packets.Packet.Type.INVENTORY, withEntity((entity, message) => {
     var item = itemRegistry.makeItem(message.item);
     var title = titles.items[item.type];
-    game.me.inventory.push(item);
-    game.appendToLog(log.InfoMessageEntry({
-        text: "You picked up " + title.indefinite + "."
-    }));
-  });
+    entity.inventory.push(item);
+
+    if (entity === game.me) {
+      game.appendToLog(log.InfoMessageEntry({
+          text: "You put the " + title.singular + " in your bag."
+      }));
+    }
+  }));
 
   protocol.on(packets.Packet.Type.ATTACK, withEntity((entity, message) => {
     entity.attack();
@@ -184,4 +193,15 @@ export function install(game) {
         text: "Latency: " + (endTime - startTime) + "ms"
     }));
   });
+
+  protocol.on(packets.Packet.Type.MODIFY_EQUIPMENT, withEntity((entity, message) => {
+    var slot = items.Equipment.SLOT_NAMES[message.slot];
+
+    if (message.inventoryIndex !== null) {
+      entity[slot] = entity.inventory[message.inventoryIndex];
+      entity.discard(message.inventoryIndex)
+    } else {
+      entity[slot] = null;
+    }
+  }));
 }

@@ -1,6 +1,6 @@
 import time
 
-from elpizo.models.entities import Drop
+from elpizo.models import entities
 from elpizo.protos import packets_pb2
 
 
@@ -36,9 +36,8 @@ def on_attack(protocol, actor, message):
           protocol.server.store.entities.destroy(target)
 
           for item in target.full_inventory:
-            drop = Drop(item=item,
-                        location=target.location,
-                        realm_id=target.realm_id)
+            drop = entities.Drop(item=item, location=target.location,
+                                 realm_id=target.realm_id)
             protocol.server.store.entities.create(drop)
 
             drop.broadcast_to_regions(

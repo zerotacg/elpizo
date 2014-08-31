@@ -148,6 +148,10 @@ export class Actor extends Entity {
     this.addTimer("turn", new timing.CountdownTimer());
   }
 
+  discard(index) {
+    this.inventory.splice(index, 1);
+  }
+
   finishMove() {
     var moveTimer = this.getTimer("move");
 

@@ -77,9 +77,12 @@ class Dispatcher(net.Protocol):
 
 Dispatcher.register(packets_pb2.Packet.ATTACK, attack.on_attack)
 Dispatcher.register(packets_pb2.Packet.CHAT, chat.on_chat)
+Dispatcher.register(packets_pb2.Packet.DISCARD, item.on_discard)
 Dispatcher.register(packets_pb2.Packet.ECHO, echo.on_echo)
 Dispatcher.register(packets_pb2.Packet.HELLO, hello.on_hello)
 Dispatcher.register(packets_pb2.Packet.PICK_UP, item.on_pick_up)
+Dispatcher.register(packets_pb2.Packet.MODIFY_EQUIPMENT,
+                    item.on_modify_equipment)
 Dispatcher.register(packets_pb2.Packet.MOVE, move.on_move)
 Dispatcher.register(packets_pb2.Packet.SIGHT, viewport.on_sight)
 Dispatcher.register(packets_pb2.Packet.STOP_MOVE, move.on_stop_move)

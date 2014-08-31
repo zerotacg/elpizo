@@ -4,8 +4,22 @@ message Item {
   optional string type = 1;
 }
 
+message Equipment {
+  extend Item {
+    optional Item ext = 100;
+  }
+
+  enum Slot {
+    HEAD_ITEM = 0;
+    TORSO_ITEM = 1;
+    LEGS_ITEM = 2;
+    FEET_ITEM = 3;
+    WEAPON = 4;
+  }
+}
+
 message Weapon {
   extend Item {
-    optional Weapon ext = 100;
+    optional Weapon ext = 101;
   }
 }

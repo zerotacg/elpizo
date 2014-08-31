@@ -4,7 +4,6 @@ from elpizo.util import record
 
 
 class Item(object):
-  KEY_PREFIX = "item"
   REGISTRY = {}
 
   def __init__(self, **kwargs):
@@ -26,3 +25,11 @@ class Item(object):
   @classmethod
   def from_protobuf_polymorphic(cls, proto):
     return cls.REGISTRY[proto.type].from_protobuf(proto)
+
+
+class Equipment(Item):
+  HEAD_ITEM = 0
+  TORSO_ITEM = 1
+  LEGS_ITEM = 2
+  FEET_ITEM = 3
+  WEAPON = 4

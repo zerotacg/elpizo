@@ -12,6 +12,30 @@ export default = {
                         [new geometry.Vector2(0, 0)],
                         new geometry.Vector2(0, 0), 0),
 
+  "item.white_longsleeve_shirt":
+      new sprite.Sprite("equipment/male/white_longsleeve_shirt.png",
+                        new geometry.Vector2(32, 32),
+                        [new geometry.Vector2(16, 64 * 10 + 24)],
+                        new geometry.Vector2(0, 0), 0),
+
+  "item.teal_pants":
+      new sprite.Sprite("equipment/male/teal_pants.png",
+                        new geometry.Vector2(32, 32),
+                        [new geometry.Vector2(16, 64 * 10 + 32)],
+                        new geometry.Vector2(0, 0), 0),
+
+  "item.brown_shoes":
+      new sprite.Sprite("equipment/male/brown_shoes.png",
+                        new geometry.Vector2(32, 32),
+                        [new geometry.Vector2(16, 64 * 10 + 40)],
+                        new geometry.Vector2(0, 0), 0),
+
+  "item.dagger":
+      new sprite.Sprite("equipment/male/dagger.png",
+                        new geometry.Vector2(32, 32),
+                        [new geometry.Vector2(24, 64 * 10 + 32)],
+                        new geometry.Vector2(0, 0), 0),
+
   "body.male.light":
       sprite.makeHumanoidSprite("body/male/light.png"),
 
