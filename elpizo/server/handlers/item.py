@@ -55,7 +55,7 @@ def on_modify_equipment(protocol, actor, message):
     # Handle equipping.
     if current_equipment is not None:
       # The actor should modify equipment out of this slot first.
-      raise ValueError("Slot currently has equipment.")
+      return
 
     equipment = actor.inventory[message.inventory_index]
 
