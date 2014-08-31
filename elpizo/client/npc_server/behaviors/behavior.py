@@ -55,7 +55,7 @@ class Behavior(object):
     self.send(packets_pb2.TurnPacket(direction=direction))
 
   def send(self, message):
-    self.protocol.send(self.npc.id, message)
+    self.npc.send(self.protocol, message)
 
   def move(self):
     self.npc.location = self.npc.target_location

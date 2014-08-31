@@ -125,6 +125,9 @@ class Entity(record.PolymorphicProtobufRecord):
   def is_damageable_by(self, attacker):
     return False
 
+  def send(self, protocol, message):
+    protocol.send(self.id, message)
+
   def broadcast(self, bus, channel, message):
     futures = []
 
@@ -140,7 +143,7 @@ class Entity(record.PolymorphicProtobufRecord):
           # Broadcasts from this entity are not permitted.
           continue
 
-      futures.append(green.coroutine(protocol.send)(self.id, message))
+      futures.append(green.coroutine(self.send)(protocol, message))
 
     return asyncio.gather(*futures)
 

@@ -27,6 +27,5 @@ def on_hello(protocol, actor, message):
 
 
 def on_whoami(protocol, actor, message):
-  protocol.send(
-      actor.id,
-      packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))
+  actor.send(protocol,
+             packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))

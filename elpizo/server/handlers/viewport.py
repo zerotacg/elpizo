@@ -20,9 +20,8 @@ def on_sight(protocol, actor, message):
 
   for entity in list(region.entities):
     if entity.id != actor.id:
-      protocol.send(
-        entity.id,
-        packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
+      entity.send(protocol,
+                  packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
 
 
 def on_unsight(protocol, actor, message):
@@ -35,4 +34,4 @@ def on_unsight(protocol, actor, message):
   for entity in list(region.entities):
     if list(entity.regions) == [region]:
       # Only despawn entities that are exclusively in this region.
-      protocol.send(entity.id, packets_pb2.DespawnEntityPacket())
+      entity.send(protocol, packets_pb2.DespawnEntityPacket())

@@ -18,7 +18,7 @@ def on_move(protocol, actor, message):
 
   if new_location != expected_location or \
       dt < 1 / actor.speed * 0.25: # compensate for slow connections by 0.25
-    protocol.send(actor.id, packets_pb2.TeleportPacket(
+    actor.send(protocol, packets_pb2.TeleportPacket(
         location=actor.location.to_protobuf(),
         direction=actor.direction))
     return
@@ -42,7 +42,7 @@ def on_move(protocol, actor, message):
   # END CRITICAL SECTION
 
   if not passable:
-    protocol.send(actor.id, packets_pb2.TeleportPacket(
+    actor.send(protocol, packets_pb2.TeleportPacket(
         location=actor.location.to_protobuf(),
         direction=actor.direction))
     return

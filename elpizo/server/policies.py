@@ -44,10 +44,10 @@ class PlayerPolicy(object):
     protocol.send(
         None,
         packets_pb2.RealmPacket(realm=self.player.realm.to_public_protobuf()))
-    protocol.send(
-        self.player.id,
+    self.player.send(
+        protocol,
         packets_pb2.EntityPacket(entity=self.player.to_protected_protobuf()))
-    protocol.send(self.player.id, packets_pb2.AvatarPacket())
+    self.player.send(protocol, packets_pb2.AvatarPacket())
 
     # Only self.players get chat access.
     self.player.subscribe(self.server.bus, ("conversation", self.player.name))
@@ -103,7 +103,7 @@ class NPCPolicy(object):
           else:
             entity_protobuf = entity.to_public_protobuf()
 
-          protocol.send(entity.id, packets_pb2.EntityPacket(
+          entity.send(protocol, packets_pb2.EntityPacket(
               entity=entity_protobuf))
 
   def get_actor(self, origin):
