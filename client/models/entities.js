@@ -45,11 +45,7 @@ export class Entity extends timing.Timed {
   onContact(avatar, protocol) {
   }
 
-  isPassable(direction) {
-    return false;
-  }
-
-  isDamageableBy(attacker) {
+  isPassableBy(entity, direction) {
     return false;
   }
 
@@ -92,7 +88,7 @@ export class Drop extends Entity {
     visitor.visitDrop(this);
   }
 
-  isPassable(direction) {
+  isPassableBy(entity, direction) {
     return true;
   }
 }
@@ -223,7 +219,7 @@ export class Actor extends Entity {
     visitor.visitActor(this);
   }
 
-  isPassable(direction) {
+  isPassableBy(entity, direction) {
     return false;
   }
 }
@@ -233,6 +229,63 @@ Actor.DEFAULT_ATTACK_COOLDOWN = 2;
 Actor.TURN_TIME = 0.1;
 
 export class Player extends Actor {
+  doAttack(protocol) {
+    // Attack.
+    var targetBounds = this.bbox.offset(this.getTargetLocation());
+
+    protocol.send(new packets.AttackPacket({
+        entityIds: this.realm.getAllEntities().filter((entity) =>
+          entity.getBounds().intersects(targetBounds) &&
+          this.realm.isTerrainPassableBy(this, targetBounds,
+                                         this.direction))
+        .map((entity) => entity.id)
+    }));
+
+    this.stopMove();
+    protocol.send(new packets.StopMovePacket());
+
+    this.attack();
+  }
+
+  doInteract(protocol) {
+    var intersecting = this.realm.getAllEntities().filter((entity) =>
+      entity.getBounds().intersects(this.getBounds()) &&
+      entity !== this);
+
+    var adjacents = this.realm.getAllEntities().filter((entity) =>
+      entity.getBounds().intersects(this.getTargetBounds()) &&
+      entity !== this);
+
+    // Check for interactions.
+    var interactions = [];
+    [].push.apply(interactions, intersecting.map((entity) => ({
+        entity: entity,
+        intersecting: true
+    })));
+    [].push.apply(interactions, adjacents.map((entity) => ({
+        entity: entity,
+        intersecting: false
+    })));
+
+    console.log(interactions);
+
+    if (interactions.length === 0) {
+      return;
+    }
+
+    if (interactions.length > 1) {
+      console.warn("NOT IMPLEMENTED: MULTIPLE ENTITY INTERACTION");
+      return;
+    }
+
+    var head = interactions[0];
+    if (head.intersecting) {
+      head.entity.onIntersectingInteract(this, protocol);
+    } else {
+      head.entity.onAdjacentInteract(this, protocol);
+    }
+  }
+
   updateAsAvatar(dt, inputState, protocol) {
     // Don't allow any avatar updates if there are any timers pending.
     if (!this.areAllTimersStopped()) {
@@ -240,64 +293,10 @@ export class Player extends Actor {
     }
 
     if (inputState.stick(input.Key.X)) {
-      // Attack.
-      var target = this.getTargetLocation();
-      var targetBounds = this.bbox.offset(target);
-
-      var targetEntities = this.realm.getAllEntities().filter((entity) =>
-          (entity.getBounds().intersects(targetBounds) ||
-          entity.getBounds().intersects(this.getBounds())) &&
-          this.realm.isTerrainPassable(targetBounds, this.direction) &&
-          entity !== this);
-
-      protocol.send(new packets.AttackPacket({
-          entityIds: targetEntities
-              .filter((entity) => entity.isDamageableBy(this))
-              .map((entity) => entity.id)
-      }));
-
-      this.stopMove();
-      protocol.send(new packets.StopMovePacket());
-
-      this.attack();
+      this.doAttack(protocol);
       return;
     } else if (inputState.stick(input.Key.Z)) {
-      var intersecting = this.realm.getAllEntities().filter((entity) =>
-        entity.getBounds().intersects(this.getBounds()) &&
-        entity !== this);
-
-      var adjacents = this.realm.getAllEntities().filter((entity) =>
-        entity.getBounds().intersects(this.getTargetBounds()) &&
-        entity !== this);
-
-      // Check for interactions.
-      var interactions = [];
-      [].push.apply(interactions, intersecting.map((entity) => ({
-          entity: entity,
-          intersecting: true
-      })));
-      [].push.apply(interactions, adjacents.map((entity) => ({
-          entity: entity,
-          intersecting: false
-      })));
-
-      console.log(interactions);
-
-      if (interactions.length === 0) {
-        return;
-      }
-
-      if (interactions.length > 1) {
-        console.warn("NOT IMPLEMENTED: MULTIPLE ENTITY INTERACTION");
-        return;
-      }
-
-      var head = interactions[0];
-      if (head.intersecting) {
-        head.entity.onIntersectingInteract(this, protocol);
-      } else {
-        head.entity.onAdjacentInteract(this, protocol);
-      }
+      this.doInteract(protocol);
       return;
     }
 
@@ -326,7 +325,7 @@ export class Player extends Actor {
           entity.getBounds().intersects(this.getBounds())) && entity !== this);
 
       // Movement mode logic.
-      if (this.realm.isPassable(targetBounds, this.direction)) {
+      if (this.realm.isPassableBy(this, targetBounds, this.direction)) {
         this.move();
         didMove = true;
 
@@ -348,10 +347,6 @@ export class Player extends Actor {
     visitor.visitPlayer(this);
   }
 
-  isDamageableBy(attacker) {
-    return !(attacker instanceof Player);
-  }
-
   getHeight() {
     return 2;
   }
@@ -365,10 +360,6 @@ export class NPC extends Actor {
 
   accept(visitor) {
     visitor.visitNPC(this);
-  }
-
-  isDamageableBy(attacker) {
-    return true;
   }
 }
 

@@ -35,6 +35,28 @@ class Entity(record.PolymorphicProtobufRecord):
 
   DIRECTIONS = {v: k for k, v in DIRECTION_VECTORS.items()}
 
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+    self.location_log = collections.deque()
+    self.location_lock = asyncio.Lock()
+
+  def log_location(self, time, location):
+    self.location_log.append((time, location))
+
+  def retain_log_after(self, since):
+    while self.location_log:
+      time, head  = self.location_log[0]
+      if time < since:
+        self.location_log.popleft()
+      else:
+        break
+
+  @property
+  def all_locations(self):
+    for _, location in self.location_log:
+      yield location
+    yield self.location
+
   @property
   def direction_vector(self):
     return self.DIRECTION_VECTORS[self.direction]
@@ -97,7 +119,7 @@ class Entity(record.PolymorphicProtobufRecord):
     for region in self.regions:
       region.entities.add(self)
 
-  def is_passable(self, direction):
+  def is_passable_by(self, entity, direction):
     return False
 
   def is_damageable_by(self, attacker):
@@ -135,28 +157,6 @@ class Entity(record.PolymorphicProtobufRecord):
 class Actor(Entity):
   BASE_SPEED = 4
   DEFAULT_ATTACK_COOLDOWN = 2
-
-  def __init__(self, *args, **kwargs):
-    super().__init__(*args, **kwargs)
-    self.location_log = collections.deque()
-    self.location_lock = asyncio.Lock()
-
-  def log_location(self, time, location):
-    self.location_log.append((time, location))
-
-  def retain_log_after(self, since):
-    while self.location_log:
-      time, head  = self.location_log[0]
-      if time < since:
-        self.location_log.popleft()
-      else:
-        break
-
-  @property
-  def all_locations(self):
-    for _, location in self.location_log:
-      yield location
-    yield self.location
 
   @property
   def speed(self):
@@ -247,7 +247,7 @@ class Actor(Entity):
   def get_realm(self, realm_store):
     return realm_store.find(self.realm_id)
 
-  def is_passable(self, direction):
+  def is_passable_by(self, entity, direction):
     return False
 
   @property
@@ -353,7 +353,7 @@ class Drop(Entity):
     record.update(item=items.Item.from_protobuf_polymorphic(proto.item))
     return record
 
-  def is_passable(self, direction):
+  def is_passable_by(self, entity, direction):
     return True
 
 

@@ -20,11 +20,10 @@ def on_attack(protocol, actor, message):
 
     for location in target.all_locations:
       target_bounds = target.bbox.offset(location)
-
-      if (actor.target_bounds.intersects(target_bounds) or \
-          actor.bounds.intersects(target_bounds)) and \
-         target.is_damageable_by(actor) and \
-         actor.realm.is_terrain_passable(target_bounds, actor.direction):
+      if actor.target_bounds.intersects(target_bounds) and \
+          target.is_damageable_by(actor) and \
+          actor.realm.is_terrain_passable_by(actor, target_bounds,
+                                             actor.direction):
         damage_packet = packets_pb2.DamagePacket(
             damage=target.damage(actor.attack_strength))
         target.broadcast_to_regions(protocol.server.bus, damage_packet)

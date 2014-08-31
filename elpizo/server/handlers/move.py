@@ -32,8 +32,9 @@ def on_move(protocol, actor, message):
   # know where we're moving to within the critical section.
   with green.locking(actor.location_lock):
     # Check for realm passability.
-    passable = actor.realm.is_passable(actor.bbox.offset(new_location),
-                                       actor.direction)
+    passable = actor.realm.is_passable_by(actor,
+                                          actor.bbox.offset(new_location),
+                                          actor.direction)
 
     if passable:
       with actor.movement():

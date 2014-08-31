@@ -57,8 +57,10 @@ def compute_path_graph(region):
 
       for direction, delta in entities.Entity.DIRECTION_VECTORS.items():
         target = origin.offset(delta)
-        if region.is_passable(geometry.Rectangle(target.x, target.y, 1, 1),
-                              direction):
+        if region.is_terrain_passable_by(
+            None,
+            geometry.Rectangle(target.x, target.y, 1, 1),
+            direction):
           g.add_edge(origin, target)
 
   return g
