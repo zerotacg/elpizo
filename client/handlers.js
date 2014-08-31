@@ -144,8 +144,7 @@ export function install(game) {
     var title = titles.items[item.type];
     game.me.inventory.push(item);
     game.appendToLog(log.InfoMessageEntry({
-        text: "You picked up " + title.indefiniteArticle + " " +
-              title.singular + "."
+        text: "You picked up " + title.indefinite + "."
     }));
   });
 

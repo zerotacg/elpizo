@@ -28,6 +28,6 @@ export var items = {
     "carrot": {
         singular: "carrot",
         plural: "carrots",
-        indefiniteArticle: "a"
+        indefinite: "a carrot"
     }
 };

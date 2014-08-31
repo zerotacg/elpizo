@@ -15,14 +15,22 @@ export var UI = React.createClass({
   },
 
   render: function () {
+    var uiElements = null;
+
+    if (this.props.game.resourcesLoaded) {
+      uiElements = <div>
+        <overlay.Overlay game={this.props.game} />
+        <log.Log game={this.props.game} log={this.props.game.log.slice()} />
+        <debug.Debug game={this.props.game} />
+        <stats.Stats game={this.props.game} />
+        <inventory.Inventory game={this.props.game} show={this.props.showInventory} />
+      </div>;
+    }
+
     // We copy the log because we need to know if it changed length.
     return <div className="ui-root" onKeyDown={this.onKeyDown}>
-      <overlay.Overlay game={this.props.game} />
-      <inventory.Inventory game={this.props.game} show={this.props.showInventory} />
-      <log.Log game={this.props.game} log={this.props.game.log.slice()} />
-      <debug.Debug game={this.props.game} />
+      {uiElements}
       <loading.Loading game={this.props.game} />
-      <stats.Stats game={this.props.game} />
     </div>;
   }
 });

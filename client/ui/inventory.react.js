@@ -18,12 +18,10 @@ var Item = React.createClass({
                      -firstFrame.y + "px " +
                      "no-repeat";
 
-    return <button className="item"
-            type="button"
-            onClick={this.onClick}>
+    return <a className="item" onClick={this.onClick}>
       <div className="sprite" style={{background: background}} />
-      {title.indefiniteArticle + " " + title.singular}
-    </button>;
+      <div className="title">{title.indefinite}</div>
+    </a>;
   },
 
   onClick: function () {
@@ -45,7 +43,9 @@ export var Inventory = React.createClass({
 
     return <div className={"inventory " + (this.props.show ? "" : "hidden")}>
       <div className="heading">Inventory</div>
-      <ul>{items}</ul>
+      <div className="inner">
+        <ul>{items}</ul>
+      </div>
     </div>;
   }
 });

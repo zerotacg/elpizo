@@ -1,56 +1,56 @@
 .inventory {
-  @width: 48px * 4 - 8px;
-  width: @width;
+  width: 400px;
+  height: 400px;
 
   background: rgba(0, 0, 0, 0.5);
-  padding: 8px;
   border-radius: 4px;
 
   position: absolute;
   left: 50%;
   top: 50%;
 
-  margin-left: -@width / 2;
+  margin-left: -200px;
+  margin-top: -200px;
+
+  display: flex;
+  flex-direction: column;
 
   .heading {
-    padding-bottom: 4px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.2);
   }
 
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  .inner {
+    overflow: auto;
 
-    margin-top: 4px;
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
 
-    margin-top: -8px;
-    margin-left: -8px;
+      li {
+        .item {
+          display: flex;
+          align-items: center;
 
-    li {
-      margin-left: 8px;
-      margin-top: 8px;
-      float: left;
+          padding: 4px;
+          border: 0;
+          margin: 0;
+          cursor: pointer;
+          outline: 0;
 
-      .item {
-        display: block;
-        background: rgba(255, 255, 255, 0.2);
-        padding: 4px;
-        border-radius: 4px;
-        border: 0;
-        margin: 0;
-        cursor: pointer;
-        outline: 0;
+          transition: background 0.2s ease-out;
 
-        transition: background 0.2s ease-out;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.5);
+          &:hover {
+            background: rgba(255, 255, 255, 0.2);
+          }
         }
-      }
 
-      .sprite {
-        width: 32px;
-        height: 32px;
+        .sprite {
+          width: 32px;
+          height: 32px;
+        }
       }
     }
   }

@@ -14,15 +14,12 @@ var Avatar = React.createClass({
 
         var firstFrame = sprite.frames[0];
         var img = sprite.getResource(this.props.resources);
-        if (img === null) {
-          return null;
-        }
 
         return "url(\"" + img.src + "\") " +
                -firstFrame.x + "px " +
                -firstFrame.y + "px " +
                "no-repeat";
-      }).filter((x) => x !== null).reverse().join(", ");
+      }).reverse().join(", ");
 
     return <div className="avatar" style={{background: paperdoll}} />;
   }
