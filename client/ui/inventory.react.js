@@ -56,10 +56,6 @@ export var Inventory = React.createClass({
   equip: function (i) {
     var item = this.props.game.me.inventory[i];
 
-    // We set the inventory to null here, so we don't mess up indexes (and
-    // we'll get a DiscardPacket telling us to get rid of this index later).
-    this.props.game.me.inventory[i] = null;
-
     var slot = equipment.Equipment.SLOT_NAMES[item.getSlot()]
     if (this.props.game.me[slot] !== null) {
       // Make sure we dequip the item in the slot first.
@@ -67,9 +63,11 @@ export var Inventory = React.createClass({
           slot: item.getSlot(),
           inventoryIndex: null
       }));
-    }
 
-    this.props.game.me[slot] = item;
+      // We set the inventory to null here, so we don't mess up indexes (and
+      // we'll get a DiscardPacket telling us to get rid of this index later).
+      this.props.game.me.inventory[i] = null;
+    }
 
     this.props.game.protocol.send(new packets.ModifyEquipmentPacket({
         slot: item.getSlot(),

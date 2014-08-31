@@ -79,8 +79,8 @@ def on_modify_equipment(protocol, actor, message):
 
     # We inform the client of equipment modifications and discards, such that
     # their state is consistent.
-    protocol.send(actor.id, packets_pb2.DiscardPacket(
-        inventory_index=message.inventory_index))
+    protocol.send(actor.id, packets_pb2.ModifyEquipmentPacket(
+        slot=message.slot, inventory_index=message.inventory_index))
   elif current_equipment is not None:
     # Handle dequipping.
     setattr(actor, slot_name, None)
