@@ -28,11 +28,6 @@ class Realm(record.ProtobufRecord):
     return cls(name=proto.name,
                size=geometry.Vector2.from_protobuf(proto.size))
 
-  def to_public_protobuf(self):
-    proto = self.to_protobuf()
-    proto.id = self.id
-    return proto
-
   def load_intersecting_regions(self, bounds):
     left = max([Region.floor(bounds.left), 0])
     top = max([Region.floor(bounds.top), 0])
@@ -113,8 +108,6 @@ class Region(record.ProtobufRecord):
   def to_public_protobuf(self, realm):
     proto = self.to_protobuf()
     proto.ClearField("entity_ids")
-    proto.realm_id = realm.id
-    proto.location.MergeFrom(self.location.to_protobuf())
     return proto
 
   @classmethod

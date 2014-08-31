@@ -9,8 +9,9 @@ def on_sight(protocol, actor, message):
       message.location))
 
   protocol.send(None, packets_pb2.RegionPacket(
+      realm_id=actor.realm.id,
       location=region.location.to_protobuf(),
-      region=region.to_public_protobuf(actor.realm)))
+      region=region.to_protobuf()))
 
   # The client may receive extraneous packets regarding entities it doesn't
   # yet know about, but it will eventually receive up-to-date information

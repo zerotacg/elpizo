@@ -43,7 +43,8 @@ class PlayerPolicy(object):
 
     protocol.send(
         None,
-        packets_pb2.RealmPacket(realm=self.player.realm.to_public_protobuf()))
+        packets_pb2.RealmPacket(id=self.player.realm.id,
+                                realm=self.player.realm.to_protobuf()))
     self.player.send(
         protocol,
         packets_pb2.EntityPacket(entity=self.player.to_protected_protobuf()))
@@ -84,7 +85,8 @@ class NPCPolicy(object):
     for realm in self.server.store.realms.load_all():
       protocol.send(
           None,
-          packets_pb2.RealmPacket(realm=realm.to_public_protobuf()))
+          packets_pb2.RealmPacket(id=realm.id,
+                                  realm=realm.to_protobuf()))
 
       for region in realm.regions.load_all():
         region_channel = ("region", realm.id, region.location)

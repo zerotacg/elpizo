@@ -5,10 +5,10 @@ module input from "client/util/input";
 module timing from "client/util/timing";
 
 export class Entity extends timing.Timed {
-  constructor(message) {
+  constructor(id, message) {
     super();
 
-    this.id = message.id;
+    this.id = id;
     this.type = message.type;
     this.realmId = message.realmId;
     this.location = geometry.Vector2.fromProtobuf(message.location);
@@ -65,8 +65,8 @@ export class Entity extends timing.Timed {
 }
 
 export class Building extends Entity {
-  constructor(message) {
-    super(message);
+  constructor(id, message) {
+    super(id, message);
     message = message[".Building.ext"];
 
     this.doorPosition = message.doorPosition;
@@ -78,8 +78,8 @@ export class Building extends Entity {
 }
 
 export class Drop extends Entity {
-  constructor(message) {
-    super(message);
+  constructor(id, message) {
+    super(id, message);
     message = message[".Drop.ext"];
 
     this.item = itemRegistry.makeItem(message.item);
@@ -130,8 +130,8 @@ export function getDirectionVector(d) {
 }
 
 export class Actor extends Entity {
-  constructor(message) {
-    super(message);
+  constructor(id, message) {
+    super(id, message);
     message = message[".Actor.ext"];
 
     this.name = message.name;
@@ -264,8 +264,8 @@ Actor.DEFAULT_ATTACK_COOLDOWN = 2;
 Actor.TURN_TIME = 0.1;
 
 export class Player extends Actor {
-  constructor(message) {
-    super(message);
+  constructor(id, message) {
+    super(id, message);
     this.interactions = [];
   }
 
@@ -390,8 +390,8 @@ export class Player extends Actor {
 }
 
 export class NPC extends Actor {
-  constructor(message) {
-    super(message);
+  constructor(id, message) {
+    super(id, message);
     message = message[".NPC.ext"];
   }
 

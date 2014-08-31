@@ -3,8 +3,8 @@ module objects from "client/util/objects";
 module geometry from "client/models/geometry";
 
 export class Realm {
-  constructor(message) {
-    this.id = message.id;
+  constructor(id, message) {
+    this.id = id;
     this.name = message.name;
     this.size = geometry.Vector2.fromProtobuf(message.size);
 
@@ -105,9 +105,8 @@ export class Realm {
 }
 
 export class Region {
-  constructor(message) {
-    this.location = new geometry.Vector2(message.location.x,
-                                         message.location.y);
+  constructor(location, message) {
+    this.location = location;
     this.realmId = message.realmId;
     this.layers = message.layers.map((layer) =>
         new Layer(layer));

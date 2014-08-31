@@ -11,12 +11,11 @@ message Entity {
     EAST = 3;
   }
 
-  optional string id = 1;
-  optional string type = 2;
-  optional string realm_id = 3;
-  optional Vector2 location = 4;
-  optional Direction direction = 5;
-  optional Rectangle bbox = 6;
+  required string type = 1;
+  required string realm_id = 2;
+  required Vector2 location = 3;
+  required Direction direction = 4;
+  required Rectangle bbox = 5;
 }
 
 message Drop {
@@ -24,7 +23,7 @@ message Drop {
     optional Drop ext = 104;
   }
 
-  optional Item item = 1;
+  required Item item = 1;
 }
 
 message Building {
@@ -32,7 +31,7 @@ message Building {
     optional Building ext = 105;
   }
 
-  optional uint32 door_position = 1;
+  required uint32 door_position = 1;
 }
 
 message Fixture {
@@ -40,7 +39,7 @@ message Fixture {
     optional Fixture ext = 103;
   }
 
-  optional string fixture_type = 1;
+  required string fixture_type = 1;
 }
 
 message Actor {
@@ -48,10 +47,10 @@ message Actor {
     optional Actor ext = 101;
   }
 
-  optional string name = 1;
-  optional uint32 health = 2;
-  optional string gender = 3;
-  optional string body = 4;
+  required string name = 1;
+  required uint32 health = 2;
+  required string gender = 3;
+  required string body = 4;
   optional string facial = 5;
   optional string hair = 6;
 
@@ -69,7 +68,7 @@ message Player {
     optional Player ext = 106;
   }
 
-  optional bool online = 1;
+  required bool online = 1;
 }
 
 message NPC {

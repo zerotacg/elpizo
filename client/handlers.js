@@ -34,17 +34,18 @@ export function install(game) {
   }
 
   protocol.on(packets.Packet.Type.REALM, (origin, message) => {
-    game.setRealm(new realm.Realm(message.realm));
+    game.setRealm(new realm.Realm(message.id, message.realm));
   });
 
   protocol.on(packets.Packet.Type.REGION, (origin, message) => {
-    if (message.region.realmId !== game.realm.id) {
+    if (message.realmId !== game.realm.id) {
       console.warn("Got invalid region realm ID (" + message.region.realmId +
                    ") for current realm (" + game.realm.id + "), discarding.");
       return;
     }
 
-    var region = new realm.Region(message.region);
+    var region = new realm.Region(
+        geometry.Vector2.fromProtobuf(message.location), message.region);
     game.realm.addRegion(region);
   });
 
@@ -60,7 +61,7 @@ export function install(game) {
       console.warn("Entity " + origin + " already exists.");
     }
 
-    game.realm.addEntity(origin, models.makeEntity(message.entity));
+    game.realm.addEntity(origin, models.makeEntity(origin, message.entity));
   });
 
   protocol.on(packets.Packet.Type.AVATAR, (origin, message) => {
@@ -92,7 +93,7 @@ export function install(game) {
       return;
     }
 
-    game.realm.addEntity(origin, models.makeEntity(message.entity));
+    game.realm.addEntity(origin, models.makeEntity(origin, message.entity));
   });
 
   protocol.on(packets.Packet.Type.EXIT, withEntity((entity, message) => {

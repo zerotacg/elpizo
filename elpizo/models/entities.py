@@ -76,9 +76,7 @@ class Entity(record.PolymorphicProtobufRecord):
     return self.to_protected_protobuf()
 
   def to_protected_protobuf(self):
-    proto = self.to_protobuf()
-    proto.id = self.id
-    return proto
+    return self.to_protobuf()
 
   @classmethod
   def from_protobuf_polymorphic(cls, proto):

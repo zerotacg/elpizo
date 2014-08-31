@@ -36,9 +36,9 @@ message Packet {
     MODIFY_EQUIPMENT = 26;
   }
 
-  optional Type type = 1;
+  required Type type = 1;
   optional string origin = 2;
-  optional bytes payload = 3;
+  required bytes payload = 3;
 }
 
 extend google.protobuf.MessageOptions {
@@ -51,7 +51,7 @@ message HelloPacket {
   // Direction: Client -> Server
   option (packet_type) = HELLO;
 
-  optional bytes token = 1;
+  required bytes token = 1;
 }
 
 message ErrorPacket {
@@ -60,7 +60,7 @@ message ErrorPacket {
   // Direction: Server -> Client
   option (packet_type) = ERROR;
 
-  optional string text = 1;
+  required string text = 1;
 }
 
 message ChatPacket {
@@ -70,9 +70,9 @@ message ChatPacket {
   // Direction: Server <-> Client
   option (packet_type) = CHAT;
 
-  optional string target = 1;
-  optional string actor_name = 2;
-  optional string text = 3;
+  required string target = 1;
+  required string actor_name = 2;
+  required string text = 3;
 }
 
 message MovePacket {
@@ -82,7 +82,7 @@ message MovePacket {
   // Direction: Server <-> Client
   option (packet_type) = MOVE;
 
-  optional Vector2 location = 1;
+  required Vector2 location = 1;
 }
 
 message AvatarPacket {
@@ -98,7 +98,8 @@ message RealmPacket {
   // Direction: Server -> Client
   option (packet_type) = REALM;
 
-  optional Realm realm = 1;
+  required string id = 1;
+  required Realm realm = 2;
 }
 
 message RegionPacket {
@@ -107,8 +108,9 @@ message RegionPacket {
   // Direction: Server -> Client
   option (packet_type) = REGION;
 
-  optional Vector2 location = 1;
-  optional Region region = 2;
+  required Vector2 location = 1;
+  required string realm_id = 2;
+  required Region region = 3;
 }
 
 message EntityPacket {
@@ -117,7 +119,7 @@ message EntityPacket {
   // Direction: Server -> Client
   option (packet_type) = ENTITY;
 
-  optional Entity entity = 1;
+  required Entity entity = 1;
 }
 
 message StopMovePacket {
@@ -134,8 +136,8 @@ message TeleportPacket {
   // Direction: Server -> Client
   option (packet_type) = TELEPORT;
 
-  optional Vector2 location = 1;
-  optional Entity.Direction direction = 2;
+  required Vector2 location = 1;
+  required Entity.Direction direction = 2;
 }
 
 message StatusPacket {
@@ -144,7 +146,7 @@ message StatusPacket {
   // Direction: Server -> Client
   option (packet_type) = STATUS;
 
-  optional bool online = 1;
+  required bool online = 1;
 }
 
 message PickUpPacket {
@@ -153,7 +155,7 @@ message PickUpPacket {
   // Direction: Client -> Server
   option (packet_type) = PICK_UP;
 
-  optional string drop_id = 1;
+  required string drop_id = 1;
 }
 
 message DespawnEntityPacket {
@@ -170,7 +172,7 @@ message InventoryPacket {
   // Direction: Server -> Client
   option (packet_type) = INVENTORY;
 
-  optional Item item = 1;
+  required Item item = 1;
 }
 
 message EchoPacket {
@@ -180,7 +182,7 @@ message EchoPacket {
   // Direction: Server <-> Client
   option (packet_type) = ECHO;
 
-  optional string payload = 1;
+  required string payload = 1;
 }
 
 message TurnPacket {
@@ -190,7 +192,7 @@ message TurnPacket {
   // Direction: Server <-> Client
   option (packet_type) = TURN;
 
-  optional Entity.Direction direction = 1;
+  required Entity.Direction direction = 1;
 }
 
 message AttackPacket {
@@ -212,7 +214,7 @@ message DamagePacket {
   // Direction: Server -> Client
   option (packet_type) = DAMAGE;
 
-  optional uint32 damage = 1;
+  required uint32 damage = 1;
 }
 
 message DeathPacket {
@@ -236,7 +238,7 @@ message SightPacket {
   // Direction: Client -> Server
   option (packet_type) = SIGHT;
 
-  optional Vector2 location = 1;
+  required Vector2 location = 1;
 }
 
 message UnsightPacket {
@@ -245,7 +247,7 @@ message UnsightPacket {
   // Direction: Client -> Server
   option (packet_type) = UNSIGHT;
 
-  optional Vector2 location = 1;
+  required Vector2 location = 1;
 }
 
 message EnterPacket {
@@ -255,11 +257,11 @@ message EnterPacket {
   // Direction: Server -> Client
   option (packet_type) = ENTER;
 
-  optional Vector2 location = 1;
+  required Vector2 location = 1;
 
   // This field is advisory -- the client may choose to integrate it into its
   // list of entities, if it doesn't have the entity.
-  optional Entity entity = 2;
+  required Entity entity = 2;
 }
 
 message ExitPacket {
@@ -269,7 +271,7 @@ message ExitPacket {
   // Direction: Server -> Client
   option (packet_type) = EXIT;
 
-  optional Vector2 location = 1;
+  required Vector2 location = 1;
 }
 
 message DiscardPacket {
@@ -281,7 +283,7 @@ message DiscardPacket {
   // Direction: Server <-> Client
   option (packet_type) = DISCARD;
 
-  optional uint32 inventory_index = 1;
+  required uint32 inventory_index = 1;
 }
 
 message ModifyEquipmentPacket {
@@ -293,6 +295,6 @@ message ModifyEquipmentPacket {
   // Direction: Server <-> Client
   option (packet_type) = MODIFY_EQUIPMENT;
 
-  optional Equipment.Slot slot = 1;
+  required Equipment.Slot slot = 1;
   optional uint32 inventory_index = 2;
 }
