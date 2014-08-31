@@ -290,10 +290,13 @@ export class Player extends Actor {
   doInteract(protocol) {
     var intersecting = this.realm.getAllEntities().filter((entity) =>
       entity.getBounds().intersects(this.getBounds()) &&
+      this.realm.isTerrainPassableBy(this, this.getBounds(), this.direction) &&
       entity !== this);
 
     var adjacents = this.realm.getAllEntities().filter((entity) =>
       entity.getBounds().intersects(this.getTargetBounds()) &&
+      this.realm.isTerrainPassableBy(this, this.getTargetBounds(),
+                                     this.direction) &&
       entity !== this);
 
     // Check for interactions.
