@@ -228,7 +228,7 @@ export class Actor extends Entity {
 
   getAdjacentInteractions() {
     return [{
-      title: "???",
+      title: "THIS ACTION DOES NOTHING AND IS ONLY FOR TESTING",
       f: () => { }
     }];
   }
