@@ -45,7 +45,14 @@
     transition: background 0.2s;
 
     &:hover {
+      color: #fff;
       background: #0cf;
+      text-shadow: 0 1px 0 darken(#0cf, 10%);
+
+      &.cancel {
+        background: #f55;
+        text-shadow: 0 1px 0 darken(#f55, 10%);
+      }
     }
   }
 
