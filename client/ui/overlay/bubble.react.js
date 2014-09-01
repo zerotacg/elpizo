@@ -2,6 +2,8 @@
 
 module React from "react";
 
+module colors from "client/util/colors";
+
 export var Bubble = React.createClass({
   render: function () {
     var entity = this.props.entity;
@@ -11,10 +13,10 @@ export var Bubble = React.createClass({
 
     return <div style={{
       transform: "translate(" + (position.x + 16 + "px") + "," +
-                                (position.y - (entity.getHeight() - 1) * 32 + 16 + "px") + ")"}}>
+                                (position.y - (entity.getHeight() - 1) * 32 + 8 + "px") + ")"}}>
       <div className="bubble">
         <div className="anchor">
-          <div className="inner">
+          <div className="inner" style={{color: colors.makeColorForString(entity.name)}}>
             {this.props.text}
           </div>
         </div>

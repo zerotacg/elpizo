@@ -13,6 +13,7 @@ module resources from "client/util/resources";
 module geometry from "client/models/geometry";
 module realm from "client/models/realm";
 module ui from "client/ui/main.react";
+module logUi from "client/ui/log.react";
 
 function waitFor(emitter, event) {
   return new promise.Promise((resolve, reject) =>
@@ -215,8 +216,10 @@ export class Game extends events.EventEmitter {
   }
 
   setAvatarById(id) {
-    console.log("Hello! Your player id is:", id);
     this.me = this.realm.getEntity(id);
+    this.log.push(logUi.InfoMessageEntry({
+        text: "Welcome to Rekindled Hope, " + this.me.name + "!"
+    }));
     this.renderer.center(this.me.location);
   }
 

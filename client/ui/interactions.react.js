@@ -65,14 +65,14 @@ export var InteractionsMenu = React.createClass({
         </li>
       });
 
-      return <li key={i}>
+      return <li key={i} className="action-group">
         <div className="heading">{group.entity.getTitle()}</div>
         <ul>{actions}</ul>
       </li>;
     });
 
-    return <div className="interactions-menu">
-      <form className="wrapper" onSubmit={this.onSubmit}
+    return <div className="center">
+      <form className="interactions-menu" onSubmit={this.onSubmit}
             onKeyDown={this.onKeyDown}>
         <ul>{interactions}</ul>
         <input type="radio" name="item" id="interactions-menu-cancel"

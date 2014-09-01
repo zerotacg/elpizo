@@ -1,3 +1,4 @@
+module chroma from "chroma-js";
 module events from "events";
 
 module sprites from "client/assets/sprites";
@@ -492,17 +493,20 @@ class RendererVisitor extends entities.EntityVisitor {
     })
 
     // Render the name card.
-    this.ctx.translate(16, 32);
+    this.ctx.translate(16, -entity.getHeight() * 32 + 16);
 
     var baseWidth = this.ctx.measureText(entity.name).width;
     var width = baseWidth + 8;
 
-    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
     this.ctx.fillRect(-width / 2, 0, width, 20);
 
-    this.ctx.fillStyle = colors.makeColorForString(entity.name);
     this.ctx.textAlign = "center";
     this.ctx.textBaseline = "middle";
+
+    var textColor = chroma(colors.makeColorForString(entity.name))
+        .darken(10).hex();
+    this.ctx.fillStyle = textColor;
     this.ctx.fillText(entity.name, 0, 10);
   }
 

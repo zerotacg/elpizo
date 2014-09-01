@@ -15,7 +15,6 @@ body {
   text-rendering: optimizeLegibility;
   padding: 0;
   margin: 0;
-  color: white;
 }
 
 pre {
@@ -28,15 +27,15 @@ input {
 }
 
 input::-webkit-input-placeholder, textarea::-webkit-input-placeholder {
-  color: inherit;
+  color: darken(#fff, 30%);
 }
 
 input:-moz-placeholder, textarea:-moz-placeholder {
-  color: inherit;
+  color: darken(#fff, 30%);
 }
 
 a {
-  color: #ddd;
+  color: inherit;
 }
 
 .renderer, .ui-root {
@@ -46,4 +45,4 @@ a {
   z-index: 0;
 }
 
-@import "./ui/main";
+@import "/ui/main";

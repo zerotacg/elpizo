@@ -22,7 +22,6 @@ export var UI = React.createClass({
     if (this.props.game.resourcesLoaded) {
       uiElements = <div>
         <overlay.Overlay game={this.props.game} />
-        <log.Log game={this.props.game} log={this.props.game.log.slice()} />
         <debug.Debug game={this.props.game} />
       </div>;
 
@@ -35,6 +34,7 @@ export var UI = React.createClass({
             null;
 
         hudElements = <div>
+          <log.Log game={this.props.game} log={this.props.game.log.slice()} />
           <stats.Stats me={this.props.game.me}
                        resources={this.props.game.resources} />
           <inventory.Inventory me={this.props.game.me}

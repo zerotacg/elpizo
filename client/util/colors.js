@@ -4,7 +4,7 @@ module random from "client/util/random";
 
 export function makeColor(seed) {
   var rand = random.makeLinCongRand(seed);
-  return chroma.hsl(rand() * 360, 1.0, 0.75);
+  return chroma.hsv(rand() * 360, 1.0, 0.8);
 }
 
 export function makeColorForString(s) {

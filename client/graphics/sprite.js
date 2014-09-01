@@ -67,28 +67,28 @@ export function makeHumanoidSprite(resourceName) {
               collections.repeat(8, (i) =>
                   new geometry.Vector2(64 * (i + 1), 64 * 8)),
               new geometry.Vector2(16, 32),
-              4),
+              3),
           w: new Sprite(
               resourceName,
               new geometry.Vector2(64, 64),
               collections.repeat(8, (i) =>
                   new geometry.Vector2(64 * (i + 1), 64 * 9)),
               new geometry.Vector2(16, 32),
-              4),
+              3),
           s: new Sprite(
               resourceName,
               new geometry.Vector2(64, 64),
               collections.repeat(8, (i) =>
                   new geometry.Vector2(64 * (i + 1), 64 * 10)),
               new geometry.Vector2(16, 32),
-              4),
+              3),
           e: new Sprite(
               resourceName,
               new geometry.Vector2(64, 64),
               collections.repeat(8, (i) =>
                   new geometry.Vector2(64 * (i + 1), 64 * 11)),
               new geometry.Vector2(16, 32),
-              4)
+              3)
       },
       slashing: {
           n: new Sprite(

@@ -11,12 +11,14 @@ export var Loading = React.createClass({
     var body;
 
     if (this.props.game.lastError !== null) {
-      body = <div className="error">
-        <div className="inner">
-          <h1>:(</h1>
-          <p>An unexpected error has occurred.</p>
-          <pre>{this.props.game.lastError}</pre>
-          <p>Your session has been closed. Please try logging in again.</p>
+      body = <div className="center">
+        <div className="error">
+          <div className="heading">Error</div>
+          <div className="info">
+            <p>An unexpected error has occurred.</p>
+            <pre>{this.props.game.lastError}</pre>
+            <p>Your session has been closed. Please try logging in again.</p>
+          </div>
         </div>
       </div>;
     } else {

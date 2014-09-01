@@ -87,6 +87,10 @@ export var Log = React.createClass({
     this.setState({pendingMessage: e.target.value});
   },
 
+  focusChat: function () {
+    this.refs.text.getDOMNode().focus();
+  },
+
   handleSubmit: function (e) {
     e.preventDefault();
     var pendingMessage = this.state.pendingMessage;
@@ -129,7 +133,7 @@ export var Log = React.createClass({
   render: function () {
     var messages = this.props.log.map((entry, i) => <li key={i}>{entry}</li>);
 
-    return <form className="log" onSubmit={this.handleSubmit}>
+    return <form className="log" onSubmit={this.handleSubmit} onClick={this.focusChat}>
       <ul className="messages" ref="messages">
         {messages}
       </ul>

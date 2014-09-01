@@ -12,7 +12,6 @@ export var Item = React.createClass({
   render: function () {
     var title = "(no item)";
     var background = null;
-    var onClick = () => { };
 
     if (this.props.item !== null) {
       title = this.props.item.getIndefiniteTitle();
@@ -25,14 +24,12 @@ export var Item = React.createClass({
                    -firstFrame.x + "px " +
                    -firstFrame.y + "px " +
                    "no-repeat";
-
-      onClick = this.props.onClick;
     }
 
-    return <a className="item" onClick={onClick} title={title}>
+    return <div className="item" title={title}>
       <span className="sprite" style={{background: background}} />
       <span className="title">{title}</span>
-    </a>;
+    </div>;
   }
 })
 
@@ -49,23 +46,16 @@ export var Inventory = React.createClass({
 
     var resources = this.props.resources;
     var inventory = Object.keys(me.inventory)
-        .map((k) => me.inventory[k])
-        .sort((a, b) => {
-          var aTitle = a.getPluralTitle();
-          var bTitle = b.getPluralTitle()
-
-          return aTitle < bTitle ? -1 :
-                 aTitle > bTitle ? 1 :
-                 0;
-        });
+        .map((k) => me.inventory[k]);
 
     var items = inventory.map((item) => {
       var menu = item.getInventoryActions().map((action, i) =>
         <li key={i}>
-          <a onClick={action.f.bind(item, this.props.protocol, this.props.me,
-                                    this.props.log)}>
+          <button onClick={action.f.bind(item, this.props.protocol,
+                                         this.props.me, this.props.log)}
+                  type="button">
             {action.title}
-          </a>
+          </button>
         </li>);
 
       return <li key={item.id}>
@@ -74,42 +64,42 @@ export var Inventory = React.createClass({
       </li>
     });
 
-    return <div className={"inventory" + (this.props.show ? "" : " hidden")}>
-      <div className="wrapper">
-        <div className="bag">
+    return <div className="center">
+      <div className="inventory">
+        <div className={"bag" + (this.props.show ? "" : " hidden")}>
           <div className="heading">Bag</div>
           <div className="inner">
             <ul>{items}</ul>
           </div>
         </div>
 
-        <div className="equipment">
+        <div className={"equipment" + (this.props.show ? "" : " hidden")}>
           <div className="heading">Equipment</div>
           <div className="inner">
-            <div className="slot head-item">
-              <Item resources={resources} item={me.headItem}
-                    onClick={this.dequip.bind(this, "headItem")} />
-            </div>
+            <button className="slot head-item"
+                    onClick={this.dequip.bind(this, "headItem")}>
+              <Item resources={resources} item={me.headItem} />
+            </button>
 
-            <div className="slot torso-item">
-              <Item resources={resources} item={me.torsoItem}
-                    onClick={this.dequip.bind(this, "torsoItem")} />
-            </div>
+            <button className="slot torso-item"
+                    onClick={this.dequip.bind(this, "torsoItem")}>
+              <Item resources={resources} item={me.torsoItem} />
+            </button>
 
-            <div className="slot legs-item">
-              <Item resources={resources} item={me.legsItem}
-                    onClick={this.dequip.bind(this, "legsItem")} />
-            </div>
+            <button className="slot legs-item"
+                    onClick={this.dequip.bind(this, "legsItem")}>
+              <Item resources={resources} item={me.legsItem} />
+            </button>
 
-            <div className="slot feet-item">
-              <Item resources={resources} item={me.feetItem}
-                    onClick={this.dequip.bind(this, "feetItem")} />
-            </div>
+            <button className="slot feet-item"
+                    onClick={this.dequip.bind(this, "feetItem")}>
+              <Item resources={resources} item={me.feetItem} />
+            </button>
 
-            <div className="slot weapon">
-              <Item resources={resources} item={me.weapon}
-                    onClick={this.dequip.bind(this, "weapon")} />
-            </div>
+            <button className="slot weapon"
+                    on onClick={this.dequip.bind(this, "weapon")}>
+              <Item resources={resources} item={me.weapon} />
+            </button>
           </div>
         </div>
       </div>

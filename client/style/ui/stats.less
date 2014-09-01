@@ -1,14 +1,18 @@
+@import "/ui/util";
+
 .stats {
+  .window(#fff, #fff, darken(#fff, 50%));
+
   position: absolute;
   left: 16px;
   top: 16px;
 
-  border-radius: 4px;
-
-  background: rgba(0, 0, 0, 0.5);
   padding: 8px 16px;
 
-  display: flex;
+  .inner {
+    display: flex;
+    flex-direction: row;
+  }
 
   .avatar {
     margin-left: -16px;
@@ -23,8 +27,9 @@
     justify-content: center;
   }
 
-  .name {
+  .heading {
     padding: 2px 0;
+    background: none;
   }
 
   .health {
@@ -38,11 +43,11 @@
       width: 16px;
       height: 16px;
 
-      background: #f44;
+      background: #f77;
+      box-shadow: 0 2px 0 darken(#f77, 30%);
+
       float: left;
       margin-left: 8px;
-
-      border-radius: 4px;
     }
   }
 }

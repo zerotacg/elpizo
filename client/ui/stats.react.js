@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+module chroma from "chroma-js";
 module React from "react";
 
 module renderer from "client/graphics/renderer";
@@ -38,12 +39,19 @@ var HealthTicks = React.createClass({
 export var Stats = React.createClass({
   render: function () {
     var me = this.props.me;
+    var fill = colors.makeColorForString(me.name);
+    var emboss = chroma(fill).darken(10).hex();
 
-    return <div className="stats">
-      <Avatar resources={this.props.resources} me={me} />
-      <div className="info">
-        <div className="name" style={{color: colors.makeColorForString(me.name)}}>{me.name}</div>
-        <HealthTicks health={me.health} />
+    return <div className="stats" style={{
+      backgroundColor: fill,
+      boxShadow: "0 4px 0 " + emboss + ", 0 8px 20px rgba(0, 0, 0, 0.5)"
+    }}>
+      <div className="inner">
+        <Avatar resources={this.props.resources} me={me} />
+        <div className="info">
+          <div className="heading">{me.name}</div>
+          <HealthTicks health={me.health} />
+        </div>
       </div>
     </div>;
   }

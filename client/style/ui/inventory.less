@@ -1,180 +1,110 @@
-.inventory {
-  position: absolute;
-  width: 100%;
-  height: 100%;
+@import "/ui/util";
+
+.bag {
+  .window(#8dd35f, lighten(#8dd35f, 50%), darken(#8dd35f, 15%));
+
+  width: 400px;
+  height: 400px;
+  margin: 8px;
 
   display: flex;
-  justify-content: center;
-  align-items: center;
 
-  .heading {
-    padding: 4px 8px;
-    flex-shrink: 0;
-    background: rgba(255, 255, 255, 0.2);
-  }
+  .inner {
+    overflow: auto;
 
-  .bag {
-    pointer-events: all;
+    > ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
 
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
+      > li {
+        display: flex;
+        align-items: center;
 
-    width: 400px;
-    height: 400px;
-    margin: 8px;
+        padding: 0 8px;
 
-    display: flex;
-    flex-direction: column;
-
-    .inner {
-      overflow: auto;
-
-      > ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-
-        padding: 4px 0;
-
-        > li {
+        .item {
           display: flex;
           align-items: center;
+          align-self: flex-start;
 
-          padding: 0 8px;
-
-          .item {
-            display: flex;
-            align-items: center;
-            align-self: flex-start;
-
-            padding: 4px;
-            border: 0;
-            margin: 0;
-            outline: 0;
-          }
-
-          .actions {
-            list-style: none;
-            margin: 0;
-            display: flex;
-            margin-left: auto;
-
-            li {
-              background: rgba(255, 255, 255, 0.2);
-              border-radius: 4px;
-              margin-left: 8px;
-            }
-
-            a {
-              display: block;
-
-              &:hover {
-                background: rgba(255, 255, 255, 0.2);
-              }
-
-              transition: background 0.2s ease-out;
-              cursor: pointer;
-              padding: 4px 8px;
-            }
-          }
-
-          .title {
-            padding-left: 4px;
-            display: block;
-          }
-
-          &:hover {
-            background: rgba(255, 255, 255, 0.2);
-          }
-
-          transition: background 0.2s ease-out;
+          padding: 4px;
+          border: 0;
+          margin: 0;
+          outline: 0;
         }
-      }
-    }
-  }
 
-  .equipment {
-    pointer-events: all;
+        .actions {
+          list-style: none;
+          margin: 0;
+          display: flex;
+          margin-left: auto;
 
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 4px;
-
-    width: 200px;
-    height: 208px;
-
-    margin: 8px;
-
-    .inner {
-      position: relative;
-    }
-
-    .slot {
-      position: absolute;
-      border-radius: 4px;
-
-      background: rgba(255, 255, 255, 0.2);
-
-      .item {
-        border-radius: 4px;
-
-        display: block;
+          li {
+            margin-left: 8px;
+          }
+        }
 
         .title {
-          display: none;
+          padding-left: 4px;
+          display: block;
         }
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.5);
-        }
-
-        cursor: pointer;
-        transition: background 0.2s ease-out;
-      }
-
-      &.head-item {
-        top: 16px;
-        left: 80px;
-      }
-
-      &.torso-item {
-        top: 16px + (32px + 8px) * 1;
-        left: 80px;
-      }
-
-      &.legs-item {
-        top: 16px + (32px + 8px) * 2;
-        left: 80px;
-      }
-
-      &.feet-item {
-        top: 16px + (32px + 8px) * 3;
-        left: 80px;
-      }
-
-      &.weapon {
-        top: 16px + (32px + 8px) * 1;
-        left: 80px - 32px - 8px;
       }
     }
   }
+}
 
-  .wrapper {
-    display: flex;
-    align-items: top;
-    justify-content: center;
+.equipment {
+  .window(#8dd35f, lighten(#8dd35f, 50%), darken(#8dd35f, 15%));
 
-    transition: all 0.2s;
+  width: 200px;
+  height: 208px;
+  margin: 8px;
+
+  flex-direction: column;
+
+  .inner {
+    position: relative;
   }
 
-  &.hidden .wrapper {
-    visibility: hidden;
-    opacity: 0;
-    transform: translate(0, 16px);
-  }
+  .slot {
+    position: absolute;
+    padding: 0;
 
-  .sprite {
-    width: 32px;
-    height: 32px;
-    display: block;
+
+    .item {
+      .title {
+        display: none;
+      }
+    }
+
+    &.head-item {
+      top: 8px;
+      left: 80px;
+    }
+
+    &.torso-item {
+      top: 8px + (32px + 8px) * 1;
+      left: 80px;
+    }
+
+    &.legs-item {
+      top: 8px + (32px + 8px) * 2;
+      left: 80px;
+    }
+
+    &.feet-item {
+      top: 8px + (32px + 8px) * 3;
+      left: 80px;
+    }
+
+    &.weapon {
+      top: 8px + (32px + 8px) * 1;
+      left: 80px - 32px - 8px;
+    }
   }
+}
+
+.inventory {
+  display: flex;
 }

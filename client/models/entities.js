@@ -391,7 +391,7 @@ export class Player extends Actor {
   }
 
   getHeight() {
-    return 2;
+    return 1.75;
   }
 }
 

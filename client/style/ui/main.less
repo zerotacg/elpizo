@@ -1,17 +1,20 @@
 .ui-root {
-  @import "./debug";
-  @import "./interactions";
-  @import "./inventory";
-  @import "./loading";
-  @import "./overlay/overlay";
-  @import "./log";
-  @import "./stats";
+  @import "/ui/debug";
+  @import "/ui/interactions";
+  @import "/ui/inventory";
+  @import "/ui/loading";
+  @import "/ui/overlay/overlay";
+  @import "/ui/log";
+  @import "/ui/stats";
+  @import "/ui/util";
 
   width: 100%;
   height: 100%;
   z-index: 1;
   overflow: hidden;
   pointer-events: none;
+
+  color: #808080;
 
   -moz-user-select: none;
   -webkit-user-select: none;
@@ -20,13 +23,9 @@
   cursor: default;
 
   ::-webkit-scrollbar {
-      width: 8px;
+    width: 8px;
   }
 
   ::-webkit-scrollbar-track {
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
   }
 }
