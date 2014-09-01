@@ -12,6 +12,10 @@ export class TorsoItem extends equipment.Equipment {
   getEquipVerb() {
     return "put on";
   }
+
+  getDequipVerb() {
+    return "take off";
+  }
 }
 
 export class WhiteLongsleeveShirt extends TorsoItem {

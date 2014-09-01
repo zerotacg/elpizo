@@ -11,6 +11,8 @@ class AsyncRedisHashAdapter(object):
   def __init__(self, hash_key, redis):
     self.hash_key = hash_key
     self.redis = redis
+    self.counter = AsyncRedisCounterAdapter(
+        "{}.{}".format(self.hash_key, self._SERIAL_KEY), self.redis)
 
   def get(self, key):
     v = green.await_coro(self.redis.hget(self.hash_key.encode("utf-8"),
@@ -28,11 +30,19 @@ class AsyncRedisHashAdapter(object):
                                      [key.encode("utf-8")]))
 
   def next_serial(self):
-    return str(green.await_coro(self.redis.incr(
-        "{}.{}".format(self.hash_key, self._SERIAL_KEY).encode("utf-8"))))
+    return self.counter.next_serial()
 
   def keys(self):
     for fut in green.await_coro(self.redis.hkeys(self.hash_key.encode("utf-8"))):
       key = green.await(fut).decode("utf-8")
       if key != self._SERIAL_KEY:
         yield key
+
+
+class AsyncRedisCounterAdapter(object):
+  def __init__(self, key, redis):
+    self.key = key
+    self.redis = redis
+
+  def next_serial(self):
+    return str(green.await_coro(self.redis.incr(self.key.encode("utf-8"))))

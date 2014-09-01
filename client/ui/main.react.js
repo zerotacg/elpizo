@@ -30,7 +30,8 @@ export var UI = React.createClass({
         var interactionsMenu =
             this.props.game.me.interactions.length > 0 ?
             <interactions.InteractionsMenu me={this.props.game.me}
-                                           protocol={this.props.game.protocol} /> :
+                                           protocol={this.props.game.protocol}
+                                           log={this.props.game.log} /> :
             null;
 
         hudElements = <div>
@@ -39,6 +40,7 @@ export var UI = React.createClass({
           <inventory.Inventory me={this.props.game.me}
                                resources={this.props.game.resources}
                                protocol={this.props.game.protocol}
+                               log={this.props.game.log}
                                show={this.props.showInventory} />
           {interactionsMenu}
         </div>;

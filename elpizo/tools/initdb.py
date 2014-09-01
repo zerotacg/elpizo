@@ -121,11 +121,11 @@ def initdb(app):
       health=10,
       realm_id=windvale.id,
       location=geometry.Vector2(0, 0),
-      inventory=[],
-      torso_item=torso_items.WhiteLongsleeveShirt(),
-      legs_item=legs_items.TealPants(),
-      feet_item=feet_items.BrownShoes(),
-      weapon=weapons.Dagger()))
+      inventory=set(),
+      torso_item=app.store.create_item(torso_items.WhiteLongsleeveShirt()),
+      legs_item=app.store.create_item(legs_items.TealPants()),
+      feet_item=app.store.create_item(feet_items.BrownShoes()),
+      weapon=app.store.create_item(weapons.Dagger())))
 
   app.store.entities.create(entities.Player(
       name="Marius",
@@ -136,8 +136,8 @@ def initdb(app):
       health=10,
       realm_id=windvale.id,
       location=geometry.Vector2(0, 16),
-      inventory=[],
-      legs_item=legs_items.TealPants()))
+      inventory=set(),
+      legs_item=app.store.create_item(legs_items.TealPants())))
 
   app.store.entities.create(entities.Player(
       name="Courfeyrac",
@@ -148,8 +148,8 @@ def initdb(app):
       health=10,
       realm_id=windvale.id,
       location=geometry.Vector2(16, 16),
-      inventory=[],
-      legs_item=legs_items.TealPants()))
+      inventory=set(),
+      legs_item=app.store.create_item(legs_items.TealPants())))
 
   app.store.entities.create(entities.Player(
       name="Enjolras",
@@ -160,8 +160,8 @@ def initdb(app):
       health=10,
       realm_id=windvale.id,
       location=geometry.Vector2(12, 16),
-      inventory=[],
-      legs_item=legs_items.TealPants()))
+      inventory=set(),
+      legs_item=app.store.create_item(legs_items.TealPants())))
 
   for _ in range(25):
     app.store.entities.create(entities.NPC(
@@ -172,7 +172,7 @@ def initdb(app):
         health=5,
         realm_id=windvale.id,
         location=geometry.Vector2(random.randint(0, 32), random.randint(0, 32)),
-        inventory=[restorative.Carrot()],
+        inventory={app.store.create_item(restorative.Carrot())},
         behavior="wander"))
 
   logging.info("Created players.")

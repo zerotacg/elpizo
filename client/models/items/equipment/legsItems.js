@@ -12,6 +12,10 @@ export class LegsItem extends equipment.Equipment {
   getEquipVerb() {
     return "put on";
   }
+
+  getDequipVerb() {
+    return "take off";
+  }
 }
 
 export class TealPants extends LegsItem {

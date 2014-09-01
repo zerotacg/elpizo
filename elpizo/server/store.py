@@ -23,6 +23,7 @@ class GameStore(object):
 
     self.realms = realm.RealmStore(self, self._make_kvs("realms"))
     self.entities = entities.EntityStore(self, self._make_kvs("entities"))
+    self.item_counter = self._make_counter("items.serial")
 
     self.is_lock_acquired = False
 
@@ -64,11 +65,18 @@ the database IMMEDIATELY!
   def _make_kvs(self, hash_key):
     return kvs.AsyncRedisHashAdapter(hash_key, self.redis)
 
+  def _make_counter(self, key):
+    return kvs.AsyncRedisCounterAdapter(key, self.redis)
+
   def make_region_store(self, r):
     assert r.id is not None
     return realm.RegionStore(self.entities,
                              self._make_kvs("realms.{id}.regions".format(
                                  id=r.id)))
+
+  def create_item(self, item):
+    item.id = self.item_counter.next_serial()
+    return item
 
   def save_all(self):
     if not self.is_lock_acquired:

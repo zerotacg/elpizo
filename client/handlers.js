@@ -124,7 +124,7 @@ export function install(game) {
 
 
   protocol.on(packets.Packet.Type.STATUS, withEntity((entity, message) => {
-    game.appendToLog(log.StatusMessageEntry({
+    game.log.push(log.StatusMessageEntry({
         origin: entity.name,
         text: (message.online ? "connected" : "disconnected") + "."
     }));
@@ -140,23 +140,17 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.DISCARD, withEntity((entity, message) => {
-    var item = entity.inventory[message.inventoryIndex];
-    entity.discard(message.inventoryIndex);
-
-    if (entity === game.me) {
-      game.appendToLog(log.InfoMessageEntry({
-          text: "You drop " + item.getDefiniteTitle() + "."
-      }));
-    }
+    var item = entity.inventory[message.itemId];
+    entity.discard(item);
   }));
 
   protocol.on(packets.Packet.Type.INVENTORY, withEntity((entity, message) => {
     var item = itemRegistry.makeItem(message.item);
-    entity.inventory.push(item);
+    entity.addToInventory(item);
 
     if (entity === game.me) {
-      game.appendToLog(log.InfoMessageEntry({
-          text: "You put " + item.getDefiniteTitle() + " in your bag."
+      game.log.push(log.InfoMessageEntry({
+          text: "You put " + item.getDefiniteTitle() + " into your bag."
       }));
     }
   }));
@@ -177,7 +171,7 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.CHAT, (origin, message) => {
-    game.appendToLog(log.ChatMessageEntry({
+    game.log.push(log.ChatMessageEntry({
         origin: message.actorName,
         text: message.text
     }));
@@ -193,7 +187,7 @@ export function install(game) {
     var startTime = parseFloat(message.payload);
     var endTime = new Date().valueOf();
 
-    game.appendToLog(log.InfoMessageEntry({
+    game.log.push(log.InfoMessageEntry({
         text: "Latency: " + (endTime - startTime) + "ms"
     }));
   });
@@ -201,18 +195,11 @@ export function install(game) {
   protocol.on(packets.Packet.Type.MODIFY_EQUIPMENT, withEntity((entity, message) => {
     var slot = equipment.Equipment.SLOT_NAMES[message.slot];
 
-    if (message.inventoryIndex !== null) {
+    if (message.itemId !== null) {
       // Handle equipping.
-      var item = entity.inventory[message.inventoryIndex];
+      var item = entity.inventory[message.itemId];
       entity[slot] = item;
-      entity.discard(message.inventoryIndex);
-
-      if (entity === game.me) {
-        game.appendToLog(log.InfoMessageEntry({
-            text: "You " + item.getEquipVerb() + " " + item.getDefiniteTitle() +
-                  "."
-        }));
-      }
+      entity.discard(item);
     } else {
       // Handle dequipping.
       entity[slot] = null;

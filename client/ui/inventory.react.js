@@ -39,12 +39,9 @@ export var Item = React.createClass({
 export var Inventory = React.createClass({
   dequip: function (slot) {
     var item = this.props.me[slot];
-    this.props.me[slot] = null;
-
-    this.props.protocol.send(new packets.ModifyEquipmentPacket({
-        slot: item.getSlot(),
-        inventoryIndex: null
-    }));
+    if (item !== null) {
+      item.doDequip(this.props.protocol, this.props.me, this.props.log);
+    }
   },
 
   render: function () {
@@ -52,20 +49,22 @@ export var Inventory = React.createClass({
 
     var resources = this.props.resources;
 
-    var items = me.inventory.map((item, i) => {
-      var menu = item.getInventoryActions().map((action, j) =>
-        <li key={j}>
-          <a onClick={action.f.bind(item,
-                                    this.props.protocol,
-                                    this.props.me,
-                                    i)}>{action.title}</a>
+    var items = Object.keys(me.inventory).map((k) => {
+      var item = me.inventory[k];
+
+      var menu = item.getInventoryActions().map((action, i) =>
+        <li key={i}>
+          <a onClick={action.f.bind(item, this.props.protocol, this.props.me,
+                                    this.props.log)}>
+            {action.title}
+          </a>
         </li>);
 
-      return <li key={i}>
+      return <li key={item.id}>
         <Item resources={resources} item={item} />
         <ul className="actions">{menu}</ul>
       </li>
-    }).reverse();
+    });
 
     return <div className={"inventory" + (this.props.show ? "" : " hidden")}>
       <div className="wrapper">

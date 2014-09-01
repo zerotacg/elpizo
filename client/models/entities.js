@@ -156,8 +156,10 @@ export class Actor extends Entity {
     this.weapon = message.weapon &&
         itemRegistry.makeItem(message.weapon);
 
-    this.inventory = message.inventory.map(
-      (message) => itemRegistry.makeItem(message));
+    this.inventory = {};
+    message.inventory.forEach((message) => {
+      this.inventory[message.id] = itemRegistry.makeItem(message);
+    });
 
     this.isMoving = false;
     this.isDying = false;
@@ -172,8 +174,12 @@ export class Actor extends Entity {
     return this.name;
   }
 
-  discard(index) {
-    this.inventory.splice(index, 1);
+  addToInventory(item) {
+    this.inventory[item.id] = item;
+  }
+
+  discard(item) {
+    delete this.inventory[item.id];
   }
 
   finishMove() {

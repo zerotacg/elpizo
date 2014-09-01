@@ -11,7 +11,7 @@ var COMMANDS = {
   debug: (game) => {
     game.setDebug(!game.debug);
 
-    game.appendToLog(InfoMessageEntry({
+    game.log.push(InfoMessageEntry({
         text: "Debug mode " + (game.debug ? "on" : "off") + "."
     }));
   },
@@ -23,11 +23,11 @@ var COMMANDS = {
       r = eval(cmd);
       evalOk = true;
     } catch (e) {
-      game.appendToLog(<pre className="info">&lt;&lt;! {e.toString()}</pre>);
+      game.log.push(<pre className="info">&lt;&lt;! {e.toString()}</pre>);
     }
 
     if (evalOk) {
-      game.appendToLog(<pre className="info">&lt;&lt;&lt; {objects.repr(r)}</pre>);
+      game.log.push(<pre className="info">&lt;&lt;&lt; {objects.repr(r)}</pre>);
     }
   },
 
@@ -103,7 +103,7 @@ export var Log = React.createClass({
       var rest = parts.slice(1).join(" ").trim();
 
       if (!objects.hasOwnProp.call(COMMANDS, commandName)) {
-        this.props.game.appendToLog(InfoMessageEntry({
+        this.props.game.log.push(InfoMessageEntry({
           text: "No such command: " + commandName
         }))
       } else {
@@ -112,7 +112,7 @@ export var Log = React.createClass({
     } else {
       pendingMessage = pendingMessage.replace(/^\/\//, "/");
 
-      this.props.game.appendToLog(ChatMessageEntry({
+      this.props.game.log.push(ChatMessageEntry({
           origin: this.props.game.me.name,
           text: pendingMessage
       }));

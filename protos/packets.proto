@@ -71,7 +71,7 @@ message ChatPacket {
   option (packet_type) = CHAT;
 
   required string target = 1;
-  required string actor_name = 2;
+  optional string actor_name = 2;
   required string text = 3;
 }
 
@@ -283,7 +283,7 @@ message DiscardPacket {
   // Direction: Server <-> Client
   option (packet_type) = DISCARD;
 
-  required uint32 inventory_index = 1;
+  required string item_id = 1;
 }
 
 message ModifyEquipmentPacket {
@@ -296,5 +296,5 @@ message ModifyEquipmentPacket {
   option (packet_type) = MODIFY_EQUIPMENT;
 
   required Equipment.Slot slot = 1;
-  optional uint32 inventory_index = 2;
+  optional string item_id = 2;
 }

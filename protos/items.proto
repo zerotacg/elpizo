@@ -1,7 +1,8 @@
 message Item {
   extensions 100 to max;
 
-  required string type = 1;
+  required string id = 1;
+  required string type = 2;
 }
 
 message Equipment {

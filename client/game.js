@@ -71,10 +71,6 @@ export class Game extends events.EventEmitter {
     this.clientBounds = new geometry.Rectangle(0, 0, 0, 0);
   }
 
-  appendToLog(node) {
-    this.log.push(node);
-  }
-
   onError(msg, file, lineno, colno, e) {
     this.protocol.transport.close();
     this.lastError = "Internal client error.\n\n" + e.stack.toString();

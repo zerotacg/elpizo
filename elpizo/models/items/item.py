@@ -16,13 +16,18 @@ class Item(object):
     return subclass
 
   def to_protobuf(self):
-    return items_pb2.Item(type=self.TYPE)
+    return items_pb2.Item(id=self.id, type=self.TYPE)
 
   @classmethod
   def from_protobuf(cls, proto):
-    return cls(type=proto.type)
+    return cls(id=proto.id, type=proto.type)
 
   @classmethod
   def from_protobuf_polymorphic(cls, proto):
     return cls.REGISTRY[proto.type].from_protobuf(proto)
 
+  def __eq__(self, other):
+    return other.id == self.id
+
+  def __hash__(self):
+    return hash((Item, self.id))

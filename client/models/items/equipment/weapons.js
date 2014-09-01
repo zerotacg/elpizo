@@ -13,6 +13,10 @@ class Weapon extends equipment.Equipment {
   getEquipVerb() {
     return "wield";
   }
+
+  getDequipVerb() {
+    return "stop wielding";
+  }
 }
 
 export class Dagger extends Weapon {

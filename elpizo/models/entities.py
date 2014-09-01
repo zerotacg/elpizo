@@ -220,8 +220,8 @@ class Actor(Entity):
     proto = proto.Extensions[entities_pb2.Actor.ext]
     record.update(name=proto.name, health=proto.health, gender=proto.gender,
                   body=proto.body,
-                  inventory=[items.Item.from_protobuf_polymorphic(item_proto)
-                             for item_proto in proto.inventory],
+                  inventory={items.Item.from_protobuf_polymorphic(item_proto)
+                             for item_proto in proto.inventory},
                   facial=proto.facial, hair=proto.hair,
                   head_item=items.Item.from_protobuf_polymorphic(proto.head_item)
                       if proto.HasField("head_item") else None,
@@ -237,13 +237,15 @@ class Actor(Entity):
 
   @property
   def equipment(self):
-    return [item for item in
+    return {item.id: item for item in
             [self.head_item, self.torso_item, self.legs_item, self.feet_item,
-             self.weapon] if item is not None]
+             self.weapon] if item is not None}
 
   @property
   def full_inventory(self):
-    return self.inventory + self.equipment
+    items = self.inventory.copy()
+    items.update(self.equipment)
+    return items
 
   def get_realm(self, realm_store):
     return realm_store.find(self.realm_id)

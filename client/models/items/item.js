@@ -1,8 +1,10 @@
 module items from "client/protos/items";
 module packets from "client/protos/packets";
+module logUi from "client/ui/log.react";
 
 export class Item {
   constructor(message) {
+    this.id = message.id;
     this.type = message.type;
   }
 
@@ -18,9 +20,13 @@ export class Item {
     return "(type: " + this.type + ", inflection: indefinite)";
   }
 
-  doDrop(protocol, me, index) {
+  doDrop(protocol, me, log) {
     protocol.send(new packets.DiscardPacket({
-        inventoryIndex: index
+        itemId: this.id
+    }));
+    me.discard(this);
+    log.push(logUi.InfoMessageEntry({
+        text: "You drop " + this.getDefiniteTitle() + " onto the ground."
     }));
   }
 
