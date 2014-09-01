@@ -11,16 +11,16 @@ export var Loading = React.createClass({
     var body;
 
     if (this.props.game.lastError !== null) {
-      body = <div className="center">
-        <div className="error">
+      body = <div className="error">
           <div className="heading">Error</div>
-          <div className="info">
-            <p>An unexpected error has occurred.</p>
-            <pre>{this.props.game.lastError}</pre>
-            <p>Your session has been closed. Please try logging in again.</p>
+          <div className="content">
+            <div>
+              <p>An unexpected error has occurred.</p>
+              <pre>{this.props.game.lastError}</pre>
+              <p>Your session has been closed. Please try logging in again.</p>
+            </div>
           </div>
-        </div>
-      </div>;
+        </div>;
     } else {
       body = <div className="spinner">
         <div className="cube1" />
@@ -28,6 +28,6 @@ export var Loading = React.createClass({
       </div>;
     }
 
-    return <div className="loading">{body}</div>;
+    return <div className="center modal">{body}</div>;
   }
 });

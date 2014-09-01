@@ -38,7 +38,7 @@ export var Debug = React.createClass({
     }
 
     return <div className="debug">
-      <table className="attrs">
+      <table className="content">
         <tr>
           <th>Viewport Bounds</th>
           <td>({viewport.left.toFixed(2)}, {viewport.top.toFixed(2)}, {viewport.getRight().toFixed(2)}, {viewport.getBottom().toFixed(2)})</td>

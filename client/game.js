@@ -311,6 +311,7 @@ export class Game extends events.EventEmitter {
   }
 
   stop() {
+    this.renderReact();
     this.running = false;
   }
 }

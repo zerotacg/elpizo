@@ -34,6 +34,10 @@
   transition: all 0.2s;
 }
 
+::-webkit-scrollbar-thumb {
+  border-radius: 0 4px 4px 0;
+}
+
 .center {
   position: absolute;
   width: 100%;
@@ -44,9 +48,13 @@
   align-items: center;
 }
 
+.modal {
+  background: rgba(0, 0, 0, 0.5);
+}
+
 .heading {
   font-size: 1.2em;
-  margin: 0 8px;
+  padding: 0 8px;
   margin-top: 4px;
   flex-shrink: 0;
 }
