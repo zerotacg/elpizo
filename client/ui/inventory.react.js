@@ -51,8 +51,8 @@ export var Inventory = React.createClass({
     var inventory = Object.keys(me.inventory)
         .map((k) => me.inventory[k])
         .sort((a, b) => {
-          var aTitle = a.getDefiniteTitle();
-          var bTitle = b.getDefiniteTitle()
+          var aTitle = a.getPluralTitle();
+          var bTitle = b.getPluralTitle()
 
           return aTitle < bTitle ? -1 :
                  aTitle > bTitle ? 1 :
