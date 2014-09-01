@@ -134,13 +134,15 @@ export var Log = React.createClass({
     var messages = this.props.log.map((entry, i) => <li key={i}>{entry}</li>);
 
     return <form className="log" onSubmit={this.handleSubmit} onClick={this.focusChat}>
-      <ul className="messages" ref="messages">
-        {messages}
-      </ul>
-      <input type="text" onChange={this.onChange}
-             value={this.state.pendingMessage}
-             ref="text"
-             placeholder="Chat message" />
+      <div className="content">
+        <ul className="messages" ref="messages">
+          {messages}
+        </ul>
+        <input type="text" onChange={this.onChange}
+               value={this.state.pendingMessage}
+               ref="text"
+               placeholder="Chat message" />
+      </div>
     </form>;
   }
 });

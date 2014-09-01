@@ -68,14 +68,14 @@ export var Inventory = React.createClass({
       <div className="inventory">
         <div className={"bag" + (this.props.show ? "" : " hidden")}>
           <div className="heading">Bag</div>
-          <div className="inner">
+          <div className="content">
             <ul>{items}</ul>
           </div>
         </div>
 
         <div className={"equipment" + (this.props.show ? "" : " hidden")}>
           <div className="heading">Equipment</div>
-          <div className="inner">
+          <div className="content">
             <button className="slot head-item"
                     onClick={this.dequip.bind(this, "headItem")}>
               <Item resources={resources} item={me.headItem} />

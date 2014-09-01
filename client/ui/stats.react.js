@@ -46,7 +46,7 @@ export var Stats = React.createClass({
       backgroundColor: fill,
       boxShadow: "0 4px 0 " + emboss + ", 0 8px 20px rgba(0, 0, 0, 0.5)"
     }}>
-      <div className="inner">
+      <div className="content">
         <Avatar resources={this.props.resources} me={me} />
         <div className="info">
           <div className="heading">{me.name}</div>

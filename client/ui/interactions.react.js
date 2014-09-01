@@ -74,13 +74,15 @@ export var InteractionsMenu = React.createClass({
     return <div className="center">
       <form className="interactions-menu" onSubmit={this.onSubmit}
             onKeyDown={this.onKeyDown}>
-        <ul>{interactions}</ul>
-        <input type="radio" name="item" id="interactions-menu-cancel"
-               onChange={this.setAction.bind(this, null)}
-               checked={this.state.actionIndex === null} />
-        <label htmlFor="interactions-menu-cancel" className="cancel"
-               onClick={this.runAction.bind(this, null)}>Cancel</label>
-        <button type="submit" tabIndex="-1"></button>
+        <div className="content">
+          <ul>{interactions}</ul>
+          <input type="radio" name="item" id="interactions-menu-cancel"
+                 onChange={this.setAction.bind(this, null)}
+                 checked={this.state.actionIndex === null} />
+          <label htmlFor="interactions-menu-cancel" className="cancel"
+                 onClick={this.runAction.bind(this, null)}>Cancel</label>
+          <button type="submit" tabIndex="-1"></button>
+        </div>
       </form>
     </div>;
   }

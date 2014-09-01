@@ -7,6 +7,10 @@
   min-width: 200px;
   max-width: 400px;
 
+  .content {
+    flex-direction: column;
+  }
+
   input[type="radio"] {
     position: absolute;
     opacity: 0;
@@ -62,8 +66,12 @@
     margin: 0;
   }
 
+  .action-group {
+    border-bottom: 1px solid darken(#fff, 10%);
+  }
+
   .cancel {
-    border-top: 1px solid darken(#fff, 10%);
     color: #f55;
+    border-radius: 0 0 4px 4px;
   }
 }
