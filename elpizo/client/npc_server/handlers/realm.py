@@ -13,15 +13,16 @@ logger = logging.getLogger(__name__)
 
 def on_realm(protocol, origin, message):
   r = realm.Realm.from_protobuf(message.realm)
-  r.update(id=message.realm.id, path_graph=networkx.DiGraph())
+  r.update(id=message.id, path_graph=networkx.DiGraph())
   protocol.server.store.realms.add(r)
 
 
 def on_region(protocol, origin, message):
-  r = protocol.server.store.realms.load(message.region.realm_id)
+  r = protocol.server.store.realms.load(message.realm_id)
+  location = geometry.Vector2.from_protobuf(message.location)
 
   try:
-    old_region = r.regions.load(message.region.location)
+    old_region = r.regions.load(location)
   except KeyError:
     pass
   else:
@@ -30,10 +31,8 @@ def on_region(protocol, origin, message):
     r.path_graph.remove_edges_from(old_region.path_graph.edges())
 
   region = realm.Region.from_protobuf(message.region)
-  region.location = geometry.Vector2.from_protobuf(message.region.location)
-  region.update(
-      entities=set(),
-      path_graph=compute_path_graph(region))
+  region.location = location
+  region.update(entities=set(), path_graph=compute_path_graph(region))
   r.regions.add(region)
 
   start_time = time.monotonic()

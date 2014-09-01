@@ -94,6 +94,7 @@ class NPCPolicy(object):
 
         protocol.send(None, packets_pb2.RegionPacket(
             location=region.location.to_protobuf(),
+            realm_id=realm.id,
             region=region.to_public_protobuf(realm)))
 
         for entity in region.entities:
