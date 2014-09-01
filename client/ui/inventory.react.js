@@ -48,10 +48,18 @@ export var Inventory = React.createClass({
     var me = this.props.me;
 
     var resources = this.props.resources;
+    var inventory = Object.keys(me.inventory)
+        .map((k) => me.inventory[k])
+        .sort((a, b) => {
+          var aTitle = a.getDefiniteTitle();
+          var bTitle = b.getDefiniteTitle()
 
-    var items = Object.keys(me.inventory).map((k) => {
-      var item = me.inventory[k];
+          return aTitle < bTitle ? -1 :
+                 aTitle > bTitle ? 1 :
+                 0;
+        });
 
+    var items = inventory.map((item) => {
       var menu = item.getInventoryActions().map((action, i) =>
         <li key={i}>
           <a onClick={action.f.bind(item, this.props.protocol, this.props.me,
