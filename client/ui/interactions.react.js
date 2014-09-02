@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-module React from "react";
+module React from "react/react-with-addons";
 
 module input from "client/util/input";
 
@@ -72,18 +72,20 @@ export var InteractionsMenu = React.createClass({
     });
 
     return <div className="center">
-      <form className="interactions-menu" onSubmit={this.onSubmit}
-            onKeyDown={this.onKeyDown}>
-        <div className="content">
-          <ul>{interactions}</ul>
-          <input type="radio" name="item" id="interactions-menu-cancel"
-                 onChange={this.setAction.bind(this, null)}
-                 checked={this.state.actionIndex === null} />
-          <label htmlFor="interactions-menu-cancel" className="cancel"
-                 onClick={this.runAction.bind(this, null)}>Cancel</label>
-          <button type="submit" tabIndex="-1"></button>
-        </div>
-      </form>
+      <div className="interactions-menu window">
+        <form onSubmit={this.onSubmit}
+              onKeyDown={this.onKeyDown}>
+          <div className="content">
+            <ul>{interactions}</ul>
+            <input type="radio" name="item" id="interactions-menu-cancel"
+                   onChange={this.setAction.bind(this, null)}
+                   checked={this.state.actionIndex === null} />
+            <label htmlFor="interactions-menu-cancel" className="cancel"
+                   onClick={this.runAction.bind(this, null)}>Cancel</label>
+            <button type="submit" tabIndex="-1"></button>
+          </div>
+        </form>
+      </div>
     </div>;
   }
 });

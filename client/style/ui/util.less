@@ -21,17 +21,9 @@
     background: @base-color;
   }
 
-  &.hidden {
-    visibility: hidden;
-    opacity: 0;
-    transform: translate(0, 16px);
-  }
-
   ::-webkit-scrollbar-thumb {
     background: darken(@base-color, 12%);
   }
-
-  transition: all 0.2s;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -99,4 +91,28 @@ button {
     box-shadow: 0 -2px 0 darken(#fff, 20%);
     color: darken(#fff, 75%);
   }
+}
+
+.slide-enter .window {
+  opacity: 0;
+  transform: translate(0, 16px);
+
+  transition: all 0.2s;
+}
+
+.slide-enter-active .window {
+  opacity: 1;
+  transform: translate(0, 0);
+}
+
+.slide-leave .window {
+  opacity: 1;
+  transform: translate(0, 0);
+
+  transition: all 0.2s;
+}
+
+.slide-leave-active .window {
+  opacity: 0;
+  transform: translate(0, -16px);
 }

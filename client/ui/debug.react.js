@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-module React from "react";
+module React from "react/react-with-addons";
 
 export var Debug = React.createClass({
   getInitialState: function () {
@@ -37,7 +37,7 @@ export var Debug = React.createClass({
       maybeAvatarPosition = "(" + game.me.location.x.toFixed(2) + ", " + game.me.location.y.toFixed(2) + ")";
     }
 
-    return <div className="debug">
+    return <div className="debug window">
       <table className="content">
         <tr>
           <th>Viewport Bounds</th>

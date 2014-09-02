@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-module React from "react";
+module React from "react/react-with-addons";
 
 module colors from "client/util/colors";
 

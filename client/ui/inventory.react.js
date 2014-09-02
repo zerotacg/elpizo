@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-module React from "react";
+module React from "react/react-with-addons";
 
 module sprites from "client/assets/sprites";
 module entities from "client/models/entities";
@@ -65,15 +65,15 @@ export var Inventory = React.createClass({
     });
 
     return <div className="center">
-      <div className="inventory">
-        <div className={"bag" + (this.props.show ? "" : " hidden")}>
+      <div className="inventory window">
+        <div className="bag">
           <div className="heading">Bag</div>
           <div className="content">
             <ul>{items}</ul>
           </div>
         </div>
 
-        <div className={"equipment" + (this.props.show ? "" : " hidden")}>
+        <div className="equipment window">
           <div className="heading">Equipment</div>
           <div className="content">
             <button className="slot head-item"

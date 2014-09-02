@@ -1,6 +1,6 @@
 /** @jsx React.DOM */
 
-module React from "react";
+module React from "react/react-with-addons";
 
 module packets from "client/protos/packets";
 module colors from "client/util/colors";
@@ -120,7 +120,7 @@ export var Log = React.createClass({
           origin: this.props.game.me.name,
           text: pendingMessage
       }));
-      this.props.game.renderer.addChatBubble(
+      this.props.game.graphicsRenderer.addChatBubble(
           this.props.game.me, pendingMessage);
 
       this.props.game.protocol.send(new packets.ChatPacket({
@@ -133,11 +133,14 @@ export var Log = React.createClass({
   render: function () {
     var messages = this.props.log.map((entry, i) => <li key={i}>{entry}</li>);
 
-    return <form className="log" onSubmit={this.handleSubmit} onClick={this.focusChat}>
+    return <form className="log window" onSubmit={this.handleSubmit} onClick={this.focusChat}>
       <div className="content">
-        <ul className="messages" ref="messages">
-          {messages}
-        </ul>
+        <React.addons.CSSTransitionGroup transitionName="expand"
+                                         component={React.DOM.ul}
+                                         className="messages"
+                                         ref="messages">
+        {messages}
+        </React.addons.CSSTransitionGroup>
         <input type="text" onChange={this.onChange}
                value={this.state.pendingMessage}
                ref="text"

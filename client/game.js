@@ -1,5 +1,5 @@
 module events from "events";
-module React from "react";
+module React from "react/react-with-addons";
 module promise from "es6-promise";
 module querystring from "querystring";
 

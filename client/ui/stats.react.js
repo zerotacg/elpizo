@@ -1,7 +1,7 @@
 /** @jsx React.DOM */
 
 module chroma from "chroma-js";
-module React from "react";
+module React from "react/react-with-addons";
 
 module graphicsRenderer from "client/graphics/renderer";
 module colors from "client/util/colors";
@@ -42,7 +42,7 @@ export var Stats = React.createClass({
     var fill = colors.makeColorForString(me.name);
     var emboss = chroma(fill).darken(10).hex();
 
-    return <div className="stats" style={{
+    return <div className="stats window" style={{
       backgroundColor: fill,
       boxShadow: "0 4px 0 " + emboss + ", 0 8px 20px rgba(0, 0, 0, 0.5)"
     }}>

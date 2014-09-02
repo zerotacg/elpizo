@@ -40,6 +40,16 @@
       pre {
         margin: 0;
       }
+
+      &.expand-enter {
+        opacity: 0;
+
+        &.expand-enter-active {
+          opacity: 1;
+        }
+
+        transition: opacity 0.2s;
+      }
     }
   }
 

@@ -12,7 +12,7 @@ module log from "client/ui/log.react";
 
 export function install(game) {
   var protocol = game.protocol;
-  var renderer = game.renderer;
+  var graphicsRenderer = game.graphicsRenderer;
 
   function withEntity(f) {
     return (origin, message) => {
@@ -167,7 +167,7 @@ export function install(game) {
 
   protocol.on(packets.Packet.Type.DAMAGE, withEntity((entity, message) => {
     entity.health -= message.damage;
-    renderer.addComponent(
+    graphicsRenderer.addComponent(
         ["damage", entity.id].join("."),
         damage.DamageNumber({
             damage: message.damage,
@@ -185,7 +185,7 @@ export function install(game) {
     var entity = game.realm.getEntity(origin);
 
     if (entity !== null) {
-      renderer.addChatBubble(entity, message.text);
+      graphicsRenderer.addChatBubble(entity, message.text);
     }
   });
 
