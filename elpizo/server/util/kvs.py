@@ -16,18 +16,18 @@ class AsyncRedisHashAdapter(object):
 
   def get(self, key):
     v = green.await_coro(self.redis.hget(self.hash_key.encode("utf-8"),
-                                         key.encode("utf-8")))
+                                         str(key).encode("utf-8")))
     if v is None:
       raise KeyError(key)
     return v
 
   def set(self, key, value):
     green.await_coro(self.redis.hset(self.hash_key.encode("utf-8"),
-                                     key.encode("utf-8"), value))
+                                     str(key).encode("utf-8"), value))
 
   def delete(self, key):
     green.await_coro(self.redis.hdel(self.hash_key.encode("utf-8"),
-                                     [key.encode("utf-8")]))
+                                     [str(key).encode("utf-8")]))
 
   def next_serial(self):
     return self.counter.next_serial()
@@ -45,4 +45,4 @@ class AsyncRedisCounterAdapter(object):
     self.redis = redis
 
   def next_serial(self):
-    return str(green.await_coro(self.redis.incr(self.key.encode("utf-8"))))
+    return int(green.await_coro(self.redis.incr(self.key.encode("utf-8"))))

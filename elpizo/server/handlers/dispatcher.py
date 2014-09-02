@@ -40,7 +40,7 @@ class Dispatcher(net.Protocol):
     if actor is None:
       actor_id = "(unknown)"
     else:
-      actor_id = actor.id
+      actor_id = str(actor.id)
 
     type = message.DESCRIPTOR.GetOptions().Extensions[packets_pb2.packet_type]
     packet_name = Dispatcher.PACKET_NAMES.get(type, "opcode {}".format(type))

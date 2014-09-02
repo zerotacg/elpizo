@@ -12,7 +12,7 @@ message Entity {
   }
 
   required string type = 1;
-  required string realm_id = 2;
+  required uint32 realm_id = 2;
   required Vector2 location = 3;
   required Direction direction = 4;
   required Rectangle bbox = 5;

@@ -26,7 +26,7 @@ class UnauthenticatedPolicy(object):
 class PlayerPolicy(object):
   def __init__(self, id, server):
     self.server = server
-    self.player = server.store.entities.load(id)
+    self.player = server.store.entities.load(int(id))
 
   def on_hello(self, protocol):
     if self.server.bus.has(self.player.bus_key):

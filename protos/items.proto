@@ -1,7 +1,7 @@
 message Item {
   extensions 100 to max;
 
-  required string id = 1;
+  required uint32 id = 1;
   required string type = 2;
 }
 
