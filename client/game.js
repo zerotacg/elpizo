@@ -69,7 +69,6 @@ export class Game extends events.EventEmitter {
     });
 
     this.setDebug(qs.debug === "on");
-    this.clientBounds = new geometry.Rectangle(0, 0, 0, 0);
   }
 
   onError(msg, file, lineno, colno, e) {
@@ -297,7 +296,11 @@ export class Game extends events.EventEmitter {
   }
 
   go() {
-    this.protocol.send(new packets.HelloPacket({token: this.token || ""}));
+    this.clientBounds = new geometry.Rectangle(0, 0, 0, 0);
+    this.protocol.send(new packets.HelloPacket({
+        token: this.token || ""
+    }));
+
     this.running = true;
     this.renderer.refit();
     this.startUpdating();
