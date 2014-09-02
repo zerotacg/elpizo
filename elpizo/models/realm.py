@@ -38,12 +38,6 @@ class Realm(record.Record):
       for x in range(left, right, Region.SIZE):
           yield self.regions.load(geometry.Vector2(x, y))
 
-  def save(self):
-    super().save()
-    if self.regions is not None:
-      logger.info("Saving all child regions for realm: %s", self.id)
-      self.regions.save_all()
-
   def is_terrain_passable_by(self, entity, bounds, direction):
     if not self.bounds.contains(bounds):
       return False
@@ -164,6 +158,12 @@ class RealmStore(record.ProtobufStore):
   def expire(self, realm):
     super().expire(realm)
     realm.regions.expire_all()
+
+  def save(self, realm):
+    super().save(realm)
+    if realm.regions is not None:
+      logger.info("Saving all child regions for realm: %s", realm.id)
+      realm.regions.save_all()
 
 
 class RegionStore(record.ProtobufStore):

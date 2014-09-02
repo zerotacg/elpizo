@@ -63,7 +63,7 @@ class PlayerPolicy(object):
     return entity is not self.player
 
   def on_finish(self):
-    self.player.save()
+    self.server.store.entities.save(self.player)
     logger.info("Flushing player %s to database.", self.player.id)
     self.player.remove_from_bus(self.server.bus)
 
@@ -122,7 +122,7 @@ class NPCPolicy(object):
 
     self.server.bus.remove(self.bus_key)
     for npc in self.npcs:
-      npc.save()
+      self.server.store.entities.save(npc)
       logger.info("Flushing NPC %s to database.", npc.id)
 
 
