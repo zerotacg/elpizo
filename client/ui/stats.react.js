@@ -3,13 +3,13 @@
 module chroma from "chroma-js";
 module React from "react";
 
-module renderer from "client/graphics/renderer";
+module graphicsRenderer from "client/graphics/renderer";
 module colors from "client/util/colors";
 module sprites from "client/assets/sprites";
 
 var Avatar = React.createClass({
   render: function () {
-    var paperdoll = renderer.getActorSpriteNames(this.props.me).map(
+    var paperdoll = graphicsRenderer.getActorSpriteNames(this.props.me).map(
       (spriteName) => {
         var sprite = sprites[spriteName].standing.s;
 

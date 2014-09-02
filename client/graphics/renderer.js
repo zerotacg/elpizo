@@ -11,7 +11,7 @@ module geometry from "client/util/geometry";
 module objects from "client/util/objects";
 module timing from "client/util/timing";
 
-export class Renderer extends events.EventEmitter {
+export class GraphicsRenderer extends events.EventEmitter {
   constructor(resources, parent) {
     super();
 
@@ -113,11 +113,11 @@ export class Renderer extends events.EventEmitter {
   }
 
   toScreenCoords(location) {
-    return location.scale(Renderer.TILE_SIZE);
+    return location.scale(GraphicsRenderer.TILE_SIZE);
   }
 
   fromScreenCoords(location) {
-    return location.scale(1 / Renderer.TILE_SIZE);
+    return location.scale(1 / GraphicsRenderer.TILE_SIZE);
   }
 
   setTopLeft(v) {
@@ -305,7 +305,7 @@ export class Renderer extends events.EventEmitter {
     canvas.width = size.x;
     canvas.height = size.y;
 
-    var halfTileSize = Renderer.TILE_SIZE / 2;
+    var halfTileSize = GraphicsRenderer.TILE_SIZE / 2;
 
     var ctx = this.prepareContext(canvas);
 
@@ -338,10 +338,11 @@ export class Renderer extends events.EventEmitter {
 
       for (var ry = 0; ry < realm.Region.SIZE; ++ry) {
         for (var rx = 0; rx < realm.Region.SIZE; ++rx) {
-          var x = rx * Renderer.TILE_SIZE;
-          var y = ry * Renderer.TILE_SIZE;
+          var x = rx * GraphicsRenderer.TILE_SIZE;
+          var y = ry * GraphicsRenderer.TILE_SIZE;
           ctx.strokeRect(x, y,
-                         Renderer.TILE_SIZE, Renderer.TILE_SIZE);
+                         GraphicsRenderer.TILE_SIZE,
+                         GraphicsRenderer.TILE_SIZE);
           ctx.fillText(rx + "," + ry, x + halfTileSize, y + halfTileSize);
 
           for (var i = 0; i < 4; ++i) {
@@ -376,7 +377,7 @@ export class Renderer extends events.EventEmitter {
 
     ctx.save();
     ctx.translate(sOffset.x, sOffset.y);
-    entity.accept(new RendererVisitor(this, ctx));
+    entity.accept(new GraphicsRendererVisitor(this, ctx));
     ctx.restore();
   }
 }
@@ -433,7 +434,7 @@ export function getActorSpriteNames(actor) {
 }
 
 
-class RendererVisitor extends entities.EntityVisitor {
+class GraphicsRendererVisitor extends entities.EntityVisitor {
   constructor(renderer, ctx) {
     this.renderer = renderer;
     this.ctx = ctx;
@@ -548,4 +549,4 @@ class RendererVisitor extends entities.EntityVisitor {
                           this.ctx);
   }
 }
-Renderer.TILE_SIZE = 32;
+GraphicsRenderer.TILE_SIZE = 32;

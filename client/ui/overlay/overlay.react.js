@@ -5,7 +5,7 @@ module React from "react";
 export var Overlay = React.createClass({
   render: function () {
     var realm = this.props.game.realm;
-    var renderer = this.props.game.renderer;
+    var renderer = this.props.game.graphicsRenderer;
 
     var position = renderer.toScreenCoords(renderer.topLeft);
 

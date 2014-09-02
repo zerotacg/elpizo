@@ -3,7 +3,7 @@ module React from "react";
 module promise from "es6-promise";
 module querystring from "querystring";
 
-module renderer from "client/graphics/renderer";
+module graphics from "client/graphics";
 module handlers from "client/handlers";
 module packets from "client/protos/packets";
 module net from "client/util/net";
@@ -40,7 +40,8 @@ export class Game extends events.EventEmitter {
     this.resources = new resources.Resources();
     this.resourcesLoaded = false;
 
-    this.renderer = new renderer.Renderer(this.resources, parent);
+    this.graphicsRenderer = new graphics.GraphicsRenderer(this.resources,
+                                                          parent);
     this.inputState = new input.InputState(window);
 
     this.uiRoot = document.createElement("div");
@@ -55,8 +56,8 @@ export class Game extends events.EventEmitter {
 
     handlers.install(this);
 
-    this.renderer.on("refit", this.onRefit.bind(this));
-    this.renderer.on("viewportChange", this.onViewportChange.bind(this));
+    this.graphicsRenderer.on("refit", this.onRefit.bind(this));
+    this.graphicsRenderer.on("viewportChange", this.onViewportChange.bind(this));
 
     this.protocol.transport.on("open", this.onTransportOpen.bind(this));
     this.protocol.transport.on("close", this.onTransportClose.bind(this));
@@ -85,7 +86,7 @@ export class Game extends events.EventEmitter {
 
   setDebug(v) {
     this.debug = v;
-    this.renderer.setDebug(v);
+    this.graphicsRenderer.setDebug(v);
 
     var qs = querystring.parse(window.location.search.substring(1));
 
@@ -107,7 +108,7 @@ export class Game extends events.EventEmitter {
 
   onRefit(bounds) {
     if (this.me !== null) {
-      this.renderer.center(this.me.location);
+      this.graphicsRenderer.center(this.me.location);
     }
   }
 
@@ -116,7 +117,7 @@ export class Game extends events.EventEmitter {
       return;
     }
 
-    var bounds = this.renderer.getCacheBounds();
+    var bounds = this.graphicsRenderer.getCacheBounds();
 
     var toRemove = {};
     var toAdd = {};
@@ -219,7 +220,7 @@ export class Game extends events.EventEmitter {
     this.log.push(logUi.InfoMessageEntry({
         text: "Welcome to Rekindled Hope, " + this.me.name + "!"
     }));
-    this.renderer.center(this.me.location);
+    this.graphicsRenderer.center(this.me.location);
   }
 
   update(dt) {
@@ -246,13 +247,13 @@ export class Game extends events.EventEmitter {
     // Handle avatar updates.
     if (this.me !== null) {
       this.me.updateAsAvatar(dt, this.inputState, this.protocol);
-      this.renderer.center(this.me.location);
+      this.graphicsRenderer.center(this.me.location);
     }
   }
 
   render(dt) {
     if (this.realm !== null) {
-      this.renderer.render(this.realm, dt);
+      this.graphicsRenderer.render(this.realm, dt);
     }
   }
 
@@ -302,7 +303,7 @@ export class Game extends events.EventEmitter {
     }));
 
     this.running = true;
-    this.renderer.refit();
+    this.graphicsRenderer.refit();
     this.startUpdating();
     this.startRendering();
   }
