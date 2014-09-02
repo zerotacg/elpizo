@@ -45,7 +45,6 @@ def coroutine(f):
         r = g.throw(e)
       else:
         r = g.switch(next_r)
-    return r
 
   return _wrapper
 

@@ -4,6 +4,7 @@ from elpizo.models import entities
 from elpizo.models import geometry
 from elpizo.protos import packets_pb2
 from elpizo.util import green
+from elpizo.util import net
 
 
 logger = logging.getLogger(__name__)
@@ -16,11 +17,14 @@ class UnauthenticatedPolicy(object):
   def get_actor(self, origin):
     return None
 
-  def can_receive_broadcasts_from(self, origin):
-    return False
+  def on_despawn(self, origin):
+    pass
 
   def get_ephemera(self, origin):
     raise NotImplementedError
+
+  def can_receive_broadcasts_from(self, origin):
+    return False
 
   def on_finish(self):
     pass
@@ -54,12 +58,19 @@ class PlayerPolicy(object):
         packets_pb2.EntityPacket(entity=self.player.to_protected_protobuf()))
     self.player.send(protocol, packets_pb2.AvatarPacket())
 
+    self.player.subscribe(self.server.bus, self.player.channel)
+
     # Only self.players get chat access.
     self.player.subscribe(self.server.bus, ("conversation", self.player.name))
     self.player.subscribe(self.server.bus, ("chatroom", "global"))
 
   def get_actor(self, origin):
     return self.player
+
+  def on_despawn(self, origin):
+    if origin == self.player.id:
+      # TODO: we should do something about this...
+      raise NotImplementedError
 
   def get_ephemera(self, origin):
     return self.ephemera
@@ -78,7 +89,7 @@ class NPCPolicy(object):
   def __init__(self, id, server):
     self.server = server
     self.id = id
-    self.npcs = set()
+    self.npcs = {}
     self.npc_ephemeras = {}
 
   @property
@@ -96,8 +107,7 @@ class NPCPolicy(object):
                                   realm=realm.to_protobuf()))
 
       for region in realm.regions.load_all():
-        region_channel = ("region", realm.id, region.location)
-        self.server.bus.subscribe(self.bus_key, region_channel)
+        self.server.bus.subscribe(self.bus_key, region.channel)
 
         protocol.send(None, packets_pb2.RegionPacket(
             location=region.location.to_protobuf(),
@@ -106,8 +116,8 @@ class NPCPolicy(object):
 
         for entity in region.entities:
           if isinstance(entity, entities.NPC):
-            self.npcs.add(entity)
-            self.npc_ephemera[entity.id] = entities.Ephemera()
+            self.npcs[entity.id] = entity
+            self.npc_ephemeras[entity.id] = entities.Ephemera()
 
             entity_protobuf = entity.to_protected_protobuf()
           else:
@@ -116,9 +126,19 @@ class NPCPolicy(object):
           entity.send(protocol, packets_pb2.EntityPacket(
               entity=entity_protobuf))
 
+  def on_despawn(self, origin):
+    if origin in self.npcs:
+      del self.npcs[origin]
+      del self.npc_ephemeras[origin]
+
   def get_actor(self, origin):
-    return self.server.store.entities.load(origin) if origin is not None else \
-           None
+    if origin is None:
+      return None
+
+    try:
+      return self.npcs[origin]
+    except KeyError:
+      raise net.Reject("Actor {} no longer exists.".format(origin))
 
   def get_ephemera(self, origin):
     return self.npc_ephemeras[origin]
@@ -131,7 +151,7 @@ class NPCPolicy(object):
     logger.warn("NPC server %s died!", self.id)
 
     self.server.bus.remove(self.bus_key)
-    for npc in self.npcs:
+    for npc in self.npcs.values():
       self.server.store.entities.save(npc)
       logger.info("Flushing NPC %s to database.", npc.id)
 

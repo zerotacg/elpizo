@@ -85,7 +85,7 @@ def on_move(protocol, actor, message):
   for region in old_regions:
     actor.broadcast(
         protocol.server.bus,
-        ("region", actor.realm.id, region.location),
+        region.channel,
         packets_pb2.MovePacket(location=new_location.to_protobuf()))
 
 

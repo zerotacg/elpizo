@@ -32,6 +32,13 @@ class Bus(object):
   def get(self, bus_key):
     return self.protocols[bus_key]
 
+  def get_protocols_for_channel(self, channel):
+    for bus_key in list(self.channels.get(channel, set())):
+      try:
+        yield self.get(bus_key)
+      except KeyError:
+        logger.warn("Client disappeared during channel query: %s", bus_key)
+
   def has(self, bus_key):
     return bus_key in self.protocols
 

@@ -124,89 +124,41 @@ export function makeHumanoidSprite(resourceName) {
 }
 
 export function makeMobSprite(resourceName) {
+  var sprites = {
+      n: new Sprite(
+          resourceName,
+          new geometry.Vector2(32, 32),
+          collections.repeat(3, (i) =>
+              new geometry.Vector2(32 * i, 32 * 0)),
+          new geometry.Vector2(0, 0),
+          3),
+      w: new Sprite(
+          resourceName,
+          new geometry.Vector2(32, 32),
+          collections.repeat(3, (i) =>
+              new geometry.Vector2(32 * i, 32 * 1)),
+          new geometry.Vector2(0, 0),
+          3),
+      s: new Sprite(
+          resourceName,
+          new geometry.Vector2(32, 32),
+          collections.repeat(3, (i) =>
+              new geometry.Vector2(32 * i, 32 * 2)),
+          new geometry.Vector2(0, 0),
+          3),
+      e: new Sprite(
+          resourceName,
+          new geometry.Vector2(32, 32),
+          collections.repeat(3, (i) =>
+              new geometry.Vector2(32 * i, 32 * 3)),
+          new geometry.Vector2(0, 0),
+          3)
+  };
+
   return {
-      standing: {
-          n: new Sprite(resourceName,
-                        new geometry.Vector2(32, 32),
-                        [new geometry.Vector2(0, 32 * 0)],
-                        new geometry.Vector2(0, 0),
-                        0),
-          w: new Sprite(resourceName,
-                        new geometry.Vector2(32, 32),
-                        [new geometry.Vector2(0, 32 * 1)],
-                        new geometry.Vector2(0, 0),
-                        0),
-          s: new Sprite(resourceName,
-                        new geometry.Vector2(32, 32),
-                        [new geometry.Vector2(0, 32 * 2)],
-                        new geometry.Vector2(0, 0),
-                        0),
-          e: new Sprite(resourceName,
-                        new geometry.Vector2(32, 32),
-                        [new geometry.Vector2(0, 32 * 3)],
-                        new geometry.Vector2(0, 0),
-                        0)
-      },
-      walking: {
-          n: new Sprite(
-              resourceName,
-              new geometry.Vector2(32, 32),
-              collections.repeat(3, (i) =>
-                  new geometry.Vector2(32 * i, 32 * 0)),
-              new geometry.Vector2(0, 0),
-              3),
-          w: new Sprite(
-              resourceName,
-              new geometry.Vector2(32, 32),
-              collections.repeat(3, (i) =>
-                  new geometry.Vector2(32 * i, 32 * 1)),
-              new geometry.Vector2(0, 0),
-              3),
-          s: new Sprite(
-              resourceName,
-              new geometry.Vector2(32, 32),
-              collections.repeat(3, (i) =>
-                  new geometry.Vector2(32 * i, 32 * 2)),
-              new geometry.Vector2(0, 0),
-              3),
-          e: new Sprite(
-              resourceName,
-              new geometry.Vector2(32, 32),
-              collections.repeat(3, (i) =>
-                  new geometry.Vector2(32 * i, 32 * 3)),
-              new geometry.Vector2(0, 0),
-              3)
-      },
-      slashing: {
-          n: new Sprite(
-              resourceName,
-              new geometry.Vector2(32, 32),
-              collections.repeat(3, (i) =>
-                  new geometry.Vector2(32 * i, 32 * 0)),
-              new geometry.Vector2(0, 0),
-              3),
-          w: new Sprite(
-              resourceName,
-              new geometry.Vector2(32, 32),
-              collections.repeat(3, (i) =>
-                  new geometry.Vector2(32 * i, 32 * 1)),
-              new geometry.Vector2(0, 0),
-              3),
-          s: new Sprite(
-              resourceName,
-              new geometry.Vector2(32, 32),
-              collections.repeat(3, (i) =>
-                  new geometry.Vector2(32 * i, 32 * 2)),
-              new geometry.Vector2(0, 0),
-              3),
-          e: new Sprite(
-              resourceName,
-              new geometry.Vector2(32, 32),
-              collections.repeat(3, (i) =>
-                  new geometry.Vector2(32 * i, 32 * 3)),
-              new geometry.Vector2(0, 0),
-              3)
-      }
+      standing: sprites,
+      walking: sprites,
+      slashing: sprites
   };
 }
 

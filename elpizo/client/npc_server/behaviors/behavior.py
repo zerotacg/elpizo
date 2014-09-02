@@ -36,8 +36,13 @@ class Behavior(object):
   def server(self):
     return self.protocol.server
 
+  def stop(self):
+    self.running = False
+
   def run(self):
-    while True:
+    self.running = True
+
+    while self.running:
       self.on_update()
       self.be_nice()
 

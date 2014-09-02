@@ -125,33 +125,41 @@ class Entity(record.Record):
   def send(self, protocol, message):
     protocol.send(self.id, message)
 
+  def send_via_bus(self, bus, target, message):
+    return asyncio.gather(*[
+        green.coroutine(self.send)(protocol, message)
+        for protocol in bus.get_protocols_for_channel(target.channel)])
+
   def broadcast(self, bus, channel, message):
-    futures = []
-
-    for bus_key in list(bus.channels.get(channel, set())):
-      try:
-        protocol = bus.get(bus_key)
-      except KeyError:
-        # A client disappeared while we were iterating.
-        logger.warn("Client disappeared during broadcast: %s", bus_key)
-        continue
-      else:
-        if not protocol.policy.can_receive_broadcasts_from(self):
-          # Broadcasts from this entity are not permitted.
-          continue
-
-      futures.append(green.coroutine(self.send)(protocol, message))
-
-    return asyncio.gather(*futures)
+    return asyncio.gather(*[
+        green.coroutine(self.send)(protocol, message)
+        for protocol in bus.get_protocols_for_channel(channel)
+        if protocol.policy.can_receive_broadcasts_from(self)])
 
   def broadcast_to_regions(self, bus, message):
-    futures = []
+    return asyncio.gather(*[
+        self.broadcast(bus, region.channel, message)
+        for region in self.regions])
 
-    for region in self.regions:
-      futures.append(self.broadcast(
-          bus, ("region", self.realm.id, region.location), message))
+  @property
+  def bus_key(self):
+    return (self.TYPE, self.id)
 
-    return asyncio.gather(*futures)
+  @property
+  def channel(self):
+    return (self.TYPE, self.id)
+
+  def subscribe(self, bus, channel):
+    bus.subscribe(self.bus_key, channel)
+
+  def unsubscribe(self, bus, channel):
+    bus.unsubscribe(self.bus_key, channel)
+
+  def add_to_bus(self, bus, protocol):
+    bus.add(self.bus_key, protocol)
+
+  def remove_from_bus(self, bus):
+    bus.remove(self.bus_key)
 
 
 class Actor(Entity):
@@ -258,22 +266,6 @@ class Actor(Entity):
 
   def is_passable_by(self, entity, direction):
     return False
-
-  @property
-  def bus_key(self):
-    return (self.TYPE, self.id)
-
-  def subscribe(self, bus, channel):
-    bus.subscribe(self.bus_key, channel)
-
-  def unsubscribe(self, bus, channel):
-    bus.unsubscribe(self.bus_key, channel)
-
-  def add_to_bus(self, bus, protocol):
-    bus.add(self.bus_key, protocol)
-
-  def remove_from_bus(self, bus):
-    bus.remove(self.bus_key)
 
 
 @Entity.register

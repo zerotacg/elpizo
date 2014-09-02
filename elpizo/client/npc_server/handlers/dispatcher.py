@@ -48,6 +48,7 @@ def noop(protocol, origin, message):
 
 Dispatcher.register(packets_pb2.Packet.ATTACK, entity.on_attack)
 Dispatcher.register(packets_pb2.Packet.DAMAGE, entity.on_damage)
+Dispatcher.register(packets_pb2.Packet.DEATH, entity.on_death)
 Dispatcher.register(packets_pb2.Packet.DESPAWN_ENTITY, entity.on_despawn_entity)
 Dispatcher.register(packets_pb2.Packet.ENTER, noop)
 Dispatcher.register(packets_pb2.Packet.ENTITY, entity.on_entity)

@@ -30,4 +30,4 @@ class Store(object):
 
   def make_region_store(self, r):
     assert r.id is not None
-    return realm.RegionStore(self.entities, DictAdapter({}))
+    return realm.RegionStore(r, self.entities, DictAdapter({}))

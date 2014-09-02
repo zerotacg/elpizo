@@ -56,5 +56,5 @@ class Wander(behaviors.Behavior):
       self.npc.location, self.npc.target_location):
       self.move()
       self.wait_move()
-
-    self.stop_move()
+      self.stop_move()
+      self.sleep(2)

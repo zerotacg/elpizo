@@ -129,6 +129,10 @@ class Region(record.Record):
                    not target.is_passable_by(entity, direction)
                    for target in self.entities)
 
+  @property
+  def channel(self):
+    return ("region", self.realm.id, self.location)
+
 
 class Layer(object):
   def __init__(self, **kwargs):
@@ -170,7 +174,8 @@ class RegionStore(record.ProtobufStore):
   TYPE = Region
   PROTOBUF_TYPE = realm_pb2.Region
 
-  def __init__(self, entities, kvs):
+  def __init__(self, realm, entities, kvs):
+    self.realm = realm
     self.entities = entities
     super().__init__(kvs)
 
@@ -182,11 +187,13 @@ class RegionStore(record.ProtobufStore):
 
   def find(self, id):
     region = super().find(id)
+    region.realm = self.realm
     region.entities = {self.entities.load(entity_id)
                        for entity_id in region.entity_ids}
     return region
 
   def keys(self):
-    for key in super().keys():
+    # We don't want to use the store's integer coercion.
+    for key in self.kvs.keys():
       x, y = key.split(",")
       yield geometry.Vector2(int(x), int(y))

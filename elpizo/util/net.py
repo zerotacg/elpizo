@@ -1,7 +1,10 @@
+import logging
 import sys
 
 from elpizo.protos import packets_pb2
 from elpizo.util import green
+
+logger = logging.getLogger(__name__)
 
 
 class Transport(object):
@@ -68,7 +71,10 @@ class Protocol(object):
         if packet is None:
           break
         origin, message = self.deserialize_packet(packet)
-        self.on_message(origin, message)
+        try:
+          self.on_message(origin, message)
+        except Reject as e:
+          logger.warn("Rejected a packet: %s", e)
     except Exception as e:
       self.on_error(e, sys.exc_info())
     finally:
@@ -95,4 +101,10 @@ Protocol.PACKET_NAMES = {ev.number: ev.name
 
 
 class ProtocolError(Exception):
-  pass
+  """Protocol errors are failure modes for protocols. They are caused by
+     critical client-server state inconsistencies."""
+
+
+class Reject(Exception):
+  """Rejections are non-fatal protocol errors. They are generally caused by
+     non-critical client-server state inconsistencies."""

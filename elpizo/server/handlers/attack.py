@@ -28,12 +28,16 @@ def on_attack(protocol, actor, message):
         damage_packet = packets_pb2.DamagePacket(
             damage=target.damage(actor.attack_strength))
         target.broadcast_to_regions(protocol.server.bus, damage_packet)
-        protocol.server.bus.send(target.bus_key, target.id, damage_packet)
+        target.send_via_bus(protocol.server.bus, target, damage_packet)
+
         if target.health == 0:
+          for protocol in protocol.server.bus.protocols.values():
+            protocol.policy.on_despawn(target.id)
+
           target.broadcast_to_regions(protocol.server.bus,
                                       packets_pb2.DeathPacket())
-          protocol.server.bus.send(target.id, target.id,
-                                   packets_pb2.DeathPacket())
+          target.send_via_bus(protocol.server.bus, target,
+                              packets_pb2.DeathPacket())
           protocol.server.store.entities.destroy(target)
 
           for item in target.full_inventory:

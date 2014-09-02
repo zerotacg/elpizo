@@ -33,8 +33,15 @@ def on_entity(protocol, origin, message):
 
 
 @with_entity
+def on_death(protocol, entity, message):
+  protocol.server.store.entities.expire(entity)
+  if entity.id in protocol.server.npcs:
+    protocol.server.stop_npc(entity)
+
+
+@with_entity
 def on_despawn_entity(protocol, entity, message):
-  protocol.server.store.entities.destroy(entity)
+  protocol.server.store.entities.expire(entity)
 
 
 @with_entity

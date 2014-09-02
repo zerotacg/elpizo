@@ -70,7 +70,7 @@ the database IMMEDIATELY!
 
   def make_region_store(self, r):
     assert r.id is not None
-    return realm.RegionStore(self.entities,
+    return realm.RegionStore(r, self.entities,
                              self._make_kvs("realms.{id}.regions".format(
                                  id=r.id)))
 

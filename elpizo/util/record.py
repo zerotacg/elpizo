@@ -81,7 +81,7 @@ class Store(object):
     """
     Get all the persisted keys in the store.
     """
-    return self.kvs.keys()
+    return (int(key) for key in self.kvs.keys())
 
   def load_all(self):
     """
@@ -94,6 +94,7 @@ class Store(object):
     """
     Save a record into the underlying key-value store.
     """
+    assert record.id is not None
     self.kvs.set(record.id, self.serialize(record))
 
   def create(self, record):

@@ -47,6 +47,11 @@ class NPCServer(client.Client):
     self.npcs[behavior.npc.id] = behavior
     asyncio.async(green.coroutine(behavior.run)(), loop=self.loop)
 
+  def stop_npc(self, npc):
+    logger.info("Stopping behavior for NPC %s.", npc.id)
+    behavior = self.npcs.pop(npc.id)
+    behavior.stop()
+
 
 def main():
   NPCServer(make_config_parser().parse_args()).run()
