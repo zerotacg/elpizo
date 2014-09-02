@@ -28,9 +28,5 @@
     "vinyl-source-stream": "^0.1.1",
     "watchify": "^0.10.2",
     "yargs": "^1.2.6"
-  },
-  "main": "./client/main.jsx",
-  "browser": {
-    "sockjs": "sockjs-client/lib/sockjs.js"
   }
 }
