@@ -40,20 +40,6 @@
       pre {
         margin: 0;
       }
-
-      &.expand-enter {
-        max-height: 100px;
-        overflow: hidden;
-
-        &.expand-enter-active {
-          // HACK: CSS doesn't support animating height from 0 to auto, so we
-          // animate max-height instead.
-          max-height: 100px;
-        }
-
-        // disable this for now.
-        transition: max-height 0;
-      }
     }
   }
 

@@ -141,13 +141,9 @@ export var Log = React.createClass({
                  onSubmit={this.handleSubmit}
                  onClick={this.focusChat}>
       <div className="content">
-        <React.addons.CSSTransitionGroup transitionName="expand"
-                                         component={React.DOM.ul}
-                                         className="messages"
-                                         ref="messages"
-                                         transitionLeave={false}>
-        {messages}
-        </React.addons.CSSTransitionGroup>
+        <ul className="messages" ref="messages">
+          {messages}
+        </ul>
         <input type="text" onChange={this.onChange}
                value={this.state.pendingMessage}
                ref="text"

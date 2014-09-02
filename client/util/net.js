@@ -67,6 +67,7 @@ export class Protocol extends events.EventEmitter {
     });
 
     this.transport.on("close", (e) => {
+      console.log(game.lastError);
       if (game.lastError !== null) {
         return;
       }
