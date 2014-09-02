@@ -107,7 +107,8 @@ def initdb(app):
                   realm.Layer(terrain="dirt_wall", tiles=wall_tiles),
                   realm.Layer(terrain="stairs", tiles=stairs_tiles)],
           entities=set())
-      windvale.regions.create(region)
+      # We don't use create() here because we've already assigned an id.
+      windvale.regions.save(region)
 
   logging.info("Created Windvale.")
 

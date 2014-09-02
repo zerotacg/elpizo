@@ -9,7 +9,7 @@ from elpizo.protos import realm_pb2
 logger = logging.getLogger(__name__)
 
 
-class Realm(record.ProtobufRecord):
+class Realm(record.Record):
   PROTOBUF_TYPE = realm_pb2.Realm
 
   def __init__(self, *args, **kwargs):
@@ -69,7 +69,7 @@ class Realm(record.ProtobufRecord):
                for region in regions)
 
 
-class Region(record.ProtobufRecord):
+class Region(record.Record):
   PROTOBUF_TYPE = realm_pb2.Region
 
   SIZE = 16
@@ -149,10 +149,13 @@ class Layer(object):
     return cls(terrain=proto.terrain, tiles=list(proto.tiles))
 
 
-class RealmStore(record.Store):
+class RealmStore(record.ProtobufStore):
+  TYPE = Realm
+  PROTOBUF_TYPE = realm_pb2.Realm
+
   def __init__(self, parent, kvs):
     self.parent = parent
-    super().__init__(Realm.find, kvs)
+    super().__init__(kvs)
 
   def add(self, realm):
     super().add(realm)
@@ -163,10 +166,13 @@ class RealmStore(record.Store):
     realm.regions.expire_all()
 
 
-class RegionStore(record.Store):
+class RegionStore(record.ProtobufStore):
+  TYPE = Region
+  PROTOBUF_TYPE = realm_pb2.Region
+
   def __init__(self, entities, kvs):
     self.entities = entities
-    super().__init__(self.find, kvs)
+    super().__init__(kvs)
 
   def load(self, vec):
     return super().load("{x},{y}".format(x=vec.x, y=vec.y))
@@ -174,8 +180,8 @@ class RegionStore(record.Store):
   def load_closest(self, location):
     return self.load(location.map(Region.floor))
 
-  def find(self, id, kvs):
-    region = Region.find(id, kvs)
+  def find(self, id):
+    region = super().find(id)
     region.entities = {self.entities.load(entity_id)
                        for entity_id in region.entity_ids}
     return region

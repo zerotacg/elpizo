@@ -6,8 +6,8 @@ import websockets
 
 from elpizo.models import geometry
 from elpizo.models import realm
-from elpizo.models import items
 from elpizo.models import record
+from elpizo.models import items
 from elpizo.protos import entities_pb2
 from elpizo.util import green
 from elpizo.util import support
@@ -22,8 +22,7 @@ class Ephemera(object):
     self.last_attack_time = 0
 
 
-class Entity(record.PolymorphicProtobufRecord):
-  PROTOBUF_TYPE = entities_pb2.Entity
+class Entity(record.Record):
   REGISTRY = {}
 
   DIRECTION_VECTORS = {
@@ -367,10 +366,13 @@ class Drop(Entity):
     return True
 
 
-class EntityStore(record.Store):
+class EntityStore(record.PolymorphicProtobufStore):
+  TYPE = Entity
+  PROTOBUF_TYPE = entities_pb2.Entity
+
   def __init__(self, parent, kvs):
     self.parent = parent
-    super().__init__(Entity.find, kvs)
+    super().__init__(kvs)
 
   def add(self, entity):
     super().add(entity)
@@ -380,7 +382,7 @@ class EntityStore(record.Store):
     super().create(entity)
     for region in entity.regions:
       region.entities.add(entity)
-      region.save()
+      entity.realm.regions.save(region)
 
   def destroy(self, entity):
     super().destroy(entity)

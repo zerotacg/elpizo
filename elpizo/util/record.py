@@ -26,48 +26,14 @@ class Record(object):
   def is_fresh(self):
     return self.id is None
 
-  def bind(self, kvs):
-    """
-    Bind the record to a key-value store.
 
-    :param kvs: The key-value store to bind.
-    """
-    self._kvs = kvs
-
-  def save(self):
-    """
-    Save the serialized state of the record into the key-value store.
-
-    :param kvs: The key-value store to save to.
-    """
-    if self.id is None:
-      self.id = self._kvs.next_serial()
-
-    self._kvs.set(self.id, self.serialize())
-
-  def delete(self):
-    """
-    Delete the record from the key-value store.
-    """
-    self._kvs.delete(self.id)
-    self.id = None
+class Store(object):
+  def __init__(self, kvs):
+    self.kvs = kvs
+    self.loaded_records = {}
 
   @classmethod
-  def find(cls, id, kvs):
-    """
-    Find a record from the key-value store by its ID.
-
-    :param id: The ID to find.
-    :param kvs: The key-value store to load from.
-    :throws KeyError: The record was not found in the underlying key-value
-                      store.
-    :returns: The record, bound to a key-value store.
-    """
-    record = cls.deserialize(id, kvs.get(id))
-    record.bind(kvs)
-    return record
-
-  def serialize(self):
+  def serialize(cls, record):
     """
     Serialize the record for insertion into the key-value store. It should be
     overriden by subclasses.
@@ -86,12 +52,16 @@ class Record(object):
     """
     raise NotImplementedError
 
+  def find(self, id):
+    """
+    Find a record from the key-value store by its ID.
 
-class Store(object):
-  def __init__(self, find_func, kvs):
-    self.find = find_func
-    self.kvs = kvs
-    self.records = {}
+    :param id: The ID to find.
+    :throws KeyError: The record was not found in the underlying key-value
+                      store.
+    :returns: The record, bound to a key-value store.
+    """
+    return self.deserialize(id, self.kvs.get(id))
 
   def load(self, id):
     """
@@ -102,10 +72,10 @@ class Store(object):
                       store.
     :returns: The record, bound to a key-value store.
     """
-    if id not in self.records:
-      record = self.find(id, self.kvs)
+    if id not in self.loaded_records:
+      record = self.find(id)
       self.add(record)
-    return self.records[id]
+    return self.loaded_records[id]
 
   def keys(self):
     """
@@ -120,33 +90,43 @@ class Store(object):
     for key in self.keys():
       yield self.load(key)
 
-  def create(self, record):
+  def save(self, record):
     """
     Save a record into the underlying key-value store.
     """
-    record.bind(self.kvs)
-    record.save()
-    if record.id not in self.records:
+    self.kvs.set(record.id, self.serialize(record))
+
+  def create(self, record):
+    """
+    Create a record in the underlying key-value store.
+    """
+    if record.id is not None:
+      raise ValueError("record already exists in data store")
+
+    record.id = self.kvs.next_serial()
+    self.save(record)
+
+    if record.id not in self.loaded_records:
       self.add(record)
 
   def save_all(self):
     """
     Save all records contained by this store to the backing key-value store.
     """
-    for record in list(self.records.values()):
-      record.save()
+    for record in list(self.loaded_records.values()):
+      self.save(record)
 
   def expire(self, record):
     """
     Remove a record from the cache.
     """
-    del self.records[record.id]
+    del self.loaded_records[record.id]
 
   def expire_all(self):
     """
     Purge all records from the underlying cache.
     """
-    for record in list(self.records.values()):
+    for record in list(self.loaded_records.values()):
       self.expire(record)
 
   def destroy(self, record):
@@ -155,18 +135,11 @@ class Store(object):
     store.
     """
     self.expire(record)
-    record.delete()
-
-  def loaded_records(self):
-    """
-    Get an iterator to records loaded into the store.
-
-    :returns: The iterator.
-    """
-    return self.records.items()
+    self.kvs.delete(record.id)
+    record.id = None
 
   def add(self, record):
     """
     Add a record into the cache.
     """
-    self.records[record.id] = record
+    self.loaded_records[record.id] = record
