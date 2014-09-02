@@ -1,8 +1,8 @@
 ## Installing
 
-1. Install an Ubuntu server VM. Trust me, it's easier.
+1. Use Vagrant!
 
-2. Run `./setup.sh`
+        vagrant up
 
 ## Running
 

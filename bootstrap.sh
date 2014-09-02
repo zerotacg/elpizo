@@ -4,17 +4,19 @@ apt-get install -y libpython3.4-dev libxml2-dev libxslt1-dev cython3 nodejs-lega
 easy_install-3.4 pip
 pip3.4 install virtualenv
 npm install -g bower
+cd /vagrant
 git submodule init
 git submodule update
 make
 virtualenv -ppython3 VENV
 source VENV/bin/activate
 pip install -r requirements.txt
-npm install
-bower install
+npm install --unsafe-perm
+bower install --allow-root
 openssl genrsa -out elpizo.pem 2048
 openssl rsa -in elpizo.pem -pubout -out elpizo.pub
 node_modules/.bin/gulp protos
 python -m elpizo.tools.initdb
-cp /vagrant/nginx.conf /etc/nginx/nginx.conf
+rm -f /etc/nginx/nginx.conf
+ln -s /vagrant/nginx.conf /etc/nginx/nginx.conf
 service nginx restart
