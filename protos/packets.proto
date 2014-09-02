@@ -159,7 +159,9 @@ message PickUpPacket {
 }
 
 message DespawnEntityPacket {
-  // Sent by the server to despawn the origin from the world.
+  // Sent by the server to despawn the origin from the world. This does not
+  // imply the origin has died, only that it should no longer be visible in the
+  // viewport.
   //
   // Direction: Server -> Client
   option (packet_type) = DESPAWN_ENTITY;
