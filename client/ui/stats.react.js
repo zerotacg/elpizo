@@ -47,7 +47,7 @@ export var Stats = React.createClass({
       boxShadow: "0 4px 0 " + emboss + ", 0 8px 20px rgba(0, 0, 0, 0.5)"
     }}>
       <div className="content">
-        <Avatar resources={this.props.resources} me={me} />
+        <button><Avatar resources={this.props.resources} me={me} /></button>
         <div className="info">
           <div className="heading">{me.name}</div>
           <HealthTicks health={me.health} />
