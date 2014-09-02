@@ -277,17 +277,11 @@ export class Game extends events.EventEmitter {
 
   startRendering() {
     var startTime = new Date().valueOf() / 1000;
-    var lastReactRenderTime = startTime;
 
     var cont = () => {
       var currentTime = new Date().valueOf() / 1000;
 
-      // Cap React rendering to 10fps. The UI doesn't need to be super
-      // responsive.
-      if (currentTime - lastReactRenderTime > 1 / 10) {
-        this.renderReact();
-        lastReactRenderTime = currentTime;
-      }
+      this.renderReact();
 
       if (this.resourcesLoaded) {
         this.render(currentTime - startTime);
