@@ -273,6 +273,7 @@ export class Player extends Actor {
   constructor(id, message) {
     super(id, message);
     this.interactions = [];
+    this.showInventory = false;
   }
 
   doAttack(protocol) {
@@ -362,6 +363,18 @@ export class Player extends Actor {
     if (inputState.stick(input.Key.X)) {
       this.interactions = [];
       this.doAttack(protocol);
+      return;
+    }
+
+    if (inputState.stick(input.Key.I)) {
+      this.interactions = [];
+      this.showInventory = !this.showInventory;
+      return;
+    }
+
+    if (inputState.stick(input.Key.ESCAPE)) {
+      this.interactions = [];
+      this.showInventory = false;
       return;
     }
 

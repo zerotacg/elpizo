@@ -40,7 +40,7 @@ export var UI = React.createClass({
                 resources={this.props.game.resources} />
         </Item>);
 
-        if (this.props.showInventory) {
+        if (this.props.game.me.showInventory) {
           hudElements.push(<Item key="inventory">
               <inventory.Inventory
                   me={this.props.game.me}

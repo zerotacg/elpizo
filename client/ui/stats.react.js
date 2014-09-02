@@ -37,6 +37,10 @@ var HealthTicks = React.createClass({
 });
 
 export var Stats = React.createClass({
+  toggleInventory: function () {
+    this.props.me.showInventory = !this.props.me.showInventory;
+  },
+
   render: function () {
     var me = this.props.me;
     var fill = colors.makeColorForString(me.name);
@@ -47,7 +51,10 @@ export var Stats = React.createClass({
       boxShadow: "0 4px 0 " + emboss + ", 0 8px 20px rgba(0, 0, 0, 0.5)"
     }}>
       <div className="content">
-        <button><Avatar resources={this.props.resources} me={me} /></button>
+        <button onClick={this.toggleInventory}
+                className={me.showInventory ? "active" : ""}>
+          <Avatar resources={this.props.resources} me={me} />
+        </button>
         <div className="info">
           <div className="heading">{me.name}</div>
           <HealthTicks health={me.health} />
