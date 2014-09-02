@@ -11,7 +11,7 @@ export var Loading = React.createClass({
     var body;
 
     if (this.props.game.lastError !== null) {
-      body = <div className="error">
+      body = <div className="error transitionable">
           <div className="heading">Error</div>
           <div className="content">
             <div>
@@ -22,7 +22,7 @@ export var Loading = React.createClass({
           </div>
         </div>;
     } else {
-      body = <div className="spinner">
+      body = <div className="spinner transitionable">
         <div className="cube1" />
         <div className="cube2" />
       </div>;

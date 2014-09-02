@@ -61,6 +61,12 @@ export var UI = React.createClass({
       }
     }
 
+    if (!this.props.game.running) {
+      hudElements.push(<Item key="loading">
+          <loading.Loading game={this.props.game} />
+      </Item>);
+    }
+
     // We copy the log because we need to know if it changed length.
     return <div className="ui-root">
       <overlay.Overlay game={this.props.game} />
@@ -68,7 +74,6 @@ export var UI = React.createClass({
                                        component={React.DOM.div}>
         {hudElements}
       </React.addons.CSSTransitionGroup>
-      <loading.Loading game={this.props.game} />
     </div>;
   }
 });

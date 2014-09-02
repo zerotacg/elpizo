@@ -4,6 +4,7 @@ module React from "react/react-with-addons";
 
 module packets from "client/protos/packets";
 module colors from "client/util/colors";
+module input from "client/util/input";
 module objects from "client/util/objects";
 module timing from "client/util/timing";
 
@@ -84,11 +85,19 @@ export var Log = React.createClass({
   },
 
   onKeyDown: function (e) {
-    e.stopPropagation()
+    e.stopPropagation();
+
+    if (e.keyCode === input.Key.ESCAPE) {
+      this.blurChat();
+    }
   },
 
   onChange: function (e) {
     this.setState({pendingMessage: e.target.value});
+  },
+
+  blurChat: function () {
+    this.refs.text.getDOMNode().blur();
   },
 
   focusChat: function () {
