@@ -10,14 +10,10 @@ export var Debug = React.createClass({
   },
 
   render: function () {
-    if (!this.props.game.debug) {
-      return null;
-    }
-
     var game = this.props.game;
 
-    var viewport = game.renderer.getViewportBounds();
-    var cacheBounds = game.renderer.getCacheBounds();
+    var viewport = game.graphicsRenderer.getViewportBounds();
+    var cacheBounds = game.graphicsRenderer.getCacheBounds();
 
     var maybeRegions = null;
     if (this.state.showRegions && game.realm !== null) {
@@ -37,7 +33,7 @@ export var Debug = React.createClass({
       maybeAvatarPosition = "(" + game.me.location.x.toFixed(2) + ", " + game.me.location.y.toFixed(2) + ")";
     }
 
-    return <div className="debug window">
+    return <div className="debug transitionable">
       <table className="content">
         <tr>
           <th>Viewport Bounds</th>
@@ -70,7 +66,7 @@ export var Debug = React.createClass({
 
         <tr>
           <th>Frame Rate</th>
-          <td>{(1 / game.renderer.lastRenderTime).toFixed(0)} fps</td>
+          <td>{(1 / game.graphicsRenderer.lastRenderTime).toFixed(0)} fps</td>
         </tr>
       </table>
     </div>;

@@ -64,8 +64,8 @@ export var Inventory = React.createClass({
       </li>
     });
 
-    return <div className="center">
-      <div className="inventory window">
+    return <div className="center transitionable">
+      <div className="inventory">
         <div className="bag">
           <div className="heading">Bag</div>
           <div className="content">
@@ -73,7 +73,7 @@ export var Inventory = React.createClass({
           </div>
         </div>
 
-        <div className="equipment window">
+        <div className="equipment">
           <div className="heading">Equipment</div>
           <div className="content">
             <button className="slot head-item"

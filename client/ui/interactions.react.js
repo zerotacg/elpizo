@@ -11,8 +11,16 @@ export var InteractionsMenu = React.createClass({
     };
   },
 
+  componentWillMount: function () {
+    this.setState({interactions: this.props.me.interactions});
+  },
+
   componentDidMount: function () {
-    this.getDOMNode().querySelector("input[type='radio']:checked").focus();
+    // HACK: We have to set focus once the transition has completed, otherwise
+    // it completes the transition.
+    window.setTimeout(() => {
+      this.getDOMNode().querySelector("input[type='radio']:checked").focus();
+    }, 0.2 * 1000);
   },
 
   onSubmit: function (e) {
@@ -21,6 +29,8 @@ export var InteractionsMenu = React.createClass({
   },
 
   onKeyDown: function (e) {
+    e.stopPropagation();
+
     if (e.keyCode === input.Key.Z) {
       this.onSubmit(e);
     } else if (e.keyCode === input.Key.ESCAPE) {
@@ -35,7 +45,7 @@ export var InteractionsMenu = React.createClass({
   runAction: function (actionIndex) {
     if (actionIndex !== null) {
       var [i, j] = actionIndex;
-      var action = this.props.me.interactions[i].actions[j];
+      var action = this.state.interactions[i].actions[j];
       action.f(this.props.protocol, this.props.me, this.props.log);
     }
     this.dismiss();
@@ -46,7 +56,7 @@ export var InteractionsMenu = React.createClass({
   },
 
   render: function () {
-    var interactions = this.props.me.interactions.map((group, i) => {
+    var interactions = this.state.interactions.map((group, i) => {
       var actions = group.actions.map((action, j) => {
         var checked = false;
         if (this.state.actionIndex !== null) {
@@ -55,7 +65,8 @@ export var InteractionsMenu = React.createClass({
         }
 
         return <li key={j}>
-          <input type="radio" name="item" id={"interactions-menu-" + i + "." + j}
+          <input type="radio" name="item"
+                 id={"interactions-menu-" + i + "." + j}
                  onChange={this.setAction.bind(this, [i, j])}
                  checked={checked} />
           <label htmlFor={"interactions-menu-" + i + "." + j}
@@ -71,21 +82,21 @@ export var InteractionsMenu = React.createClass({
       </li>;
     });
 
-    return <div className="center">
-      <div className="interactions-menu window">
-        <form onSubmit={this.onSubmit}
-              onKeyDown={this.onKeyDown}>
-          <div className="content">
-            <ul>{interactions}</ul>
-            <input type="radio" name="item" id="interactions-menu-cancel"
-                   onChange={this.setAction.bind(this, null)}
-                   checked={this.state.actionIndex === null} />
-            <label htmlFor="interactions-menu-cancel" className="cancel"
-                   onClick={this.runAction.bind(this, null)}>Cancel</label>
-            <button type="submit" tabIndex="-1"></button>
-          </div>
-        </form>
-      </div>
+    return <div className="center transitionable"
+                onTransitionend={this.onTransitionEnd}>
+      <form className="interactions-menu"
+            onSubmit={this.onSubmit}
+            onKeyDown={this.onKeyDown}>
+        <div className="content">
+          <ul>{interactions}</ul>
+          <input type="radio" name="item" id="interactions-menu-cancel"
+                 onChange={this.setAction.bind(this, null)}
+                 checked={this.state.actionIndex === null} />
+          <label htmlFor="interactions-menu-cancel" className="cancel"
+                 onClick={this.runAction.bind(this, null)}>Cancel</label>
+          <button type="submit" tabIndex="-1"></button>
+        </div>
+      </form>
     </div>;
   }
 });

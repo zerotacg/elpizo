@@ -42,7 +42,7 @@ export var Stats = React.createClass({
     var fill = colors.makeColorForString(me.name);
     var emboss = chroma(fill).darken(10).hex();
 
-    return <div className="stats window" style={{
+    return <div className="stats transitionable" style={{
       backgroundColor: fill,
       boxShadow: "0 4px 0 " + emboss + ", 0 8px 20px rgba(0, 0, 0, 0.5)"
     }}>

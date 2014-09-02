@@ -42,13 +42,17 @@
       }
 
       &.expand-enter {
-        opacity: 0;
+        max-height: 100px;
+        overflow: hidden;
 
         &.expand-enter-active {
-          opacity: 1;
+          // HACK: CSS doesn't support animating height from 0 to auto, so we
+          // animate max-height instead.
+          max-height: 100px;
         }
 
-        transition: opacity 0.2s;
+        // disable this for now.
+        transition: max-height 0;
       }
     }
   }

@@ -83,6 +83,10 @@ export var Log = React.createClass({
     node.scrollTop = node.scrollHeight;
   },
 
+  onKeyDown: function (e) {
+    e.stopPropagation()
+  },
+
   onChange: function (e) {
     this.setState({pendingMessage: e.target.value});
   },
@@ -133,17 +137,21 @@ export var Log = React.createClass({
   render: function () {
     var messages = this.props.log.map((entry, i) => <li key={i}>{entry}</li>);
 
-    return <form className="log window" onSubmit={this.handleSubmit} onClick={this.focusChat}>
+    return <form className="log transitionable"
+                 onSubmit={this.handleSubmit}
+                 onClick={this.focusChat}>
       <div className="content">
         <React.addons.CSSTransitionGroup transitionName="expand"
                                          component={React.DOM.ul}
                                          className="messages"
-                                         ref="messages">
+                                         ref="messages"
+                                         transitionLeave={false}>
         {messages}
         </React.addons.CSSTransitionGroup>
         <input type="text" onChange={this.onChange}
                value={this.state.pendingMessage}
                ref="text"
+               onKeyDown={this.onKeyDown}
                placeholder="Chat message" />
       </div>
     </form>;

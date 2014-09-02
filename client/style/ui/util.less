@@ -93,26 +93,26 @@ button {
   }
 }
 
-.slide-enter .window {
+.slide-enter .transitionable {
   opacity: 0;
   transform: translate(0, 16px);
 
-  transition: all 0.2s;
+  transition: all 0.2s ease-out;
 }
 
-.slide-enter-active .window {
+.slide-enter-active .transitionable {
   opacity: 1;
   transform: translate(0, 0);
 }
 
-.slide-leave .window {
+.slide-leave .transitionable {
   opacity: 1;
   transform: translate(0, 0);
 
-  transition: all 0.2s;
+  transition: all 0.2s ease-in;
 }
 
-.slide-leave-active .window {
+.slide-leave-active .transitionable {
   opacity: 0;
   transform: translate(0, -16px);
 }
