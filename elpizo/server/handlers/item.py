@@ -21,18 +21,18 @@ def on_pick_up(protocol, actor, message):
   # players can race for it.
   actor.send(protocol,
              packets_pb2.InventoryPacket(item=drop.item.to_protobuf()))
-  actor.inventory.add(drop.item)
+  actor.inventory_dict[drop.item.id] = drop.item
   protocol.server.store.entities.destroy(drop)
 
 
 def on_discard(protocol, actor, message):
+  item = actor.inventory_dict[message.item_id]
+
   try:
-    item = next(item for item in actor.inventory if item.id == message.item_id)
-  except StopIteration:
+    del actor.inventory_dict[message.item_id]
+  except KeyError:
     # The client probably has a stale list.
     return
-
-  actor.inventory.remove(item)
 
   drop = entities.Drop(item=item, location=actor.location,
                        realm_id=actor.realm_id)
@@ -60,15 +60,17 @@ def on_modify_equipment(protocol, actor, message):
       # The client should modify equipment out of this slot first.
       return
 
-    equipment = next(item for item in actor.inventory
-                     if item.id == message.item_id)
+    try:
+      equipment = actor.inventory_dict[message.item_id]
+    except KeyError:
+      # The client probably has a stale inventory list.
+      return
 
     if equipment.SLOT != message.slot:
       # The client's state probably didn't converge yet.
       return
 
     setattr(actor, slot_name, equipment)
-    actor.inventory.remove(equipment)
 
     # Make the client place the item in slot 0 of the player's inventory (since
     # the client should have 0 information for the inventories of other actors
@@ -84,7 +86,7 @@ def on_modify_equipment(protocol, actor, message):
   elif current_equipment is not None:
     # Handle dequipping.
     setattr(actor, slot_name, None)
-    actor.inventory.add(current_equipment)
+    actor.inventory_dict[current_equipment.id] = current_equipment
 
     actor.broadcast_to_regions(
         protocol.server.bus,

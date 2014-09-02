@@ -33,6 +33,12 @@ export function install(game) {
     }
   }
 
+  protocol.on(packets.Packet.Type.ERROR, (origin, message) => {
+    game.lastError = message.text;
+    protocol.transport.close();
+    game.renderReact();
+  });
+
   protocol.on(packets.Packet.Type.REALM, (origin, message) => {
     game.setRealm(new realm.Realm(message.id, message.realm));
   });

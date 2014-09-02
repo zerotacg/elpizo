@@ -183,7 +183,8 @@ class Actor(Entity):
     message = entities_pb2.Actor(name=self.name, health=self.health,
                                  gender=self.gender, body=self.body,
                                  inventory=[item.to_protobuf()
-                                            for item in self.inventory])
+                                            for item
+                                            in self.inventory_dict.values()])
 
     if getattr(self, "facial", None):
       message.facial = self.facial
@@ -221,7 +222,7 @@ class Actor(Entity):
     record.update(name=proto.name, health=proto.health, gender=proto.gender,
                   body=proto.body,
                   inventory={items.Item.from_protobuf_polymorphic(item_proto)
-                             for item_proto in proto.inventory},
+                      for item_proto in proto.inventory},
                   facial=proto.facial, hair=proto.hair,
                   head_item=items.Item.from_protobuf_polymorphic(proto.head_item)
                       if proto.HasField("head_item") else None,
@@ -237,15 +238,21 @@ class Actor(Entity):
 
   @property
   def equipment(self):
-    return {item.id: item for item in
+    return {item for item in
             [self.head_item, self.torso_item, self.legs_item, self.feet_item,
              self.weapon] if item is not None}
 
   @property
+  def inventory(self):
+    return self.inventory_dict.values()
+
+  @inventory.setter
+  def inventory(self, items):
+    self.inventory_dict = {item.id: item for item in items}
+
+  @property
   def full_inventory(self):
-    items = self.inventory.copy()
-    items.update(self.equipment)
-    return items
+    return set(self.inventory) | self.equipment
 
   def get_realm(self, realm_store):
     return realm_store.find(self.realm_id)

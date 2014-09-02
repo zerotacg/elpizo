@@ -62,13 +62,8 @@ export class Protocol extends events.EventEmitter {
     this.currentRetryOperation = null;
 
     this.transport.on("message", (packet) => {
-      var message = PACKETS[packet.type].decode(packet.payload);
-
-      if (packet.type === packets.Packet.Type.ERROR) {
-        game.lastError = message.text;
-        this.transport.close();
-      }
-      this.emit(packet.type, packet.origin, message);
+      this.emit(packet.type, packet.origin,
+                PACKETS[packet.type].decode(packet.payload));
     });
 
     this.transport.on("close", (e) => {
