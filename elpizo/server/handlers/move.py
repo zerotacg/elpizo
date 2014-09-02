@@ -7,8 +7,9 @@ from elpizo.util import green
 
 
 def on_move(protocol, actor, message):
+  ephemera = protocol.get_ephemera(actor)
   now = time.monotonic()
-  dt = now - actor.ephemera.last_move_time
+  dt = now - ephemera.last_move_time
 
   old_location = actor.location
   new_location = old_location.offset(
@@ -49,7 +50,7 @@ def on_move(protocol, actor, message):
 
   # We don't need strict sequentiality of the location log, so we keep this out
   # of the critical section.
-  actor.ephemera.last_move_time = now
+  ephemera.last_move_time = now
   actor.log_location(now, old_location)
   actor.retain_log_after(now - 1)
 

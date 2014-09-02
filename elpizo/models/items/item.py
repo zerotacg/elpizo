@@ -25,9 +25,3 @@ class Item(object):
   @classmethod
   def from_protobuf_polymorphic(cls, proto):
     return cls.REGISTRY[proto.type].from_protobuf(proto)
-
-  def __eq__(self, other):
-    return other.id == self.id
-
-  def __hash__(self):
-    return hash((Item, self.id))

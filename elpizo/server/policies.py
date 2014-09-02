@@ -19,6 +19,9 @@ class UnauthenticatedPolicy(object):
   def can_receive_broadcasts_from(self, origin):
     return False
 
+  def get_ephemera(self, origin):
+    raise NotImplementedError
+
   def on_finish(self):
     pass
 
@@ -27,6 +30,7 @@ class PlayerPolicy(object):
   def __init__(self, id, server):
     self.server = server
     self.player = server.store.entities.load(int(id))
+    self.ephemera = entities.Ephemera()
 
   def on_hello(self, protocol):
     if self.server.bus.has(self.player.bus_key):
@@ -53,10 +57,12 @@ class PlayerPolicy(object):
     # Only self.players get chat access.
     self.player.subscribe(self.server.bus, ("conversation", self.player.name))
     self.player.subscribe(self.server.bus, ("chatroom", "global"))
-    self.player.ephemera = entities.Ephemera()
 
   def get_actor(self, origin):
     return self.player
+
+  def get_ephemera(self, origin):
+    return self.ephemera
 
   def can_receive_broadcasts_from(self, entity):
     # Don't receive our own broadcasts.
@@ -73,6 +79,7 @@ class NPCPolicy(object):
     self.server = server
     self.id = id
     self.npcs = set()
+    self.npc_ephemeras = {}
 
   @property
   def bus_key(self):
@@ -100,7 +107,7 @@ class NPCPolicy(object):
         for entity in region.entities:
           if isinstance(entity, entities.NPC):
             self.npcs.add(entity)
-            entity.ephemera = entities.Ephemera()
+            self.npc_ephemera[entity.id] = entities.Ephemera()
 
             entity_protobuf = entity.to_protected_protobuf()
           else:
@@ -112,6 +119,9 @@ class NPCPolicy(object):
   def get_actor(self, origin):
     return self.server.store.entities.load(origin) if origin is not None else \
            None
+
+  def get_ephemera(self, origin):
+    return self.npc_ephemeras[origin]
 
   def can_receive_broadcasts_from(self, entity):
     # Don't receive broadcasts we sent.

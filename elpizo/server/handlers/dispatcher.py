@@ -31,6 +31,9 @@ class Dispatcher(net.Protocol):
   def bind_policy(self, policy):
     self.policy = policy
 
+  def get_ephemera(self, actor):
+    return self.policy.get_ephemera(actor.id)
+
   def on_open(self):
     self.bind_policy(policies.UnauthenticatedPolicy())
 

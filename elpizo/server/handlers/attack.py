@@ -5,15 +5,16 @@ from elpizo.protos import packets_pb2
 
 
 def on_attack(protocol, actor, message):
+  ephemera = protocol.get_ephemera(actor)
   now = time.monotonic()
-  dt = now - actor.ephemera.last_attack_time
+  dt = now - ephemera.last_attack_time
 
   if dt < 1 / actor.attack_cooldown * 0.5: # compensate for slow connections by 0.5
     return
 
   actor.broadcast_to_regions(protocol.server.bus, message)
 
-  actor.ephemera.last_attack_time = now
+  ephemera.last_attack_time = now
 
   for entity_id in message.entity_ids:
     target = protocol.server.store.entities.load(entity_id)
