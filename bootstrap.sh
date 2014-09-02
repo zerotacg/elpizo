@@ -7,7 +7,7 @@ npm install -g bower
 cd /vagrant
 git submodule init
 git submodule update
-make
+make -j9
 virtualenv -ppython3 VENV
 source VENV/bin/activate
 pip install -r requirements.txt
