@@ -7,3 +7,4 @@ elpizo.pem
 elpizo.pub
 *.pid
 VENV
+.vagrant
