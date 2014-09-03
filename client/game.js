@@ -1,6 +1,8 @@
 import "browsernizr/lib/prefixed";
 import "browsernizr/test/css/flexbox";
 import "browsernizr/test/websockets/binary";
+import "browsernizr/test/audio";
+import "browsernizr/test/audio/webaudio";
 
 module Modernizr from "browsernizr";
 
@@ -79,7 +81,7 @@ export class Game extends events.EventEmitter {
 
   onError(msg, file, lineno, colno, e) {
     try {
-      this.setLastError("Internal client error.\n\n" + e.toString());
+      this.setLastError(msg);
     } catch (e) {
       // Something has gone horribly wrong, bail out!
       console.error(e.stack);
@@ -88,8 +90,10 @@ export class Game extends events.EventEmitter {
 
   detectFeatures() {
     var features = {
-        "Flexible box layout": Modernizr.flexbox,
-        "Binary WebSockets": Modernizr.websocketsbinary
+        "CSS3 flexible box layout": Modernizr.flexbox,
+        "Binary WebSockets": Modernizr.websocketsbinary,
+        "Web Audio": Modernizr.webaudio,
+        "Opus audio codec": Modernizr.audio.opus
     };
 
     var unavailable = [];
