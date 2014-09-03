@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Rekindled Hope</title>
+    <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .center {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      width: 100%;
+      height: 100%;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="center">
+      <form id="auth" action="http://localhost:8081">
+        <label>
+          <strong>Token</strong>
+          <input type="text" name="token" size="100">
+        </label>
+        <button type="submit">Authorize</button>
+      </form>
+    </div>
+
+    <script>
+    var ipc = require("ipc");
+    var authForm = document.getElementById("auth");
+
+    ipc.on("token", function (token) {
+      authForm.elements.token.value = token;
+      authForm.submit();
+    });
+    </script>
+  </body>
+</html>
