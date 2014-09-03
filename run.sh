@@ -1,7 +1,7 @@
 #!/bin/bash
 trap "kill 0" EXIT
 
-source VENV/bin/activate
-node_modules/.bin/gulp protos-py
-node_modules/.bin/gulp --debug &
-python3 -m elpizo.server --debug
+source ~/VENV/bin/activate
+gulp protos-py
+gulp --debug &
+python3.4 -m elpizo.server --debug

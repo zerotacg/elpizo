@@ -160,8 +160,10 @@ gulp.task("protos-js", function () {
 
 gulp.task("protos-py", function () {
   return gulp.src(paths.protos)
-    .pipe(run(path.join(__dirname, "protobuf-py3", "src", "protoc") +
-        " -I=./protos --python_out=elpizo/protos ./protos/<%= file.relative %>",
+    .pipe(run("protoc" +
+              " -I=./protos" +
+              " --python_out=elpizo/protos" +
+              " ./protos/<%= file.relative %>",
         {silent: true}));
 });
 

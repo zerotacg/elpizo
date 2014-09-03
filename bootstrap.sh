@@ -1,22 +1,25 @@
 #!/bin/bash
 apt-get update
-apt-get install -y libpython3.4-dev libxml2-dev libxslt1-dev cython3 nodejs-legacy python3.4 nodejs python3-setuptools npm git build-essential libtool autoconf redis-server nginx
+apt-get install -y libpython3.4-dev libxml2-dev libxslt1-dev cython3 \
+                   nodejs-legacy python3.4 nodejs python3-setuptools npm git \
+                   build-essential libtool autoconf redis-server nginx
 easy_install-3.4 pip
-pip3.4 install virtualenv
-npm install -g bower
+npm install -g bower gulp
+git clone https://github.com/GreatFruitOmsk/protobuf-py3.git
+cd protobuf-py3
+./autogen.sh
+./configure --prefix=/usr
+make -j3
+make install
 cd /vagrant
-git submodule init
-git submodule update
-make -j9
-virtualenv -ppython3 VENV
-source VENV/bin/activate
-pip install -r requirements.txt
+pip3.4 install -r requirements.txt
 npm install --unsafe-perm
 bower install --allow-root
 openssl genrsa -out elpizo.pem 2048
 openssl rsa -in elpizo.pem -pubout -out elpizo.pub
-node_modules/.bin/gulp protos
-python -m elpizo.tools.initdb
+gulp protos
+python3.4 -m elpizo.tools.initdb
+service nginx stop
 rm -f /etc/nginx/nginx.conf
 ln -s /vagrant/nginx.conf /etc/nginx/nginx.conf
-service nginx restart
+service nginx start
