@@ -72,15 +72,18 @@ export class Game extends events.EventEmitter {
   }
 
   onError(msg, file, lineno, colno, e) {
-    this.protocol.transport.close();
-    this.lastError = "Internal client error.\n\n" + e.stack.toString();
-
     try {
-      this.renderReact();
+      this.setLastError("Internal client error.\n\n" + e.stack.toString());
     } catch (e) {
       // Something has gone horribly wrong, bail out!
       console.error(e.stack);
     }
+  }
+
+  setLastError(e) {
+    this.protocol.transport.close();
+    this.lastError = e;
+    this.renderReact();
   }
 
   setDebug(v) {

@@ -34,9 +34,7 @@ export function install(game) {
   }
 
   protocol.on(packets.Packet.Type.ERROR, (origin, message) => {
-    game.lastError = message.text;
-    protocol.transport.close();
-    game.renderReact();
+    game.setLastError(message.text);
   });
 
   protocol.on(packets.Packet.Type.REALM, (origin, message) => {
