@@ -195,6 +195,9 @@ function generateManifest() {
       case ".png":
         manifest[fileName] = "image";
         break;
+      case ".opus":
+        manifest[fileName] = "audio";
+        break;
     }
 
     if (Object.prototype.hasOwnProperty.call(manifest, fileName)) {
