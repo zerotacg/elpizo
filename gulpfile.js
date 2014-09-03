@@ -2,6 +2,7 @@
 
 var gulp = require("gulp");
 
+var autoprefixer = require('autoprefixer-core');
 var buffer = require("gulp-buffer");
 var browserify = require("browserify");
 var debowerify = require("debowerify");
@@ -12,6 +13,7 @@ var jstransform = require("jstransform");
 var less = require("gulp-less");
 var moduleVisitors = require("es6-module-jstransform/visitors");
 var path = require("path");
+var postcss = require('gulp-postcss');
 var reactVisitors = require("react-tools/vendor/fbtransform/visitors");
 var rename = require("gulp-rename");
 var run = require("gulp-run");
@@ -127,7 +129,6 @@ gulp.task("scripts", function () {
 
 gulp.task("styles", function () {
   return gulp.src("./client/style/main.less")
-    .pipe(sourcemaps.init())
     .pipe(less({
         paths: [path.join(__dirname, "client", "style")],
         compress: true
@@ -138,7 +139,7 @@ gulp.task("styles", function () {
       });
       this.emit("end");
     })
-    .pipe(sourcemaps.write("../maps"))
+    .pipe(postcss([autoprefixer]))
     .pipe(gulp.dest("static/css"));
 });
 

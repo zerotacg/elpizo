@@ -1,3 +1,9 @@
+import "browsernizr/lib/prefixed";
+import "browsernizr/test/css/flexbox";
+import "browsernizr/test/websockets/binary";
+
+module Modernizr from "browsernizr";
+
 module events from "events";
 module React from "react/react-with-addons";
 module promise from "es6-promise";
@@ -23,8 +29,13 @@ function waitFor(emitter, event) {
 export class Game extends events.EventEmitter {
   constructor(parent) {
     super();
-
     this.log = [];
+
+    this.uiRoot = document.createElement("div");
+    parent.appendChild(this.uiRoot);
+    this.uiRootComponent = ui.UI({
+        game: this
+    });
 
     window.onerror = this.onError.bind(this);
     this.lastError = null;
@@ -34,25 +45,20 @@ export class Game extends events.EventEmitter {
 
     this.running = false;
 
-    this.protocol = new net.Protocol(this, new net.Transport(
-        "ws://" + window.location.host + "/socket"));
-
     this.resources = new resources.Resources();
     this.resourcesLoaded = false;
 
-    this.graphicsRenderer = new graphics.GraphicsRenderer(this.resources,
-                                                          parent);
     this.inputState = new input.InputState(window);
 
-    this.uiRoot = document.createElement("div");
-    parent.appendChild(this.uiRoot);
-    this.uiRootComponent = ui.UI({
-        game: this
-    });
+    this.graphicsRenderer = new graphics.GraphicsRenderer(this.resources,
+                                                          parent);
 
+    this.detectFeatures();
     // Render the React components once.
     this.renderReact();
 
+    this.protocol = new net.Protocol(this, new net.Transport(
+        "ws://" + window.location.host + "/socket"));
     handlers.install(this);
 
     this.graphicsRenderer.on("refit", this.onRefit.bind(this));
@@ -73,15 +79,37 @@ export class Game extends events.EventEmitter {
 
   onError(msg, file, lineno, colno, e) {
     try {
-      this.setLastError("Internal client error.\n\n" + e.stack.toString());
+      this.setLastError("Internal client error.\n\n" + e.toString());
     } catch (e) {
       // Something has gone horribly wrong, bail out!
       console.error(e.stack);
     }
   }
 
+  detectFeatures() {
+    var features = {
+        "Flexible box layout": Modernizr.flexbox,
+        "Binary WebSockets": Modernizr.websocketsbinary
+    };
+
+    var unavailable = [];
+
+    Object.keys(features).forEach((k) => {
+      if (!features[k]) {
+        unavailable.push(k);
+      }
+    });
+
+    if (unavailable.length > 0) {
+      throw new Error("Some required features are not available on your browser.\n\n" +
+        unavailable.map((feature) => " * " + feature).join("\n") + "\n");
+    }
+  }
+
   setLastError(e) {
-    this.protocol.transport.close();
+    if (this.protocol) {
+      this.protocol.transport.close();
+    }
     this.lastError = e;
     this.renderReact();
   }

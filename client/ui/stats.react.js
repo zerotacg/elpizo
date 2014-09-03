@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+module Modernizr from "browsernizr";
 module chroma from "chroma-js";
 module React from "react/react-with-addons";
 
@@ -46,10 +47,11 @@ export var Stats = React.createClass({
     var fill = colors.makeColorForString(me.name);
     var emboss = chroma(fill).darken(10).hex();
 
-    return <div className="stats transitionable" style={{
-      backgroundColor: fill,
-      boxShadow: "0 4px 0 " + emboss + ", 0 8px 20px rgba(0, 0, 0, 0.5)"
-    }}>
+    var style = {};
+    style["backgroundColor"] = colors.makeColorForString(me.name);
+    style[Modernizr.prefixed("boxShadow")] = "0 4px 0 " + emboss + ", 0 8px 20px rgba(0, 0, 0, 0.5)";
+
+    return <div className="stats transitionable" style={style}>
       <div className="content">
         <button onClick={this.toggleInventory}
                 className={me.showInventory ? "active" : ""}>

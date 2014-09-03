@@ -27,6 +27,9 @@
     "tmp": "0.0.24",
     "vinyl-source-stream": "^0.1.1",
     "watchify": "^0.10.2",
-    "yargs": "^1.2.6"
+    "yargs": "^1.2.6",
+    "browsernizr": "~1.0.2",
+    "autoprefixer-core": "~3.0.1",
+    "gulp-postcss": "~1.0.2"
   }
 }

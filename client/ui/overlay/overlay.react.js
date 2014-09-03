@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+module Modernizr from "browsernizr";
 module React from "react/react-with-addons";
 
 export var Overlay = React.createClass({
@@ -12,10 +13,12 @@ export var Overlay = React.createClass({
     var components = Object.keys(renderer.components).map((k) =>
         renderer.components[k]);
 
-    return <div className="overlay"
-                style={{transform: "translate(" +
-                    (-position.x + "px") + "," +
-                    (-position.y + "px") + ")"}}>
+    var style = {};
+    style[Modernizr.prefixed("transform")] = "translate(" +
+      (-position.x + "px") + "," +
+      (-position.y + "px") + ")";
+
+    return <div className="overlay" style={style}>
       <div className="components">{components}</div>
     </div>;
   }

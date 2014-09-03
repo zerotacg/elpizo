@@ -1,5 +1,6 @@
 /** @jsx React.DOM */
 
+module Modernizr from "browsernizr";
 module React from "react/react-with-addons";
 
 export var DamageNumber = React.createClass({
@@ -8,10 +9,12 @@ export var DamageNumber = React.createClass({
     var renderer = this.props.renderer;
 
     var position = renderer.toScreenCoords(entity.location);
+    var style = {};
+    style[Modernizr.prefixed("transform")] =
+        "translate(" + (position.x + 16 + "px") + "," +
+                       (position.y - (entity.getHeight() - 1) * 32 + "px") + ")";
 
-    return <div style={{
-      transform: "translate(" + (position.x + 16 + "px") + "," +
-                                (position.y - (entity.getHeight() - 1) * 32 + "px") + ")"}}>
+    return <div style={style}>
       <div className="damage">
         <div className="inner">
           {this.props.damage}
