@@ -28,6 +28,13 @@ function waitFor(emitter, event) {
     emitter.once(event, resolve));
 }
 
+var FEATURES = {
+    "CSS3 flexible box layout": Modernizr.flexbox,
+    "Binary WebSockets": Modernizr.websocketsbinary,
+    "Web Audio": Modernizr.webaudio,
+    "Opus audio codec": Modernizr.audio.opus
+};
+
 export class Game extends events.EventEmitter {
   constructor(parent) {
     super();
@@ -89,24 +96,14 @@ export class Game extends events.EventEmitter {
   }
 
   detectFeatures() {
-    var features = {
-        "CSS3 flexible box layout": Modernizr.flexbox,
-        "Binary WebSockets": Modernizr.websocketsbinary,
-        "Web Audio": Modernizr.webaudio,
-        "Opus audio codec": Modernizr.audio.opus
-    };
-
-    var unavailable = [];
-
-    Object.keys(features).forEach((k) => {
-      if (!features[k]) {
-        unavailable.push(k);
-      }
-    });
+    var unavailable = Object.keys(FEATURES).filter((k) => !FEATURES[k]);
 
     if (unavailable.length > 0) {
-      throw new Error("Some required features are not available on your browser.\n\n" +
-        unavailable.map((feature) => " * " + feature).join("\n") + "\n");
+      throw new Error("Some required browser features are not available.\n" +
+        "\n" +
+        unavailable.map((feature) => " * " + feature).join("\n") + "\n" +
+        "\n" +
+        "We suggest that you upgrade to a more modern browser.");
     }
   }
 
