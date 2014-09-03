@@ -62,7 +62,11 @@ export class Game extends events.EventEmitter {
     this.graphicsRenderer = new graphics.GraphicsRenderer(this.resources,
                                                           parent);
 
-    this.detectFeatures();
+    var qs = querystring.parse(window.location.search.substring(1));
+
+    if (!qs.bypassFeatureDetect) {
+      this.detectFeatures();
+    }
     // Render the React components once.
     this.renderReact();
 
@@ -76,7 +80,6 @@ export class Game extends events.EventEmitter {
     this.protocol.transport.on("open", this.onTransportOpen.bind(this));
     this.protocol.transport.on("close", this.onTransportClose.bind(this));
 
-    var qs = querystring.parse(window.location.search.substring(1));
     var encodedToken = atob(qs.token || "");
     this.token = new Uint8Array(encodedToken.length);
     [].forEach.call(encodedToken, (c, i) => {
