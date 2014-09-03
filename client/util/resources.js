@@ -15,7 +15,7 @@ export function loadAudio(src) {
   return new promise.Promise((resolve, reject) => {
     var snd = new Audio();
     snd.src = src;
-    snd.onload = () => resolve(snd);
+    snd.addEventListener( 'canplaythrough', () => resolve(snd) );
     snd.onerror = (err) => reject(new Error(err));
     return snd;
   });
