@@ -1,9 +1,13 @@
 import base64
+import logging
 import socket
 import sys
 
 from elpizo import platform
 from urllib import parse
+
+
+logger = logging.getLogger(__name__)
 
 
 def do_mint(app, credentials, expiry):
@@ -12,9 +16,11 @@ def do_mint(app, credentials, expiry):
       .decode("utf-8")
   print(token)
 
-  print("")
-  print("http://" + socket.gethostname() + ":8081/?token=" +
-      parse.quote(token))
+  logger.info("""
+If you're using Vagrant, try:
+
+http://localhost:8081/?token=%s \
+""", parse.quote(token))
 
 
 def main():
