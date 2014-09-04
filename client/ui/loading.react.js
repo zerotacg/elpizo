@@ -11,22 +11,40 @@ export var Loading = React.createClass({
     var body;
 
     if (this.props.game.lastError !== null) {
-      body = <div className="error transitionable">
+      body = <div className="center">
+        <div className="error transitionable">
           <div className="heading">Error</div>
           <div className="content">
             <div>
               <p>An unexpected error has occurred.</p>
-              <pre>{this.props.game.lastError}</pre>
+              <pre>{this.props.game.lastErro}</pre>
               <p>Your session has been closed. Please try logging in again.</p>
             </div>
           </div>
-        </div>;
-    } else if (!this.props.game.resourcesLoaded) {
-      body = <div className="transitionable">Loading resources...</div>;
+        </div>
+      </div>;
+    } else if (!this.props.game.resources.isLoadingComplete()) {
+      var resourceNames = Object.keys(this.props.game.resources.resourcesPending).map(
+          (name) => <li key={name}>{name}</li>);
+
+      body = <div className="loading">
+        <div className="transitionable">
+          <div className="progress">
+          Loading resources...<br />
+          <progress value={this.props.game.resources.getNumResourcesLoaded()}
+                    max={this.props.game.resources.getNumResources()} />
+          </div>
+          <ul>
+            {resourceNames}
+          </ul>
+        </div>
+      </div>;
     } else {
-      body = <div className="transitionable">Connecting to server...</div>;
+      body = <div className="center">
+        <div className="transitionable">Connecting to server...</div>
+      </div>;
     }
 
-    return <div className="center modal">{body}</div>;
+    return <div className="modal">{body}</div>;
   }
 });

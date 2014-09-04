@@ -23,7 +23,7 @@ export var UI = React.createClass({
   render: function () {
     var hudElements = [];
 
-    if (this.props.game.resourcesLoaded) {
+    if (this.props.game.resources.isLoadingComplete()) {
       if (this.props.game.me !== null) {
         // @ifdef DEBUG
         if (this.props.game.debug) {

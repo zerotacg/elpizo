@@ -59,12 +59,14 @@ export class Game extends events.EventEmitter {
     this.running = false;
 
     this.resources = new resources.Resources();
-    this.resourcesLoaded = false;
 
     this.inputState = new input.InputState(window);
 
     this.graphicsRenderer = new graphics.GraphicsRenderer(this.resources,
                                                           parent);
+
+    // Render the React components once to display the resource loading screen.
+    this.renderReact();
 
     var qs = querystring.parse(window.location.search.substring(1));
 
@@ -88,7 +90,7 @@ export class Game extends events.EventEmitter {
 
   onError(msg, file, lineno, colno, e) {
     try {
-      this.setLastError(msg);
+      this.setLastError(msg.toString());
     } catch (e) {
       // Something has gone horribly wrong, bail out!
       console.error(e.stack);
@@ -238,9 +240,11 @@ export class Game extends events.EventEmitter {
       bundle[fileName] = resources.Resources.TYPES[type]("assets/" + fileName);
     });
 
-    this.resources.loadBundle(bundle).then(() => {
-      this.resourcesLoaded = true;
+    this.resources.on("resourceLoaded", () => {
+      this.renderReact();
+    });
 
+    this.resources.loadBundle(bundle).then(() => {
       // Render the React components once.
       this.renderReact();
 
