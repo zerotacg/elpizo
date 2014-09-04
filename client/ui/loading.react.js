@@ -21,11 +21,10 @@ export var Loading = React.createClass({
             </div>
           </div>
         </div>;
+    } else if (!this.props.game.resourcesLoaded) {
+      body = <div className="transitionable">Loading resources...</div>;
     } else {
-      body = <div className="spinner transitionable">
-        <div className="cube1" />
-        <div className="cube2" />
-      </div>;
+      body = <div className="transitionable">Connecting to server...</div>;
     }
 
     return <div className="center modal">{body}</div>;

@@ -9,24 +9,20 @@ from elpizo.protos import realm_pb2
 logger = logging.getLogger(__name__)
 
 
-class Realm(record.Record):
+class Realm(record.ProtobufRecord):
   PROTOBUF_TYPE = realm_pb2.Realm
+  FIELDS = [
+      record.Field("name", record.Scalar),
+      record.Field("size", geometry.Vector2),
+  ]
 
   def __init__(self, *args, **kwargs):
     self.regions = None
     super().__init__(*args, **kwargs)
 
-  def to_protobuf(self):
-    return realm_pb2.Realm(name=self.name, size=self.size.to_protobuf())
-
   @property
   def bounds(self):
     return geometry.Rectangle(0, 0, self.size.x, self.size.y)
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    return cls(name=proto.name,
-               size=geometry.Vector2.from_protobuf(proto.size))
 
   def load_intersecting_regions(self, bounds):
     left = max([Region.floor(bounds.left), 0])
@@ -63,8 +59,21 @@ class Realm(record.Record):
                for region in regions)
 
 
-class Region(record.Record):
+class Layer(record.ProtobufRecord):
+  PROTOBUF_TYPE = realm_pb2.Layer
+  FIELDS = [
+      record.Field("terrain", record.Scalar),
+      record.RepeatedField("tiles", record.Scalar),
+  ]
+
+
+class Region(record.ProtobufRecord):
   PROTOBUF_TYPE = realm_pb2.Region
+  FIELDS = [
+      record.RepeatedField("layers", Layer),
+      record.RepeatedField("passabilities", record.Scalar),
+      record.RepeatedField("entity_ids", record.Scalar),
+  ]
 
   SIZE = 16
 
@@ -93,22 +102,10 @@ class Region(record.Record):
     x, y = v.split(",")
     self.location = geometry.Vector2(int(x), int(y))
 
-  def to_protobuf(self):
-    return realm_pb2.Region(layers=[layer.to_protobuf()
-                                    for layer in self.layers],
-                            passabilities=self.passabilities,
-                            entity_ids=[entity.id for entity in self.entities])
-
   def to_public_protobuf(self, realm):
     proto = self.to_protobuf()
     proto.ClearField("entity_ids")
     return proto
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    return cls(layers=[Layer.from_protobuf(layer) for layer in proto.layers],
-               passabilities=list(proto.passabilities),
-               entity_ids=list(proto.entity_ids))
 
   def is_terrain_passable_by(self, entity, bounds, direction):
     bounds = bounds.offset(self.location.negate())
@@ -134,21 +131,8 @@ class Region(record.Record):
     return ("region", self.realm.id, self.location)
 
 
-class Layer(object):
-  def __init__(self, **kwargs):
-    for k, v in kwargs.items():
-      setattr(self, k, v)
-
-  def to_protobuf(self):
-    return realm_pb2.Layer(terrain=self.terrain, tiles=self.tiles)
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    return cls(terrain=proto.terrain, tiles=list(proto.tiles))
-
-
 class RealmStore(record.ProtobufStore):
-  TYPE = Realm
+  RECORD_TYPE = Realm
   PROTOBUF_TYPE = realm_pb2.Realm
 
   def __init__(self, parent, kvs):
@@ -157,7 +141,7 @@ class RealmStore(record.ProtobufStore):
 
   def add(self, realm):
     super().add(realm)
-    realm.regions = self.parent.make_region_store(realm)
+    realm.update(regions=self.parent.make_region_store(realm))
 
   def expire(self, realm):
     super().expire(realm)
@@ -171,7 +155,7 @@ class RealmStore(record.ProtobufStore):
 
 
 class RegionStore(record.ProtobufStore):
-  TYPE = Region
+  RECORD_TYPE = Region
   PROTOBUF_TYPE = realm_pb2.Region
 
   def __init__(self, realm, entities, kvs):
@@ -187,10 +171,14 @@ class RegionStore(record.ProtobufStore):
 
   def find(self, id):
     region = super().find(id)
-    region.realm = self.realm
-    region.entities = {self.entities.load(entity_id)
-                       for entity_id in region.entity_ids}
+    region.update(realm=self.realm,
+                  entities={self.entities.load(entity_id)
+                            for entity_id in region.entity_ids})
     return region
+
+  def save(self, region):
+    region.update(entity_ids=[entity.id for entity in region.entities])
+    super().save(region)
 
   def keys(self):
     # We don't want to use the store's integer coercion.

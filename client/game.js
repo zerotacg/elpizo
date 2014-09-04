@@ -71,24 +71,15 @@ export class Game extends events.EventEmitter {
     if (!qs.bypassFeatureDetect) {
       this.detectFeatures();
     }
-    // Render the React components once.
-    this.renderReact();
-
-    this.protocol = new net.Protocol(this, new net.Transport(
-        "ws://" + window.location.host + "/socket"));
-    handlers.install(this);
-
-    this.graphicsRenderer.on("refit", this.onRefit.bind(this));
-    this.graphicsRenderer.on("viewportChange", this.onViewportChange.bind(this));
-
-    this.protocol.transport.on("open", this.onTransportOpen.bind(this));
-    this.protocol.transport.on("close", this.onTransportClose.bind(this));
 
     var encodedToken = atob(qs.token || "");
     this.token = new Uint8Array(encodedToken.length);
     [].forEach.call(encodedToken, (c, i) => {
       this.token[i] = c.charCodeAt(0);
     });
+
+    this.graphicsRenderer.on("refit", this.onRefit.bind(this));
+    this.graphicsRenderer.on("viewportChange", this.onViewportChange.bind(this));
 
     // @ifdef DEBUG
     this.setDebug(qs.debug === "on");
@@ -249,6 +240,13 @@ export class Game extends events.EventEmitter {
 
     this.resources.loadBundle(bundle).then(() => {
       this.resourcesLoaded = true;
+
+      // Render the React components once.
+      this.renderReact();
+
+      this.start();
+    }, (e) => {
+      this.setLastError(e);
     });
   }
 
@@ -313,11 +311,8 @@ export class Game extends events.EventEmitter {
     var cont = () => {
       var currentTime = new Date().valueOf() / 1000;
 
+      this.render(currentTime - startTime);
       this.renderReact();
-
-      if (this.resourcesLoaded) {
-        this.render(currentTime - startTime);
-      }
 
       startTime = currentTime;
 
@@ -326,6 +321,15 @@ export class Game extends events.EventEmitter {
       }
     };
     cont();
+  }
+
+  start() {
+    this.protocol = new net.Protocol(this, new net.Transport(
+        "ws://" + window.location.host + "/socket"));
+    handlers.install(this);
+
+    this.protocol.transport.on("open", this.onTransportOpen.bind(this));
+    this.protocol.transport.on("close", this.onTransportClose.bind(this));
   }
 
   go() {

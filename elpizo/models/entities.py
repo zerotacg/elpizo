@@ -22,8 +22,18 @@ class Ephemera(object):
     self.last_attack_time = 0
 
 
-class Entity(record.Record):
+class Entity(record.ProtobufRecord):
   REGISTRY = {}
+
+  FIELDS = [
+      record.Field("type", record.Scalar, record_field="TYPE"),
+      record.Field("realm_id", record.Scalar),
+      record.Field("location", geometry.Vector2),
+      record.Field("bbox", geometry.Rectangle),
+      record.Field("direction", record.Scalar)
+  ]
+
+  PROTOBUF_TYPE = entities_pb2.Entity
 
   DIRECTION_VECTORS = {
       0: geometry.Vector2( 0, -1),  # N
@@ -65,12 +75,6 @@ class Entity(record.Record):
     cls.REGISTRY[subclass.TYPE] = subclass
     return subclass
 
-  def to_protobuf(self):
-    return entities_pb2.Entity(type=self.TYPE, realm_id=self.realm_id,
-                               location=self.location.to_protobuf(),
-                               bbox=self.bbox.to_protobuf(),
-                               direction=self.direction)
-
   def to_public_protobuf(self):
     return self.to_protected_protobuf()
 
@@ -80,13 +84,6 @@ class Entity(record.Record):
   @classmethod
   def from_protobuf_polymorphic(cls, proto):
     return cls.REGISTRY[proto.type].from_protobuf(proto)
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    return cls(type=proto.type, realm_id=proto.realm_id,
-               location=geometry.Vector2.from_protobuf(proto.location),
-               bbox=geometry.Rectangle.from_protobuf(proto.bbox),
-               direction=proto.direction)
 
   @property
   def target_location(self):
@@ -163,6 +160,27 @@ class Entity(record.Record):
 
 
 class Actor(Entity):
+  FIELDS = [
+      record.Field("name", record.Scalar, extension=entities_pb2.Actor.ext),
+      record.Field("health", record.Scalar, extension=entities_pb2.Actor.ext),
+      record.Field("gender", record.Scalar, extension=entities_pb2.Actor.ext),
+      record.Field("body", record.Scalar, extension=entities_pb2.Actor.ext),
+      record.RepeatedField("inventory", record.Polymorphic(items.Item),
+                           extension=entities_pb2.Actor.ext),
+      record.Field("facial", record.Scalar, extension=entities_pb2.Actor.ext),
+      record.Field("hair", record.Scalar, extension=entities_pb2.Actor.ext),
+      record.Field("head_item", record.Polymorphic(items.Item),
+                   extension=entities_pb2.Actor.ext),
+      record.Field("torso_item", record.Polymorphic(items.Item),
+                   extension=entities_pb2.Actor.ext),
+      record.Field("legs_item", record.Polymorphic(items.Item),
+                   extension=entities_pb2.Actor.ext),
+      record.Field("feet_item", record.Polymorphic(items.Item),
+                   extension=entities_pb2.Actor.ext),
+      record.Field("weapon", record.Polymorphic(items.Item),
+                   extension=entities_pb2.Actor.ext)
+  ]
+
   BASE_SPEED = 4
   DEFAULT_ATTACK_COOLDOWN = 2
 
@@ -185,63 +203,10 @@ class Actor(Entity):
       return 1  # TODO: something sensible here
     return 1
 
-  def to_protobuf(self):
-    proto = super().to_protobuf()
-    message = entities_pb2.Actor(name=self.name, health=self.health,
-                                 gender=self.gender, body=self.body,
-                                 inventory=[item.to_protobuf()
-                                            for item
-                                            in self.inventory_dict.values()])
-
-    if getattr(self, "facial", None):
-      message.facial = self.facial
-
-    if getattr(self, "hair", None):
-      message.hair = self.hair
-
-    if getattr(self, "head_item", None):
-      message.head_item.MergeFrom(self.head_item.to_protobuf())
-
-    if getattr(self, "torso_item", None):
-      message.torso_item.MergeFrom(self.torso_item.to_protobuf())
-
-    if getattr(self, "legs_item", None):
-      message.legs_item.MergeFrom(self.legs_item.to_protobuf())
-
-    if getattr(self, "feet_item", None):
-      message.feet_item.MergeFrom(self.feet_item.to_protobuf())
-
-    if getattr(self, "weapon", None):
-      message.weapon.MergeFrom(self.weapon.to_protobuf())
-
-    proto.Extensions[entities_pb2.Actor.ext].MergeFrom(message)
-    return proto
-
   def to_public_protobuf(self):
     proto = super().to_public_protobuf()
     proto.Extensions[entities_pb2.Actor.ext].ClearField("inventory")
     return proto
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Actor.ext]
-    record.update(name=proto.name, health=proto.health, gender=proto.gender,
-                  body=proto.body,
-                  inventory={items.Item.from_protobuf_polymorphic(item_proto)
-                      for item_proto in proto.inventory},
-                  facial=proto.facial, hair=proto.hair,
-                  head_item=items.Item.from_protobuf_polymorphic(proto.head_item)
-                      if proto.HasField("head_item") else None,
-                  torso_item=items.Item.from_protobuf_polymorphic(proto.torso_item)
-                      if proto.HasField("torso_item") else None,
-                  legs_item=items.Item.from_protobuf_polymorphic(proto.legs_item)
-                      if proto.HasField("legs_item") else None,
-                  feet_item=items.Item.from_protobuf_polymorphic(proto.feet_item)
-                      if proto.HasField("feet_item") else None,
-                  weapon=items.Item.from_protobuf_polymorphic(proto.weapon)
-                      if proto.HasField("weapon") else None)
-    return record
 
   @property
   def equipment(self):
@@ -270,24 +235,15 @@ class Actor(Entity):
 
 @Entity.register
 class Player(Actor):
+  FIELDS = [
+      record.Field("online", record.Scalar, extension=entities_pb2.Player.ext)
+  ]
+
   TYPE = "player"
 
   def __init__(self, *args, **kwargs):
     self.bbox = geometry.Rectangle(0, 0, 1, 1)
     super().__init__(*args, **kwargs)
-
-  def to_protobuf(self):
-    proto = super().to_protobuf()
-    proto.Extensions[entities_pb2.Player.ext].MergeFrom(
-        entities_pb2.Player(online=getattr(self, "online", False)))
-    return proto
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Player.ext]
-    record.update(online=proto.online)
-    return record
 
   def is_damageable_by(self, attacker):
     if isinstance(attacker, Player):
@@ -298,30 +254,20 @@ class Player(Actor):
 
 @Entity.register
 class NPC(Actor):
+  FIELDS = [
+      record.Field("behavior", record.Scalar, extension=entities_pb2.NPC.ext)
+  ]
+
   TYPE = "npc"
 
   def __init__(self, *args, **kwargs):
     self.bbox = geometry.Rectangle(0, 0, 1, 1)
     super().__init__(*args, **kwargs)
 
-  def to_protobuf(self):
-    proto = super().to_protobuf()
-    proto.Extensions[entities_pb2.NPC.ext].MergeFrom(entities_pb2.NPC(
-        behavior=self.behavior))
-    return proto
-
   def to_public_protobuf(self):
     proto = super().to_public_protobuf()
     proto.Extensions[entities_pb2.NPC.ext].ClearField("behavior")
     return proto
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.NPC.ext]
-    record.update(behavior=proto.behavior
-                           if proto.HasField("behavior") else None)
-    return record
 
   def is_damageable_by(self, attacker):
     return True
@@ -334,6 +280,11 @@ class Building(Entity):
 
 @Entity.register
 class Drop(Entity):
+  FIELDS = [
+      record.Field("item", record.Polymorphic(items.Item),
+                   extension=entities_pb2.Drop.ext)
+  ]
+
   TYPE = "drop"
 
   def __init__(self, *args, **kwargs):
@@ -341,25 +292,9 @@ class Drop(Entity):
     self.direction = 0
     super().__init__(*args, **kwargs)
 
-  def to_protobuf(self):
-    proto = super().to_protobuf()
-    proto.Extensions[entities_pb2.Drop.ext].MergeFrom(
-        entities_pb2.Drop(item=self.item.to_protobuf()))
-    return proto
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    record = super().from_protobuf(proto)
-    proto = proto.Extensions[entities_pb2.Drop.ext]
-    record.update(item=items.Item.from_protobuf_polymorphic(proto.item))
-    return record
-
-  def is_passable_by(self, entity, direction):
-    return True
-
 
 class EntityStore(record.PolymorphicProtobufStore):
-  TYPE = Entity
+  RECORD_TYPE = Entity
   PROTOBUF_TYPE = entities_pb2.Entity
 
   def __init__(self, parent, kvs):

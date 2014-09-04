@@ -1,36 +1,5 @@
 @import "/ui/util";
 
-.spinner {
-  margin: 100px auto;
-  width: 32px;
-  height: 32px;
-  position: relative;
-}
-
-.cube1, .cube2 {
-  background-color: #fff;
-  width: 10px;
-  height: 10px;
-  position: absolute;
-  top: 0;
-  left: 0;
-
-  border-radius: 2px;
-
-  animation: cubemove 1.8s infinite ease-in-out;
-}
-
-.cube2 {
-  animation-delay: -0.9s;
-}
-
-@keyframes cubemove {
-  25% { transform: translate(42px, 0px) rotate(-90deg) scale(0.5); }
-  50% { transform: translate(42px, 42px) rotate(-180deg); }
-  75% { transform: translate(0px, 42px) rotate(-270deg) scale(0.5); }
-  100% { transform: rotate(-360deg); }
-}
-
 .error {
   .window(#f00, lighten(#f00, 50%), darken(#f00, 10%));
 

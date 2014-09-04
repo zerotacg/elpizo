@@ -1,26 +1,22 @@
 from elpizo import models
+from elpizo.models import record
 from elpizo.protos import items_pb2
-from elpizo.util import record
 
 
-class Item(object):
+class Item(record.ProtobufRecord):
   REGISTRY = {}
 
-  def __init__(self, **kwargs):
-    for k, v in kwargs.items():
-      setattr(self, k, v)
+  PROTOBUF_TYPE = items_pb2.Item
+
+  FIELDS = [
+      record.Field("id", record.Scalar),
+      record.Field("type", record.Scalar, record_field="TYPE")
+  ]
 
   @classmethod
   def register(cls, subclass):
     cls.REGISTRY[subclass.TYPE] = subclass
     return subclass
-
-  def to_protobuf(self):
-    return items_pb2.Item(id=self.id, type=self.TYPE)
-
-  @classmethod
-  def from_protobuf(cls, proto):
-    return cls(id=proto.id, type=proto.type)
 
   @classmethod
   def from_protobuf_polymorphic(cls, proto):
