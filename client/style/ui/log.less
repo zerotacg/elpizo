@@ -1,5 +1,10 @@
 @import "/ui/util";
 
+@keyframes flash {
+  0% { background: lighten(#0cf, 25%); }
+  100% { background: transparent; }
+}
+
 .log {
   .window(#fff, #4d4d4d, #fff);
 
@@ -11,9 +16,6 @@
   height: 200px;
 
   padding: 0;
-
-  user-select: text;
-  cursor: auto;
 
   .content {
     flex-direction: column;
@@ -55,5 +57,9 @@
 
     border-top: 1px solid darken(#fff, 10%);
     height: 28px;
+
+    &:focus {
+      animation: flash 0.25s ease-out;
+    }
   }
 }

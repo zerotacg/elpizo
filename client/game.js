@@ -46,6 +46,10 @@ export class Game extends events.EventEmitter {
         game: this
     });
 
+    // Disable the right-click menu on the root window. Not for anything
+    // nefarious, we just want to render our own right-click menus.
+    window.oncontextmenu = (e) => e.preventDefault();
+
     window.onerror = this.onError.bind(this);
     this.lastError = null;
 
