@@ -13,7 +13,8 @@ var jstransform = require("jstransform");
 var less = require("gulp-less");
 var moduleVisitors = require("es6-module-jstransform/visitors");
 var path = require("path");
-var postcss = require('gulp-postcss');
+var postcss = require("gulp-postcss");
+var preprocessify = require("preprocessify");
 var reactVisitors = require("react-tools/vendor/fbtransform/visitors");
 var rename = require("gulp-rename");
 var run = require("gulp-run");
@@ -25,6 +26,8 @@ var through = require("through");
 var through2 = require("through2");
 var tmp = require("tmp");
 var argv = require("yargs").argv;
+
+var DEBUG = process.env.NODE_ENV === "development";
 
 var paths = {
   scripts: ["client/**/*.js"],
@@ -49,7 +52,7 @@ function rebundle(bundler) {
     .pipe(sourcemaps.init({
         loadMaps: true,
     }))
-    .pipe(argv.debug ? through() : uglify())
+    .pipe(DEBUG ? through() : uglify())
     .pipe(sourcemaps.write("../maps"))
     .pipe(gulp.dest("static/js"));
 }
@@ -112,10 +115,16 @@ function progress(filename) {
 }
 
 function configureBundler(bundler) {
+  var defines = {};
+  if (DEBUG) {
+    defines.DEBUG = true;
+  }
+
   return bundler({
       paths: ["."]
   })
     .transform(progress)
+    .transform(preprocessify(defines))
     .transform(reactify)
     .transform(debowerify)
     .require("./client/main.js", {
@@ -208,7 +217,7 @@ function generateManifest() {
         base: firstFile.base,
         path: path.join(firstFile.base, "manifest.js"),
         contents: new Buffer("window._manifest=" +
-                             JSON.stringify(manifest, null, ''))
+                             JSON.stringify(manifest, null, ""))
     }));
     cb();
   });

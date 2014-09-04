@@ -2,7 +2,10 @@
 
 module React from "react/react-with-addons";
 
+// @ifdef DEBUG
 module debug from "client/ui/debug.react";
+// @endif
+
 module inventory from "client/ui/inventory.react";
 module interactions from "client/ui/interactions.react";
 module loading from "client/ui/loading.react";
@@ -22,11 +25,13 @@ export var UI = React.createClass({
 
     if (this.props.game.resourcesLoaded) {
       if (this.props.game.me !== null) {
+        // @ifdef DEBUG
         if (this.props.game.debug) {
           hudElements.push(<Item key="debug">
               <debug.Debug game={this.props.game} />
           </Item>);
         }
+        // @endif
 
         hudElements.push(<Item key="log">
             <log.Log

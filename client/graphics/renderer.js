@@ -15,7 +15,9 @@ export class GraphicsRenderer extends events.EventEmitter {
   constructor(resources, parent) {
     super();
 
+    // @ifdef DEBUG
     this.debug = false;
+    // @endif
 
     this.el = document.createElement("div");
     this.el.classList.add("renderer");
@@ -81,10 +83,12 @@ export class GraphicsRenderer extends events.EventEmitter {
         }));
   }
 
+  // @ifdef DEBUG
   setDebug(debug) {
     this.debug = debug;
     this.regionTerrainCache = {};
   }
+  // @endif
 
   center(position) {
     var bounds = this.getViewportBounds();
@@ -249,6 +253,7 @@ export class GraphicsRenderer extends events.EventEmitter {
         ctx.translate(sLeft, sTop);
         ctx.drawImage(buffer, 0, 0);
 
+        // @ifdef DEBUG
         if (this.debug) {
           ctx.strokeStyle = "red";
           ctx.fillStyle = "red";
@@ -258,6 +263,8 @@ export class GraphicsRenderer extends events.EventEmitter {
           ctx.textBaseline = "middle";
           ctx.fillText(key, buffer.width / 2, buffer.height / 2);
         }
+        // @endif
+
         ctx.restore();
       }
     }
@@ -328,6 +335,7 @@ export class GraphicsRenderer extends events.EventEmitter {
       }
     }
 
+    // @ifdef DEBUG
     if (this.debug) {
       ctx.save();
       ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
@@ -367,6 +375,7 @@ export class GraphicsRenderer extends events.EventEmitter {
 
       ctx.restore();
     }
+    // @endif
 
     return canvas;
   }
@@ -443,6 +452,7 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   visitEntity(entity) {
     super.visitEntity(entity);
 
+    // @ifdef DEBUG
     if (this.renderer.debug) {
       this.ctx.save();
       this.ctx.fillStyle = "rgba(0, 0, 255, 0.25)";
@@ -462,6 +472,7 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
       this.ctx.fillText("(id: " + entity.id + ")", sSize.x / 2, sSize.y / 2);
       this.ctx.restore();
     }
+    // @endif
   }
 
   visitActor(entity) {

@@ -9,6 +9,7 @@ module objects from "client/util/objects";
 module timing from "client/util/timing";
 
 var COMMANDS = {
+  // @ifdef DEBUG
   debug: (game) => {
     game.setDebug(!game.debug);
 
@@ -31,6 +32,7 @@ var COMMANDS = {
       game.log.push(<pre className="info">&lt;&lt;&lt; {objects.repr(r)}</pre>);
     }
   },
+  // @endif
 
   ping: (game) => {
     game.protocol.send(new packets.EchoPacket({

@@ -90,7 +90,9 @@ export class Game extends events.EventEmitter {
       this.token[i] = c.charCodeAt(0);
     });
 
+    // @ifdef DEBUG
     this.setDebug(qs.debug === "on");
+    // @endif
   }
 
   onError(msg, file, lineno, colno, e) {
@@ -122,6 +124,7 @@ export class Game extends events.EventEmitter {
     this.renderReact();
   }
 
+  // @ifdef DEBUG
   setDebug(v) {
     this.debug = v;
     this.graphicsRenderer.setDebug(v);
@@ -141,8 +144,8 @@ export class Game extends events.EventEmitter {
     }
 
     window.history.replaceState({}, null, path);
-
   }
+  // @endif
 
   onRefit(bounds) {
     if (this.me !== null) {
