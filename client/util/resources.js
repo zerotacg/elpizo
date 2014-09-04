@@ -11,6 +11,16 @@ export function loadImage(src) {
   });
 }
 
+export function loadAudio(src) {
+  return new promise.Promise((resolve, reject) => {
+    var snd = new Audio();
+    snd.addEventListener("canplaythrough", () => resolve(snd));
+    snd.onerror = (err) => reject(new Error(err));
+    snd.src = src;
+    return snd;
+  });
+}
+
 export class Resources extends events.EventEmitter {
   constructor() {
     super();
@@ -41,5 +51,6 @@ export class Resources extends events.EventEmitter {
 }
 
 Resources.TYPES = {
-    image: loadImage
+    image: loadImage,
+    audio: loadAudio
 };

@@ -172,6 +172,7 @@ gulp.task("protos-py", function () {
   return gulp.src(paths.protos)
     .pipe(run("protoc" +
               " -I=./protos" +
+              " -I=./protobuf-py3/src" +
               " --python_out=elpizo/protos" +
               " ./protos/<%= file.relative %>",
         {silent: true}));
@@ -203,6 +204,9 @@ function generateManifest() {
     switch (path.extname(file.relative)) {
       case ".png":
         manifest[fileName] = "image";
+        break;
+      case ".opus":
+        manifest[fileName] = "audio";
         break;
     }
 
