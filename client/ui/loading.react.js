@@ -2,6 +2,15 @@
 
 module React from "react/react-with-addons";
 
+var Progress = React.createClass({
+  render: function () {
+    return <div className="progress">
+      <div className="value"
+           style={{width: (this.props.value / this.props.max * 100) + "%"}}></div>
+    </div>;
+  }
+})
+
 export var Loading = React.createClass({
   render: function () {
     if (this.props.game.running) {
@@ -23,25 +32,23 @@ export var Loading = React.createClass({
           </div>
         </div>
       </div>;
-    } else if (!this.props.game.resources.isLoadingComplete()) {
+    } else {
       var resourceNames = Object.keys(this.props.game.resources.resourcesPending).map(
           (name) => <li key={name}>{name}</li>);
+      var status = this.props.game.resources.isLoadingComplete() ?
+          "Connecting to server..." :
+          "Loading...";
 
       body = <div className="loading">
-        <div className="transitionable">
-          <div className="progress">
-          Loading resources...<br />
-          <progress value={this.props.game.resources.getNumResourcesLoaded()}
-                    max={this.props.game.resources.getNumResources()} />
+        <div className="center">
+          <div className="primary">
+            <p><img src="/img/logo.png" title="Rekindled Hope"
+                    alt="Rekindled Hope" className="transitionable" /></p>
+            <p>{status}</p>
           </div>
-          <ul>
-            {resourceNames}
-          </ul>
         </div>
-      </div>;
-    } else {
-      body = <div className="center">
-        <div className="transitionable">Connecting to server...</div>
+        <Progress value={this.props.game.resources.getNumResourcesLoaded()}
+                  max={this.props.game.resources.getNumResources()} />
       </div>;
     }
 
