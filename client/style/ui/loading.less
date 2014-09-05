@@ -1,5 +1,11 @@
 @import "/ui/util";
 
+@keyframes pulse {
+  0% { background: #0cf; }
+  50% { background: #0ef; }
+  100% { background: #0cf; }
+}
+
 .error {
   .window(#f00, lighten(#f00, 50%), darken(#f00, 10%));
 
@@ -39,7 +45,7 @@
       height: 16px;
       margin: 8px;
       border-radius: 4px;
-      background: #0cf;
+      animation: pulse 2s infinite;
       transition: width 0.1s;
     }
   }

@@ -35,15 +35,19 @@ export var Loading = React.createClass({
     } else {
       var resourceNames = Object.keys(this.props.game.resources.resourcesPending).map(
           (name) => <li key={name}>{name}</li>);
+
       var status = this.props.game.resources.isLoadingComplete() ?
           "Connecting to server..." :
-          "Loading...";
+          "Loading resources (" +
+              this.props.game.resources.getNumResourcesLoaded() + "/" +
+              this.props.game.resources.getNumResources() +
+          ")...";
 
-      body = <div className="loading">
+      body = <div className="loading transitionable">
         <div className="center">
           <div className="primary">
             <p><img src="/img/logo.png" title="Rekindled Hope"
-                    alt="Rekindled Hope" className="transitionable" /></p>
+                    alt="Rekindled Hope" /></p>
             <p>{status}</p>
           </div>
         </div>
