@@ -292,6 +292,9 @@ class Drop(Entity):
     self.direction = 0
     super().__init__(*args, **kwargs)
 
+  def is_passable_by(self, entity, direction):
+    return True
+
 
 class EntityStore(record.PolymorphicProtobufStore):
   RECORD_TYPE = Entity
