@@ -17,7 +17,7 @@ export var Loading = React.createClass({
           <div className="content">
             <div>
               <p>An unexpected error has occurred.</p>
-              <pre>{this.props.game.lastErro}</pre>
+              <pre>{this.props.game.lastError}</pre>
               <p>Your session has been closed. Please try logging in again.</p>
             </div>
           </div>
