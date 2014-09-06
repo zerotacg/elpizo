@@ -33,26 +33,25 @@ export var Loading = React.createClass({
         </div>
       </div>;
     } else {
-      var resourceNames = Object.keys(this.props.game.resources.resourcesPending).map(
-          (name) => <li key={name}>{name}</li>);
+      var status = "Connecting to server...";
 
-      var status = this.props.game.resources.isLoadingComplete() ?
-          "Connecting to server..." :
-          "Loading resources (" +
-              this.props.game.resources.getNumResourcesLoaded() + "/" +
-              this.props.game.resources.getNumResources() +
-          ")...";
+      if (!this.props.game.resources.isLoadingComplete()) {
+        status = <span>Loading resources (
+            {this.props.game.resources.getNumResourcesLoaded()}/
+            {this.props.game.resources.getNumResources()}
+        )...</span>;
+      }
 
       body = <div className="loading transitionable">
         <div className="center">
           <div className="primary">
-            <p><img src="/img/logo.png" title="Rekindled Hope"
-                    alt="Rekindled Hope" /></p>
-            <p>{status}</p>
+            <div><img src="/img/logo.png" title="Rekindled Hope"
+                      alt="Rekindled Hope" /></div>
+            <div>{status}</div>
+            <Progress value={this.props.game.resources.getNumResourcesLoaded()}
+                      max={this.props.game.resources.getNumResources()} />
           </div>
         </div>
-        <Progress value={this.props.game.resources.getNumResourcesLoaded()}
-                  max={this.props.game.resources.getNumResources()} />
       </div>;
     }
 
