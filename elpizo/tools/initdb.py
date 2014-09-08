@@ -121,7 +121,7 @@ def initdb(app):
       direction=1,
       health=10,
       realm_id=windvale.id,
-      location=geometry.Vector2(0, 0),
+      location=geometry.Vector3(0, 0, 0),
       inventory=set(),
       torso_item=app.store.create_item(torso_items.WhiteLongsleeveShirt()),
       legs_item=app.store.create_item(legs_items.TealPants()),
@@ -136,7 +136,7 @@ def initdb(app):
       direction=1,
       health=10,
       realm_id=windvale.id,
-      location=geometry.Vector2(0, 16),
+      location=geometry.Vector3(0, 16, 0),
       inventory=set(),
       legs_item=app.store.create_item(legs_items.TealPants())))
 
@@ -148,7 +148,7 @@ def initdb(app):
       direction=1,
       health=10,
       realm_id=windvale.id,
-      location=geometry.Vector2(16, 16),
+      location=geometry.Vector3(16, 16, 0),
       inventory=set(),
       legs_item=app.store.create_item(legs_items.TealPants())))
 
@@ -160,7 +160,7 @@ def initdb(app):
       direction=1,
       health=10,
       realm_id=windvale.id,
-      location=geometry.Vector2(12, 16),
+      location=geometry.Vector3(12, 16, 0),
       inventory=set(),
       legs_item=app.store.create_item(legs_items.TealPants())))
 
@@ -172,7 +172,7 @@ def initdb(app):
         direction=1,
         health=5,
         realm_id=windvale.id,
-        location=geometry.Vector2(random.randint(0, 32), random.randint(0, 32)),
+        location=geometry.Vector3(random.randint(0, 32), random.randint(0, 32), 0),
         inventory={app.store.create_item(restorative.Carrot())},
         behavior="wander"))
 

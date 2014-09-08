@@ -75,7 +75,7 @@ export function install(game) {
     entity.finishMove();
 
     var targetLocation = entity.getTargetLocation();
-    var expectedLocation = geometry.Vector2.fromProtobuf(message.location);
+    var expectedLocation = geometry.Vector3.fromProtobuf(message.location);
 
     if (!targetLocation.equals(expectedLocation)) {
       console.warn("Entity " + entity.id + " will not move into the correct " +
@@ -121,7 +121,7 @@ export function install(game) {
     console.warn("Entity " + entity.id + " teleported!");
 
     entity.stopMove();
-    entity.location = geometry.Vector2.fromProtobuf(message.location);
+    entity.location = geometry.Vector3.fromProtobuf(message.location);
     entity.direction = message.direction;
   }));
 

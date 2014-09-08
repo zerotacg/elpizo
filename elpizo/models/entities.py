@@ -27,7 +27,7 @@ class Entity(record.ProtobufRecord):
   FIELDS = [
       record.Field("type", record.Scalar, record_field="TYPE"),
       record.Field("realm_id", record.Scalar),
-      record.Field("location", geometry.Vector2),
+      record.Field("location", geometry.Vector3),
       record.Field("bbox", geometry.Rectangle),
       record.Field("direction", record.Scalar)
   ]
@@ -35,10 +35,10 @@ class Entity(record.ProtobufRecord):
   PROTOBUF_TYPE = entities_pb2.Entity
 
   DIRECTION_VECTORS = {
-      0: geometry.Vector2( 0, -1),  # N
-      1: geometry.Vector2(-1,  0),  # W
-      2: geometry.Vector2( 0,  1),  # S
-      3: geometry.Vector2( 1,  0)   # E
+      0: geometry.Vector3( 0, -1,  0),  # N
+      1: geometry.Vector3(-1,  0,  0),  # W
+      2: geometry.Vector3( 0,  1,  0),  # S
+      3: geometry.Vector3( 1,  0,  0)   # E
   }
 
   DIRECTIONS = {v: k for k, v in DIRECTION_VECTORS.items()}

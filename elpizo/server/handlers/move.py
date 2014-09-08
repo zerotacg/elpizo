@@ -15,7 +15,7 @@ def on_move(protocol, actor, message):
   new_location = old_location.offset(
       entities.Entity.DIRECTION_VECTORS[actor.direction])
 
-  expected_location = geometry.Vector2.from_protobuf(message.location)
+  expected_location = geometry.Vector3.from_protobuf(message.location)
 
   if new_location != expected_location or \
       dt < 1 / actor.speed * 0.25: # compensate for slow connections by 0.25

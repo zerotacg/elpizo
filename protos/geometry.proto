@@ -3,6 +3,12 @@ message Vector2 {
   required sint32 y = 2;
 }
 
+message Vector3 {
+  required sint32 x = 1;
+  required sint32 y = 2;
+  required sint32 z = 3;
+}
+
 message Rectangle {
   required sint32 left = 1;
   required sint32 top = 2;

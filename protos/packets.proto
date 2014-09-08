@@ -82,7 +82,7 @@ message MovePacket {
   // Direction: Server <-> Client
   option (packet_type) = MOVE;
 
-  required Vector2 location = 1;
+  required Vector3 location = 1;
 }
 
 message AvatarPacket {
@@ -136,7 +136,7 @@ message TeleportPacket {
   // Direction: Server -> Client
   option (packet_type) = TELEPORT;
 
-  required Vector2 location = 1;
+  required Vector3 location = 1;
   required Entity.Direction direction = 2;
 }
 

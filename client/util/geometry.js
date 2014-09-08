@@ -52,6 +52,66 @@ export class Vector2 {
   }
 }
 
+export class Vector3 {
+  constructor(x, y, z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  copy() {
+    return new Vector3(this.x, this.y, this.z);
+  }
+
+  map(f) {
+    var out = this.copy();
+    out.x = f(out.x);
+    out.y = f(out.y);
+    out.z = f(out.z);
+    return out;
+  }
+
+  elementwise(f, other) {
+    var out = this.copy();
+    out.x = f(out.x, other.x);
+    out.y = f(out.y, other.y);
+    out.z = f(out.z, other.z);
+    return out;
+  }
+
+  scale(k) {
+    var out = this.copy();
+    out.x *= k;
+    out.y *= k;
+    out.z *= k;
+    return out;
+  }
+
+  offset(other) {
+    var out = this.copy();
+    out.x += other.x;
+    out.y += other.y;
+    out.z += other.z;
+    return out;
+  }
+
+  negate() {
+    var out = this.copy();
+    out.x = -out.x;
+    out.y = -out.y;
+    out.z = -out.z;
+    return out;
+  }
+
+  equals(other) {
+    return this.x === other.x && this.y === other.y && this.z === other.z;
+  }
+
+  toString() {
+    return "Vector3(" + this.x + ", " + this.y + ", " + this.z + ")";
+  }
+}
+
 export class Rectangle {
   constructor(left, top, width, height) {
     this.left = left;

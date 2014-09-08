@@ -15,6 +15,20 @@ Vector2.fromProtobuf = (proto) => {
   return new Vector2(proto.x, proto.y);
 }
 
+export class Vector3 extends geometry.Vector3 {
+  toProtobuf() {
+    return new geometryProtos.Vector3({x: this.x, y: this.y, z: this.z});
+  }
+
+  copy() {
+    return new Vector3(this.x, this.y, this.z);
+  }
+}
+
+Vector3.fromProtobuf = (proto) => {
+  return new Vector3(proto.x, proto.y, proto.z);
+}
+
 export class Rectangle extends geometry.Rectangle {
   toProtobuf() {
     return new geometryProtos.Rectangle({left: this.left, top: this.top,

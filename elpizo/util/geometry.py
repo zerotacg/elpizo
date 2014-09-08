@@ -38,6 +38,44 @@ class Vector2(object):
 
 
 @functools.total_ordering
+class Vector3(object):
+  def __init__(self, x, y, z):
+    self.x = x
+    self.y = y
+    self.z = z
+
+  def map(self, f):
+    return self.__class__(f(self.x), f(self.y), f(self.z))
+
+  def elementwise(self, f, other):
+    return self.__class__(f(self.x, other.x), f(self.y, other.y),
+                          f(self.z, other.z))
+
+  def scale(self, k):
+    return self.__class__(k * self.x, k * self.y, k * self.z)
+
+  def offset(self, other):
+    return self.__class__(self.x + other.x, self.y + other.y, self.z + other.z)
+
+  def negate(self):
+    return self.__class__(-self.x, -self.y, -self.z)
+
+  def __eq__(self, other):
+    return self.x == other.x and self.y == other.y and self.z == other.z
+
+  def __lt__(self, other):
+    # NOTE: This ordering is meaningless and is only used for things such as
+    # heap ordering.
+    return (self.x, self.y, self.z) < (other.x, other.y, other.z)
+
+  def __repr__(self):
+    return "Vector3({x}, {y}, {z})".format(**self.__dict__)
+
+  def __hash__(self):
+    return hash((Vector3, self.x, self.y, self.z))
+
+
+@functools.total_ordering
 class Rectangle(object):
   def __init__(self, left, top, width, height):
     self.left = left

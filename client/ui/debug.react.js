@@ -30,7 +30,7 @@ export var Debug = React.createClass({
 
     var maybeAvatarPosition = null;
     if (game.me !== null) {
-      maybeAvatarPosition = "(" + game.me.location.x.toFixed(2) + ", " + game.me.location.y.toFixed(2) + ")";
+      maybeAvatarPosition = "(" + game.me.location.x.toFixed(2) + ", " + game.me.location.y.toFixed(2) + ", " + game.me.location.z.toFixed(2) + ")";
     }
 
     return <div className="debug transitionable">

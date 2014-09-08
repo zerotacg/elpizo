@@ -11,7 +11,7 @@ export class Entity extends timing.Timed {
     this.id = id;
     this.type = message.type;
     this.realmId = message.realmId;
-    this.location = geometry.Vector2.fromProtobuf(message.location);
+    this.location = geometry.Vector3.fromProtobuf(message.location);
     this.bbox = geometry.Rectangle.fromProtobuf(message.bbox);
     this.direction = message.direction;
   }
@@ -122,10 +122,10 @@ export var Directions = {
 
 export function getDirectionVector(d) {
   switch (d) {
-    case Directions.N: return new geometry.Vector2( 0, -1);
-    case Directions.W: return new geometry.Vector2(-1,  0);
-    case Directions.S: return new geometry.Vector2( 0,  1);
-    case Directions.E: return new geometry.Vector2( 1,  0);
+    case Directions.N: return new geometry.Vector3( 0, -1,  0);
+    case Directions.W: return new geometry.Vector3(-1,  0,  0);
+    case Directions.S: return new geometry.Vector3( 0,  1,  0);
+    case Directions.E: return new geometry.Vector3( 1,  0,  0);
   }
 }
 

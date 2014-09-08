@@ -19,6 +19,21 @@ class Vector2(geometry.Vector2, record.ProtobufRecord):
     return "models.geometry." + super().__repr__()
 
 
+class Vector3(geometry.Vector3, record.ProtobufRecord):
+  PROTOBUF_TYPE = geometry_pb2.Vector3
+  FIELDS = [
+      record.Field("x", record.Scalar),
+      record.Field("y", record.Scalar),
+      record.Field("z", record.Scalar),
+  ]
+
+  def __init__(self, x=None, y=None, z=None):
+    super().__init__(x, y, z)
+
+  def __repr__(self):
+    return "models.geometry." + super().__repr__()
+
+
 class Rectangle(geometry.Rectangle, record.ProtobufRecord):
   PROTOBUF_TYPE = geometry_pb2.Rectangle
   FIELDS = [
@@ -27,7 +42,6 @@ class Rectangle(geometry.Rectangle, record.ProtobufRecord):
       record.Field("width", record.Scalar),
       record.Field("height", record.Scalar),
   ]
-
 
   def __init__(self, left=None, top=None, width=None, height=None):
     # We need to make all the parameters optional for deserialization to work.
