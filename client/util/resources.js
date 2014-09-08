@@ -15,9 +15,10 @@ export function loadAudio(src) {
   return new promise.Promise((resolve, reject) => {
     var snd = new Audio();
     snd.src = src;
-    snd.oncanplaythrough = () => resolve(snd);
+    //snd.oncanplaythrough = () => resolve(snd);
     snd.onerror = (err) => reject(new Error(err));
     snd.load();
+    resolve(snd);
     return snd;
   });
 }
