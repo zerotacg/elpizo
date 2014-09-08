@@ -46,9 +46,6 @@ class Behavior(object):
       self.on_update()
       self.be_nice()
 
-  def on_attacked(self, attacker):
-    pass
-
   def on_update(self):
     pass
 
@@ -68,9 +65,6 @@ class Behavior(object):
 
   def stop_move(self):
     self.send(packets_pb2.StopMovePacket())
-
-  def attack(self, *actor_ids):
-    self.send(packets_pb2.AttackPacket(actor_ids=actor_ids))
 
   def move_towards(self, target_location):
     path = self.compute_path(target_location)

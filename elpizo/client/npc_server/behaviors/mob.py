@@ -27,8 +27,6 @@ class Pursue(behaviors.Behavior):
         entities.Entity.DIRECTION_VECTORS[target.direction].negate())
 
     if target_location == self.npc.location:
-      self.attack(target.id)
-      self.sleep(2)
       return
 
     try:
@@ -40,9 +38,6 @@ class Pursue(behaviors.Behavior):
     else:
       self.wait_move(random.randint(10, 30) / 10.)
       self.stop_move()
-
-  def on_attacked(self, attacker):
-    self.target_id = attacker.id
 
 
 class Wander(behaviors.Behavior):

@@ -24,8 +24,8 @@ message Packet {
     INVENTORY = 14;
     ECHO = 15;
     TURN = 16;
-    ATTACK = 17;
-    DAMAGE = 18;
+    // ATTACK = 17;
+    // DAMAGE = 18;
     DEATH = 19;
     WHOAMI = 20;
     SIGHT = 21;
@@ -195,28 +195,6 @@ message TurnPacket {
   option (packet_type) = TURN;
 
   required Entity.Direction direction = 1;
-}
-
-message AttackPacket {
-  // Sent by the client to indicate an actor to attack; sent by the server to
-  // indicate a client has attacked.
-  //
-  // Direction: Server <-> Client
-  option (packet_type) = ATTACK;
-
-  // The client is required to indicate the entities it attacked as the entities
-  // may have moved from their original position on the server, but the client
-  // state may not have been synchronized yet.
-  repeated uint32 entity_ids = 1;
-}
-
-message DamagePacket {
-  // Sent by the server to indicate an actor has been damaged.
-  //
-  // Direction: Server -> Client
-  option (packet_type) = DAMAGE;
-
-  required uint32 damage = 1;
 }
 
 message DeathPacket {

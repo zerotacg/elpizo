@@ -5,7 +5,6 @@ module equipment from "client/models/items/equipment";
 module itemRegistry from "client/models/items/registry";
 module realm from "client/models/realm";
 module packets from "client/protos/packets";
-module damage from "client/ui/overlay/damage.react";
 module objects from "client/util/objects";
 module timing from "client/util/timing";
 module log from "client/ui/log.react";
@@ -157,21 +156,6 @@ export function install(game) {
           text: "You put " + item.getDefiniteTitle() + " into your bag."
       }));
     }
-  }));
-
-  protocol.on(packets.Packet.Type.ATTACK, withEntity((entity, message) => {
-    entity.attack();
-  }));
-
-  protocol.on(packets.Packet.Type.DAMAGE, withEntity((entity, message) => {
-    entity.health -= message.damage;
-    graphicsRenderer.addComponent(
-        ["damage", entity.id].join("."),
-        damage.DamageNumber({
-            damage: message.damage,
-            entity: entity,
-            timer: new timing.CountdownTimer(1)
-        }));
   }));
 
   protocol.on(packets.Packet.Type.CHAT, (origin, message) => {

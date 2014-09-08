@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 class Ephemera(object):
   def __init__(self):
     self.last_move_time = 0
-    self.last_attack_time = 0
 
 
 class Entity(record.ProtobufRecord):
@@ -116,9 +115,6 @@ class Entity(record.ProtobufRecord):
   def is_passable_by(self, entity, direction):
     return False
 
-  def is_damageable_by(self, attacker):
-    return False
-
   def send(self, protocol, message):
     protocol.send(self.id, message)
 
@@ -182,26 +178,10 @@ class Actor(Entity):
   ]
 
   BASE_SPEED = 4
-  DEFAULT_ATTACK_COOLDOWN = 2
 
   @property
   def speed(self):
     return self.BASE_SPEED
-
-  @property
-  def attack_cooldown(self):
-    return self.DEFAULT_ATTACK_COOLDOWN
-
-  def damage(self, v):
-    old_health = self.health
-    self.health = max([0, self.health - v])
-    return old_health - self.health
-
-  @property
-  def attack_strength(self):
-    if self.weapon is not None:
-      return 1  # TODO: something sensible here
-    return 1
 
   def to_public_protobuf(self):
     proto = super().to_public_protobuf()
@@ -245,12 +225,6 @@ class Player(Actor):
     self.bbox = geometry.Rectangle(0, 0, 1, 1)
     super().__init__(*args, **kwargs)
 
-  def is_damageable_by(self, attacker):
-    if isinstance(attacker, Player):
-      # no PVP (for now)
-      return False
-    return True
-
 
 @Entity.register
 class NPC(Actor):
@@ -268,9 +242,6 @@ class NPC(Actor):
     proto = super().to_public_protobuf()
     proto.Extensions[entities_pb2.NPC.ext].ClearField("behavior")
     return proto
-
-  def is_damageable_by(self, attacker):
-    return True
 
 
 @Entity.register

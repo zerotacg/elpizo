@@ -164,7 +164,6 @@ export class Actor extends Entity {
     this.isMoving = false;
     this.isDying = false;
 
-    this.addTimer("attack", new timing.CountdownTimer());
     this.addTimer("move", new timing.CountdownTimer());
     this.addTimer("death", new timing.CountdownTimer());
     this.addTimer("turn", new timing.CountdownTimer());
@@ -214,16 +213,8 @@ export class Actor extends Entity {
     this.finishMove();
   }
 
-  attack() {
-    this.getTimer("attack").reset(1 / this.getAttackCooldown());
-  }
-
   getSpeed() {
     return Actor.BASE_SPEED;
-  }
-
-  getAttackCooldown() {
-    return Actor.DEFAULT_ATTACK_COOLDOWN;
   }
 
   getAdjacentInteractions() {
@@ -266,7 +257,6 @@ export class Actor extends Entity {
 }
 
 Actor.BASE_SPEED = 4;
-Actor.DEFAULT_ATTACK_COOLDOWN = 2;
 Actor.TURN_TIME = 0.1;
 
 export class Player extends Actor {
@@ -274,24 +264,6 @@ export class Player extends Actor {
     super(id, message);
     this.interactions = [];
     this.showInventory = false;
-  }
-
-  doAttack(protocol) {
-    // Attack.
-    var targetBounds = this.bbox.offset(this.getTargetLocation());
-
-    protocol.send(new packets.AttackPacket({
-        entityIds: this.realm.getAllEntities().filter((entity) =>
-          entity.getBounds().intersects(targetBounds) &&
-          this.realm.isTerrainPassableBy(this, targetBounds,
-                                         this.direction))
-        .map((entity) => entity.id)
-    }));
-
-    this.stopMove();
-    protocol.send(new packets.StopMovePacket());
-
-    this.attack();
   }
 
   doInteract(protocol) {
@@ -357,12 +329,6 @@ export class Player extends Actor {
 
     if (inputState.stick(input.Key.Z)) {
       this.doInteract(protocol);
-      return;
-    }
-
-    if (inputState.stick(input.Key.X)) {
-      this.interactions = [];
-      this.doAttack(protocol);
       return;
     }
 

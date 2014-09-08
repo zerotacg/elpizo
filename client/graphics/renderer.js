@@ -478,20 +478,10 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   visitActor(entity) {
     super.visitActor(entity);
 
-    var attackTimer = entity.getTimer("attack");
-
-    var attacking = !attackTimer.isStopped();
-
     var state = entity.isMoving ? "walking" :
-                attacking ? "slashing" :
                 "standing";
 
-    var elapsed;
-    if (attacking) {
-      elapsed = attackTimer.getElapsed() * entity.getAttackCooldown();
-    } else {
-      elapsed = this.renderer.elapsed * entity.getSpeed();
-    }
+    var elapsed = this.renderer.elapsed * entity.getSpeed();
 
     var direction = entity.direction == entities.Directions.N ? "n" :
                     entity.direction == entities.Directions.W ? "w" :
