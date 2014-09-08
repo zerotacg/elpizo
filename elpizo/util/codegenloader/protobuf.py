@@ -23,8 +23,7 @@ class ProtobufLoader(base.CodeGenLoader):
       protodir, protofile = os.path.split(self.protoname(relname))
       subprocess.check_call(
         ["protoc",
-         "-I{}".format(os.path.join(os.path.dirname(__file__),
-                                    "..", "..", "..", "protobuf-py3", "src")),
+         "-I/usr/include",
          "--python_out=.",
          "--proto_path={}".format(protodir),
          self.protoname(relname)],
