@@ -152,7 +152,7 @@ gulp.task("styles", function () {
     .pipe(gulp.dest("static/css"));
 });
 
-gulp.task("protos", ["protos-js", "protos-py"]);
+gulp.task("protos", ["protos-js"]);
 
 gulp.task("protos-js", function () {
   return gulp.src(paths.protos)
@@ -166,16 +166,6 @@ gulp.task("protos-js", function () {
       file.extname = ".js";
     }))
     .pipe(gulp.dest("client/protos"));
-});
-
-gulp.task("protos-py", function () {
-  return gulp.src(paths.protos)
-    .pipe(run("protoc" +
-              " -I=./protos" +
-              " -I=./protobuf-py3/src" +
-              " --python_out=elpizo/protos" +
-              " ./protos/<%= file.relative %>",
-        {silent: true}));
 });
 
 gulp.task("watchScripts", function () {
