@@ -8,7 +8,7 @@ message Layer {
 message Region {
   repeated Layer layers = 1;
   repeated uint32 passabilities = 2;
-  repeated uint32 entity_ids = 3;
+  repeated uint32 entity_ids_idx = 3;
 }
 
 message Realm {

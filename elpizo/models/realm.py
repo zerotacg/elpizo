@@ -72,7 +72,7 @@ class Region(record.ProtobufRecord):
   FIELDS = [
       record.RepeatedField("layers", Layer),
       record.RepeatedField("passabilities", record.Scalar),
-      record.RepeatedField("entity_ids", record.Scalar),
+      record.RepeatedField("entity_ids_idx", record.Scalar),
   ]
 
   SIZE = 16
@@ -104,7 +104,7 @@ class Region(record.ProtobufRecord):
 
   def to_public_protobuf(self, realm):
     proto = self.to_protobuf()
-    proto.ClearField("entity_ids")
+    proto.ClearField("entity_ids_idx")
     return proto
 
   def is_terrain_passable_by(self, entity, bounds, direction):
@@ -173,11 +173,11 @@ class RegionStore(record.ProtobufStore):
     region = super().find(id)
     region.update(realm=self.realm,
                   entities={self.entities.load(entity_id)
-                            for entity_id in region.entity_ids})
+                            for entity_id in region.entity_ids_idx})
     return region
 
   def save(self, region):
-    region.update(entity_ids=[entity.id for entity in region.entities])
+    region.update(entity_ids_idx=[entity.id for entity in region.entities])
     super().save(region)
 
   def keys(self):
