@@ -149,7 +149,7 @@ gulp.task("test", function () {
       }
     });
   } else {
-    tests = [argv.test];
+    tests = [].concat(argv.test);
   }
 
   return tmp.file(function (err, path, fd) {
