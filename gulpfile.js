@@ -11,6 +11,7 @@ var gutil = require("gulp-util");
 var insert = require("gulp-insert");
 var jstransform = require("jstransform");
 var less = require("gulp-less");
+var mochaPhantomJS = require("gulp-mocha-phantomjs");
 var moduleVisitors = require("es6-module-jstransform/visitors");
 var path = require("path");
 var postcss = require("gulp-postcss");
@@ -35,27 +36,6 @@ var paths = {
   styles: ["client/style/**/*.less"],
   protos: ["protos/*.proto"]
 };
-
-function rebundle(bundler) {
-  return bundler.bundle({
-        // We always want to emit source maps here, because sourcemaps.init will
-        // take care of it for us later.
-        debug: true
-    })
-    .on("error", function(e) {
-      gutil.log(gutil.colors.red(e.toString()));
-      this.emit("end");
-    })
-    .pipe(source("bundle.js"))
-    .pipe(buffer())
-    .pipe(duration("Bundle time"))
-    .pipe(sourcemaps.init({
-        loadMaps: true,
-    }))
-    .pipe(DEBUG ? through() : uglify())
-    .pipe(sourcemaps.write("../maps"))
-    .pipe(gulp.dest("static/js"));
-}
 
 function reactify(filename) {
   var data = "";
@@ -126,14 +106,45 @@ function configureBundler(bundler) {
     .transform(progress)
     .transform(preprocessify(defines))
     .transform(reactify)
-    .transform(debowerify)
-    .require("./client/main.js", {
-        entry: true
-    });
+    .transform(debowerify);
+}
+
+function rebundle(bundler, filename) {
+  return bundler.bundle({
+        // We always want to emit source maps here, because sourcemaps.init will
+        // take care of it for us later.
+        debug: true
+    })
+    .on("error", function(e) {
+      gutil.log(gutil.colors.red(e.toString()));
+      this.emit("end");
+    })
+    .pipe(source(filename))
+    .pipe(buffer())
+    .pipe(duration("Bundle time"))
+    .pipe(sourcemaps.init({
+        loadMaps: true,
+    }))
+    .pipe(DEBUG ? through() : uglify())
+    .pipe(sourcemaps.write("../maps"))
+    .pipe(gulp.dest("static/js"));
 }
 
 gulp.task("scripts", function () {
-  return rebundle(configureBundler(browserify));
+  return rebundle(configureBundler(browserify).require("./client/main.js", {
+      entry: true
+  }), "bundle.js");
+});
+
+gulp.task("_test", function () {
+  return rebundle(configureBundler(browserify).require("./client/tests/main.js", {
+      entry: true
+  }), "test.js");
+});
+
+gulp.task("test", ["_test"], function () {
+  return gulp.src("./client/tests/runner.html")
+      .pipe(mochaPhantomJS());
 });
 
 gulp.task("styles", function () {
@@ -169,15 +180,18 @@ gulp.task("protos-js", function () {
 });
 
 gulp.task("watchScripts", function () {
-  var bundler = configureBundler(watchify);
+  var bundler = configureBundler(watchify).require("./client/main.js", {
+      entry: true
+  });
+
   bundler.on("update", function (files) {
     gutil.log("Files updated, rebundling...", files);
-    rebundle(bundler)
+    rebundle(bundler, "bundle.js")
         .on("finish", function () {
           gutil.log("Finished rebundling.");
         });
   });
-  return rebundle(bundler);
+  return rebundle(bundler, "bundle.js");
 });
 
 function generateManifest() {
