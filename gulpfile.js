@@ -7,6 +7,7 @@ var buffer = require("gulp-buffer");
 var browserify = require("browserify");
 var debowerify = require("debowerify");
 var duration = require("gulp-duration")
+var fs = require("fs");
 var gutil = require("gulp-util");
 var insert = require("gulp-insert");
 var jstransform = require("jstransform");
@@ -26,6 +27,7 @@ var watchify = require("watchify");
 var through = require("through");
 var through2 = require("through2");
 var tmp = require("tmp");
+var walk = require("fs-walk");
 var argv = require("yargs").argv;
 
 var DEBUG = process.env.NODE_ENV === "development";
@@ -137,12 +139,32 @@ gulp.task("scripts", function () {
 });
 
 gulp.task("test", function () {
-  return rebundle(configureBundler(browserify).require(
-      argv.test || "client/tests/main", {
-          entry: true
-      }),
-      "test.js").on("end", function () {
-    return gulp.src("./client/tests/runner.html").pipe(mochaPhantomJS());
+  var tests = [];
+  if (!argv.test) {
+    // Do test discovery.
+    walk.walkSync("./client", function (basedir, filename, stat) {
+      if (filename.match(/test.*\.js$/)) {
+        tests.push(path.join(basedir, filename));
+      }
+    });
+  } else {
+    tests = [argv.test];
+  }
+
+  return tmp.file(function (err, path, fd) {
+    tests.forEach(function (testFile) {
+      fs.writeSync(fd, "describe(" + JSON.stringify(testFile) + ", () => {" +
+        "import " + JSON.stringify(testFile) + ";" +
+      "})");
+    });
+
+    return rebundle(configureBundler(browserify).require(
+        path, {
+            entry: true
+        }),
+        "test.js").on("end", function () {
+      return gulp.src("./client/tests/runner.html").pipe(mochaPhantomJS());
+    });
   });
 });
 

@@ -32,7 +32,8 @@
     "autoprefixer-core": "~3.0.1",
     "gulp-postcss": "~1.0.2",
     "preprocessify": "0.0.2",
-    "mocha": "~1.21.4"
+    "mocha": "~1.21.4",
+    "fs-walk": "0.0.1"
   },
   "devDependencies": {
     "gulp-mocha-phantomjs": "~0.5.0",
