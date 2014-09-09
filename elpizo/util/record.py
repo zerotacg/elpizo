@@ -12,7 +12,6 @@ class Record(object):
     A record can be initialized with an ID.
     """
     self.id = id
-    self._kvs = None
     self.update(**kwargs)
 
   def update(self, **kwargs):
