@@ -31,7 +31,13 @@ message Building {
     optional Building ext = 105;
   }
 
-  required uint32 door_position = 1;
+  enum Room {
+    EMPTY = 1;
+    FOYER = 2;
+    ROOM = 3;
+  }
+
+  repeated Room rooms = 1;
 }
 
 message Fixture {

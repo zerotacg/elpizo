@@ -33,10 +33,9 @@ class AsyncRedisHashAdapter(object):
     return self.counter.next_serial()
 
   def keys(self):
-    for fut in green.await_coro(self.redis.hkeys(self.hash_key.encode("utf-8"))):
-      key = green.await(fut).decode("utf-8")
-      if key != self._SERIAL_KEY:
-        yield key
+    for fut in green.await_coro(
+        self.redis.hkeys(self.hash_key.encode("utf-8"))):
+      yield green.await(fut).decode("utf-8")
 
 
 class AsyncRedisCounterAdapter(object):
