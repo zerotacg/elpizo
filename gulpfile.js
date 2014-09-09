@@ -131,20 +131,19 @@ function rebundle(bundler, filename) {
 }
 
 gulp.task("scripts", function () {
-  return rebundle(configureBundler(browserify).require("./client/main.js", {
+  return rebundle(configureBundler(browserify).require("client/main", {
       entry: true
   }), "bundle.js");
 });
 
-gulp.task("_test", function () {
-  return rebundle(configureBundler(browserify).require("./client/tests/main.js", {
-      entry: true
-  }), "test.js");
-});
-
-gulp.task("test", ["_test"], function () {
-  return gulp.src("./client/tests/runner.html")
-      .pipe(mochaPhantomJS());
+gulp.task("test", function () {
+  return rebundle(configureBundler(browserify).require(
+      argv.test || "client/tests/main", {
+          entry: true
+      }),
+      "test.js").on("end", function () {
+    return gulp.src("./client/tests/runner.html").pipe(mochaPhantomJS());
+  });
 });
 
 gulp.task("styles", function () {
@@ -180,7 +179,7 @@ gulp.task("protos-js", function () {
 });
 
 gulp.task("watchScripts", function () {
-  var bundler = configureBundler(watchify).require("./client/main.js", {
+  var bundler = configureBundler(watchify).require("client/main", {
       entry: true
   });
 

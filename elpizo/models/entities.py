@@ -246,6 +246,10 @@ class NPC(Actor):
 
 @Entity.register
 class Building(Entity):
+  FIELDS = [
+      record.Field("size", geometry.Rectangle, extension=entities_pb2.Building)
+  ]
+
   TYPE = "building"
 
 
