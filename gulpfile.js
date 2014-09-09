@@ -155,7 +155,7 @@ gulp.task("test", function () {
     tests.forEach(function (testFile) {
       fs.writeSync(fd, "describe(" + JSON.stringify(testFile) + ", () => {" +
         "import " + JSON.stringify(testFile) + ";" +
-      "})");
+      "});");
     });
 
     return rebundle(configureBundler(browserify).require(
