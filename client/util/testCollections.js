@@ -1,7 +1,6 @@
 module collections from "client/util/collections";
 
 module assert from "assert";
-module should from "should";
 
 describe("repeat", () => {
   it("repeats 0", () => {

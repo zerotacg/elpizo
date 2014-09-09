@@ -1,7 +1,6 @@
 module objects from "client/util/objects";
 
 module assert from "assert";
-module should from "should";
 
 describe("extend", () => {
   it("copies source attributes", () => {
