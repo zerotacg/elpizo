@@ -18,11 +18,3 @@ export function nubBy(xs, f) {
   });
   return ys;
 }
-
-export function countingSort(numBuckets, f, xs) {
-  var buckets = repeat(numBuckets, () => []);
-  xs.forEach((x) => {
-    buckets[f(x)].push(x);
-  });
-  return [].concat.apply([], buckets);
-}
