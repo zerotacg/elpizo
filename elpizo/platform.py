@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import coloredlogs
 import logging
+import sys
 
 from elpizo.models import entities
 from elpizo.models import items
@@ -65,7 +66,8 @@ class Application(object):
     self.run()
 
   def run(self):
-    coloredlogs.install(getattr(logging, self.config.log_level, None))
+    coloredlogs.install(getattr(logging, self.config.log_level, None),
+                        stream=sys.stderr)
 
     logger.info("Welcome to elpizo!")
     logger.info("Using event loop: %s", type(self.loop).__name__)

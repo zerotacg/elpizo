@@ -4,6 +4,7 @@ var gulp = require("gulp");
 
 var autoprefixer = require('autoprefixer-core');
 var buffer = require("gulp-buffer");
+var child_process = require("child_process");
 var browserify = require("browserify");
 var debowerify = require("debowerify");
 var duration = require("gulp-duration")
@@ -265,10 +266,24 @@ gulp.task("watch", function () {
   gulp.start("watchScripts");
 });
 
-gulp.task("default", [
-  "watch",
-  "watchScripts",
-  "assets",
-  "styles",
-  "protos"
+gulp.task("build", [
+    "protos",
+    "watch",
+    "watchScripts",
+    "assets",
+    "styles"
 ]);
+
+gulp.task("run", ["build"], function (cb) {
+  var args = ["-m", "elpizo.server"];
+
+  if (DEBUG) {
+    args.push("--debug");
+  }
+
+  child_process.spawn("python3", args, {stdio: "inherit"}, function(err) {
+    cb(err);
+  });
+});
+
+gulp.task("default", ["run"]);
