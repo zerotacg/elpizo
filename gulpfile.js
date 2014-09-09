@@ -133,7 +133,7 @@ function rebundle(bundler, filename) {
     .pipe(gulp.dest("static/js"));
 }
 
-gulp.task("scripts", function () {
+gulp.task("scripts", ["protos"], function () {
   return rebundle(configureBundler(browserify).require("client/main", {
       entry: true
   }), "bundle.js");
@@ -201,7 +201,9 @@ gulp.task("protos-js", function () {
     .pipe(gulp.dest("client/protos"));
 });
 
-gulp.task("watchScripts", function () {
+gulp.task("watchScripts", ["protos"], function () {
+  gulp.watch(paths.protos, ["protos"]);
+
   var bundler = configureBundler(watchify).require("client/main", {
       entry: true
   });
@@ -262,16 +264,13 @@ gulp.task("assets", function () {
 gulp.task("watch", function () {
   gulp.watch(paths.assets, ["assets"]);
   gulp.watch(paths.styles, ["styles"]);
-  gulp.watch(paths.protos, ["protos"]);
   gulp.start("watchScripts");
 });
 
 gulp.task("build", [
-    "protos",
-    "watch",
-    "watchScripts",
     "assets",
-    "styles"
+    "styles",
+    "watch"
 ]);
 
 gulp.task("run", ["build"], function (cb) {
