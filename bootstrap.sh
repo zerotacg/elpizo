@@ -1,8 +1,8 @@
 #!/bin/bash
 apt-get update
-apt-get install -y libpython3.4-dev libxml2-dev libxslt1-dev cython3 \
-                   nodejs-legacy python3.4 nodejs python3-setuptools npm git \
+apt-get install -y libpython3.4-dev python3.4 nodejs python3-setuptools npm git \
                    build-essential libtool autoconf redis-server nginx
+ln -s /usr/bin/nodejs /usr/bin/node
 easy_install-3.4 pip
 npm install -g bower gulp
 git clone https://github.com/GreatFruitOmsk/protobuf-py3.git
