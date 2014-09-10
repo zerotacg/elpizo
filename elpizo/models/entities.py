@@ -75,10 +75,12 @@ class Entity(record.ProtobufRecord):
     return subclass
 
   def to_public_protobuf(self):
-    return self.to_protected_protobuf()
+    return self.to_protobuf()
 
   def to_protected_protobuf(self):
-    return self.to_protobuf()
+    protobuf = self.to_protobuf()
+    protobuf.type = "avatar"
+    return protobuf
 
   @classmethod
   def from_protobuf_polymorphic(cls, proto):
@@ -224,6 +226,12 @@ class Player(Actor):
   def __init__(self, *args, **kwargs):
     self.bbox = geometry.Rectangle(0, 0, 1, 1)
     super().__init__(*args, **kwargs)
+
+
+@Entity.register
+class Avatar(Player):
+  # dummy class to allow the NPC server to deserialize avatars correctly.
+  TYPE = "avatar"
 
 
 @Entity.register

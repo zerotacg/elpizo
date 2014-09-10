@@ -64,11 +64,17 @@ export function install(game) {
       console.warn("Entity " + origin + " already exists.");
     }
 
-    game.realm.addEntity(origin, models.makeEntity(origin, message.entity));
-  });
+    var entity = models.makeEntity(origin, message.entity);
+    game.realm.addEntity(origin, entity);
 
-  protocol.on(packets.Packet.Type.AVATAR, (origin, message) => {
-    game.setAvatarById(origin);
+    if (entity instanceof entities.Avatar) {
+      game.me = entity;
+
+      game.log.push(log.InfoMessageEntry({
+          text: "Welcome to Rekindled Hope, " + entity.name + "!"
+      }));
+      game.graphicsRenderer.center(entity.location);
+    }
   });
 
   protocol.on(packets.Packet.Type.MOVE, withEntity((entity, message) => {

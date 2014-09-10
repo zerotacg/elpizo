@@ -56,7 +56,6 @@ class PlayerPolicy(object):
     self.player.send(
         protocol,
         packets_pb2.EntityPacket(entity=self.player.to_protected_protobuf()))
-    self.player.send(protocol, packets_pb2.AvatarPacket())
 
     self.player.subscribe(self.server.bus, self.player.channel)
 

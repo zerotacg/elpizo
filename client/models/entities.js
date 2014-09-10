@@ -260,10 +260,35 @@ Actor.BASE_SPEED = 4;
 Actor.TURN_TIME = 0.1;
 
 export class Player extends Actor {
+  accept(visitor) {
+    visitor.visitPlayer(this);
+  }
+
+  getHeight() {
+    return 1.75;
+  }
+}
+
+export class NPC extends Actor {
+  constructor(id, message) {
+    super(id, message);
+    message = message[".NPC.ext"];
+  }
+
+  accept(visitor) {
+    visitor.visitNPC(this);
+  }
+}
+
+export class Avatar extends Player {
   constructor(id, message) {
     super(id, message);
     this.interactions = [];
     this.showInventory = false;
+  }
+
+  accept(visitor) {
+    visitor.visitAvatar(this);
   }
 
   doInteract(protocol) {
@@ -364,25 +389,6 @@ export class Player extends Actor {
       protocol.send(new packets.StopMovePacket());
     }
   }
-
-  accept(visitor) {
-    visitor.visitPlayer(this);
-  }
-
-  getHeight() {
-    return 1.75;
-  }
-}
-
-export class NPC extends Actor {
-  constructor(id, message) {
-    super(id, message);
-    message = message[".NPC.ext"];
-  }
-
-  accept(visitor) {
-    visitor.visitNPC(this);
-  }
 }
 
 export class EntityVisitor {
@@ -407,5 +413,9 @@ export class EntityVisitor {
 
   visitNPC(npc) {
     this.visitActor(npc);
+  }
+
+  visitAvatar(avatar) {
+    this.visitPlayer(avatar);
   }
 }

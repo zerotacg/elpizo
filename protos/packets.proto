@@ -11,7 +11,7 @@ message Packet {
     ERROR = 1;
     CHAT = 2;
     MOVE = 3;
-    AVATAR = 4;
+    // AVATAR = 4;
     REALM = 5;
     REGION = 6;
     // VIEWPORT = 7;
@@ -83,13 +83,6 @@ message MovePacket {
   option (packet_type) = MOVE;
 
   required Vector3 location = 1;
-}
-
-message AvatarPacket {
-  // Sent by the server to indicate which entity is the avatar.
-  //
-  // Direction: Server -> Client
-  option (packet_type) = AVATAR;
 }
 
 message RealmPacket {
