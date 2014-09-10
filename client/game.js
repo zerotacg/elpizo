@@ -287,9 +287,8 @@ export class Game extends events.EventEmitter {
     if (this.me !== null) {
       this.me.updateAsAvatar(dt, this.inputState, this.protocol);
       this.graphicsRenderer.center(this.me.location);
+      this.audio.update(this.me, dt);
     }
-
-    this.audio.update(dt);
   }
 
   render(dt) {

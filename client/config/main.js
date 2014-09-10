@@ -6,8 +6,7 @@ import { Music } from "client/config/music"
  * might become a model later on
  */
 export class Config {
-  constructor()
-  {
+  constructor() {
     this._music = new Music();
   }
 

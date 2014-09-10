@@ -25,14 +25,14 @@ export class Music {
     this.theme = null;
   }
 
-  update() {
+  update(player, dt) {
     var audio = this.audio;
     var config = this.config;
     audio.volume = config.volume;
     audio.muted = config.muted;
 
     // TODO: get theme to play from current region
-    var theme = "ehren-paper_lights-64";
+    var theme = this.findTheme(player);
     this.setTheme( theme );
   }
 
@@ -66,6 +66,15 @@ export class Music {
    */
   getResourceName(theme) {
     return "music/" + theme + ".opus";
+  }
+
+  /**
+   * find the current theme for the player
+   * @param player
+   * @returns {string}
+   */
+  findTheme(player) {
+    return "ehren-paper_lights-64";
   }
 
   createAudio() {
