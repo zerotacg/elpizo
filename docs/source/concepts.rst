@@ -19,8 +19,8 @@ in a realm.
 Autotiles
 +++++++++
 Autotiles are used for piecing parts of a tile sheet into individual tiles. They
-are partitioned into 24 parts, each of which are 16x16 (half the size of an
-actual tile).
+are partitioned into 24 parts, each of which are 16x16 (one quarter the size of 
+an actual tile).
 
 .. image:: autotile.png
 
