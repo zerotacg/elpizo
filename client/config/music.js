@@ -4,17 +4,7 @@
  */
 export class Music {
   constructor() {
-    this._volume = 1;
-    this._muted = false;
-  }
-
-  getVolume()
-  {
-    return this._volume;
-  }
-
-  isMuted()
-  {
-    return this._muted;
+    this.volume = 1;
+    this.muted = false;
   }
 }

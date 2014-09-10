@@ -28,8 +28,8 @@ export class Music {
   update() {
     var audio = this.audio;
     var config = this.config;
-    audio.volume = config.getVolume();
-    audio.muted = config.isMuted();
+    audio.volume = config.volume;
+    audio.muted = config.muted;
 
     // TODO: get theme to play from current region
     var theme = "ehren-paper_lights-64";
@@ -41,21 +41,21 @@ export class Music {
    * @param {string} theme
    */
   setTheme(theme) {
-    if( this.theme == theme ) return;
+    if( this.theme === theme ) return;
 
     this.theme = theme;
     var audio = this.audio;
     var name = this.getResourceName(theme);
     var resource = this.resources.get(name);
-    if( resource == null )
-    {
-      audio.pause();
-    }
-    else
+    if( resource !== null )
     {
       audio.src = resource.src;
       audio.load();
       audio.play();
+    }
+    else
+    {
+      audio.pause();
     }
   }
 
