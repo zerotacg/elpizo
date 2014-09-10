@@ -1,2 +1,2 @@
 before_install: ./deploy-bootstrap.sh
-script: gulp test
+script: env NODE_ENV=development gulp test
