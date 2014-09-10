@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/rekindledhope/elpizo.svg?branch=master)](https://travis-ci.org/rekindledhope/elpizo)
+
 ## Installing
 
 1. Use Vagrant!
