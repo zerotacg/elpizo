@@ -144,7 +144,7 @@ gulp.task("test", function () {
   if (!argv.test) {
     // Do test discovery.
     walk.walkSync("./client", function (basedir, filename, stat) {
-      if (filename.match(/^test.*\.js$/)) {
+      if (filename.match(/^.*Test\.js$/)) {
         tests.push(path.join(basedir, filename));
       }
     });
