@@ -1,0 +1,2 @@
+before_install: deploy-bootstrap.sh
+script: gulp test
