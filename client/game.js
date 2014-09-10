@@ -11,8 +11,8 @@ module React from "react/react-with-addons";
 module promise from "es6-promise";
 module querystring from "querystring";
 
-import { Music } from "client/audio/music";
-import { Config } from "client/config/main";
+import music from "client/audio/music";
+import config from "client/config/main";
 module graphics from "client/graphics";
 module handlers from "client/handlers";
 module packets from "client/protos/packets";
@@ -42,8 +42,10 @@ export class Game extends events.EventEmitter {
     super();
     this.log = [];
 
-    var cfg = this.config = new Config();
-    var res = this.resources = new resources.Resources();
+    var cfg = new config.Config();
+    var res = new resources.Resources();
+    this.config = cfg;
+    this.resources = res;
 
     this.uiRoot = document.createElement("div");
     parent.appendChild(this.uiRoot);
@@ -67,7 +69,7 @@ export class Game extends events.EventEmitter {
 
     this.graphicsRenderer = new graphics.GraphicsRenderer(res, parent);
 
-    this.audio = new Music(cfg.getMusic(), res);
+    this.audio = new music.Music(cfg.getMusic(), res);
     // Render the React components once to display the resource loading screen.
     this.renderReact();
 
