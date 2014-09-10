@@ -19,7 +19,11 @@ export var Overlay = React.createClass({
       (-position.y + "px") + ")";
 
     return <div className="overlay" style={style}>
-      <div className="components">{components}</div>
+      <React.addons.CSSTransitionGroup className="components"
+                                       transitionName="slide"
+                                       component={React.DOM.div}>
+        {components}
+      </React.addons.CSSTransitionGroup>
     </div>;
   }
 });

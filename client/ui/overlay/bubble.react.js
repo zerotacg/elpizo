@@ -18,7 +18,7 @@ export var Bubble = React.createClass({
                      (position.y - (entity.getHeight() - 1) * 32 + 8 + "px") + ")";
 
     return <div style={style}>
-      <div className="bubble">
+      <div className="bubble transitionable">
         <div className="anchor">
           <div className="inner" style={{color: colors.makeColorForString(entity.name)}}>
             {this.props.text}
