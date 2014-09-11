@@ -11,8 +11,8 @@ module React from "react/react-with-addons";
 module promise from "es6-promise";
 module querystring from "querystring";
 
-import music from "client/audio/music";
-import config from "client/config/main";
+module music from "client/audio/music";
+module config from "client/config/config";
 module graphics from "client/graphics";
 module handlers from "client/handlers";
 module packets from "client/protos/packets";

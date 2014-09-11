@@ -48,7 +48,7 @@ export class Music {
     var audio = this.audio;
     var name = this.getResourceName(theme);
     var resource = this.resources.get(name);
-    if (resource == null) { // maybe use === ? is resource guranteed to be null?
+    if (resource === null) {
       audio.pause();
     } else {
       audio.src = resource.src;
