@@ -81,28 +81,6 @@ export class Grid {
     }
   }
 
-  setImage(x, y, w, h, xs) {
-    xs.forEachRow(function (row, i) {
-      var start = 0;
-
-      // Set the image in groups of contiguous runs.
-      while (start < row.length) {
-        while (row[start] === " " && start <= row.length) {
-          ++start;
-        }
-
-        var end = start;
-        while (row[end] !== " " && end <= row.length) {
-          ++end;
-        }
-
-        this.setRow(x + start, y + i, row.slice(start, end));
-
-        start = end;
-      }
-    }.bind(this));
-  }
-
   copy() {
     var grid = new Grid(this.width, this.height);
     grid.xs = this.xs.slice();

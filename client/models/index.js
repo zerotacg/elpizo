@@ -17,6 +17,9 @@ export function makeEntity(id, message) {
 
     case "npc":
       return new entities.NPC(id, message);
+
+    case "avatar":
+      return new entities.Avatar(id, message);
   }
 
   throw new Error("Could not make entity of type: " + message.type);

@@ -263,14 +263,6 @@ export class Game extends events.EventEmitter {
     this.realm = realm;
   }
 
-  setAvatarById(id) {
-    this.me = this.realm.getEntity(id);
-    this.log.push(logUi.InfoMessageEntry({
-        text: "Welcome to Rekindled Hope, " + this.me.name + "!"
-    }));
-    this.graphicsRenderer.center(this.me.location);
-  }
-
   update(dt) {
     if (this.inputState.stick(input.Key.RETURN) ||
         this.inputState.stick(input.Key.T)) {

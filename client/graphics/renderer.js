@@ -8,6 +8,7 @@ module bubble from "client/ui/overlay/bubble.react";
 module colors from "client/util/colors";
 module functions from "client/util/functions";
 module geometry from "client/util/geometry";
+module grid from "client/util/grid";
 module objects from "client/util/objects";
 module timing from "client/util/timing";
 
@@ -391,31 +392,90 @@ export class GraphicsRenderer extends events.EventEmitter {
   }
 }
 
-function drawAutotileRectangle(renderer, rect, autotile, ctx) {
-  var bottom = rect.getBottom();
-  var right = rect.getRight();
+function drawAutotileGrid(renderer, grid, autotile, ctx) {
+  for (var y = 0; y < grid.height; ++y) {
+    for (var x = 0; x < grid.width; ++x) {
+      var filled = grid.getCell(x, y);
 
-  for (var y = rect.top; y < bottom; ++y) {
-    for (var x = rect.left; x < right; ++x) {
+      if (!filled) {
+        continue;
+      }
+
+      var neighborN =  grid.getCell(x,     y - 1);
+      var neighborNE = grid.getCell(x + 1, y - 1);
+      var neighborE =  grid.getCell(x + 1, y);
+      var neighborSE = grid.getCell(x + 1, y + 1);
+      var neighborS =  grid.getCell(x,     y + 1);
+      var neighborSW = grid.getCell(x - 1, y + 1);
+      var neighborW =  grid.getCell(x - 1, y);
+      var neighborNW = grid.getCell(x - 1, y - 1);
+
+      var autotileIndex;
+
+      // Compute the autotile to use.
+      if (!neighborN && !neighborE && !neighborS && !neighborW) {
+        // NESW walls (46).
+        autotileIndex = 46;
+      } else if (!neighborN + !neighborE + !neighborS + !neighborW === 3) {
+        // 3 walls (42, 43, 44, 45).
+        autotileIndex = 42 + [neighborS, neighborE, neighborN, neighborW]
+            .indexOf(true);
+      } else if (!neighborN && !neighborS) {
+        // NS wall (33).
+        autotileIndex = 33;
+      } else if (!neighborE && !neighborW) {
+        // WE wall (32).
+        autotileIndex = 32;
+      } else if (!neighborN && !neighborE) {
+        // NE walls (36, 37).
+        autotileIndex = 36 + !neighborSW;
+      } else if (!neighborE && !neighborS) {
+        // ES walls (38, 39).
+        autotileIndex = 38 + !neighborNW;
+      } else if (!neighborS && !neighborW) {
+        // SW walls (40, 41).
+        autotileIndex = 40 + !neighborNE;
+      } else if (!neighborW && !neighborN) {
+        // WN walls (34, 35).
+        autotileIndex = 34 + !neighborSE;
+      } else if (!neighborN) {
+        // N wall (20, 21, 22, 23).
+        autotileIndex = 20 + ((!neighborSW << 1) | (!neighborSE << 0));
+      } else if (!neighborE) {
+        // E wall (24, 25, 26, 27).
+        autotileIndex = 24 + ((!neighborNW << 1) | (!neighborSW << 0));
+      } else if (!neighborS) {
+        // S wall (28, 29, 30, 31).
+        autotileIndex = 28 + ((!neighborNW << 1) | (!neighborNE << 0));
+      } else if (!neighborW) {
+        // W wall (16, 17, 18, 19).
+        autotileIndex = 16 + ((!neighborSE << 1) | (!neighborNE << 0));
+      } else {
+        // Corner walls (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15).
+        autotileIndex = (!neighborSW << 3) | (!neighborSE << 2) |
+                        (!neighborNE << 1) | (!neighborNW << 0);
+      }
+
       var sOffset = renderer.toScreenCoords(new geometry.Vector2(x, y));
-
-      var autotileIndex =
-          x === rect.left && y === rect.top     ? 34 :
-          x === right - 1 && y === rect.top     ? 36 :
-          x === right - 1 && y === bottom - 1   ? 38 :
-          x === rect.left && y === bottom - 1   ? 40 :
-          x === rect.left                       ? 16 :
-          x === right - 1                       ? 24 :
-          y === rect.top                        ? 20 :
-          y === bottom - 1                      ? 28 :
-          0;
-
       ctx.save();
       ctx.translate(sOffset.x, sOffset.y);
       renderer.renderAutotile(autotile[autotileIndex], ctx);
       ctx.restore();
     }
   }
+}
+
+function drawAutotileRectangle(renderer, rect, autotile, ctx) {
+  var g = new grid.Grid(rect.width, rect.height);
+  g.fill(true);
+
+  var sOffset = renderer.toScreenCoords(
+      new geometry.Vector2(rect.left, rect.top));
+
+  ctx.save();
+  ctx.translate(sOffset.x, sOffset.y);
+  drawAutotileGrid(renderer, g, autotile, ctx);
+  ctx.restore();
 }
 
 export function getActorSpriteNames(actor) {
@@ -537,15 +597,15 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
                           new geometry.Rectangle(entity.bbox.left,
                                                  entity.bbox.top,
                                                  entity.bbox.width,
-                                                 entity.bbox.height - 2),
+                                                 entity.bbox.height - 1),
                           sprites["building.roof"],
                           this.ctx);
 
     drawAutotileRectangle(this.renderer,
                           new geometry.Rectangle(entity.bbox.left,
-                                                 entity.bbox.getBottom() - 2,
+                                                 entity.bbox.getBottom() - 1,
                                                  entity.bbox.width,
-                                                 2),
+                                                 1),
                           sprites["building.wall"],
                           this.ctx);
   }

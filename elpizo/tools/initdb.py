@@ -164,6 +164,11 @@ def initdb(app):
       inventory=set(),
       legs_item=app.store.create_item(legs_items.TealPants())))
 
+  app.store.entities.create(entities.Building(
+      bbox=geometry.Rectangle(0, 0, 2, 2),
+      location=geometry.Vector3(0, 5, 0),
+      realm_id=windvale.id))
+
   for _ in range(25):
     app.store.entities.create(entities.NPC(
         name="Green Slime",
