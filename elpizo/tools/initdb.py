@@ -75,9 +75,6 @@ def initdb(app):
       wall_tiles[4 + 7 * realm.Region.SIZE] = 46
       wall_tiles[6 + 7 * realm.Region.SIZE] = 46
 
-      stairs_tiles = [-1] * (realm.Region.SIZE * realm.Region.SIZE)
-      stairs_tiles[5 + 7 * realm.Region.SIZE] = 47
-
       passabilities = [0b1111] * (realm.Region.SIZE * realm.Region.SIZE)
       passabilities[4 + 3 * realm.Region.SIZE] = 0b1110
       passabilities[5 + 3 * realm.Region.SIZE] = 0b1110
@@ -104,8 +101,7 @@ def initdb(app):
           layers=[realm.Layer(terrain="grassland", tiles=tiles),
                   realm.Layer(terrain="dirt", tiles=platform_tiles),
                   realm.Layer(terrain="grassland", tiles=platform_tiles),
-                  realm.Layer(terrain="dirt_wall", tiles=wall_tiles),
-                  realm.Layer(terrain="stairs", tiles=stairs_tiles)],
+                  realm.Layer(terrain="dirt_wall", tiles=wall_tiles)],
           entities=set())
       # We don't use create() here because we've already assigned an id.
       windvale.regions.save(region)
@@ -165,16 +161,15 @@ def initdb(app):
       legs_item=app.store.create_item(legs_items.TealPants())))
 
   app.store.entities.create(entities.Building(
-      bbox=geometry.Rectangle(0, 0, 2, 2),
-      location=geometry.Vector3(0, 5, 0),
+      location=geometry.Vector3(1, 10, 0),
       realm_id=windvale.id))
 
   for _ in range(25):
     app.store.entities.create(entities.NPC(
-        name="Green Slime",
-        gender="neuter",
-        body="green_slime",
-        direction=1,
+        name="Some Bad Dude",
+        gender="male",
+        body="smurf",
+        direction=random.randint(0, 3),
         health=5,
         realm_id=windvale.id,
         location=geometry.Vector3(random.randint(0, 32), random.randint(0, 32), 0),

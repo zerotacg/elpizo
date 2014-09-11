@@ -39,8 +39,8 @@ export default = {
   "body.male.light":
       sprite.makeHumanoidSprite("body/male/light.png"),
 
-  "body.neuter.green_slime":
-      sprite.makeMobSprite("body/neuter/green_slime.png"),
+  "body.male.smurf":
+      sprite.makeHumanoidSprite("body/male/smurf.png"),
 
   "facial.male.brown_beard":
       sprite.makeHumanoidSprite("facial/male/brown_beard.png"),
@@ -61,34 +61,24 @@ export default = {
       sprite.makeHumanoidSprite("equipment/male/dagger.png"),
 
   "tile.grassland":
-      sprite.makeAutotile("tiles/TileA2.png",
-                          new geometry.Vector2(8 * 32, 6 * 32)),
+      sprite.makeAutotile("tiles/grassland.png",
+                          new geometry.Vector2(0, 0)),
 
   "tile.dirt":
-      sprite.makeAutotile("tiles/TileA4.png",
-                          new geometry.Vector2(0 * 32, 10 * 32)),
+      sprite.makeAutotile("tiles/dirt.png",
+                          new geometry.Vector2(0, 0)),
 
   "tile.dirt_wall":
-      sprite.makeAutotile("tiles/TileA4.png",
-                          new geometry.Vector2(0 * 32, 12 * 32)),
-
-  "tile.stairs":
-      sprite.makeAutotile("tiles/TileA5.png",
-                          new geometry.Vector2(3 * 32, 8 * 32)),
-
-  "building.roof":
-      sprite.makeAutotile("tiles/TileA3.png",
-                          new geometry.Vector2(0 * 32, -1 * 32)),
+      sprite.makeAutotile("tiles/dirt-wall.png",
+                          new geometry.Vector2(0, 0)),
 
   "building.wall":
-      sprite.makeAutotile("tiles/TileA3.png",
-                          new geometry.Vector2(0 * 32, 1 * 32)),
+      sprite.makeAutotile("tiles/building-wall.png",
+                          new geometry.Vector2(0, 0)),
 
-  "building.ceiling":
-      sprite.makeAutotile("tiles/TileA4.png",
-                          new geometry.Vector2(4 * 32, 5 * 32)),
-
-  "building.wall_internal":
-      sprite.makeAutotile("tiles/TileA4.png",
-                          new geometry.Vector2(4 * 32, 7 * 32))
+  "building.red_roof_1":
+      new sprite.Sprite("buildings/red_roof_1.png",
+                        new geometry.Vector2(96, 80),
+                        [new geometry.Vector2(0, 0)],
+                        new geometry.Vector2(0, 0), 0),
 };

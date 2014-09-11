@@ -102,6 +102,10 @@ export class GraphicsRenderer extends events.EventEmitter {
   prepareContext(canvas) {
     var ctx = canvas.getContext("2d");
     ctx.font = this.style.fontSize + " " + this.style.fontFamily;
+    ctx.mozImageSmoothingEnabled = false;
+    ctx.webkitImageSmoothingEnabled = false;
+    ctx.msImageSmoothingEnabled = false;
+    ctx.imageSmoothingEnabled = false;
     return ctx;
   }
 
@@ -481,7 +485,7 @@ function drawAutotileRectangle(renderer, rect, autotile, ctx) {
 export function getActorSpriteNames(actor) {
   var names = [["body", actor.gender, actor.body].join(".")];
 
-  if (actor.facial !== null) {
+  /*if (actor.facial !== null) {
     names.push(["facial", actor.gender, actor.facial].join("."));
   }
 
@@ -497,7 +501,7 @@ export function getActorSpriteNames(actor) {
       actor.weapon
   ]
       .filter((item) => item !== null)
-      .map((item) => ["equipment", actor.gender, item.type].join(".")));
+      .map((item) => ["equipment", actor.gender, item.type].join(".")));*/
 
   return names;
 }
@@ -510,8 +514,6 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitEntity(entity) {
-    super.visitEntity(entity);
-
     // @ifdef DEBUG
     if (this.renderer.debug) {
       this.ctx.save();
@@ -533,11 +535,11 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
       this.ctx.restore();
     }
     // @endif
+
+    super.visitEntity(entity);
   }
 
   visitActor(entity) {
-    super.visitActor(entity);
-
     var state = entity.isMoving ? "walking" :
                 "standing";
 
@@ -555,6 +557,7 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
     })
 
     // Render the name card.
+    this.ctx.save();
     this.ctx.translate(16, -entity.getHeight() * 32 + 16);
 
     var baseWidth = this.ctx.measureText(entity.name).width;
@@ -570,20 +573,23 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
         .darken(10).hex();
     this.ctx.fillStyle = textColor;
     this.ctx.fillText(entity.name, 0, 10);
+    this.ctx.restore();
+
+    super.visitActor(entity);
   }
 
   visitFixture(entity) {
-    super.visitFixture(entity);
-
     sprites[["fixture", entity.fixtureType].join(".")]
         .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
+
+    super.visitFixture(entity);
   }
 
   visitDrop(entity) {
-    super.visitDrop(entity);
-
     sprites[["item", entity.item.type].join(".")]
         .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
+
+    super.visitDrop(entity);
   }
 
   visitPlayer(entity) {
@@ -591,23 +597,29 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitBuilding(entity) {
-    super.visitBuilding(entity);
-
+    this.ctx.save();
     drawAutotileRectangle(this.renderer,
                           new geometry.Rectangle(entity.bbox.left,
-                                                 entity.bbox.top,
+                                                 entity.bbox.getBottom() - 2,
                                                  entity.bbox.width,
-                                                 entity.bbox.height - 1),
-                          sprites["building.roof"],
-                          this.ctx);
-
-    drawAutotileRectangle(this.renderer,
-                          new geometry.Rectangle(entity.bbox.left,
-                                                 entity.bbox.getBottom() - 1,
-                                                 entity.bbox.width,
-                                                 1),
+                                                 2),
                           sprites["building.wall"],
                           this.ctx);
+
+    var halfHeight = this.renderer.toScreenCoords(
+        new geometry.Vector2(0, 1)).y / 2;
+
+    var doorOffset = this.renderer.toScreenCoords(new geometry.Vector2(1, 2));
+
+    this.ctx.fillStyle = "black";
+    this.ctx.fillRect(doorOffset.x, doorOffset.y,
+                      GraphicsRenderer.TILE_SIZE, GraphicsRenderer.TILE_SIZE);
+    this.ctx.translate(0, -halfHeight);
+    sprites["building.red_roof_1"].render(this.renderer.resources, this.ctx,
+                                          this.renderer.elapsed);
+    this.ctx.restore();
+
+    super.visitBuilding(entity);
   }
 }
 GraphicsRenderer.TILE_SIZE = 32;

@@ -261,10 +261,6 @@ export class Player extends Actor {
   accept(visitor) {
     visitor.visitPlayer(this);
   }
-
-  getHeight() {
-    return 1.75;
-  }
 }
 
 export class NPC extends Actor {

@@ -258,6 +258,7 @@ class Building(Entity):
   ]
 
   def __init__(self, *args, **kwargs):
+    self.bbox = geometry.Rectangle(0, 0, 3, 3)
     self.direction = 0
     super().__init__(*args, **kwargs)
 
