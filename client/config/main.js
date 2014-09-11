@@ -1,4 +1,4 @@
-import { Music } from "client/config/music"
+module music from "client/config/music"
 
 /**
  * @class client.config.Config
@@ -7,11 +7,6 @@ import { Music } from "client/config/music"
  */
 export class Config {
   constructor() {
-    this._music = new Music();
-  }
-
-
-  getMusic() {
-    return this._music;
+    this.music = new music.Music();
   }
 }

@@ -69,7 +69,7 @@ export class Game extends events.EventEmitter {
 
     this.graphicsRenderer = new graphics.GraphicsRenderer(res, parent);
 
-    this.audio = new music.Music(cfg.getMusic(), res);
+    this.audio = new music.Music(cfg.music, res);
     // Render the React components once to display the resource loading screen.
     this.renderReact();
 

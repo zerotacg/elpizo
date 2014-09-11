@@ -31,9 +31,8 @@ export class Music {
     audio.volume = config.volume;
     audio.muted = config.muted;
 
-    // TODO: get theme to play from current region
     var theme = this.findTheme(player);
-    this.setTheme( theme );
+    this.setTheme(theme);
   }
 
   /**
@@ -41,21 +40,20 @@ export class Music {
    * @param {string} theme
    */
   setTheme(theme) {
-    if( this.theme === theme ) return;
+    if (this.theme === theme) {
+      return;
+    }
 
     this.theme = theme;
     var audio = this.audio;
     var name = this.getResourceName(theme);
     var resource = this.resources.get(name);
-    if( resource !== null )
-    {
+    if (resource == null) { // maybe use === ? is resource guranteed to be null?
+      audio.pause();
+    } else {
       audio.src = resource.src;
       audio.load();
-      audio.play();
-    }
-    else
-    {
-      audio.pause();
+      audio.play(); // maybe only play on canplay or canplaytrhough event?
     }
   }
 
@@ -69,17 +67,19 @@ export class Music {
   }
 
   /**
-   * find the current theme for the player
+   * find the theme for the players current location
    * @param player
    * @returns {string}
    */
   findTheme(player) {
+    // TODO: get theme to play from current region
     return "ehren-paper_lights-64";
   }
 
   createAudio() {
     var audio = new Audio();
     audio.loop = true;
+
     return audio;
   }
 }
