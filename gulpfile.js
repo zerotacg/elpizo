@@ -273,7 +273,7 @@ gulp.task("build", [
     "watch"
 ]);
 
-gulp.task("run", ["build"], function (cb) {
+gulp.task("serve", function (cb) {
   var args = ["-m", "elpizo.server"];
 
   if (DEBUG) {
@@ -285,4 +285,5 @@ gulp.task("run", ["build"], function (cb) {
   });
 });
 
+gulp.task("run", ["build", "serve"]);
 gulp.task("default", ["run"]);

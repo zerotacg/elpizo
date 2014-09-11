@@ -255,8 +255,11 @@ class NPC(Actor):
 @Entity.register
 class Building(Entity):
   FIELDS = [
-      record.Field("size", geometry.Rectangle, extension=entities_pb2.Building)
   ]
+
+  def __init__(self, *args, **kwargs):
+    self.direction = 0
+    super().__init__(*args, **kwargs)
 
   TYPE = "building"
 

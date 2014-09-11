@@ -68,8 +68,6 @@ export class Building extends Entity {
   constructor(id, message) {
     super(id, message);
     message = message[".Building.ext"];
-
-    this.doorPosition = message.doorPosition;
   }
 
   accept(visitor) {
