@@ -335,6 +335,7 @@ class Teleporter(Entity):
 
   def on_contact(self, protocol, actor):
     with actor.movement():
+      # TODO: remove player from all active region channels
       actor.realm_id = self.teleport_realm_id
       actor.location = self.teleport_location
 
