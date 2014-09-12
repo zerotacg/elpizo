@@ -131,6 +131,7 @@ message TeleportPacket {
 
   required Vector3 location = 1;
   required Entity.Direction direction = 2;
+  required uint32 realm_id = 3;
 }
 
 message StatusPacket {

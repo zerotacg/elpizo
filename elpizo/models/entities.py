@@ -338,12 +338,14 @@ class Teleporter(Entity):
       actor.realm_id = self.teleport_realm_id
       actor.location = self.teleport_location
 
+    actor.send(protocol,
+               packets_pb2.TeleportPacket(realm_id=actor.realm_id,
+                                          direction=actor.direction,
+                                          location=actor.location.to_protobuf()))
     protocol.send(
         None,
         packets_pb2.RealmPacket(id=actor.realm.id,
                                 realm=actor.realm.to_protobuf()))
-    actor.send(protocol,
-               packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))
 
 class EntityStore(record.PolymorphicProtobufStore):
   RECORD_TYPE = Entity

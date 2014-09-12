@@ -39,6 +39,12 @@ export function install(game) {
   protocol.on(packets.Packet.Type.REALM, (origin, message) => {
     game.clientBounds = new geometry.Rectangle(0, 0, 0, 0);
     game.setRealm(new realm.Realm(message.id, message.realm));
+
+    // We could be teleporting across realms, so we need to add ourselves to the
+    // new realm.
+    if (game.me !== null && game.me.realmId === game.realm.id) {
+      game.realm.addEntity(game.me.id, game.me);
+    }
   });
 
   protocol.on(packets.Packet.Type.REGION, (origin, message) => {
@@ -125,13 +131,13 @@ export function install(game) {
   }));
 
   protocol.on(packets.Packet.Type.TELEPORT, withEntity((entity, message) => {
-    console.warn("Entity " + entity.id + " teleported!");
+    console.warn("Entity " + entity.id + " was teleported!");
 
     entity.stopMove();
     entity.location = geometry.Vector3.fromProtobuf(message.location);
     entity.direction = message.direction;
+    entity.realmId = message.realmId;
   }));
-
 
   protocol.on(packets.Packet.Type.STATUS, withEntity((entity, message) => {
     game.log.push(log.StatusMessageEntry({

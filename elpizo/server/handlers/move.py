@@ -21,7 +21,8 @@ def on_move(protocol, actor, message):
       dt < 1 / actor.speed * 0.25: # compensate for slow connections by 0.25
     actor.send(protocol, packets_pb2.TeleportPacket(
         location=actor.location.to_protobuf(),
-        direction=actor.direction))
+        direction=actor.direction,
+        realm_id=actor.realm_id))
     return
 
   old_regions = list(actor.regions)
@@ -45,7 +46,8 @@ def on_move(protocol, actor, message):
   if not passable:
     actor.send(protocol, packets_pb2.TeleportPacket(
         location=actor.location.to_protobuf(),
-        direction=actor.direction))
+        direction=actor.direction,
+        realm_id=actor.realm_id))
     return
 
   # We don't need strict sequentiality of the location log, so we keep this out
