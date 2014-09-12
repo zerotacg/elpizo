@@ -355,9 +355,15 @@ export class GraphicsRenderer extends events.EventEmitter {
     xrayCtx.save();
     xrayCtx.clearRect(0, 0, xrayCanvas.width, xrayCanvas.height);
 
+    var illuminationCanvas = this.ensureBackBuffer("illumination");
+    var illuminationCtx = this.prepareContext(illuminationCanvas);
+    illuminationCtx.save();
+    illuminationCtx.clearRect(0, 0, xrayCanvas.width, xrayCanvas.height);
+
     sortedEntities.forEach((entity) => {
-      this.renderEntity(entity, me, ctx);
-      this.renderEntity(entity, me, xrayCtx, {xray: true});
+      this.renderEntity(entity, me, ctx, {pass: "albedo"});
+      this.renderEntity(entity, me, xrayCtx, {pass: "xray"});
+      this.renderEntity(entity, me, illuminationCtx, {pass: "illumination"});
     });
 
     ctx.restore();
@@ -589,6 +595,10 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitEntity(entity) {
+    if (this.options.pass === "illumination") {
+      return;
+    }
+
     // @ifdef DEBUG
     if (this.renderer.debug) {
       this.ctx.save();
@@ -615,6 +625,10 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitActor(entity) {
+    if (this.options.pass === "illumination") {
+      return;
+    }
+
     var state = entity.isMoving ? "walking" :
                 "standing";
 
@@ -656,7 +670,7 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitFixture(entity) {
-    if (this.options.xray) {
+    if (this.options.pass === "illumination" || this.options.pass === "xray") {
       return;
     }
 
@@ -667,7 +681,7 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitDrop(entity) {
-    if (this.options.xray) {
+    if (this.options.pass === "illumination" || this.options.pass === "xray") {
       return;
     }
 
@@ -678,11 +692,15 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitPlayer(entity) {
+    if (this.options.pass === "illumination") {
+      return;
+    }
+
     super.visitPlayer(entity);
   }
 
   visitBuilding(entity) {
-    if (this.options.xray) {
+    if (this.options.pass === "illumination" || this.options.pass === "xray") {
       return;
     }
 
