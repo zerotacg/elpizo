@@ -26,17 +26,12 @@ export class GraphicsRenderer extends events.EventEmitter {
 
     parent.appendChild(this.el);
 
-    this.terrainCanvas = this.createCanvas();
-    this.terrainCanvas.style.zIndex = 0;
-    this.terrainCanvas.width = 0;
-    this.terrainCanvas.height = 0;
-    this.el.appendChild(this.terrainCanvas);
+    this.backbuffers = {};
 
-    this.entityCanvas = this.createCanvas();
-    this.entityCanvas.style.zIndex = 1;
-    this.entityCanvas.width = 0;
-    this.entityCanvas.height = 0;
-    this.el.appendChild(this.entityCanvas);
+    this.canvas = this.createCanvas();
+    this.canvas.width = 0;
+    this.canvas.height = 0;
+    this.el.appendChild(this.canvas);
 
     this.topLeft = new geometry.Vector2(0, 0);
 
@@ -60,6 +55,16 @@ export class GraphicsRenderer extends events.EventEmitter {
     // We also hold React components here, which need to be parented onto the
     // overlay during the React tick phase.
     this.components = {};
+  }
+
+  ensureBackbuffer(name) {
+    if (!objects.hasOwnProp.call(this.backbuffers, name)) {
+      var backbuffer = document.createElement("canvas");
+      backbuffer.width = this.canvas.width;
+      backbuffer.height = this.canvas.height;
+      this.backbuffers[name] = backbuffer;
+    }
+    return this.backbuffers[name];
   }
 
   addComponent(id, comp) {
@@ -147,11 +152,14 @@ export class GraphicsRenderer extends events.EventEmitter {
                                                   sBounds.right,
                                                   sBounds.bottom);
 
-    this.terrainCanvas.width = sw;
-    this.terrainCanvas.height = sh;
+    Object.keys(this.backbuffers).forEach((k) => {
+      var backbuffer = this.backbuffers[k];
+      backbuffer.width = sw;
+      backbuffer.height = sh;
+    })
 
-    this.entityCanvas.width = sw;
-    this.entityCanvas.height = sh;
+    this.canvas.width = sw;
+    this.canvas.height = sh;
 
     this.emit("viewportChange");
   }
@@ -184,6 +192,15 @@ export class GraphicsRenderer extends events.EventEmitter {
     this.renderTerrain(realm);
     this.renderEntities(realm);
     this.updateComponents(dt);
+
+    var ctx = this.prepareContext(this.canvas);
+    ctx.save();
+    ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.drawImage(this.ensureBackbuffer("terrain"), 0, 0);
+    ctx.drawImage(this.ensureBackbuffer("entity"), 0, 0);
+    ctx.globalAlpha = 0.25;
+    ctx.drawImage(this.ensureBackbuffer("xray"), 0, 0);
+    ctx.restore();
 
     this.lastRenderTime = this.lastRenderTime * 0.9 + dt * 0.1;
   }
@@ -223,8 +240,9 @@ export class GraphicsRenderer extends events.EventEmitter {
       });
     }
 
-    var ctx = this.prepareContext(this.terrainCanvas);
-    ctx.clearRect(0, 0, this.terrainCanvas.width, this.terrainCanvas.height);
+    var terrainCanvas = this.ensureBackbuffer("terrain");
+    var ctx = this.prepareContext(terrainCanvas);
+    ctx.clearRect(0, 0, terrainCanvas.width, terrainCanvas.height);
 
     var sOffset = this.toScreenCoords(this.topLeft.negate());
 
@@ -276,9 +294,6 @@ export class GraphicsRenderer extends events.EventEmitter {
   }
 
   renderEntities(realm) {
-    var ctx = this.prepareContext(this.entityCanvas);
-    ctx.clearRect(0, 0, this.entityCanvas.width, this.entityCanvas.height);
-
     var sortedEntities = realm.getAllEntities()
         .sort((a, b) => {
             // Always sort drops below everything else.
@@ -291,9 +306,23 @@ export class GraphicsRenderer extends events.EventEmitter {
             return a.location.y - b.location.y;
         });
 
+    var entityCanvas = this.ensureBackbuffer("entity");
+    var ctx = this.prepareContext(entityCanvas);
+    ctx.save();
+    ctx.clearRect(0, 0, entityCanvas.width, entityCanvas.height);
+
+    var xrayCanvas = this.ensureBackbuffer("xray");
+    var xrayCtx = this.prepareContext(xrayCanvas);
+    xrayCtx.save();
+    xrayCtx.clearRect(0, 0, xrayCanvas.width, xrayCanvas.height);
+
     sortedEntities.forEach((entity) => {
       this.renderEntity(entity, ctx);
+      this.renderEntity(entity, xrayCtx, {xray: true});
     });
+
+    ctx.restore();
+    xrayCtx.restore();
   }
 
   renderAutotile(autotile, ctx) {
@@ -385,13 +414,13 @@ export class GraphicsRenderer extends events.EventEmitter {
     return canvas;
   }
 
-  renderEntity(entity, ctx) {
+  renderEntity(entity, ctx, options) {
     var sOffset = this.toScreenCoords(
         entity.location.offset(this.topLeft.negate()));
 
     ctx.save();
     ctx.translate(sOffset.x, sOffset.y);
-    entity.accept(new GraphicsRendererVisitor(this, ctx));
+    entity.accept(new GraphicsRendererVisitor(this, ctx, options));
     ctx.restore();
   }
 }
@@ -508,9 +537,10 @@ export function getActorSpriteNames(actor) {
 
 
 class GraphicsRendererVisitor extends entities.EntityVisitor {
-  constructor(renderer, ctx) {
+  constructor(renderer, ctx, options) {
     this.renderer = renderer;
     this.ctx = ctx;
+    this.options = options || {};
   }
 
   visitEntity(entity) {
@@ -557,28 +587,34 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
     })
 
     // Render the name card.
-    this.ctx.save();
-    this.ctx.translate(16, -entity.getHeight() * 32 + 16);
+    if (!this.options.xray) {
+      this.ctx.save();
+      this.ctx.translate(16, -entity.getHeight() * 32 + 16);
 
-    var baseWidth = this.ctx.measureText(entity.name).width;
-    var width = baseWidth + 8;
+      var baseWidth = this.ctx.measureText(entity.name).width;
+      var width = baseWidth + 8;
 
-    this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-    this.ctx.fillRect(-width / 2, 0, width, 20);
+      this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      this.ctx.fillRect(-width / 2, 0, width, 20);
 
-    this.ctx.textAlign = "center";
-    this.ctx.textBaseline = "middle";
+      this.ctx.textAlign = "center";
+      this.ctx.textBaseline = "middle";
 
-    var textColor = chroma(colors.makeColorForString(entity.name))
-        .darken(10).hex();
-    this.ctx.fillStyle = textColor;
-    this.ctx.fillText(entity.name, 0, 10);
-    this.ctx.restore();
+      var textColor = chroma(colors.makeColorForString(entity.name))
+          .darken(10).hex();
+      this.ctx.fillStyle = textColor;
+      this.ctx.fillText(entity.name, 0, 10);
+      this.ctx.restore();
+    }
 
     super.visitActor(entity);
   }
 
   visitFixture(entity) {
+    if (this.options.xray) {
+      return;
+    }
+
     sprites[["fixture", entity.fixtureType].join(".")]
         .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
 
@@ -586,6 +622,10 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitDrop(entity) {
+    if (this.options.xray) {
+      return;
+    }
+
     sprites[["item", entity.item.type].join(".")]
         .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
 
@@ -597,6 +637,10 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitBuilding(entity) {
+    if (this.options.xray) {
+      return;
+    }
+
     this.ctx.save();
     drawAutotileRectangle(this.renderer,
                           new geometry.Rectangle(entity.bbox.left,
