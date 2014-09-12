@@ -26,7 +26,7 @@ export class GraphicsRenderer extends events.EventEmitter {
 
     parent.appendChild(this.el);
 
-    this.backbuffers = {};
+    this.backBuffers = {};
 
     this.canvas = this.createCanvas();
     this.canvas.width = 0;
@@ -57,14 +57,14 @@ export class GraphicsRenderer extends events.EventEmitter {
     this.components = {};
   }
 
-  ensureBackbuffer(name) {
-    if (!objects.hasOwnProp.call(this.backbuffers, name)) {
+  ensureBackBuffer(name) {
+    if (!objects.hasOwnProp.call(this.backBuffers, name)) {
       var backbuffer = document.createElement("canvas");
       backbuffer.width = this.canvas.width;
       backbuffer.height = this.canvas.height;
-      this.backbuffers[name] = backbuffer;
+      this.backBuffers[name] = backbuffer;
     }
-    return this.backbuffers[name];
+    return this.backBuffers[name];
   }
 
   addComponent(id, comp) {
@@ -152,8 +152,8 @@ export class GraphicsRenderer extends events.EventEmitter {
                                                   sBounds.right,
                                                   sBounds.bottom);
 
-    Object.keys(this.backbuffers).forEach((k) => {
-      var backbuffer = this.backbuffers[k];
+    Object.keys(this.backBuffers).forEach((k) => {
+      var backbuffer = this.backBuffers[k];
       backbuffer.width = sw;
       backbuffer.height = sh;
     })
@@ -193,14 +193,28 @@ export class GraphicsRenderer extends events.EventEmitter {
     this.renderEntities(realm);
     this.updateComponents(dt);
 
+    var illumination = this.ensureBackBuffer("illumination");
+    var illuminationCtx = this.prepareContext(illumination);
+
+    var composite = this.ensureBackBuffer("composite");
+    var compositeCtx = this.prepareContext(composite);
+    compositeCtx.save();
+    compositeCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    compositeCtx.drawImage(this.ensureBackBuffer("terrain"), 0, 0);
+    compositeCtx.drawImage(this.ensureBackBuffer("entity"), 0, 0);
+    compositeCtx.globalAlpha = 0.25;
+    compositeCtx.drawImage(this.ensureBackBuffer("xray"), 0, 0);
+    compositeCtx.globalAlpha = 1.0;
+
+    compositeCtx.globalCompositeOperation = "multiply";
+    compositeCtx.drawImage(illumination, 0, 0);
+
+    compositeCtx.restore();
+
     var ctx = this.prepareContext(this.canvas);
-    ctx.save();
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    ctx.drawImage(this.ensureBackbuffer("terrain"), 0, 0);
-    ctx.drawImage(this.ensureBackbuffer("entity"), 0, 0);
-    ctx.globalAlpha = 0.25;
-    ctx.drawImage(this.ensureBackbuffer("xray"), 0, 0);
-    ctx.restore();
+
+    ctx.drawImage(composite, 0, 0);
 
     this.lastRenderTime = this.lastRenderTime * 0.9 + dt * 0.1;
   }
@@ -240,7 +254,7 @@ export class GraphicsRenderer extends events.EventEmitter {
       });
     }
 
-    var terrainCanvas = this.ensureBackbuffer("terrain");
+    var terrainCanvas = this.ensureBackBuffer("terrain");
     var ctx = this.prepareContext(terrainCanvas);
     ctx.clearRect(0, 0, terrainCanvas.width, terrainCanvas.height);
 
@@ -306,12 +320,12 @@ export class GraphicsRenderer extends events.EventEmitter {
             return a.location.y - b.location.y;
         });
 
-    var entityCanvas = this.ensureBackbuffer("entity");
+    var entityCanvas = this.ensureBackBuffer("entity");
     var ctx = this.prepareContext(entityCanvas);
     ctx.save();
     ctx.clearRect(0, 0, entityCanvas.width, entityCanvas.height);
 
-    var xrayCanvas = this.ensureBackbuffer("xray");
+    var xrayCanvas = this.ensureBackBuffer("xray");
     var xrayCtx = this.prepareContext(xrayCanvas);
     xrayCtx.save();
     xrayCtx.clearRect(0, 0, xrayCanvas.width, xrayCanvas.height);
