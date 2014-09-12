@@ -55,6 +55,8 @@ export class GraphicsRenderer extends events.EventEmitter {
     // We also hold React components here, which need to be parented onto the
     // overlay during the React tick phase.
     this.components = {};
+
+    this.transitionTimer = new timing.CountdownTimer();
   }
 
   ensureBackBuffer(name) {
@@ -188,6 +190,19 @@ export class GraphicsRenderer extends events.EventEmitter {
   }
 
   render(realm, dt) {
+    this.transitionTimer.update(dt);
+
+    var composite = this.ensureBackBuffer("composite");
+    var retain = this.ensureBackBuffer("retain");
+
+    if (realm !== this.currentRealm) {
+      // Copy the last composite and retain it.
+      var retainCtx = this.prepareContext(retain);
+      retainCtx.clearRect(retain.width, retain.height, 0, 0);
+      retainCtx.drawImage(composite, 0, 0);
+      this.transitionTimer.reset(1);
+    }
+
     this.elapsed += dt;
     this.renderTerrain(realm);
     this.renderEntities(realm);
@@ -196,10 +211,9 @@ export class GraphicsRenderer extends events.EventEmitter {
     var illumination = this.ensureBackBuffer("illumination");
     var illuminationCtx = this.prepareContext(illumination);
 
-    var composite = this.ensureBackBuffer("composite");
     var compositeCtx = this.prepareContext(composite);
     compositeCtx.save();
-    compositeCtx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    compositeCtx.clearRect(0, 0, composite.width, composite.height);
     compositeCtx.drawImage(this.ensureBackBuffer("terrain"), 0, 0);
     compositeCtx.drawImage(this.ensureBackBuffer("entity"), 0, 0);
     compositeCtx.globalAlpha = 0.25;
@@ -214,6 +228,10 @@ export class GraphicsRenderer extends events.EventEmitter {
     var ctx = this.prepareContext(this.canvas);
     ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    ctx.globalAlpha = 1 - this.transitionTimer.getElapsedRatio();
+    ctx.drawImage(retain, 0, 0);
+
+    ctx.globalAlpha = this.transitionTimer.getElapsedRatio();
     ctx.drawImage(composite, 0, 0);
 
     this.lastRenderTime = this.lastRenderTime * 0.9 + dt * 0.1;
