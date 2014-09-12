@@ -55,6 +55,12 @@ export class Realm {
     return new geometry.Rectangle(0, 0, this.size.x, this.size.y);
   }
 
+  getExtendedBounds() {
+    return new geometry.Rectangle(0, 0,
+                                  Region.ceil(this.size.x),
+                                  Region.ceil(this.size.y));
+  }
+
   isTerrainPassableBy(entity, bounds, direction) {
     if (!this.getBounds().contains(bounds)) {
       return false;

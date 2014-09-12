@@ -190,7 +190,7 @@ export class Game extends events.EventEmitter {
 
       var location = new geometry.Vector2(x, y);
 
-      if (!this.realm.getBounds().contains(new geometry.Rectangle(
+      if (!this.realm.getExtendedBounds().contains(new geometry.Rectangle(
           location.x, location.y, realm.Region.SIZE, realm.Region.SIZE))) {
         return;
       }
@@ -211,7 +211,7 @@ export class Game extends events.EventEmitter {
 
       var location = new geometry.Vector2(x, y);
 
-      if (!this.realm.getBounds().contains(new geometry.Rectangle(
+      if (!this.realm.getExtendedBounds().contains(new geometry.Rectangle(
           location.x, location.y, realm.Region.SIZE, realm.Region.SIZE))) {
         return;
       }

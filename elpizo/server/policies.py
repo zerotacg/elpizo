@@ -113,7 +113,7 @@ class NPCPolicy(object):
             realm_id=realm.id,
             region=region.to_public_protobuf(realm)))
 
-        for entity in region.entities:
+        for entity in region.client_entities:
           if isinstance(entity, entities.NPC):
             self.npcs[entity.id] = entity
             self.npc_ephemeras[entity.id] = entities.Ephemera()

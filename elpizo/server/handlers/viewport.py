@@ -18,8 +18,8 @@ def on_sight(protocol, actor, message):
   # about them.
   actor.subscribe(protocol.server.bus, region.channel)
 
-  for entity in list(region.entities):
-    if entity.id != actor.id:
+  for entity in list(region.client_entities):
+    if entity is not actor:
       entity.send(protocol,
                   packets_pb2.EntityPacket(entity=entity.to_public_protobuf()))
 
@@ -29,7 +29,7 @@ def on_unsight(protocol, actor, message):
       message.location))
   actor.unsubscribe(protocol.server.bus, region.channel)
 
-  for entity in list(region.entities):
+  for entity in list(region.client_entities):
     if list(entity.regions) == [region]:
       # Only despawn entities that are exclusively in this region.
       entity.send(protocol, packets_pb2.DespawnEntityPacket())

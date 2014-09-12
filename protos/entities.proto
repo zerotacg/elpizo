@@ -31,13 +31,7 @@ message Building {
     optional Building ext = 105;
   }
 
-  enum Room {
-    EMPTY = 1;
-    FOYER = 2;
-    ROOM = 3;
-  }
-
-  repeated Room rooms = 1;
+  required Entity.Direction door_location = 1;
 }
 
 message Fixture {
@@ -83,4 +77,13 @@ message NPC {
   }
 
   optional string behavior = 1;
+}
+
+message Teleporter {
+  extend Entity {
+    optional Teleporter ext = 108;
+  }
+
+  required uint32 teleport_realm_id = 1;
+  required Vector3 teleport_location = 2;
 }

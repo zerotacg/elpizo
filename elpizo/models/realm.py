@@ -94,6 +94,10 @@ class Region(record.ProtobufRecord):
     return geometry.Rectangle(self.location.x, self.location.y,
                               self.SIZE, self.SIZE)
 
+  @property
+  def client_entities(self):
+    return (entity for entity in self.entities if entity.client_visible)
+
   @id.setter
   def id(self, v):
     if v is None:

@@ -198,9 +198,9 @@ export class GraphicsRenderer extends events.EventEmitter {
     if (realm !== this.currentRealm) {
       // Copy the last composite and retain it.
       var retainCtx = this.prepareContext(retain);
-      retainCtx.clearRect(retain.width, retain.height, 0, 0);
+      retainCtx.clearRect(0, 0, retain.width, retain.height);
       retainCtx.drawImage(composite, 0, 0);
-      this.transitionTimer.reset(1);
+      this.transitionTimer.reset(0.25);
     }
 
     this.elapsed += dt;
@@ -685,11 +685,14 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
     var halfHeight = this.renderer.toScreenCoords(
         new geometry.Vector2(0, 1)).y / 2;
 
-    var doorOffset = this.renderer.toScreenCoords(new geometry.Vector2(1, 2));
+    if (entity.doorLocation === 2) {
+      var doorOffset = this.renderer.toScreenCoords(new geometry.Vector2(1, 2));
 
-    this.ctx.fillStyle = "black";
-    this.ctx.fillRect(doorOffset.x, doorOffset.y,
-                      GraphicsRenderer.TILE_SIZE, GraphicsRenderer.TILE_SIZE);
+      this.ctx.fillStyle = "black";
+      this.ctx.fillRect(doorOffset.x, doorOffset.y,
+                        GraphicsRenderer.TILE_SIZE, GraphicsRenderer.TILE_SIZE);
+    }
+
     this.ctx.translate(0, -halfHeight);
     sprites["building.red_roof_1"].render(this.renderer.resources, this.ctx,
                                           this.renderer.elapsed);

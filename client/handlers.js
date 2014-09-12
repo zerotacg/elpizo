@@ -37,6 +37,7 @@ export function install(game) {
   });
 
   protocol.on(packets.Packet.Type.REALM, (origin, message) => {
+    game.clientBounds = new geometry.Rectangle(0, 0, 0, 0);
     game.setRealm(new realm.Realm(message.id, message.realm));
   });
 

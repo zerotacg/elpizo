@@ -162,7 +162,61 @@ def initdb(app):
 
   app.store.entities.create(entities.Building(
       location=geometry.Vector3(1, 10, 0),
+      door_location=1,
+      realm_id=windvale.id,
+      interior_realm_id=windvale.id))
+
+  app.store.entities.create(entities.Building(
+      location=geometry.Vector3(1, 13, 0),
+      door_location=2,
       realm_id=windvale.id))
+
+  building_a = realm.Realm(name="Building A", size=geometry.Vector2(3, 4))
+  app.store.realms.create(building_a)
+
+
+  building_a_passabilities = [0b0000] * (realm.Region.SIZE * realm.Region.SIZE)
+  building_a_passabilities[0 + 0 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[1 + 0 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[2 + 0 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[0 + 1 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[1 + 1 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[2 + 1 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[0 + 2 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[1 + 2 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[2 + 2 * realm.Region.SIZE] = 0b1111
+  building_a_passabilities[1 + 3 * realm.Region.SIZE] = 0b1111
+
+  building_a_tiles = [-1] * (realm.Region.SIZE * realm.Region.SIZE)
+  building_a_tiles[0 + 0 * realm.Region.SIZE] = 0
+  building_a_tiles[1 + 0 * realm.Region.SIZE] = 0
+  building_a_tiles[2 + 0 * realm.Region.SIZE] = 0
+  building_a_tiles[0 + 1 * realm.Region.SIZE] = 0
+  building_a_tiles[1 + 1 * realm.Region.SIZE] = 0
+  building_a_tiles[2 + 1 * realm.Region.SIZE] = 0
+  building_a_tiles[0 + 2 * realm.Region.SIZE] = 0
+  building_a_tiles[1 + 2 * realm.Region.SIZE] = 0
+  building_a_tiles[2 + 2 * realm.Region.SIZE] = 0
+
+  region = realm.Region(
+      realm_id=building_a.id, location=geometry.Vector2(0, 0),
+      passabilities=building_a_passabilities,
+      layers=[realm.Layer(terrain="dirt",
+                          tiles=building_a_tiles)],
+      entities=set())
+  building_a.regions.save(region)
+
+  app.store.entities.create(entities.Teleporter(
+      location=geometry.Vector3(2, 15, 0),
+      realm_id=windvale.id,
+      teleport_realm_id=building_a.id,
+      teleport_location=geometry.Vector3(1, 2, 0)))
+
+  app.store.entities.create(entities.Teleporter(
+      location=geometry.Vector3(1, 3, 0),
+      realm_id=building_a.id,
+      teleport_realm_id=windvale.id,
+      teleport_location=geometry.Vector3(2, 16, 0)))
 
   for _ in range(25):
     app.store.entities.create(entities.NPC(

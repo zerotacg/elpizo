@@ -68,10 +68,21 @@ export class Building extends Entity {
   constructor(id, message) {
     super(id, message);
     message = message[".Building.ext"];
+    this.doorLocation = message.doorLocation;
   }
 
   accept(visitor) {
     visitor.visitBuilding(this);
+  }
+
+  isPassableBy(entity, direction) {
+    var offset = getDirectionVector(this.doorLocation);
+    var doorBounds = new geometry.Rectangle(offset.x, offset.y, 1, 1);
+
+    var center = this.location.offset(new geometry.Vector3(1, 1, 0));
+
+    return doorBounds.offset(center).intersects(
+        entity.getBounds().offset(entity.getDirectionVector()));
   }
 }
 

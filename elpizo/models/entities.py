@@ -9,6 +9,7 @@ from elpizo.models import realm
 from elpizo.models import record
 from elpizo.models import items
 from elpizo.protos import entities_pb2
+from elpizo.protos import packets_pb2
 from elpizo.util import green
 from elpizo.util import support
 
@@ -102,6 +103,10 @@ class Entity(record.ProtobufRecord):
   def regions(self):
     return self.realm.load_intersecting_regions(self.bounds)
 
+  @property
+  def client_visible(self):
+    return True
+
   @contextlib.contextmanager
   def movement(self):
     initial_regions = list(self.regions)
@@ -155,6 +160,13 @@ class Entity(record.ProtobufRecord):
 
   def remove_from_bus(self, bus):
     bus.remove(self.bus_key)
+
+  @property
+  def realm(self):
+    return self.store.parent.realms.load(self.realm_id)
+
+  def on_contact(self, protocol, actor):
+    pass
 
 
 class Actor(Entity):
@@ -255,14 +267,25 @@ class NPC(Actor):
 @Entity.register
 class Building(Entity):
   FIELDS = [
+      record.Field("door_location", record.Scalar,
+                   extension=entities_pb2.Building.ext)
   ]
+
+  TYPE = "building"
 
   def __init__(self, *args, **kwargs):
     self.bbox = geometry.Rectangle(0, 0, 3, 3)
     self.direction = 0
     super().__init__(*args, **kwargs)
 
-  TYPE = "building"
+  def is_passable_by(self, entity, direction):
+    offset = Entity.DIRECTION_VECTORS[self.door_location]
+    doorBounds = geometry.Rectangle(offset.x, offset.y, 1, 1);
+
+    center = self.location.offset(geometry.Vector3(1, 1, 0));
+
+    return doorBounds.offset(center).intersects(
+        entity.bounds.offset(entity.direction_vector))
 
 
 @Entity.register
@@ -283,6 +306,45 @@ class Drop(Entity):
     return True
 
 
+@Entity.register
+class Teleporter(Entity):
+  FIELDS = [
+      record.Field("teleport_realm_id", record.Scalar,
+                   extension=entities_pb2.Teleporter.ext),
+      record.Field("teleport_location", geometry.Vector3,
+                   extension=entities_pb2.Teleporter.ext)
+  ]
+
+  TYPE = "teleporter"
+
+  def __init__(self, *args, **kwargs):
+    self.bbox = geometry.Rectangle(0, 0, 1, 1)
+    self.direction = 0
+    super().__init__(*args, **kwargs)
+
+  @property
+  def client_visible(self):
+    return False
+
+  def on_store_add(self, store):
+    super().on_store_add(store)
+    self.teleport_realm = store.parent.realms.load(self.teleport_realm_id)
+
+  def is_passable_by(self, entity, direction):
+    return True
+
+  def on_contact(self, protocol, actor):
+    with actor.movement():
+      actor.realm_id = self.teleport_realm_id
+      actor.location = self.teleport_location
+
+    protocol.send(
+        None,
+        packets_pb2.RealmPacket(id=actor.realm.id,
+                                realm=actor.realm.to_protobuf()))
+    actor.send(protocol,
+               packets_pb2.EntityPacket(entity=actor.to_protected_protobuf()))
+
 class EntityStore(record.PolymorphicProtobufStore):
   RECORD_TYPE = Entity
   PROTOBUF_TYPE = entities_pb2.Entity
@@ -293,7 +355,7 @@ class EntityStore(record.PolymorphicProtobufStore):
 
   def add(self, entity):
     super().add(entity)
-    entity.realm = self.parent.realms.load(entity.realm_id)
+    entity.store = self
 
   def create(self, entity):
     super().create(entity)

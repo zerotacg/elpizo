@@ -88,6 +88,12 @@ def on_move(protocol, actor, message):
         region.channel,
         packets_pb2.MovePacket(location=new_location.to_protobuf()))
 
+  # We also run intersect events.
+  for region in actor.regions:
+    for entity in list(region.entities):
+      if actor.bounds.intersects(entity.bounds) and actor is not entity:
+        entity.on_contact(protocol, actor)
+
 
 def on_stop_move(protocol, actor, message):
   actor.broadcast_to_regions(protocol.server.bus, message)
