@@ -208,21 +208,28 @@ export class GraphicsRenderer extends events.EventEmitter {
     this.renderEntities(realm, me);
     this.updateComponents(dt);
 
+    var albedo = this.ensureBackBuffer("albedo");
+    var albedoCtx = this.prepareContext(albedo);
+
     var illumination = this.ensureBackBuffer("illumination");
     var illuminationCtx = this.prepareContext(illumination);
+    illuminationCtx.globalCompositeOperation = "lighter";
+
+    albedoCtx.save();
+    albedoCtx.clearRect(0, 0, composite.width, composite.height);
+    albedoCtx.drawImage(this.ensureBackBuffer("terrain"), 0, 0);
+    albedoCtx.drawImage(this.ensureBackBuffer("entity"), 0, 0);
+    albedoCtx.globalAlpha = 0.25;
+    albedoCtx.drawImage(this.ensureBackBuffer("xray"), 0, 0);
+    albedoCtx.globalAlpha = 1.0;
+    albedoCtx.restore();
 
     var compositeCtx = this.prepareContext(composite);
     compositeCtx.save();
     compositeCtx.clearRect(0, 0, composite.width, composite.height);
-    compositeCtx.drawImage(this.ensureBackBuffer("terrain"), 0, 0);
-    compositeCtx.drawImage(this.ensureBackBuffer("entity"), 0, 0);
-    compositeCtx.globalAlpha = 0.25;
-    compositeCtx.drawImage(this.ensureBackBuffer("xray"), 0, 0);
-    compositeCtx.globalAlpha = 1.0;
-
+    compositeCtx.drawImage(albedo, 0, 0);
     compositeCtx.globalCompositeOperation = "multiply";
     compositeCtx.drawImage(illumination, 0, 0);
-
     compositeCtx.restore();
 
     var ctx = this.prepareContext(this.canvas);
