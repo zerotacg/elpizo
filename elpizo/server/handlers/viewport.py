@@ -25,8 +25,12 @@ def on_sight(protocol, actor, message):
 
 
 def on_unsight(protocol, actor, message):
-  region = actor.realm.regions.load(geometry.Vector2.from_protobuf(
-      message.location))
+  try:
+    region = actor.realm.regions.load(geometry.Vector2.from_protobuf(
+        message.location))
+  except KeyError:
+    return
+
   actor.unsubscribe(protocol.server.bus, region.channel)
 
   for entity in list(region.client_entities):
