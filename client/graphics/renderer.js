@@ -189,7 +189,7 @@ export class GraphicsRenderer extends events.EventEmitter {
         realm.Region.ceil(viewport.getBottom() + realm.Region.SIZE));
   }
 
-  render(realm, dt) {
+  render(realm, me, dt) {
     this.transitionTimer.update(dt);
 
     var composite = this.ensureBackBuffer("composite");
@@ -204,8 +204,8 @@ export class GraphicsRenderer extends events.EventEmitter {
     }
 
     this.elapsed += dt;
-    this.renderTerrain(realm);
-    this.renderEntities(realm);
+    this.renderTerrain(realm, me);
+    this.renderEntities(realm, me);
     this.updateComponents(dt);
 
     var illumination = this.ensureBackBuffer("illumination");
@@ -256,7 +256,7 @@ export class GraphicsRenderer extends events.EventEmitter {
     });
   }
 
-  renderTerrain(r) {
+  renderTerrain(r, me) {
     var viewport = this.getViewportBounds();
 
     if (r !== this.currentRealm) {
@@ -325,7 +325,7 @@ export class GraphicsRenderer extends events.EventEmitter {
     }
   }
 
-  renderEntities(realm) {
+  renderEntities(realm, me) {
     var sortedEntities = realm.getAllEntities()
         .sort((a, b) => {
             // Always sort drops below everything else.
@@ -349,8 +349,8 @@ export class GraphicsRenderer extends events.EventEmitter {
     xrayCtx.clearRect(0, 0, xrayCanvas.width, xrayCanvas.height);
 
     sortedEntities.forEach((entity) => {
-      this.renderEntity(entity, ctx);
-      this.renderEntity(entity, xrayCtx, {xray: true});
+      this.renderEntity(entity, me, ctx);
+      this.renderEntity(entity, me, xrayCtx, {xray: true});
     });
 
     ctx.restore();
@@ -419,12 +419,17 @@ export class GraphicsRenderer extends events.EventEmitter {
                          GraphicsRenderer.TILE_SIZE);
           ctx.fillText(rx + "," + ry, x + halfTileSize, y + halfTileSize);
 
+          // TODO: fix passability masks
           for (var i = 0; i < 4; ++i) {
             var dv = entities.getDirectionVector(i);
-            var isPassable = region.isTerrainPassableBy(
-                null, // TODO: we need an actor binding for this!
-                (new geometry.Rectangle(rx, ry, 1, 1)).offset(region.location),
-                i);
+
+            var dummy = Object.create(entities.Player.prototype);
+            dummy.bbox = new geometry.Rectangle(0, 0, 1, 1);
+            dummy.location = (new geometry.Rectangle(rx, ry, 1, 1))
+                .offset(region.location)
+                .offset(entities.getDirectionVector(i).negate());
+            dummy.direction = i;
+            var isPassable = region.isTerrainPassableBy(dummy);
 
             dv.x = -dv.x;
             dv.y = -dv.y;
@@ -446,13 +451,13 @@ export class GraphicsRenderer extends events.EventEmitter {
     return canvas;
   }
 
-  renderEntity(entity, ctx, options) {
+  renderEntity(entity, me, ctx, options) {
     var sOffset = this.toScreenCoords(
         entity.location.offset(this.topLeft.negate()));
 
     ctx.save();
     ctx.translate(sOffset.x, sOffset.y);
-    entity.accept(new GraphicsRendererVisitor(this, ctx, options));
+    entity.accept(new GraphicsRendererVisitor(this, me, ctx, options));
     ctx.restore();
   }
 }
@@ -569,8 +574,9 @@ export function getActorSpriteNames(actor) {
 
 
 class GraphicsRendererVisitor extends entities.EntityVisitor {
-  constructor(renderer, ctx, options) {
+  constructor(renderer, me, ctx, options) {
     this.renderer = renderer;
+    this.me = me;
     this.ctx = ctx;
     this.options = options || {};
   }
@@ -670,6 +676,10 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
 
   visitBuilding(entity) {
     if (this.options.xray) {
+      return;
+    }
+
+    if (this.me.getBounds().intersects(entity.getBounds())) {
       return;
     }
 

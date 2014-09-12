@@ -12,12 +12,10 @@ def on_move(protocol, actor, message):
   dt = now - ephemera.last_move_time
 
   old_location = actor.location
-  new_location = old_location.offset(
-      entities.Entity.DIRECTION_VECTORS[actor.direction])
 
   expected_location = geometry.Vector3.from_protobuf(message.location)
 
-  if new_location != expected_location or \
+  if actor.target_location != expected_location or \
       dt < 1 / actor.speed * 0.25: # compensate for slow connections by 0.25
     actor.send(protocol, packets_pb2.TeleportPacket(
         location=actor.location.to_protobuf(),
@@ -34,13 +32,11 @@ def on_move(protocol, actor, message):
   # know where we're moving to within the critical section.
   with green.locking(actor.location_lock):
     # Check for realm passability.
-    passable = actor.realm.is_passable_by(actor,
-                                          actor.bbox.offset(new_location),
-                                          actor.direction)
+    passable = actor.realm.is_passable_by(actor)
 
     if passable:
       with actor.movement():
-        actor.location = new_location
+        actor.location = actor.target_location
   # END CRITICAL SECTION
 
   if not passable:
@@ -88,7 +84,7 @@ def on_move(protocol, actor, message):
     actor.broadcast(
         protocol.server.bus,
         region.channel,
-        packets_pb2.MovePacket(location=new_location.to_protobuf()))
+        packets_pb2.MovePacket(location=actor.location.to_protobuf()))
 
   # We also run intersect events.
   for region in actor.regions:

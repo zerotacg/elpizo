@@ -119,7 +119,7 @@ class Entity(record.ProtobufRecord):
     for region in self.regions:
       region.entities.add(self)
 
-  def is_passable_by(self, entity, direction):
+  def is_passable_by(self, entity):
     return False
 
   def send(self, protocol, message):
@@ -223,7 +223,7 @@ class Actor(Entity):
   def get_realm(self, realm_store):
     return realm_store.find(self.realm_id)
 
-  def is_passable_by(self, entity, direction):
+  def is_passable_by(self, entity):
     return False
 
 
@@ -238,6 +238,9 @@ class Player(Actor):
   def __init__(self, *args, **kwargs):
     self.bbox = geometry.Rectangle(0, 0, 1, 1)
     super().__init__(*args, **kwargs)
+
+  def is_passable_by(self, entity):
+    return entity is self
 
 
 @Entity.register
@@ -278,14 +281,22 @@ class Building(Entity):
     self.direction = 0
     super().__init__(*args, **kwargs)
 
-  def is_passable_by(self, entity, direction):
-    offset = Entity.DIRECTION_VECTORS[self.door_location]
-    doorBounds = geometry.Rectangle(offset.x, offset.y, 1, 1);
+  def is_passable_by(self, entity):
+    door_bounds = geometry.Rectangle(0, 0, 1, 1) \
+        .offset(Entity.DIRECTION_VECTORS[self.door_location]) \
+        .offset(self.location.offset(geometry.Vector3(1, 1, 0)))
 
-    center = self.location.offset(geometry.Vector3(1, 1, 0));
+    # If the entity is inside the building, we always allow passability to
+    # another point of the building.
+    if entity.bounds.intersects(self.bounds):
+      if entity.bounds.intersects(door_bounds) and \
+          entity.target_bounds.intersects(door_bounds.offset(
+              Entity.DIRECTION_VECTORS[self.door_location])):
+        return True
 
-    return doorBounds.offset(center).intersects(
-        entity.bounds.offset(entity.direction_vector))
+      return entity.target_bounds.intersects(self.bounds)
+
+    return door_bounds.intersects(entity.target_bounds)
 
 
 @Entity.register
@@ -302,7 +313,7 @@ class Drop(Entity):
     self.direction = 0
     super().__init__(*args, **kwargs)
 
-  def is_passable_by(self, entity, direction):
+  def is_passable_by(self, entity):
     return True
 
 
@@ -330,7 +341,7 @@ class Teleporter(Entity):
     super().on_store_add(store)
     self.teleport_realm = store.parent.realms.load(self.teleport_realm_id)
 
-  def is_passable_by(self, entity, direction):
+  def is_passable_by(self, entity):
     return True
 
   def on_contact(self, protocol, actor):
@@ -347,6 +358,7 @@ class Teleporter(Entity):
         None,
         packets_pb2.RealmPacket(id=actor.realm.id,
                                 realm=actor.realm.to_protobuf()))
+
 
 class EntityStore(record.PolymorphicProtobufStore):
   RECORD_TYPE = Entity

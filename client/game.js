@@ -279,7 +279,7 @@ export class Game extends events.EventEmitter {
 
   render(dt) {
     if (this.realm !== null) {
-      this.graphicsRenderer.render(this.realm, dt);
+      this.graphicsRenderer.render(this.realm, this.me, dt);
     }
   }
 

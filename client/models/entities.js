@@ -51,7 +51,7 @@ export class Entity extends timing.Timed {
   onContact(protocol, me) {
   }
 
-  isPassableBy(entity, direction) {
+  isPassableBy(entity) {
     return false;
   }
 
@@ -75,14 +75,24 @@ export class Building extends Entity {
     visitor.visitBuilding(this);
   }
 
-  isPassableBy(entity, direction) {
-    var offset = getDirectionVector(this.doorLocation);
-    var doorBounds = new geometry.Rectangle(offset.x, offset.y, 1, 1);
+  isPassableBy(entity) {
+    var doorBounds = (new geometry.Rectangle(0, 0, 1, 1))
+        .offset(getDirectionVector(this.doorLocation))
+        .offset(this.location.offset(new geometry.Vector3(1, 1, 0)));
 
-    var center = this.location.offset(new geometry.Vector3(1, 1, 0));
+    // If the entity is inside the building, we always allow passability to
+    // another point of the building.
+    if (entity.getBounds().intersects(this.getBounds())) {
+      if (entity.getBounds().intersects(doorBounds) &&
+          entity.getTargetBounds().intersects(doorBounds.offset(
+              getDirectionVector(this.doorLocation)))) {
+        return true;
+    }
 
-    return doorBounds.offset(center).intersects(
-        entity.getBounds().offset(entity.getDirectionVector()));
+      return entity.getTargetBounds().intersects(this.getBounds());
+    }
+
+    return doorBounds.intersects(entity.getTargetBounds());
   }
 }
 
@@ -117,7 +127,7 @@ export class Drop extends Entity {
     visitor.visitDrop(this);
   }
 
-  isPassableBy(entity, direction) {
+  isPassableBy(entity) {
     return true;
   }
 }
@@ -260,7 +270,7 @@ export class Actor extends Entity {
     visitor.visitActor(this);
   }
 
-  isPassableBy(entity, direction) {
+  isPassableBy(entity) {
     return false;
   }
 }
@@ -271,6 +281,10 @@ Actor.TURN_TIME = 0.1;
 export class Player extends Actor {
   accept(visitor) {
     visitor.visitPlayer(this);
+  }
+
+  isPassableBy(entity) {
+    return entity === this;
   }
 }
 
@@ -339,7 +353,7 @@ export class Avatar extends Player {
         entity.getBounds().intersects(this.getBounds())) && entity !== this);
 
     // Movement mode logic.
-    if (this.realm.isPassableBy(this, targetBounds, this.direction)) {
+    if (this.realm.isPassableBy(this, this.direction)) {
       this.move();
       didMove = true;
 

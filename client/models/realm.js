@@ -61,23 +61,25 @@ export class Realm {
                                   Region.ceil(this.size.y));
   }
 
-  isTerrainPassableBy(entity, bounds, direction) {
-    if (!this.getBounds().contains(bounds)) {
+  isTerrainPassableBy(entity) {
+    if (!this.getBounds().contains(entity.getTargetBounds())) {
       return false;
     }
 
-    return this.getIntersectingRegions(bounds).some((region) =>
-        region !== null && region.isPassableBy(entity, bounds, direction));
+    return this.getIntersectingRegions(entity.getTargetBounds()).some(
+        (region) =>
+            region !== null && region.isTerrainPassableBy(entity));
   }
 
-  isPassableBy(entity, bounds, direction) {
-    if (!this.isTerrainPassableBy(entity, bounds, direction)) {
+  isPassableBy(entity) {
+    if (!this.isTerrainPassableBy(entity)) {
       return false;
     }
 
     if (this.getAllEntities().some((target) =>
-        target.getBounds().intersects(bounds) &&
-        !target.isPassableBy(entity, direction))) {
+        (target.getBounds().intersects(entity.getTargetBounds()) ||
+         target.getBounds().intersects(entity.getBounds())) &&
+        !target.isPassableBy(entity))) {
       return false;
     }
 
@@ -124,13 +126,14 @@ export class Region {
     return [this.location.x, this.location.y].join(",");
   }
 
-  isTerrainPassableBy(entity, bounds, direction) {
-    bounds = bounds.offset(this.location.negate());
+  isTerrainPassableBy(entity) {
+    var bounds = entity.getTargetBounds().offset(this.location.negate());
 
     for (var y = bounds.top; y < bounds.getBottom(); ++y) {
       for (var x = bounds.left; x < bounds.getRight(); ++x) {
         var passability = this.passabilities.getCell(x, y);
-        if (passability !== null && !((passability >> direction) & 0x1)) {
+        if (passability !== null &&
+            !((passability >> entity.direction) & 0x1)) {
           return false;
         }
       }
@@ -139,8 +142,8 @@ export class Region {
     return true;
   }
 
-  isPassableBy(entity, bounds, direction) {
-    return this.isTerrainPassableBy(entity, bounds, direction);
+  isPassableBy(entity) {
+    return this.isTerrainPassableBy(entity);
   }
 
   getBounds() {
