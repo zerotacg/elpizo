@@ -203,17 +203,18 @@ export class GraphicsRenderer extends events.EventEmitter {
       this.transitionTimer.reset(0.25);
     }
 
+    var illumination = this.ensureBackBuffer("illumination");
+    var illuminationCtx = this.prepareContext(illumination);
+    illuminationCtx.globalCompositeOperation = "lighter";
+
     this.elapsed += dt;
     this.renderTerrain(realm, me);
     this.renderEntities(realm, me);
+    this.renderAmbientIllumination(realm, illuminationCtx);
     this.updateComponents(dt);
 
     var albedo = this.ensureBackBuffer("albedo");
     var albedoCtx = this.prepareContext(albedo);
-
-    var illumination = this.ensureBackBuffer("illumination");
-    var illuminationCtx = this.prepareContext(illumination);
-    illuminationCtx.globalCompositeOperation = "lighter";
 
     albedoCtx.save();
     albedoCtx.clearRect(0, 0, composite.width, composite.height);
@@ -242,6 +243,9 @@ export class GraphicsRenderer extends events.EventEmitter {
     ctx.drawImage(composite, 0, 0);
 
     this.lastRenderTime = this.lastRenderTime * 0.9 + dt * 0.1;
+  }
+
+  renderAmbientIllumination(realm, ctx) {
   }
 
   updateComponents(dt) {
@@ -346,7 +350,9 @@ export class GraphicsRenderer extends events.EventEmitter {
             var bBounds = b.getBounds();
 
             return aBounds.getBottom() - bBounds.getBottom() ||
-                   bBounds.top - aBounds.top;
+                   bBounds.top - aBounds.top ||
+                   // We're desperate, tie break by id to avoid depth fighting.
+                   a.id - b.id;
         });
 
     var entityCanvas = this.ensureBackBuffer("entity");
@@ -720,7 +726,7 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitBuilding(entity) {
-    if (this.options.pass === "illumination" || this.options.pass === "xray") {
+    if (this.options.pass === "xray") {
       return;
     }
 
@@ -731,6 +737,7 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
     var doorSOffset = this.renderer.toScreenCoords(doorLocation);
 
     var drawExterior = true;
+    var drawInterior = false;
 
     var t = 0;
     if (this.me.getBounds().intersect(entity.getBounds()) !== null) {
@@ -738,9 +745,20 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
       t = overlap.height + overlap.width - 1;
 
       drawExterior = t !== 1;
+      drawInterior = t !== 0;
     }
 
-    if (drawExterior) {
+    if (drawInterior && this.options.pass === "illumination") {
+      var sOffset = this.renderer.toScreenCoords(new geometry.Vector2(
+          entity.bbox.left, entity.bbox.top));
+      var sSize = this.renderer.toScreenCoords(new geometry.Vector2(
+          entity.bbox.width, entity.bbox.height));
+
+      this.ctx.fillStyle = "rgb(255, 255, 255)";
+      this.ctx.fillRect(sOffset.x, sOffset.y, sSize.x, sSize.y);
+    }
+
+    if (drawExterior && this.options.pass === "albedo") {
       this.ctx.globalAlpha = 1 - t;
 
       drawAutotileRectangle(this.renderer,
