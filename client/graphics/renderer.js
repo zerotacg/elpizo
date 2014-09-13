@@ -219,7 +219,7 @@ export class GraphicsRenderer extends events.EventEmitter {
     albedoCtx.clearRect(0, 0, composite.width, composite.height);
     albedoCtx.drawImage(this.ensureBackBuffer("terrain"), 0, 0);
     albedoCtx.drawImage(this.ensureBackBuffer("entity"), 0, 0);
-    albedoCtx.globalAlpha = 0.25;
+    albedoCtx.globalAlpha = 0.5;
     albedoCtx.drawImage(this.ensureBackBuffer("xray"), 0, 0);
     albedoCtx.globalAlpha = 1.0;
     albedoCtx.restore();
@@ -649,14 +649,14 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
     })
 
     // Render the name card.
-    if (!this.options.xray) {
+    if (this.options.pass === "xray") {
       this.ctx.save();
-      this.ctx.translate(16, -entity.getHeight() * 32 + 16);
+      this.ctx.translate(16, -entity.getHeight() * 32 + 10);
 
       var baseWidth = this.ctx.measureText(entity.name).width;
       var width = baseWidth + 8;
 
-      this.ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+      this.ctx.fillStyle = "rgb(255, 255, 255)";
       this.ctx.fillRect(-width / 2, 0, width, 20);
 
       this.ctx.textAlign = "center";
