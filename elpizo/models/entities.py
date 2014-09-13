@@ -337,10 +337,6 @@ class Teleporter(Entity):
   def client_visible(self):
     return False
 
-  def on_store_add(self, store):
-    super().on_store_add(store)
-    self.teleport_realm = store.parent.realms.load(self.teleport_realm_id)
-
   def is_passable_by(self, entity):
     return True
 
@@ -358,6 +354,25 @@ class Teleporter(Entity):
         None,
         packets_pb2.RealmPacket(id=actor.realm.id,
                                 realm=actor.realm.to_protobuf()))
+
+
+@Entity.register
+class Tree(Entity):
+  FIELDS = [
+      record.Field("species", record.Scalar, extension=entities_pb2.Tree.ext),
+      record.Field("growth_stage", record.Scalar,
+                   extension=entities_pb2.Tree.ext)
+  ]
+
+  TYPE = "tree"
+
+  def __init__(self, *args, **kwargs):
+    self.bbox = geometry.Rectangle(0, 0, 1, 1)
+    self.direction = 0
+    super().__init__(*args, **kwargs)
+
+  def is_passable_by(self, entity):
+    return False
 
 
 class EntityStore(record.PolymorphicProtobufStore):

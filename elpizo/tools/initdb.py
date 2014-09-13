@@ -171,6 +171,12 @@ def initdb(app):
       door_location=2,
       realm_id=windvale.id))
 
+  app.store.entities.create(entities.Tree(
+      location=geometry.Vector3(4, 16, 0),
+      species="oak",
+      growth_stage=2,
+      realm_id=windvale.id))
+
   for _ in range(25):
     app.store.entities.create(entities.NPC(
         name="Some Bad Dude",

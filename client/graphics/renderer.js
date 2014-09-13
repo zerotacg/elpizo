@@ -694,6 +694,23 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
     super.visitDrop(entity);
   }
 
+  visitTree(entity) {
+    if (this.options.pass === "illumination" || this.options.pass === "xray") {
+      return;
+    }
+
+    var stage = {
+        0: "seedling",
+        1: "sapling",
+        2: "mature"
+    }[entity.growthStage];
+
+    sprites[["tree", entity.species, stage].join(".")]
+        .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
+
+    super.visitTree(entity);
+  }
+
   visitPlayer(entity) {
     if (this.options.pass === "illumination") {
       return;

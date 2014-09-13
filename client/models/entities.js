@@ -132,6 +132,41 @@ export class Drop extends Entity {
   }
 }
 
+export class Tree extends Entity {
+  constructor(id, message) {
+    super(id, message);
+    message = message[".Tree.ext"];
+
+    this.species = message.species;
+    this.growthStage = message.growthStage;
+  }
+
+  getTitle() {
+    return {
+        "oak": "Oak"
+    }[this.species] + " " + {
+        0: "Seedling",
+        1: "Sapling",
+        2: "Tree"
+    }[this.growthStage];
+  }
+
+  accept(visitor) {
+    visitor.visitTree(this);
+  }
+
+  isPassableBy(entity) {
+    return false;
+  }
+
+  getAdjacentInteractions() {
+    return [{
+      title: "Cut",
+      f: () => { }
+    }];
+  }
+}
+
 export var Directions = {
     N: 0,
     W: 1,
@@ -421,6 +456,10 @@ export class EntityVisitor {
 
   visitDrop(drop) {
     this.visitEntity(drop);
+  }
+
+  visitTree(tree) {
+    this.visitEntity(tree);
   }
 
   visitActor(actor) {

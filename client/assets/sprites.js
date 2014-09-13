@@ -2,10 +2,10 @@ module sprite from "client/graphics/sprite";
 module geometry from "client/util/geometry";
 
 export default = {
-  "fixture.tree":
-      new sprite.Sprite("fixture/tree.png", new geometry.Vector2(96, 96),
+  "tree.oak.mature":
+      new sprite.Sprite("fixture/tree.png", new geometry.Vector2(64, 64),
                         [new geometry.Vector2(0, 0)],
-                        new geometry.Vector2(32, 64), 0),
+                        new geometry.Vector2(16, 32), 0),
 
   "item.carrot":
       new sprite.Sprite("item/carrot.png", new geometry.Vector2(32, 32),

@@ -87,3 +87,19 @@ message Teleporter {
   required uint32 teleport_realm_id = 1;
   required Vector3 teleport_location = 2;
 }
+
+message Tree {
+  extend Entity {
+    optional Tree ext = 109;
+  }
+
+  required string species = 1;
+
+  enum GrowthStage {
+    SEEDLING = 0;
+    SAPLING = 1;
+    MATURE = 2;
+  }
+
+  required GrowthStage growth_stage = 2;
+}
