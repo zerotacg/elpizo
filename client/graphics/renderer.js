@@ -342,7 +342,11 @@ export class GraphicsRenderer extends events.EventEmitter {
               return 1;
             }
 
-            return a.location.y - b.location.y;
+            var aBounds = a.getBounds();
+            var bBounds = b.getBounds();
+
+            return aBounds.getBottom() - bBounds.getBottom() ||
+                   bBounds.top - aBounds.top;
         });
 
     var entityCanvas = this.ensureBackBuffer("entity");
@@ -432,13 +436,12 @@ export class GraphicsRenderer extends events.EventEmitter {
                          GraphicsRenderer.TILE_SIZE);
           ctx.fillText(rx + "," + ry, x + halfTileSize, y + halfTileSize);
 
-          // TODO: fix passability masks
           for (var i = 0; i < 4; ++i) {
             var dv = entities.getDirectionVector(i);
 
             var dummy = Object.create(entities.Player.prototype);
             dummy.bbox = new geometry.Rectangle(0, 0, 1, 1);
-            dummy.location = (new geometry.Rectangle(rx, ry, 1, 1))
+            dummy.location = (new geometry.Vector3(rx, ry, 0))
                 .offset(region.location)
                 .offset(entities.getDirectionVector(i).negate());
             dummy.direction = i;
@@ -705,54 +708,46 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
     }
 
     this.ctx.save();
-    this.ctx.fillStyle = "rgba(0, 0, 255, 0.25)";
-    this.ctx.strokeStyle = "rgba(0, 0, 255, 0.75)";
 
-    var sOffset = this.renderer.toScreenCoords(new geometry.Vector2(
-        entity.bbox.left, entity.bbox.top));
-    var sSize = this.renderer.toScreenCoords(new geometry.Vector2(
-        entity.bbox.width, entity.bbox.height));
-    this.ctx.translate(sOffset.x, sOffset.y);
-    this.ctx.strokeRect(0, 0, sSize.x, sSize.y);
-    this.ctx.restore();
+    var doorLocation = (new geometry.Vector3(1, 1, 0))
+        .offset(entities.getDirectionVector(entity.doorLocation));
+    var doorSOffset = this.renderer.toScreenCoords(doorLocation);
 
-    this.ctx.save();
+    var drawExterior = true;
 
+    var t = 0;
     if (this.me.getBounds().intersect(entity.getBounds()) !== null) {
-      var overlap =
-          this.me.getBounds().intersect(entity.getBounds());
-      var t = overlap.height + overlap.width - 1;
+      var overlap = this.me.getBounds().intersect(entity.getBounds());
+      t = overlap.height + overlap.width - 1;
 
-      if (t === 1) {
-        this.ctx.restore();
-        return;
+      drawExterior = t !== 1;
+    }
+
+    if (drawExterior) {
+      this.ctx.globalAlpha = 1 - t;
+
+      drawAutotileRectangle(this.renderer,
+                            new geometry.Rectangle(entity.bbox.left,
+                                                   entity.bbox.getBottom() - 2,
+                                                   entity.bbox.width,
+                                                   2),
+                            sprites["building.wall"],
+                            this.ctx);
+
+      var halfHeight = this.renderer.toScreenCoords(
+          new geometry.Vector2(0, 1)).y / 2;
+
+      if (entity.doorLocation === 2) {
+        this.ctx.fillStyle = "black";
+        this.ctx.fillRect(doorSOffset.x, doorSOffset.y,
+                          GraphicsRenderer.TILE_SIZE, GraphicsRenderer.TILE_SIZE);
       }
 
-      this.ctx.globalAlpha = 1 - t;
+      this.ctx.translate(0, -halfHeight);
+      sprites["building.red_roof_1"].render(this.renderer.resources, this.ctx,
+                                            this.renderer.elapsed);
     }
 
-    drawAutotileRectangle(this.renderer,
-                          new geometry.Rectangle(entity.bbox.left,
-                                                 entity.bbox.getBottom() - 2,
-                                                 entity.bbox.width,
-                                                 2),
-                          sprites["building.wall"],
-                          this.ctx);
-
-    var halfHeight = this.renderer.toScreenCoords(
-        new geometry.Vector2(0, 1)).y / 2;
-
-    if (entity.doorLocation === 2) {
-      var doorOffset = this.renderer.toScreenCoords(new geometry.Vector2(1, 2));
-
-      this.ctx.fillStyle = "black";
-      this.ctx.fillRect(doorOffset.x, doorOffset.y,
-                        GraphicsRenderer.TILE_SIZE, GraphicsRenderer.TILE_SIZE);
-    }
-
-    this.ctx.translate(0, -halfHeight);
-    sprites["building.red_roof_1"].render(this.renderer.resources, this.ctx,
-                                          this.renderer.elapsed);
     this.ctx.restore();
 
     super.visitBuilding(entity);
