@@ -365,19 +365,26 @@ export class GraphicsRenderer extends events.EventEmitter {
     xrayCtx.save();
     xrayCtx.clearRect(0, 0, xrayCanvas.width, xrayCanvas.height);
 
-    var illuminationCanvas = this.ensureBackBuffer("illumination");
-    var illuminationCtx = this.prepareContext(illuminationCanvas);
-    illuminationCtx.save();
-    illuminationCtx.clearRect(0, 0, xrayCanvas.width, xrayCanvas.height);
-
     sortedEntities.forEach((entity) => {
       this.renderEntity(entity, me, ctx, {pass: "albedo"});
       this.renderEntity(entity, me, xrayCtx, {pass: "xray"});
-      this.renderEntity(entity, me, illuminationCtx, {pass: "illumination"});
     });
-
     ctx.restore();
     xrayCtx.restore();
+
+
+    var illuminationCanvas = this.ensureBackBuffer("illumination");
+    var illuminationCtx = this.prepareContext(illuminationCanvas);
+    illuminationCtx.save();
+    illuminationCtx.clearRect(0, 0,
+                              illuminationCanvas.width,
+                              illuminationCanvas.height);
+    // We run the illumination pass separately as we'd like to have access to
+    // albedo.
+    sortedEntities.forEach((entity) => {
+      this.renderEntity(entity, me, illuminationCtx, {pass: "illumination"});
+    })
+    illuminationCtx.restore();
   }
 
   renderAutotile(autotile, ctx) {
@@ -749,13 +756,41 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
     }
 
     if (drawInterior && this.options.pass === "illumination") {
-      var sOffset = this.renderer.toScreenCoords(new geometry.Vector2(
+      var buildingInteriorIllumination =
+          this.renderer.ensureBackBuffer("buildingInteriorIllumination");
+
+      var buildingInteriorIlluminationCtx =
+          this.renderer.prepareContext(buildingInteriorIllumination);
+      buildingInteriorIlluminationCtx.clearRect(0, 0,
+                                                this.renderer.canvas.width,
+                                                this.renderer.canvas.height);
+      buildingInteriorIlluminationCtx.drawImage(
+          this.renderer.ensureBackBuffer("entity"), 0, 0);
+
+      var sOffset = this.renderer.toScreenCoords(entity.location);
+
+      buildingInteriorIlluminationCtx.save();
+      buildingInteriorIlluminationCtx.globalCompositeOperation = "source-out";
+
+      var sOffset2 = this.renderer.toScreenCoords(entity.location.offset(
+          this.renderer.topLeft.negate()));
+      buildingInteriorIlluminationCtx.translate(sOffset2.x, sOffset2.y);
+
+      var sBboxOffset = this.renderer.toScreenCoords(new geometry.Vector2(
           entity.bbox.left, entity.bbox.top));
-      var sSize = this.renderer.toScreenCoords(new geometry.Vector2(
+      var sBboxSize = this.renderer.toScreenCoords(new geometry.Vector2(
           entity.bbox.width, entity.bbox.height));
 
-      this.ctx.fillStyle = "rgb(255, 255, 255)";
-      this.ctx.fillRect(sOffset.x, sOffset.y, sSize.x, sSize.y);
+      buildingInteriorIlluminationCtx.fillStyle = "rgb(255, 255, 255)";
+      buildingInteriorIlluminationCtx.fillRect(
+          sBboxOffset.x, sBboxOffset.y, sBboxSize.x, sBboxSize.y);
+      buildingInteriorIlluminationCtx.restore();
+
+      var viewportOffset = this.renderer.toScreenCoords(this.renderer.topLeft);
+
+      this.ctx.drawImage(buildingInteriorIllumination,
+                         viewportOffset.x - sOffset.x,
+                         viewportOffset.y - sOffset.y);
     }
 
     if (drawExterior && this.options.pass === "albedo") {
