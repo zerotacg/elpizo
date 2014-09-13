@@ -288,15 +288,15 @@ class Building(Entity):
 
     # If the entity is inside the building, we always allow passability to
     # another point of the building.
-    if entity.bounds.intersects(self.bounds):
-      if entity.bounds.intersects(door_bounds) and \
-          entity.target_bounds.intersects(door_bounds.offset(
-              Entity.DIRECTION_VECTORS[self.door_location])):
+    if entity.bounds.intersect(self.bounds) is not None:
+      if entity.bounds.intersect(door_bounds) is not None and \
+          entity.target_bounds.intersect(door_bounds.offset(
+              Entity.DIRECTION_VECTORS[self.door_location])) is not None:
         return True
 
-      return entity.target_bounds.intersects(self.bounds)
+      return entity.target_bounds.intersect(self.bounds) is not None
 
-    return door_bounds.intersects(entity.target_bounds)
+    return door_bounds.intersect(entity.target_bounds) is not None
 
 
 @Entity.register

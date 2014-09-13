@@ -704,11 +704,33 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
       return;
     }
 
-    if (this.me.getBounds().intersects(entity.getBounds())) {
-      return;
-    }
+    this.ctx.save();
+    this.ctx.fillStyle = "rgba(0, 0, 255, 0.25)";
+    this.ctx.strokeStyle = "rgba(0, 0, 255, 0.75)";
+
+    var sOffset = this.renderer.toScreenCoords(new geometry.Vector2(
+        entity.bbox.left, entity.bbox.top));
+    var sSize = this.renderer.toScreenCoords(new geometry.Vector2(
+        entity.bbox.width, entity.bbox.height));
+    this.ctx.translate(sOffset.x, sOffset.y);
+    this.ctx.strokeRect(0, 0, sSize.x, sSize.y);
+    this.ctx.restore();
 
     this.ctx.save();
+
+    if (this.me.getBounds().intersect(entity.getBounds()) !== null) {
+      var overlap =
+          this.me.getBounds().intersect(entity.getBounds());
+      var t = overlap.height + overlap.width - 1;
+
+      if (t === 1) {
+        this.ctx.restore();
+        return;
+      }
+
+      this.ctx.globalAlpha = 1 - t;
+    }
+
     drawAutotileRectangle(this.renderer,
                           new geometry.Rectangle(entity.bbox.left,
                                                  entity.bbox.getBottom() - 2,

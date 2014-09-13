@@ -82,17 +82,17 @@ export class Building extends Entity {
 
     // If the entity is inside the building, we always allow passability to
     // another point of the building.
-    if (entity.getBounds().intersects(this.getBounds())) {
-      if (entity.getBounds().intersects(doorBounds) &&
-          entity.getTargetBounds().intersects(doorBounds.offset(
-              getDirectionVector(this.doorLocation)))) {
+    if (entity.getBounds().intersect(this.getBounds()) !== null) {
+      if (entity.getBounds().intersect(doorBounds) !== null &&
+          entity.getTargetBounds().intersect(doorBounds.offset(
+              getDirectionVector(this.doorLocation))) !== null) {
         return true;
     }
 
-      return entity.getTargetBounds().intersects(this.getBounds());
+      return entity.getTargetBounds().intersect(this.getBounds()) !== null;
     }
 
-    return doorBounds.intersects(entity.getTargetBounds());
+    return doorBounds.intersect(entity.getTargetBounds()) !== null;
   }
 }
 
@@ -312,12 +312,12 @@ export class Avatar extends Player {
 
   doInteract(protocol) {
     var intersecting = this.realm.getAllEntities().filter((entity) =>
-      entity.getBounds().intersects(this.getBounds()) &&
+      entity.getBounds().intersect(this.getBounds()) !== null &&
       this.realm.isTerrainPassableBy(this, this.getBounds(), this.direction) &&
       entity !== this);
 
     var adjacents = this.realm.getAllEntities().filter((entity) =>
-      entity.getBounds().intersects(this.getTargetBounds()) &&
+      entity.getBounds().intersect(this.getTargetBounds()) !== null &&
       this.realm.isTerrainPassableBy(this, this.getTargetBounds(),
                                      this.direction) &&
       entity !== this);
@@ -349,8 +349,9 @@ export class Avatar extends Player {
     var targetLocation = this.getTargetLocation();
     var targetBounds = this.bbox.offset(targetLocation);
     var targetEntities = this.realm.getAllEntities().filter((entity) =>
-        (entity.getBounds().intersects(targetBounds) ||
-        entity.getBounds().intersects(this.getBounds())) && entity !== this);
+        (entity.getBounds().intersect(targetBounds) !== null ||
+         entity.getBounds().intersect(this.getBounds()) !== null) &&
+        entity !== this);
 
     // Movement mode logic.
     if (this.realm.isPassableBy(this, this.direction)) {

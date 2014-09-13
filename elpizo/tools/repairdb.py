@@ -20,7 +20,7 @@ def repair(app):
     logger.info("Checking realm %s.", realm.id)
     for region in realm.regions.load_all():
       for entity in list(region.entities):
-        if not entity.bounds.intersects(region.bounds):
+        if entity.bounds.intersect(region.bounds) is None:
           logger.warn(
               "Region %r bounds entity %s, but entity's bounds are %r. " +
               "Unlinking entity from region.",

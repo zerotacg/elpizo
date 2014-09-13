@@ -99,9 +99,23 @@ class Rectangle(object):
   def bottom_right(self):
     return Vector2(self.bottom, self.right)
 
-  def intersects(self, other):
-    return self.left < other.right and self.right > other.left and \
-           self.top < other.bottom and self.bottom > other.top
+  def intersect(self, other):
+    left = max([self.left, other.left])
+    right = min([self.right, other.right])
+
+    if right <= left:
+      return None
+
+    top = max([self.top, other.top])
+    bottom = min([self.bottom, other.bottom])
+
+    if bottom <= top:
+      return None
+
+    width = right - left
+    height = bottom - top
+
+    return self.__class__(left, right, width, height)
 
   def contains(self, other):
     return self.left <= other.left and self.right >= other.right and \
@@ -109,7 +123,7 @@ class Rectangle(object):
 
   def offset(self, vec):
     return self.__class__(self.left + vec.x, self.top + vec.y,
-                     self.width, self.height)
+                          self.width, self.height)
 
   def scale(self, k):
     return self.__class__(self.left, self.top, k * self.width, k * self.height)

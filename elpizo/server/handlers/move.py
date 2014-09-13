@@ -89,7 +89,8 @@ def on_move(protocol, actor, message):
   # We also run intersect events.
   for region in actor.regions:
     for entity in list(region.entities):
-      if actor.bounds.intersects(entity.bounds) and actor is not entity:
+      if actor.bounds.intersect(entity.bounds) is not None and \
+          actor is not entity:
         entity.on_contact(protocol, actor)
 
 

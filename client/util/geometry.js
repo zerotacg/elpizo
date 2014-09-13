@@ -140,9 +140,22 @@ export class Rectangle {
     return this.top + this.height;
   }
 
-  intersects(other) {
-    return this.left < other.getRight() && this.getRight() > other.left &&
-           this.top < other.getBottom() && this.getBottom() > other.top;
+  intersect(other) {
+    var left = Math.max(this.left, other.left);
+    var right = Math.min(this.getRight(), other.getRight());
+
+    if (right <= left) {
+      return null;
+    }
+
+    var top = Math.max(this.top, other.top);
+    var bottom = Math.min(this.getBottom(), other.getBottom());
+
+    if (bottom <= top) {
+      return null;
+    }
+
+    return Rectangle.fromCorners(left, top, right, bottom);
   }
 
   contains(other) {

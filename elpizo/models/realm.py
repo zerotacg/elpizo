@@ -126,8 +126,8 @@ class Region(record.ProtobufRecord):
     if not self.is_terrain_passable_by(entity):
       return False
 
-    return not any((target.bounds.intersects(entity.target_bounds) or
-                    target.bounds.intersects(entity.bounds)) and
+    return not any((target.bounds.intersect(entity.target_bounds) is not None or
+                    target.bounds.intersect(entity.bounds) is not None) and
                    not target.is_passable_by(entity)
                    for target in self.entities)
 

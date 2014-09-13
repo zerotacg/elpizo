@@ -77,8 +77,8 @@ export class Realm {
     }
 
     if (this.getAllEntities().some((target) =>
-        (target.getBounds().intersects(entity.getTargetBounds()) ||
-         target.getBounds().intersects(entity.getBounds())) &&
+        (target.getBounds().intersect(entity.getTargetBounds()) !== null ||
+         target.getBounds().intersect(entity.getBounds()) !== null) &&
         !target.isPassableBy(entity))) {
       return false;
     }
