@@ -71,6 +71,17 @@ export class Building extends Entity {
     this.doorLocation = message.doorLocation;
   }
 
+  getTitle() {
+    return "Marius's Tavern";
+  }
+
+  getAdjacentInteractions() {
+    return [{
+      title: "THIS ACTION DOES NOTHING AND IS ONLY FOR TESTING",
+      f: () => { }
+    }];
+  }
+
   accept(visitor) {
     visitor.visitBuilding(this);
   }
@@ -353,6 +364,7 @@ export class Avatar extends Player {
 
     var adjacents = this.realm.getAllEntities().filter((entity) =>
       entity.getBounds().intersect(this.getTargetBounds()) !== null &&
+      entity.getBounds().intersect(this.getBounds()) === null &&
       this.realm.isTerrainPassableBy(this, this.getTargetBounds(),
                                      this.direction) &&
       entity !== this);
