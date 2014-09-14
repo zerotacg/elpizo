@@ -641,10 +641,6 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
   }
 
   visitActor(entity) {
-    if (this.options.pass === "illumination") {
-      return;
-    }
-
     var state = entity.isMoving ? "walking" :
                 "standing";
 
@@ -656,87 +652,71 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
                     entity.direction == entities.Directions.E ? "e" :
                     null;
 
-    getActorSpriteNames(entity).forEach((name) => {
-        sprites[name][state][direction]
-            .render(this.renderer.resources, this.ctx, elapsed);
-    })
+    var spriteNames = getActorSpriteNames(entity);
 
-    // Render the name card.
-    if (this.options.pass === "xray") {
-      this.ctx.save();
-      this.ctx.translate(16, -entity.getHeight() * 32 + 10);
+    switch (this.options.pass) {
+      case "albedo":
+        spriteNames.forEach((name) => {
+            sprites[name][state][direction]
+                .render(this.renderer.resources, this.ctx, elapsed);
+        });
+        break;
 
-      var baseWidth = this.ctx.measureText(entity.name).width;
-      var width = baseWidth + 8;
+      case "xray":
+        spriteNames.forEach((name) => {
+            sprites[name][state][direction]
+                .render(this.renderer.resources, this.ctx, elapsed);
+        });
 
-      this.ctx.fillStyle = "rgb(255, 255, 255)";
-      this.ctx.fillRect(-width / 2, 0, width, 20);
+        // Render name card.
+        this.ctx.save();
+        this.ctx.translate(16, -entity.getHeight() * 32 + 10);
 
-      this.ctx.textAlign = "center";
-      this.ctx.textBaseline = "middle";
+        var baseWidth = this.ctx.measureText(entity.name).width;
+        var width = baseWidth + 8;
 
-      var textColor = chroma(colors.makeColorForString(entity.name))
-          .darken(10).hex();
-      this.ctx.fillStyle = textColor;
-      this.ctx.fillText(entity.name, 0, 10);
-      this.ctx.restore();
+        this.ctx.fillStyle = "rgb(255, 255, 255)";
+        this.ctx.fillRect(-width / 2, 0, width, 20);
+
+        this.ctx.textAlign = "center";
+        this.ctx.textBaseline = "middle";
+
+        var textColor = chroma(colors.makeColorForString(entity.name))
+            .darken(10).hex();
+        this.ctx.fillStyle = textColor;
+        this.ctx.fillText(entity.name, 0, 10);
+        this.ctx.restore();
+        break;
     }
 
     super.visitActor(entity);
   }
 
-  visitFixture(entity) {
-    if (this.options.pass === "illumination" || this.options.pass === "xray") {
-      return;
-    }
-
-    sprites[["fixture", entity.fixtureType].join(".")]
-        .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
-
-    super.visitFixture(entity);
-  }
-
   visitDrop(entity) {
-    if (this.options.pass === "illumination" || this.options.pass === "xray") {
-      return;
+    if (this.options.pass === "albedo") {
+      sprites[["item", entity.item.type].join(".")]
+          .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
     }
-
-    sprites[["item", entity.item.type].join(".")]
-        .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
 
     super.visitDrop(entity);
   }
 
   visitTree(entity) {
-    if (this.options.pass === "illumination" || this.options.pass === "xray") {
-      return;
+    if (this.options.pass === "albedo") {
+      var stage = {
+          0: "seedling",
+          1: "sapling",
+          2: "mature"
+      }[entity.growthStage];
+
+      sprites[["tree", entity.species, stage].join(".")]
+          .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
     }
-
-    var stage = {
-        0: "seedling",
-        1: "sapling",
-        2: "mature"
-    }[entity.growthStage];
-
-    sprites[["tree", entity.species, stage].join(".")]
-        .render(this.renderer.resources, this.ctx, this.renderer.elapsed);
 
     super.visitTree(entity);
   }
 
-  visitPlayer(entity) {
-    if (this.options.pass === "illumination") {
-      return;
-    }
-
-    super.visitPlayer(entity);
-  }
-
   visitBuilding(entity) {
-    if (this.options.pass === "xray") {
-      return;
-    }
-
     this.ctx.save();
 
     var doorLocation = (new geometry.Vector3(1, 1, 0))
@@ -755,67 +735,73 @@ class GraphicsRendererVisitor extends entities.EntityVisitor {
       drawInterior = t !== 0;
     }
 
-    if (drawInterior && this.options.pass === "illumination") {
-      var buildingInteriorIllumination =
-          this.renderer.ensureBackBuffer("buildingInteriorIllumination");
+    switch (this.options.pass) {
+      case "albedo":
+        if (drawExterior) {
+          this.ctx.globalAlpha = 1 - t;
 
-      var buildingInteriorIlluminationCtx =
-          this.renderer.prepareContext(buildingInteriorIllumination);
-      buildingInteriorIlluminationCtx.clearRect(0, 0,
-                                                this.renderer.canvas.width,
-                                                this.renderer.canvas.height);
-      buildingInteriorIlluminationCtx.drawImage(
-          this.renderer.ensureBackBuffer("entity"), 0, 0);
+          drawAutotileRectangle(this.renderer,
+                                new geometry.Rectangle(entity.bbox.left,
+                                                       entity.bbox.getBottom() - 2,
+                                                       entity.bbox.width,
+                                                       2),
+                                sprites["building.wall"],
+                                this.ctx);
 
-      var sOffset = this.renderer.toScreenCoords(entity.location);
+          var halfHeight = this.renderer.toScreenCoords(
+              new geometry.Vector2(0, 1)).y / 2;
 
-      buildingInteriorIlluminationCtx.save();
-      buildingInteriorIlluminationCtx.globalCompositeOperation = "source-out";
+          if (entity.doorLocation === 2) {
+            this.ctx.fillStyle = "black";
+            this.ctx.fillRect(doorSOffset.x, doorSOffset.y,
+                              GraphicsRenderer.TILE_SIZE, GraphicsRenderer.TILE_SIZE);
+          }
 
-      var sOffset2 = this.renderer.toScreenCoords(entity.location.offset(
-          this.renderer.topLeft.negate()));
-      buildingInteriorIlluminationCtx.translate(sOffset2.x, sOffset2.y);
+          this.ctx.translate(0, -halfHeight);
+          sprites["building.red_roof_1"].render(this.renderer.resources, this.ctx,
+                                                this.renderer.elapsed);
+        }
+        break;
 
-      var sBboxOffset = this.renderer.toScreenCoords(new geometry.Vector2(
-          entity.bbox.left, entity.bbox.top));
-      var sBboxSize = this.renderer.toScreenCoords(new geometry.Vector2(
-          entity.bbox.width, entity.bbox.height));
+      case "illumination":
+        if (drawInterior) {
+          var buildingInteriorIllumination =
+              this.renderer.ensureBackBuffer("buildingInteriorIllumination");
 
-      buildingInteriorIlluminationCtx.fillStyle = "rgb(255, 255, 255)";
-      buildingInteriorIlluminationCtx.fillRect(
-          sBboxOffset.x, sBboxOffset.y, sBboxSize.x, sBboxSize.y);
-      buildingInteriorIlluminationCtx.restore();
+          var buildingInteriorIlluminationCtx =
+              this.renderer.prepareContext(buildingInteriorIllumination);
+          buildingInteriorIlluminationCtx.clearRect(0, 0,
+                                                    this.renderer.canvas.width,
+                                                    this.renderer.canvas.height);
+          buildingInteriorIlluminationCtx.drawImage(
+              this.renderer.ensureBackBuffer("entity"), 0, 0);
 
-      var viewportOffset = this.renderer.toScreenCoords(this.renderer.topLeft);
+          var sOffset = this.renderer.toScreenCoords(entity.location);
 
-      this.ctx.drawImage(buildingInteriorIllumination,
-                         viewportOffset.x - sOffset.x,
-                         viewportOffset.y - sOffset.y);
-    }
+          buildingInteriorIlluminationCtx.save();
+          buildingInteriorIlluminationCtx.globalCompositeOperation = "source-out";
 
-    if (drawExterior && this.options.pass === "albedo") {
-      this.ctx.globalAlpha = 1 - t;
+          var sOffset2 = this.renderer.toScreenCoords(entity.location.offset(
+              this.renderer.topLeft.negate()));
+          buildingInteriorIlluminationCtx.translate(sOffset2.x, sOffset2.y);
 
-      drawAutotileRectangle(this.renderer,
-                            new geometry.Rectangle(entity.bbox.left,
-                                                   entity.bbox.getBottom() - 2,
-                                                   entity.bbox.width,
-                                                   2),
-                            sprites["building.wall"],
-                            this.ctx);
+          var sBboxOffset = this.renderer.toScreenCoords(new geometry.Vector2(
+              entity.bbox.left, entity.bbox.top));
+          var sBboxSize = this.renderer.toScreenCoords(new geometry.Vector2(
+              entity.bbox.width, entity.bbox.height));
 
-      var halfHeight = this.renderer.toScreenCoords(
-          new geometry.Vector2(0, 1)).y / 2;
+          buildingInteriorIlluminationCtx.fillStyle = "rgb(255, 255, 255)";
+          buildingInteriorIlluminationCtx.fillRect(
+              sBboxOffset.x, sBboxOffset.y, sBboxSize.x, sBboxSize.y);
+          buildingInteriorIlluminationCtx.restore();
 
-      if (entity.doorLocation === 2) {
-        this.ctx.fillStyle = "black";
-        this.ctx.fillRect(doorSOffset.x, doorSOffset.y,
-                          GraphicsRenderer.TILE_SIZE, GraphicsRenderer.TILE_SIZE);
-      }
+          var viewportOffset = this.renderer.toScreenCoords(this.renderer.topLeft);
 
-      this.ctx.translate(0, -halfHeight);
-      sprites["building.red_roof_1"].render(this.renderer.resources, this.ctx,
-                                            this.renderer.elapsed);
+          this.ctx.drawImage(buildingInteriorIllumination,
+                             viewportOffset.x - sOffset.x,
+                             viewportOffset.y - sOffset.y);
+        }
+        break;
     }
 
     this.ctx.restore();
