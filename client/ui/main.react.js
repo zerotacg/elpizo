@@ -10,6 +10,7 @@ module inventory from "client/ui/inventory.react";
 module interactions from "client/ui/interactions.react";
 module loading from "client/ui/loading.react";
 module log from "client/ui/log.react";
+module mute from "client/ui/mute.react";
 module stats from "client/ui/stats.react";
 module overlay from "client/ui/overlay/overlay.react";
 
@@ -43,6 +44,11 @@ export var UI = React.createClass({
             <stats.Stats
                 me={this.props.game.me}
                 resources={this.props.game.resources} />
+        </Item>);
+
+        hudElements.push(<Item key="mute">
+            <mute.Mute
+                config={this.props.game.config.music} />
         </Item>);
 
         if (this.props.game.me.showInventory) {
